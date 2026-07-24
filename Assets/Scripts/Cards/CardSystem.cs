@@ -10,7 +10,8 @@ namespace ContextStage
     /// - 새 공연 시작과 카드 사용 종료 시 손패를 CardDeckConfig.MinimumHandSize까지 보충한다.
     /// - 손패가 최소 장수보다 많으면 초과 카드를 유지한다.
     /// - 사용한 카드는 손패에서 사라진 뒤 드로우 더미에 다시 섞인다.
-    /// - EncoreTriggered와 카드 효과는 MaximumHandSize까지 카드를 추가할 수 있다.
+    /// - 카드 효과는 MaximumHandSize까지 카드를 추가할 수 있다.
+    ///   (열기 MAX 앙코르 추가 드로우는 열기→점수 배율 전환으로 제거됨)
     /// </summary>
     public sealed class CardSystem : MonoSingleton<CardSystem>
     {
@@ -39,13 +40,11 @@ namespace ContextStage
         void OnEnable()
         {
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
-            EventBus.Subscribe<EncoreTriggered>(OnEncoreTriggered);
         }
 
         void OnDisable()
         {
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
-            EventBus.Unsubscribe<EncoreTriggered>(OnEncoreTriggered);
         }
 
         void OnGameStateChanged(GameStateChanged e)
@@ -104,6 +103,8 @@ namespace ContextStage
                 float currentHype = Hype.Current;
                 HypeJudgement judgement = card.ResolveJudgement(currentHype);
                 float delta = card.GetPreviewDelta(currentHype, HypeSystem.Instance.Config);
+                // 점수 배율은 카드를 낼 때(판정 적용 전)의 열기를 기준으로 잡는다.
+                float multiplier = Hype.MultiplierFor(currentHype);
                 Hype.Apply(judgement);
 
                 EventBus.Raise(new CardSelected
@@ -112,7 +113,9 @@ namespace ContextStage
                     DisplayName = card.DisplayName,
                     HandIndex = index,
                     Judgement = judgement,
-                    Delta = delta
+                    Delta = delta,
+                    BaseScore = card.BaseScore,
+                    Multiplier = multiplier
                 });
 
                 // 카드 효과와 그 과정에서 발생한 앙코르 드로우까지 모두 반영한 뒤 부족분만 보충한다.
@@ -138,12 +141,6 @@ namespace ContextStage
             int drawn = DrawCards(count, false);
             if (drawn > 0 && !_selecting) RaiseHandChanged();
             return drawn;
-        }
-
-        void OnEncoreTriggered(EncoreTriggered _)
-        {
-            int drawn = DrawCards(1, true);
-            if (drawn > 0 && !_selecting) RaiseHandChanged();
         }
 
         int RefillToMinimumHand()

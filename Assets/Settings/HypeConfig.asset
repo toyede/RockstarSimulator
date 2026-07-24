@@ -19,5 +19,16 @@ MonoBehaviour:
   goodDelta: 15
   missDelta: -15
   riskMissDelta: -25
-  encoreResetValue: 70
-  encoreDecayPauseDuration: 1.5
+  multiplierTiers:
+  - label: "낮음"
+    minNormalized: 0
+    multiplier: 1
+  - label: "중간"
+    minNormalized: 0.34
+    multiplier: 2
+  - label: "높음"
+    minNormalized: 0.67
+    multiplier: 3
+  - label: MAX
+    minNormalized: 0.9
+    multiplier: 5

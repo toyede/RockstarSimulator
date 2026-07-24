@@ -134,7 +134,7 @@ namespace GameJamKit
         public bool IsEncoreBonus;
     }
 
-    /// <summary>숫자키로 카드가 선택되어 호응도 판정이 적용될 때 발행.</summary>
+    /// <summary>숫자키로 카드가 선택되어 열기(호응도) 판정이 적용될 때 발행.</summary>
     public struct CardSelected
     {
         public string CardId;
@@ -142,6 +142,8 @@ namespace GameJamKit
         public int HandIndex;
         public HypeJudgement Judgement;
         public float Delta;
+        public int BaseScore;    // 카드 기본 점수 (열기 배율 적용 전). 점수 담당이 구독해 누적한다
+        public float Multiplier; // 카드를 낼 때의 열기 배율. 획득 점수 = BaseScore × Multiplier
     }
 }
 

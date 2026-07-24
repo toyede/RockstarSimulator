@@ -20,6 +20,7 @@ namespace ContextStage
         [SerializeField] Image fillImage;
         [SerializeField, Tooltip("지연되어 따라오는 뒷배경 바")] Image delayedImage;
         [SerializeField] Text valueText;
+        [SerializeField, Tooltip("현재 열기 점수 배율(×N) 표시. 비워두면 표시 안 함")] Text multiplierText;
 
         [Header("연출")]
         [SerializeField, Tooltip("지연 바가 따라오는 속도 (fillAmount/초)")]
@@ -59,6 +60,8 @@ namespace ContextStage
             }
             if (valueText != null)
                 valueText.text = Mathf.RoundToInt(value).ToString();
+            if (multiplierText != null)
+                multiplierText.text = "×" + Hype.Multiplier.ToString("0.##"); // 현재 열기 배율
         }
 
         void Update()

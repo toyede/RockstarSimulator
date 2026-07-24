@@ -39,7 +39,16 @@ namespace ContextStage.EditorTools
             EnsureComponent<HypeDebugInput>(sysGo);
             SetObjectField(system, "config", config); // private [SerializeField] 라 SerializedObject 로 지정
 
-            // 4) 게이지 UI
+            // 3-1) 점수 누적 시스템 (카드 낼 때 열기 배율만큼 점수 가산)
+            var scoreGo = GameObject.Find("[ScoreSystem]");
+            if (scoreGo == null)
+            {
+                scoreGo = new GameObject("[ScoreSystem]");
+                Undo.RegisterCreatedObjectUndo(scoreGo, "Create ScoreSystem");
+            }
+            EnsureComponent<PerformanceScoreSystem>(scoreGo);
+
+            // 4) 게이지 UI + 점수 UI
             BuildGaugeUI();
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
@@ -100,17 +109,48 @@ namespace ContextStage.EditorTools
             var fill = CreateStretchedImage("Fill", gaugeGo.transform, Color.white, 4f);
             SetupFilled(fill);
 
-            // 바 위 라벨 + 바 아래 숫자
-            var title = CreateText("TitleText", gaugeGo.transform, "호응도", TextAnchor.MiddleCenter);
+            // 바 위 라벨(열기) + 바 아래 숫자
+            var title = CreateText("TitleText", gaugeGo.transform, "열기", TextAnchor.MiddleCenter);
             PlaceVerticalText(title, above: true);
             var value = CreateText("ValueText", gaugeGo.transform, "30", TextAnchor.MiddleCenter);
             PlaceVerticalText(value, above: false);
+
+            // 배율 표시(×N): 숫자 아래에 배치
+            var mult = CreateText("MultiplierText", gaugeGo.transform, "×1", TextAnchor.MiddleCenter);
+            PlaceVerticalText(mult, above: false);
+            var multRect = mult.GetComponent<RectTransform>();
+            multRect.anchoredPosition = new Vector2(0f, -46f); // 숫자보다 더 아래
+            mult.fontSize = 30;
+            mult.color = Color.white;
 
             // HypeGaugeUI 연결
             var ui = gaugeGo.AddComponent<HypeGaugeUI>();
             SetObjectField(ui, "fillImage", fill);
             SetObjectField(ui, "delayedImage", delayed);
             SetObjectField(ui, "valueText", value);
+            SetObjectField(ui, "multiplierText", mult);
+
+            // 점수 표시 UI (같은 캔버스 상단)
+            BuildScoreUI(canvasGo.transform);
+        }
+
+        // ---------------- 점수 UI ----------------
+
+        static void BuildScoreUI(Transform canvas)
+        {
+            if (Object.FindFirstObjectByType<ScoreUI>() != null) return; // 이미 배치됨
+
+            var scoreGo = CreateText("ScoreText", canvas, "SCORE 0", TextAnchor.UpperLeft);
+            var rect = scoreGo.GetComponent<RectTransform>();
+            rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f); // 좌측 상단
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(40f, -30f);
+            rect.sizeDelta = new Vector2(420f, 48f);
+            scoreGo.fontSize = 36;
+            scoreGo.color = Color.white;
+
+            var ui = scoreGo.gameObject.AddComponent<ScoreUI>();
+            SetObjectField(ui, "scoreText", scoreGo);
         }
 
         // ---------------- UI 생성 헬퍼 ----------------

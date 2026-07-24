@@ -16,6 +16,8 @@ namespace ContextStage
         [SerializeField, TextArea(2, 4)] string description = "";
         [SerializeField, Range(0f, 100f)] float favorableHypeMin;
         [SerializeField, Range(0f, 100f)] float favorableHypeMax = 100f;
+        [SerializeField, Tooltip("이 카드를 냈을 때 들어오는 기본 점수(임시값). 실제 획득 점수 = baseScore × 현재 열기 배율")]
+        int baseScore = 100;
         [SerializeField] Sprite artwork;
         [SerializeField] Color prototypeColor = new Color(0.25f, 0.3f, 0.4f);
 
@@ -24,6 +26,7 @@ namespace ContextStage
         public string Description => description;
         public float FavorableHypeMin => Mathf.Min(favorableHypeMin, favorableHypeMax);
         public float FavorableHypeMax => Mathf.Max(favorableHypeMin, favorableHypeMax);
+        public int BaseScore => baseScore;
         public Sprite Artwork => artwork;
         public Color PrototypeColor => prototypeColor;
 

@@ -1,8 +1,28 @@
+using System.Collections.Generic;
 using GameJamKit; // HypeJudgement enum 이 킷 GameEvents.cs 에 있다 (킷 README "변경 이력" 참조)
 using UnityEngine;
 
 namespace ContextStage
 {
+    /// <summary>
+    /// 열기(호응도) 구간별 점수 배율 한 단계. 열기가 이 비율 이상이면 이 배율을 쓴다.
+    /// 사운드/관객과 같은 티어 판정(HypeTierUtil)을 재사용하기 위해 IHypeTier 를 구현한다.
+    /// </summary>
+    [System.Serializable]
+    public class HeatMultiplierTier : IHypeTier
+    {
+        [Tooltip("표시용 이름 (낮음/중간/높음/MAX 등)")]
+        public string label = "Tier";
+
+        [Range(0f, 1f), Tooltip("열기 비율(0~1)이 이 값 이상이면 이 단계")]
+        public float minNormalized;
+
+        [Tooltip("이 단계에서 카드 점수에 곱해지는 배율")]
+        public float multiplier = 1f;
+
+        public float MinNormalized => minNormalized;
+    }
+
     /// <summary>
     /// 호응도 밸런스 수치 모음. (기획서 "최종 권장안" 기준값이 기본값으로 들어있다)
     ///
@@ -36,12 +56,15 @@ namespace ContextStage
         [Tooltip("RiskMiss: 위험 카드(모쉬핏 등)의 완전 오판")]
         public float riskMissDelta = -25f;
 
-        [Header("앙코르 (100 도달 보상)")]
-        [Tooltip("앙코르 발동 후 호응도가 이 값으로 변경된다 (0이나 30으로 떨어뜨리면 보상감이 사라짐)")]
-        public float encoreResetValue = 70f;
-
-        [Tooltip("앙코르 직후 감소가 멈추는 시간(초). 플레이어가 새 카드를 확인할 여유")]
-        public float encoreDecayPauseDuration = 1.5f;
+        [Header("점수 배율 (열기 구간별)")]
+        [Tooltip("열기 비율이 높을수록 큰 배율. minNormalized 오름차순으로 넣는다. (기획: 낮음 ×1 / 중간 ×2 / 높음 ×3 / MAX ×5)")]
+        public List<HeatMultiplierTier> multiplierTiers = new List<HeatMultiplierTier>
+        {
+            new HeatMultiplierTier { label = "낮음", minNormalized = 0.00f, multiplier = 1f },
+            new HeatMultiplierTier { label = "중간", minNormalized = 0.34f, multiplier = 2f },
+            new HeatMultiplierTier { label = "높음", minNormalized = 0.67f, multiplier = 3f },
+            new HeatMultiplierTier { label = "MAX",  minNormalized = 0.90f, multiplier = 5f },
+        };
 
         /// <summary>판정 → 증감량 변환. 카드 담당은 이 함수를 직접 쓸 일 없음 (HypeSystem 이 내부에서 사용).</summary>
         public float GetDelta(HypeJudgement judgement)
@@ -54,6 +77,17 @@ namespace ContextStage
                 case HypeJudgement.RiskMiss: return riskMissDelta;
                 default:                     return 0f;
             }
+        }
+
+        /// <summary>
+        /// 현재 열기 비율(0~1)에 해당하는 점수 배율. 사운드/관객과 같은 HypeTierUtil 규칙으로 단계를 나눈다.
+        /// 티어가 비어 있으면 배율 1(원점수 그대로).
+        /// </summary>
+        public float GetMultiplier(float normalized)
+        {
+            if (multiplierTiers == null || multiplierTiers.Count == 0) return 1f;
+            int index = HypeTierUtil.Resolve(multiplierTiers, Mathf.Clamp01(normalized));
+            return index >= 0 ? multiplierTiers[index].multiplier : 1f;
         }
     }
 }
