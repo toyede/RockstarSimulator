@@ -12,20 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5142b73202e52dd41899bd7220263f2e, type: 3}
   m_Name: DemoShockwaveDistortion
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.DistortionProfile
+  effectType: 0
   shape: 2
-  mode: 1
   feather: 0.08
   cornerRadius: 0.25
   ringRadius: 0.62
-  ringWidth: 0.14
+  ringWidth: 0.18
   customMask: {fileID: 0}
-  strength: 0.025
+  mode: 1
+  strength: 0.045
   frequency: 16
   speed: 2.5
   noiseScale: 7
   direction: {x: 1, y: 0}
-  duration: 0.8
-  strengthOverLifetime:
+  chromaticOffset: 0.012
+  pixelSize: 12
+  tintColor: {r: 1, g: 1, b: 1, a: 1}
+  tintAmount: 0.65
+  duration: 1.2
+  intensityOverLifetime:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3

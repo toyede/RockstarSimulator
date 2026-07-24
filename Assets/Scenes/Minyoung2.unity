@@ -446,13 +446,13 @@ MonoBehaviour:
   m_ComponentVersion: 3
   m_LightType: 3
   m_BlendStyleIndex: 0
-  m_FalloffIntensity: 0.6
+  m_FalloffIntensity: 0.95
   m_Color: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 1}
   m_Intensity: 0.789975
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
   m_ApplyToSortingLayers: 00000000
-  m_LightCookieSprite: {fileID: 0}
+  m_LightCookieSprite: {fileID: 21300000, guid: c5b13fa47a578214bb168fed2d664580, type: 3}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
   m_AlphaBlendOnOverlap: 0
@@ -462,8 +462,8 @@ MonoBehaviour:
   m_UseNormalMap: 0
   m_ShadowsEnabled: 1
   m_ShadowIntensity: 0.75
-  m_ShadowSoftness: 0.3
-  m_ShadowSoftnessFalloffIntensity: 0.5
+  m_ShadowSoftness: 0.05
+  m_ShadowSoftnessFalloffIntensity: 0.05
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
@@ -1480,6 +1480,21 @@ MonoBehaviour:
   globalLight: {fileID: 1815104787}
   leftStageLight: {fileID: 2111985209}
   rightStageLight: {fileID: 212168675}
+  usePixelLightStyle: 1
+  pixelLightCookie: {fileID: 21300000, guid: c5b13fa47a578214bb168fed2d664580, type: 3}
+  pixelLightFalloff: 0.95
+  pixelShadowSoftness: 0.05
+  usePixelSpotlightShader: 1
+  spotlightPixelsPerUnit: 100
+  spotlightBandCount: 6
+  spotlightDitherStrength: 0.18
+  pixelSpotlightIntensity: 0.06
+  smoothLightContribution: 0.15
+  animateSpotlights: 1
+  spotlightSweepDegrees: 15
+  spotlightSweepSpeed: 0.22
+  spotlightOuterAngleRange: {x: 36, y: 50}
+  spotlightInnerAngleRatio: 0.55
   chill:
     color: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 1}
     globalIntensity: 0.55
@@ -2908,7 +2923,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1658765501
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4064,13 +4079,13 @@ MonoBehaviour:
   m_ComponentVersion: 3
   m_LightType: 3
   m_BlendStyleIndex: 0
-  m_FalloffIntensity: 0.6
+  m_FalloffIntensity: 0.95
   m_Color: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 1}
   m_Intensity: 0.7514174
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
   m_ApplyToSortingLayers: 00000000
-  m_LightCookieSprite: {fileID: 0}
+  m_LightCookieSprite: {fileID: 21300000, guid: c5b13fa47a578214bb168fed2d664580, type: 3}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
   m_AlphaBlendOnOverlap: 0
@@ -4080,8 +4095,8 @@ MonoBehaviour:
   m_UseNormalMap: 0
   m_ShadowsEnabled: 1
   m_ShadowIntensity: 0.75
-  m_ShadowSoftness: 0.3
-  m_ShadowSoftnessFalloffIntensity: 0.5
+  m_ShadowSoftness: 0.05
+  m_ShadowSoftnessFalloffIntensity: 0.05
   m_ShadowVolumeIntensityEnabled: 0
   m_ShadowVolumeIntensity: 0.75
   m_LocalBounds:
