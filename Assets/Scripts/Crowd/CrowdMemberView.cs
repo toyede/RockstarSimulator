@@ -35,11 +35,15 @@ namespace ContextStage
         float _speedMul = 1f;// 개체별 속도 배율
         float _flip = 1f;    // 좌우 반전
 
+        /// <summary>프레임 애니메이션 재생기. 상태에 클립이 없으면 놀고 있는다.</summary>
+        readonly SpriteAnimationPlayer _player = new SpriteAnimationPlayer();
+
         void Awake() => Initialize();
 
         void Initialize()
         {
             if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            _player.Bind(_renderer);
             _basePosition = transform.localPosition;
 
             // 같은 seed 면 항상 같은 개성이 나오도록 결정적으로 계산한다 (재시작해도 배치가 튀지 않음)
@@ -105,6 +109,16 @@ namespace ContextStage
         {
             _renderer.color = tier.tint;
 
+            // (1) 애니메이션 클립이 있으면 그걸 재생한다 (관객마다 다른 variant 를 배정받는다)
+            var clip = tier.GetAnimationVariant(variantSeed);
+            if (clip != null && clip.IsValid)
+            {
+                _player.Play(clip, restart: true);
+                return;
+            }
+
+            // (2) 없으면 기존처럼 정지 이미지 한 장
+            _player.Stop();
             if (tier.sprites == null || tier.sprites.Length == 0) return;
 
             // 프레임 순환 모드가 아니면 개체마다 세트의 한 장을 고정으로 나눠 갖는다
@@ -116,6 +130,9 @@ namespace ContextStage
 
         void Update()
         {
+            // 프레임 애니메이션은 개체별 속도 배율을 그대로 받아 리듬이 서로 어긋난다
+            _player.Tick(Time.deltaTime * _speedMul);
+
             if (_to == null) return;
 
             if (_blend < 1f) _blend = Mathf.Min(1f, _blend + Time.deltaTime * _blendSpeed);
@@ -167,9 +184,14 @@ namespace ContextStage
             UpdateSpriteCycle(t);
         }
 
-        /// <summary>스프라이트 세트를 프레임 애니메이션으로 쓰는 경우(spriteCycleFps > 0)만 동작.</summary>
+        /// <summary>
+        /// [레거시] sprites 세트를 프레임처럼 순환시키는 간이 모드(spriteCycleFps > 0).
+        /// animationVariants 를 쓰면 이 경로는 타지 않는다.
+        /// </summary>
         void UpdateSpriteCycle(float t)
         {
+            if (_player.IsPlaying) return; // 정식 클립이 재생 중이면 손대지 않는다
+
             float fps = _to.spriteCycleFps;
             if (fps <= 0f || _toTier?.sprites == null || _toTier.sprites.Length == 0) return;
 

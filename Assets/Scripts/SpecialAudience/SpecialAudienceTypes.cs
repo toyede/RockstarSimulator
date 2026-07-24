@@ -1,0 +1,36 @@
+namespace ContextStage
+{
+    // 특별 관객이 요구하는 반응 타입은 카드 시스템의 HeatStage(Chill/Singalong/Mosh)를 그대로 쓴다.
+    // (정의 위치: Assets/Scripts/Cards/CardDefinition.cs)
+    // 같은 의미의 enum 을 두 벌 두면 변환 코드와 불일치 버그가 생기므로 재사용한다.
+
+    /// <summary>특별 관객 요청이 끝난 이유. 하나의 종료 이벤트로 묶어 처리한다.</summary>
+    public enum SpecialAudienceEndReason
+    {
+        SpecialHit,       // 요구와 일치하는 타입이 들어와 성공
+        Expired,          // 제한시간 초과
+        ReplacedByDebug,  // P 키 디버그 등장으로 교체됨
+        StageEnded        // 공연 종료·시스템 정지
+    }
+
+    /// <summary>
+    /// Special Hit 성공 보상. 특별 관객 시스템은 이 값을 <b>직접 적용하지 않는다.</b>
+    /// 점수·열기 담당이 OnSpecialHit 이벤트(또는 EventBus 의 SpecialHitLanded)를 받아 적용한다.
+    /// </summary>
+    public readonly struct SpecialHitReward
+    {
+        /// <summary>Special Hit 기본 점수 (열기 배율 적용 전).</summary>
+        public int BonusBaseScore { get; }
+
+        /// <summary>Special Hit 추가 열기(호응도).</summary>
+        public float BonusHeat { get; }
+
+        public SpecialHitReward(int bonusBaseScore, float bonusHeat)
+        {
+            BonusBaseScore = bonusBaseScore;
+            BonusHeat = bonusHeat;
+        }
+
+        public override string ToString() => $"Score+{BonusBaseScore}, Heat+{BonusHeat}";
+    }
+}

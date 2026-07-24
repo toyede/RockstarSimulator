@@ -43,6 +43,13 @@ namespace ContextStage
         [Tooltip("카드 선택(관찰) 중 초당 감소량")]
         public float decayPerSecond = 1f;
 
+        [Header("열기 단계")]
+        [Range(0f, 100f), Tooltip("Singalong 단계가 시작되는 열기")]
+        public float singalongMinHype = 50f;
+
+        [Range(0f, 100f), Tooltip("Mosh 단계가 시작되는 열기")]
+        public float moshMinHype = 80f;
+
         [Header("판정별 증감 (감소는 음수로 입력)")]
         [Tooltip("Perfect: 관객 맥락을 정확히 읽음")]
         public float perfectDelta = 30f;
@@ -57,14 +64,22 @@ namespace ContextStage
         public float riskMissDelta = -25f;
 
         [Header("점수 배율 (열기 구간별)")]
-        [Tooltip("열기 비율이 높을수록 큰 배율. minNormalized 오름차순으로 넣는다. (기획: 낮음 ×1 / 중간 ×2 / 높음 ×3 / MAX ×5)")]
+        [Tooltip("열기 비율이 높을수록 큰 배율. minNormalized 오름차순으로 넣는다.")]
         public List<HeatMultiplierTier> multiplierTiers = new List<HeatMultiplierTier>
         {
-            new HeatMultiplierTier { label = "낮음", minNormalized = 0.00f, multiplier = 1f },
-            new HeatMultiplierTier { label = "중간", minNormalized = 0.34f, multiplier = 2f },
-            new HeatMultiplierTier { label = "높음", minNormalized = 0.67f, multiplier = 3f },
-            new HeatMultiplierTier { label = "MAX",  minNormalized = 0.90f, multiplier = 5f },
+            new HeatMultiplierTier { label = "Chill", minNormalized = 0.00f, multiplier = 1f },
+            new HeatMultiplierTier { label = "Singalong", minNormalized = 0.50f, multiplier = 3f },
+            new HeatMultiplierTier { label = "Mosh", minNormalized = 0.80f, multiplier = 5f },
         };
+
+        public HeatStage ResolveStage(float rawHype)
+        {
+            float singalong = Mathf.Min(singalongMinHype, moshMinHype);
+            float mosh = Mathf.Max(singalongMinHype, moshMinHype);
+            if (rawHype >= mosh) return HeatStage.Mosh;
+            if (rawHype >= singalong) return HeatStage.Singalong;
+            return HeatStage.Chill;
+        }
 
         /// <summary>판정 → 증감량 변환. 카드 담당은 이 함수를 직접 쓸 일 없음 (HypeSystem 이 내부에서 사용).</summary>
         public float GetDelta(HypeJudgement judgement)

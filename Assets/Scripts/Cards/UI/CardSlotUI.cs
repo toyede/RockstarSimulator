@@ -3,63 +3,82 @@ using UnityEngine.UI;
 
 namespace ContextStage
 {
-    /// <summary>카드 한 장을 단색 네모와 텍스트로 표시하는 프로토타입 슬롯.</summary>
+    /// <summary>카드 프리팹의 외형을 CardDefinition 데이터로 갱신한다.</summary>
+    [DisallowMultipleComponent]
     public sealed class CardSlotUI : MonoBehaviour
     {
         [SerializeField] Image background;
+        [SerializeField] Image artwork;
         [SerializeField] Text numberText;
         [SerializeField] Text titleText;
-        [SerializeField] Text deltaText;
+        [SerializeField] Text descriptionText;
+        [SerializeField] Text roleText;
 
         void Awake()
         {
             var rectTransform = transform as RectTransform;
-            if (rectTransform != null) rectTransform.sizeDelta = new Vector2(150f, 225f);
+            if (rectTransform != null) rectTransform.sizeDelta = new Vector2(180f, 250f);
 
             var layout = GetComponent<LayoutElement>();
             if (layout != null)
             {
-                layout.preferredWidth = 150f;
-                layout.preferredHeight = 225f;
+                layout.preferredWidth = 180f;
+                layout.preferredHeight = 250f;
             }
 
-            ConfigureText(numberText, 16, 22);
-            ConfigureText(titleText, 16, 22);
-            ConfigureText(deltaText, 14, 20);
+            ConfigureText(numberText, 18, 24);
+            ConfigureText(titleText, 18, 26);
+            ConfigureText(descriptionText, 13, 18);
+            ConfigureText(roleText, 12, 16);
         }
 
-        public void Configure(Image backgroundImage, Text numberLabel, Text titleLabel, Text deltaLabel)
+        public void Configure(
+            Image backgroundImage,
+            Image artworkImage,
+            Text numberLabel,
+            Text titleLabel,
+            Text descriptionLabel,
+            Text roleLabel)
         {
             background = backgroundImage;
+            artwork = artworkImage;
             numberText = numberLabel;
             titleText = titleLabel;
-            deltaText = deltaLabel;
+            descriptionText = descriptionLabel;
+            roleText = roleLabel;
         }
 
-        public void Bind(CardData card, int handIndex)
+        public void Bind(CardDefinition card, int handIndex)
         {
             if (card == null)
             {
-                Hide();
+                gameObject.SetActive(false);
                 return;
             }
 
             gameObject.SetActive(true);
-            if (background != null)
+            if (background != null) background.color = card.CardColor;
+            if (artwork != null)
             {
-                bool hasArtwork = card.Artwork != null;
-                background.sprite = card.Artwork;
-                background.color = hasArtwork ? Color.white : card.PrototypeColor;
-                background.type = Image.Type.Simple;
-                background.preserveAspect = hasArtwork;
+                artwork.sprite = card.Artwork;
+                artwork.enabled = card.Artwork != null;
+                artwork.color = Color.white;
+                artwork.preserveAspect = true;
             }
             if (numberText != null) numberText.text = (handIndex + 1).ToString();
             if (titleText != null) titleText.text = card.DisplayName;
-            if (deltaText != null)
-                deltaText.text = $"적정 {card.FavorableHypeMin:0}-{card.FavorableHypeMax:0}";
+            if (descriptionText != null) descriptionText.text = card.Description;
+            if (roleText != null) roleText.text = GetRoleLabel(card);
         }
 
-        public void Hide() => gameObject.SetActive(false);
+        static string GetRoleLabel(CardDefinition card)
+        {
+            if (card.Role == CardRole.Utility)
+                return card.UtilityEffect == UtilityCardEffect.Draw ? "UTILITY · DRAW" : "UTILITY · REROLL";
+
+            string stage = card.TargetStage.ToString().ToUpperInvariant();
+            return card.Role == CardRole.Special ? $"SPECIAL · {stage}" : stage;
+        }
 
         static void ConfigureText(Text text, int minSize, int maxSize)
         {

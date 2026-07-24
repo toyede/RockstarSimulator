@@ -545,6 +545,7 @@ Tools/GameJamKit/Export .unitypackage
 | 2026-07-24 | Claude | `Core/GameEvents.cs` | 관객 앰비언스 이벤트 `CrowdAmbienceTierChanged` 추가. (발행 주체는 `Assets/Scripts/Audio/CrowdAmbienceSystem.cs`. 앰비언스는 킷 BGM 채널을 쓰지 않고 자체 AudioSource 2개로 크로스페이드하므로 `AudioManager` 는 수정하지 않았다) |
 
 | 2026-07-24 | Claude | `Core/GameEvents.cs` | 관객 비주얼 이벤트 `CrowdMoodChanged` 추가. (발행 주체는 `Assets/Scripts/Crowd/CrowdMoodDirector.cs`) |
+| 2026-07-24 | Claude | `Core/GameEvents.cs` | 특별 관객 이벤트 `SpecialAudienceSpawned`, `SpecialAudienceEnded`, `SpecialHitLanded` 추가. (발행 주체는 `Assets/Scripts/SpecialAudience/SpecialAudienceManager.cs`. 타입은 `ContextStage` 네임스페이스라 정규화해서 참조한다) |
 | 2026-07-24 | Codex | `Core/GameEvents.cs` | 병합 중 누락된 `CrowdAmbienceTierChanged`의 닫는 중괄호를 복구해 카드 이벤트 타입들을 `GameJamKit` 네임스페이스 직속으로 되돌림. |
 | 2026-07-24 | Claude | `Core/GameEvents.cs` | 열기(점수 배율) 전환: `CardSelected` 구조체에 `BaseScore`(int)·`Multiplier`(float) 필드 추가. 카드 낼 때의 열기 배율을 실어 점수 담당(`Assets/Scripts/Score/PerformanceScoreSystem.cs`)이 구독해 `GameManager.AddScore` 로 누적한다. |
 
