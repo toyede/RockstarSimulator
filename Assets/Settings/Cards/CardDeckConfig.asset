@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c97e28ad8640ae468015dc1fc09299a, type: 3}
+  m_Name: CardDeckConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CardDeckConfig
+  cards:
+  - {fileID: 11400000, guid: cd46bdce8aefbe84ba5c363addbbf146, type: 2}
+  - {fileID: 11400000, guid: 4b164a52fc01fcb4d8fc222a5fcd8295, type: 2}
+  - {fileID: 11400000, guid: 2552987b4b1d2e74f85e17415f4099ee, type: 2}
+  - {fileID: 11400000, guid: 0662a70b970d9dd4ca4d6f08714f1ad8, type: 2}
+  - {fileID: 11400000, guid: cd46bdce8aefbe84ba5c363addbbf146, type: 2}
+  - {fileID: 11400000, guid: 4b164a52fc01fcb4d8fc222a5fcd8295, type: 2}
+  - {fileID: 11400000, guid: 2552987b4b1d2e74f85e17415f4099ee, type: 2}
+  - {fileID: 11400000, guid: 0662a70b970d9dd4ca4d6f08714f1ad8, type: 2}
+  - {fileID: 11400000, guid: cd46bdce8aefbe84ba5c363addbbf146, type: 2}
+  - {fileID: 11400000, guid: 4b164a52fc01fcb4d8fc222a5fcd8295, type: 2}
+  - {fileID: 11400000, guid: 2552987b4b1d2e74f85e17415f4099ee, type: 2}
+  - {fileID: 11400000, guid: 0662a70b970d9dd4ca4d6f08714f1ad8, type: 2}
+  baseHandSize: 4
+  shuffleOnStart: 1

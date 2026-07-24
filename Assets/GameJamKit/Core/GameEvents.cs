@@ -93,4 +93,31 @@ namespace GameJamKit
     /// 연출 담당: 조명 소등·야유 등 실패 연출을 여기에 붙인다.
     /// </summary>
     public struct HypeDepleted { }
+
+    /// <summary>손패 구성이 바뀐 뒤 발행. 카드 UI가 구독한다.</summary>
+    public struct HandChanged
+    {
+        public int Count;
+        public int BaseHandSize;
+        public int BonusCardCount;
+    }
+
+    /// <summary>덱에서 카드가 손패로 들어올 때 발행.</summary>
+    public struct CardDrawn
+    {
+        public string CardId;
+        public string DisplayName;
+        public int HandIndex;
+        public bool IsEncoreBonus;
+    }
+
+    /// <summary>숫자키로 카드가 선택되어 호응도 판정이 적용될 때 발행.</summary>
+    public struct CardSelected
+    {
+        public string CardId;
+        public string DisplayName;
+        public int HandIndex;
+        public HypeJudgement Judgement;
+        public float Delta;
+    }
 }

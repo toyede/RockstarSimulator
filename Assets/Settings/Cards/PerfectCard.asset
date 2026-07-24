@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dcb0440302c22a40a267f92ce4b3c39, type: 3}
+  m_Name: PerfectCard
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CardData
+  id: quiet_verse
+  displayName: Quiet Verse
+  description: "\uCC28\uBD84\uD55C \uAD00\uAC1D\uC5D0\uAC8C \uBD84\uC704\uAE30\uB97C
+    \uC313\uC544 \uC62C\uB9B0\uB2E4."
+  favorableHypeMin: 0
+  favorableHypeMax: 35
+  prototypeColor: {r: 0.15, g: 0.55, b: 0.35, a: 1}

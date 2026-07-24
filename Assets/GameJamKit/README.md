@@ -542,3 +542,4 @@ Tools/GameJamKit/Export .unitypackage
 | 날짜 | 작업자 | 파일 | 내용 |
 |---|---|---|---|
 | 2026-07-24 | Claude | `Core/GameEvents.cs` | CONTEXT STAGE 호응도 이벤트 추가 — `HypeJudgement` enum, `HypeChanged`, `HypeJudgementApplied`, `EncoreTriggered`, `HypeDepleted`. (파일 상단 안내대로 프로젝트 고유 이벤트를 이 파일에 모음. 발행 주체는 `Assets/Scripts/Hype/HypeSystem.cs`) |
+| 2026-07-24 | Codex | `Core/GameEvents.cs` | 카드 드로우/선택 UI 연동 이벤트 추가 — `HandChanged`, `CardDrawn`, `CardSelected`. 발행 주체는 `Assets/Scripts/Cards/CardSystem.cs`. |
