@@ -72,8 +72,8 @@ namespace ContextStage
                     msg = $"[디버그] 1:Perfect  2:Good  3:Miss  4:RiskMiss{paused}";
                     break;
                 case GameState.GameOver:
-                    msg = "관객이 공연장을 떠났습니다...  [디버그] R : 재시작";
-                    break;
+                    // 게임오버 안내는 GameOverPopup(중앙 팝업)이 담당하므로 여기서는 표시하지 않는다
+                    return;
                 default:
                     return;
             }
