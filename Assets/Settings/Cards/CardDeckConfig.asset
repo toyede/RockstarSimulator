@@ -12,19 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c97e28ad8640ae468015dc1fc09299a, type: 3}
   m_Name: CardDeckConfig
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CardDeckConfig
-  cards:
-  - {fileID: 11400000, guid: cd46bdce8aefbe84ba5c363addbbf146, type: 2}
-  - {fileID: 11400000, guid: 4b164a52fc01fcb4d8fc222a5fcd8295, type: 2}
-  - {fileID: 11400000, guid: 2552987b4b1d2e74f85e17415f4099ee, type: 2}
-  - {fileID: 11400000, guid: 0662a70b970d9dd4ca4d6f08714f1ad8, type: 2}
-  - {fileID: 11400000, guid: cd46bdce8aefbe84ba5c363addbbf146, type: 2}
-  - {fileID: 11400000, guid: 4b164a52fc01fcb4d8fc222a5fcd8295, type: 2}
-  - {fileID: 11400000, guid: 2552987b4b1d2e74f85e17415f4099ee, type: 2}
-  - {fileID: 11400000, guid: 0662a70b970d9dd4ca4d6f08714f1ad8, type: 2}
-  - {fileID: 11400000, guid: cd46bdce8aefbe84ba5c363addbbf146, type: 2}
-  - {fileID: 11400000, guid: 4b164a52fc01fcb4d8fc222a5fcd8295, type: 2}
-  - {fileID: 11400000, guid: 2552987b4b1d2e74f85e17415f4099ee, type: 2}
-  - {fileID: 11400000, guid: 0662a70b970d9dd4ca4d6f08714f1ad8, type: 2}
+  cardPool:
+  - prefab: {fileID: 5929231973239401959, guid: 59e51543dfbd0c941ae8b6683be23c10, type: 3}
+    weight: 1
+  - prefab: {fileID: 4085938393393045254, guid: 8fd713d72a3534047844dc815529cc7d, type: 3}
+    weight: 1
+  - prefab: {fileID: 2551996791545739517, guid: 3e469429d6f460947ad917bed2c80c48, type: 3}
+    weight: 1
+  - prefab: {fileID: 646157537038137547, guid: 306f84097534c5741bb43b617e512a56, type: 3}
+    weight: 1
+  - prefab: {fileID: 3573592530458964408, guid: 5d435464547ef984680797d43fb6f330, type: 3}
+    weight: 1
+  - prefab: {fileID: 8924249353746418271, guid: 2808f621a042e6f46b9bd862d07d8cfd, type: 3}
+    weight: 1
+  - prefab: {fileID: 7367045592451404702, guid: 95559096d82545942969af721b09b38d, type: 3}
+    weight: 1
+  - prefab: {fileID: 8033426421027984200, guid: 157aaabf7eeda9b44866321b7f3cbbba, type: 3}
+    weight: 1
+  generatedDeckSize: 10
+  preparedDeckCount: 2
   minimumHandSize: 3
-  maximumHandSize: 9
-  shuffleOnStart: 1
+  maximumHandSize: 4
