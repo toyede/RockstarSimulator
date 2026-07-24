@@ -1,5 +1,6 @@
 using GameJamKit;
 using UnityEngine;
+using UnityEngine.EventSystems;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -26,12 +27,21 @@ namespace ContextStage
             var gm = GameManager.Instance;
             if (gm == null || gm.State != GameState.Playing) return;
 
+            // UI 입력 필드가 포커스된 동안은 디버그 키 입력을 무시한다.
+            if (IsUiInputFocused()) return;
+
 #if ENABLE_INPUT_SYSTEM
             var kb = Keyboard.current;
             if (kb != null && kb.endKey.wasPressedThisFrame) gm.GameOver();
 #else
             if (Input.GetKeyDown(KeyCode.End)) gm.GameOver();
 #endif
+        }
+
+        static bool IsUiInputFocused()
+        {
+            var es = EventSystem.current;
+            return es != null && es.currentSelectedGameObject != null;
         }
 
         void OnGUI()

@@ -1,5 +1,6 @@
 using GameJamKit;
 using UnityEngine;
+using UnityEngine.EventSystems;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -27,6 +28,10 @@ namespace ContextStage
         {
             var gm = GameManager.Instance;
             if (gm == null) return;
+
+            // 이름 입력창 등 UI 입력 필드가 포커스된 동안은 디버그 키 입력을 무시한다.
+            // (리더보드 이름 입력 중 'r'을 쳤을 뿐인데 R 키 핫키가 반응해 씬이 재시작되는 문제 방지)
+            if (IsUiInputFocused()) return;
 
 #if ENABLE_INPUT_SYSTEM
             var kb = Keyboard.current;
@@ -60,6 +65,12 @@ namespace ContextStage
             }
 
 #endif
+        }
+
+        static bool IsUiInputFocused()
+        {
+            var es = EventSystem.current;
+            return es != null && es.currentSelectedGameObject != null;
         }
 
         // 그레이박스 단계 임시 안내. 정식 UI 가 생기면 showOnScreenHelp 를 끈다.
