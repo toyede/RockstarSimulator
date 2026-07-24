@@ -11,6 +11,23 @@ namespace ContextStage
         [SerializeField] Text titleText;
         [SerializeField] Text deltaText;
 
+        void Awake()
+        {
+            var rectTransform = transform as RectTransform;
+            if (rectTransform != null) rectTransform.sizeDelta = new Vector2(150f, 225f);
+
+            var layout = GetComponent<LayoutElement>();
+            if (layout != null)
+            {
+                layout.preferredWidth = 150f;
+                layout.preferredHeight = 225f;
+            }
+
+            ConfigureText(numberText, 16, 22);
+            ConfigureText(titleText, 16, 22);
+            ConfigureText(deltaText, 14, 20);
+        }
+
         public void Configure(Image backgroundImage, Text numberLabel, Text titleLabel, Text deltaLabel)
         {
             background = backgroundImage;
@@ -28,7 +45,14 @@ namespace ContextStage
             }
 
             gameObject.SetActive(true);
-            if (background != null) background.color = card.PrototypeColor;
+            if (background != null)
+            {
+                bool hasArtwork = card.Artwork != null;
+                background.sprite = card.Artwork;
+                background.color = hasArtwork ? Color.white : card.PrototypeColor;
+                background.type = Image.Type.Simple;
+                background.preserveAspect = hasArtwork;
+            }
             if (numberText != null) numberText.text = (handIndex + 1).ToString();
             if (titleText != null) titleText.text = card.DisplayName;
             if (deltaText != null)
@@ -36,5 +60,20 @@ namespace ContextStage
         }
 
         public void Hide() => gameObject.SetActive(false);
+
+        static void ConfigureText(Text text, int minSize, int maxSize)
+        {
+            if (text == null) return;
+
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = minSize;
+            text.resizeTextMaxSize = maxSize;
+
+            var outline = text.GetComponent<Outline>();
+            if (outline == null) outline = text.gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.9f);
+            outline.effectDistance = new Vector2(1f, -1f);
+            outline.useGraphicAlpha = true;
+        }
     }
 }
