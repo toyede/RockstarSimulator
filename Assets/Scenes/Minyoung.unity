@@ -1732,6 +1732,8 @@ GameObject:
   - component: {fileID: 938531268}
   - component: {fileID: 938531267}
   - component: {fileID: 938531266}
+  - component: {fileID: 938531270}
+  - component: {fileID: 938531269}
   m_Layer: 0
   m_Name: '[Crowd]'
   m_TagString: Untagged
@@ -1762,6 +1764,10 @@ MonoBehaviour:
   baseSortingOrder: 0
   seed: 12345
   spawnOnStart: 1
+  compositionManager: {fileID: 938531270}
+  chillPrefab: {fileID: 5891243429165091210, guid: 0b0b89f7ded894d47bfce32be578e2ee, type: 3}
+  singalongPrefab: {fileID: 8242818790128268861, guid: f8909efea2943634c93ff168daee5621, type: 3}
+  moshPrefab: {fileID: 7969007770598057871, guid: 3b8810c02a01f4c42979a57769c455f9, type: 3}
 --- !u!114 &938531267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1791,6 +1797,62 @@ Transform:
   - {fileID: 95571058}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &938531269
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 938531265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37f8d205f46199d4b8dff3bc6fe798d7, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CrowdCompositionDebugView
+  manager: {fileID: 0}
+  showDebugPanel: 1
+  position: {x: 12, y: 12}
+--- !u!114 &938531270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 938531265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fbc5b251ec836742a5030d383494d0c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CrowdCompositionManager
+  expectedCrowdSize: 21
+  initialPresetId: balanced
+  presets:
+  - id: balanced
+    displayName: Balanced
+    composition:
+      chillCount: 7
+      singalongCount: 7
+      moshCount: 7
+  - id: formal
+    displayName: Formal Night
+    composition:
+      chillCount: 13
+      singalongCount: 5
+      moshCount: 3
+  - id: britpop
+    displayName: Britpop Wave
+    composition:
+      chillCount: 4
+      singalongCount: 13
+      moshCount: 4
+  - id: hardcore
+    displayName: Hardcore Surge
+    composition:
+      chillCount: 3
+      singalongCount: 5
+      moshCount: 13
+  enableDebugInput: 1
+  enableDebugLogs: 1
 --- !u!1 &996349273
 GameObject:
   m_ObjectHideFlags: 0

@@ -72,7 +72,6 @@ MonoBehaviour:
     sprites:
     - {fileID: -192967411525127944, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
     - {fileID: -7248120004535117324, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
-    - {fileID: 7948055718385230587, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
     - {fileID: 4935785543105481709, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
     - {fileID: -7997924058571844942, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
     - {fileID: -2599655201805745128, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}

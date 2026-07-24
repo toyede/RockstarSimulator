@@ -113,6 +113,7 @@ namespace ContextStage.EditorTools
         {
             var sprites = AssetDatabase.LoadAllAssetRepresentationsAtPath(path)
                 .OfType<Sprite>()
+                .Where(sprite => sprite.rect.width >= 32f && sprite.rect.height >= 32f)
                 .ToList();
 
             sprites.Sort((a, b) => TrailingNumber(a.name).CompareTo(TrailingNumber(b.name)));

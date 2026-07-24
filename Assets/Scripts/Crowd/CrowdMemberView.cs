@@ -23,6 +23,14 @@ namespace ContextStage
         [SerializeField, Tooltip("기본 크기 (스프라이트가 커서 보통 1보다 작다). 상태별 배율이 여기에 곱해진다")]
         float baseScale = 1f;
 
+        [Header("Audience Preference")]
+        [SerializeField] CrowdPreference preference = CrowdPreference.Mosh;
+
+        [SerializeField, Tooltip(
+            "Off for preference prefabs: keeps the prefab artwork while still applying hype motion. " +
+            "On preserves the legacy low/middle/high sprite swapping.")]
+        bool useMoodSprites = true;
+
         SpriteRenderer _renderer;
         Vector3 _basePosition;
 
@@ -49,6 +57,13 @@ namespace ContextStage
 
         /// <summary>이 관객이 속한 줄의 정렬 순서.</summary>
         public int SortingOrder => _renderer != null ? _renderer.sortingOrder : 0;
+        public CrowdPreference Preference => preference;
+
+        public void ConfigureIdentity(CrowdPreference audiencePreference, bool preservePrefabArtwork)
+        {
+            preference = audiencePreference;
+            useMoodSprites = !preservePrefabArtwork;
+        }
 
         void Awake() => Initialize();
 
@@ -77,8 +92,14 @@ namespace ContextStage
         /// </summary>
         public void Setup(int seed, float scale, int sortingOrder)
         {
+            Setup(seed, scale, sortingOrder, preference);
+        }
+
+        public void Setup(int seed, float scale, int sortingOrder, CrowdPreference audiencePreference)
+        {
             variantSeed = seed;
             baseScale = scale;
+            preference = audiencePreference;
             Initialize();
             _renderer.sortingOrder = sortingOrder;
 
@@ -119,6 +140,14 @@ namespace ContextStage
 
         void ApplySprite(CrowdMoodTier tier, int index)
         {
+            // Preference prefabs carry their own artwork and identity color.
+            // Hype still controls scale and motion, but must not replace either.
+            if (!useMoodSprites)
+            {
+                _player.Stop();
+                return;
+            }
+
             _renderer.color = tier.tint;
 
             // (1) 애니메이션 클립이 있으면 그걸 재생한다 (관객마다 다른 variant 를 배정받는다)
@@ -202,6 +231,7 @@ namespace ContextStage
         /// </summary>
         void UpdateSpriteCycle(float t)
         {
+            if (!useMoodSprites) return;
             if (_player.IsPlaying) return; // 정식 클립이 재생 중이면 손대지 않는다
 
             float fps = _to.spriteCycleFps;

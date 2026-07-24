@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using GameJamKit;
 using UnityEngine;
 
 namespace ContextStage
@@ -43,12 +44,29 @@ namespace ContextStage
         [SerializeField, Tooltip("Play 시작과 동시에 배치할지")]
         bool spawnOnStart = true;
 
+        [Header("Audience Preference Prefabs")]
+        [SerializeField] CrowdCompositionManager compositionManager;
+        [SerializeField] CrowdMemberView chillPrefab;
+        [SerializeField] CrowdMemberView singalongPrefab;
+        [SerializeField] CrowdMemberView moshPrefab;
+
         readonly List<CrowdMemberView> _members = new List<CrowdMemberView>();
+        readonly List<CrowdPreference> _preferenceOrder = new List<CrowdPreference>();
 
         public IReadOnlyList<CrowdMemberView> Members => _members;
 
+        void OnEnable() => EventBus.Subscribe<CrowdCompositionChanged>(OnCompositionChanged);
+
+        void OnDisable() => EventBus.Unsubscribe<CrowdCompositionChanged>(OnCompositionChanged);
+
         void Start()
         {
+            if (compositionManager == null)
+                compositionManager = FindFirstObjectByType<CrowdCompositionManager>();
+            if (compositionManager == null)
+                compositionManager = gameObject.AddComponent<CrowdCompositionManager>();
+            if (GetComponent<CrowdCompositionDebugView>() == null)
+                gameObject.AddComponent<CrowdCompositionDebugView>();
             if (spawnOnStart && _members.Count == 0) Spawn();
         }
 
@@ -58,6 +76,7 @@ namespace ContextStage
             Clear();
 
             var rng = new System.Random(seed);
+            BuildPreferenceOrder(rng);
             int index = 0;
 
             for (int row = 0; row < rows; row++)
@@ -79,23 +98,103 @@ namespace ContextStage
                     x += ((float)rng.NextDouble() * 2f - 1f) * positionJitter;
                     y += ((float)rng.NextDouble() * 2f - 1f) * positionJitter * 0.4f;
 
-                    _members.Add(CreateMember(index++, new Vector3(x, y, 0f), scale, sortingOrder));
+                    CrowdPreference preference = index < _preferenceOrder.Count
+                        ? _preferenceOrder[index]
+                        : CrowdPreference.Mosh;
+                    _members.Add(CreateMember(
+                        index++,
+                        new Vector3(x, y, 0f),
+                        scale,
+                        sortingOrder,
+                        preference));
                 }
             }
         }
 
-        CrowdMemberView CreateMember(int index, Vector3 localPosition, float scale, int sortingOrder)
+        void BuildPreferenceOrder(System.Random rng)
         {
-            var go = new GameObject($"CrowdMember_{index:00}");
+            _preferenceOrder.Clear();
+            if (compositionManager == null) return;
+
+            AddPreference(CrowdPreference.Chill, compositionManager.GetCount(CrowdPreference.Chill));
+            AddPreference(CrowdPreference.Singalong, compositionManager.GetCount(CrowdPreference.Singalong));
+            AddPreference(CrowdPreference.Mosh, compositionManager.GetCount(CrowdPreference.Mosh));
+
+            for (int i = _preferenceOrder.Count - 1; i > 0; i--)
+            {
+                int swapIndex = rng.Next(i + 1);
+                CrowdPreference temp = _preferenceOrder[i];
+                _preferenceOrder[i] = _preferenceOrder[swapIndex];
+                _preferenceOrder[swapIndex] = temp;
+            }
+        }
+
+        void AddPreference(CrowdPreference preference, int count)
+        {
+            for (int i = 0; i < count; i++)
+                _preferenceOrder.Add(preference);
+        }
+
+        CrowdMemberView CreateMember(
+            int index,
+            Vector3 localPosition,
+            float scale,
+            int sortingOrder,
+            CrowdPreference preference)
+        {
+            CrowdMemberView prefab = PrefabFor(preference);
+            GameObject go;
+            CrowdMemberView view;
+            CrowdPreferencePlaceholderView placeholder = null;
+
+            if (prefab != null)
+            {
+                view = Instantiate(prefab, transform);
+                go = view.gameObject;
+            }
+            else
+            {
+                go = new GameObject();
+                go.AddComponent<SpriteRenderer>();
+                view = go.AddComponent<CrowdMemberView>();
+
+                // The existing low/middle/high sheets are actual Mosh artwork.
+                // Chill and Singalong keep placeholders until their art arrives.
+                bool useExistingMoshSprites = preference == CrowdPreference.Mosh;
+                view.ConfigureIdentity(
+                    preference,
+                    preservePrefabArtwork: !useExistingMoshSprites);
+                if (!useExistingMoshSprites)
+                    placeholder = go.AddComponent<CrowdPreferencePlaceholderView>();
+            }
+
+            go.name = $"CrowdMember_{index:00}_{preference}";
             go.transform.SetParent(transform, false);
             go.transform.localPosition = localPosition;
 
-            var sr = go.AddComponent<SpriteRenderer>();
+            var sr = go.GetComponent<SpriteRenderer>();
             sr.sortingLayerName = sortingLayer;
-
-            var view = go.AddComponent<CrowdMemberView>();
-            view.Setup(index, scale, sortingOrder); // 시드·크기·정렬을 넣고 현재 상태를 즉시 적용시킨다
+            view.Setup(index, scale, sortingOrder, preference);
+            if (placeholder != null)
+                placeholder.Configure(preference);
             return view;
+        }
+
+        CrowdMemberView PrefabFor(CrowdPreference preference)
+        {
+            switch (preference)
+            {
+                case CrowdPreference.Chill: return chillPrefab;
+                case CrowdPreference.Singalong: return singalongPrefab;
+                case CrowdPreference.Mosh: return moshPrefab;
+                default: return null;
+            }
+        }
+
+        void OnCompositionChanged(CrowdCompositionChanged _)
+        {
+            if (!isActiveAndEnabled || _members.Count == 0) return;
+            Spawn();
         }
 
         /// <summary>배치된 관객을 모두 제거한다.</summary>
