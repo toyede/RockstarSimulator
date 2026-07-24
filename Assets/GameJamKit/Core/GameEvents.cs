@@ -116,7 +116,7 @@ namespace GameJamKit
         public int PreviousIndex;  // 이전 상태 (-1 = 없음)
         public int Index;          // 새 상태 인덱스 (0 = 가장 낮음)
         public string MoodName;    // 콘픽에 적힌 상태 이름
-
+    }
     /// <summary>손패 구성이 바뀐 뒤 발행. 카드 UI가 구독한다.</summary>
     public struct HandChanged
     {
@@ -142,6 +142,6 @@ namespace GameJamKit
         public int HandIndex;
         public HypeJudgement Judgement;
         public float Delta;
-
     }
 }
+
