@@ -81,6 +81,19 @@ namespace ContextStage
             airTimeRatio = 0.75f, squash = 0.18f,
         };
 
+        [Header("Mosh Special Hit 화면 효과")]
+        [SerializeField, Tooltip("지정하면 이 통합 화면 효과 프로필을 사용한다. 비어 있으면 기본 링 디스토션을 사용한다")]
+        LocalScreenEffectProfile moshSpecialHitEffect;
+
+        [SerializeField, Tooltip("효과 영역의 가로·세로 크기(월드 유닛)")]
+        Vector2 moshSpecialHitEffectSize = new Vector2(10f, 10f);
+
+        [SerializeField, Min(0f), Tooltip("프로필 강도 배율")]
+        float moshSpecialHitStrengthMultiplier = 1f;
+
+        [SerializeField, Min(0f), Tooltip("0이면 프로필 시간 사용, 0보다 크면 이 시간으로 덮어쓴다")]
+        float moshSpecialHitDurationOverride;
+
         [Header("드롭 판정 영역")]
         [SerializeField, Tooltip("씬에 SpecialAudienceDropTarget 이 없으면 런타임에 하나 만들어 붙인다.\n" +
                                  "프리팹을 씬에 배치하지 않아도 카드 드롭 위치 판정이 동작하게 하기 위함")]
@@ -149,12 +162,14 @@ namespace ContextStage
         void OnEnable()
         {
             EventBus.Subscribe<SpecialAudienceSpawned>(OnSpawned);
+            EventBus.Subscribe<SpecialHitLanded>(OnSpecialHit);
             EventBus.Subscribe<SpecialAudienceEnded>(OnEnded);
         }
 
         void OnDisable()
         {
             EventBus.Unsubscribe<SpecialAudienceSpawned>(OnSpawned);
+            EventBus.Unsubscribe<SpecialHitLanded>(OnSpecialHit);
             EventBus.Unsubscribe<SpecialAudienceEnded>(OnEnded);
         }
 
@@ -179,6 +194,35 @@ namespace ContextStage
                 return;
             }
             SetVisible(false);
+        }
+
+        void OnSpecialHit(SpecialHitLanded e)
+        {
+            if (!_active || e.RequestType != HeatStage.Mosh) return;
+
+            Vector3 effectPosition = CharacterRenderer != null
+                ? CharacterRenderer.bounds.center
+                : motionRoot.position;
+
+            if (moshSpecialHitEffect != null)
+            {
+                ScreenEffects.Play(
+                    moshSpecialHitEffect,
+                    effectPosition,
+                    moshSpecialHitEffectSize,
+                    moshSpecialHitStrengthMultiplier,
+                    moshSpecialHitDurationOverride);
+                return;
+            }
+
+            float radius = Mathf.Max(
+                0.01f,
+                Mathf.Max(moshSpecialHitEffectSize.x, moshSpecialHitEffectSize.y) * 0.5f);
+            ScreenEffects.PlayDistortion(
+                effectPosition,
+                radius,
+                0.04f * moshSpecialHitStrengthMultiplier,
+                moshSpecialHitDurationOverride > 0f ? moshSpecialHitDurationOverride : 0.7f);
         }
 
         // ---------------- 드롭 판정 영역 ----------------
