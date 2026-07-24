@@ -9,7 +9,7 @@ namespace ContextStage
     /// (low/middle/high 3단계는 기본값일 뿐 개수 제한은 없다)
     /// </summary>
     [System.Serializable]
-    public class CrowdAmbienceTier
+    public class CrowdAmbienceTier : IHypeTier
     {
         [Tooltip("에디터/디버그 표시용 이름. 코드에서 ForceTier(\"High\") 로 지정할 때도 쓰인다")]
         public string tierName = "Low";
@@ -28,6 +28,9 @@ namespace ContextStage
 
         [Tooltip("이 티어로 넘어갈 때의 크로스페이드 시간(초). 0 이면 콘픽 기본값 사용")]
         public float fadeDurationOverride = 0f;
+
+        /// <summary>단계 판정은 비주얼(CrowdMoodTier)과 공유하는 HypeTierUtil 이 담당한다.</summary>
+        public float MinNormalized => minNormalized;
     }
 
     /// <summary>
@@ -87,28 +90,11 @@ namespace ContextStage
         /// currentIndex 를 넘기면 히스테리시스가 적용되어 경계에서 티어가 진동하지 않는다.
         /// (처음 결정할 때는 currentIndex 에 -1 을 넘긴다)
         /// </summary>
-        public int ResolveTierIndex(float normalized, int currentIndex = -1)
-        {
-            if (tiers == null || tiers.Count == 0) return -1;
-
-            int result = 0;
-            for (int i = 0; i < tiers.Count; i++)
-            {
-                var tier = tiers[i];
-                if (tier == null) continue;
-
-                // 지금 티어보다 위로 올라갈 때는 경계보다 조금 더, 내려갈 때는 조금 덜 가야 바뀐다
-                float threshold = tier.minNormalized;
-                if (currentIndex >= 0)
-                    threshold += i > currentIndex ? hysteresis : -hysteresis;
-
-                if (normalized >= threshold) result = i;
-            }
-            return result;
-        }
+        public int ResolveTierIndex(float normalized, int currentIndex = -1) =>
+            HypeTierUtil.Resolve(tiers, normalized, currentIndex, hysteresis);
 
         /// <summary>인덱스가 유효 범위 밖이면 잘라낸다.</summary>
-        public int ClampIndex(int index) => TierCount == 0 ? -1 : Mathf.Clamp(index, 0, TierCount - 1);
+        public int ClampIndex(int index) => HypeTierUtil.ClampIndex(tiers, index);
 
 #if UNITY_EDITOR
         void OnValidate()

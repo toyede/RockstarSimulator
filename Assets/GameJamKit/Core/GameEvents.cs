@@ -104,4 +104,16 @@ namespace GameJamKit
         public int Index;          // 새 티어 인덱스 (0 = 가장 낮음)
         public string TierName;    // 콘픽에 적힌 티어 이름 ("Low" / "Middle" / "High" ...)
     }
+
+    /// <summary>
+    /// 관객 비주얼 상태(low/middle/high...)가 바뀔 때 CrowdMoodDirector 가 발행.
+    /// 관객 스프라이트 자체는 ICrowdMoodReactor 로 직접 갱신되므로,
+    /// 이 이벤트는 조명·카메라·UI 처럼 "곁다리로 같이 반응하는" 쪽이 구독한다.
+    /// </summary>
+    public struct CrowdMoodChanged
+    {
+        public int PreviousIndex;  // 이전 상태 (-1 = 없음)
+        public int Index;          // 새 상태 인덱스 (0 = 가장 낮음)
+        public string MoodName;    // 콘픽에 적힌 상태 이름
+    }
 }
