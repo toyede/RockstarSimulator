@@ -38,6 +38,18 @@ namespace ContextStage
         /// <summary>프레임 애니메이션 재생기. 상태에 클립이 없으면 놀고 있는다.</summary>
         readonly SpriteAnimationPlayer _player = new SpriteAnimationPlayer();
 
+        // ---------------- 외부에서 읽는 배치 정보 ----------------
+        // 특별 관객이 "이 줄에 섞여 서려면" 어느 높이·크기·정렬 순서를 따라가야 하는지 알아야 한다.
+
+        /// <summary>움직임을 빼고 원래 서 있는 자리 (부모 기준 로컬 좌표).</summary>
+        public Vector3 HomeLocalPosition => _basePosition;
+
+        /// <summary>이 관객이 속한 줄의 기본 크기 배율.</summary>
+        public float BaseScale => baseScale;
+
+        /// <summary>이 관객이 속한 줄의 정렬 순서.</summary>
+        public int SortingOrder => _renderer != null ? _renderer.sortingOrder : 0;
+
         void Awake() => Initialize();
 
         void Initialize()

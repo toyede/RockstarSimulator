@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -35,6 +36,10 @@ namespace ContextStage.EditorTools
             SetObjectField(manager, "view", view);
             AssignSprites(view);
 
+            // 무대 위 실물 특별 관객 (군중 사이를 돌아다닌다). UI 뷰와 동시에 쓸 수 있다.
+            var actor = Object.FindFirstObjectByType<SpecialAudienceCrowdActor>() ?? BuildCrowdActor();
+            AssignActorSprites(actor);
+
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             Selection.activeGameObject = go;
             Debug.Log("[SpecialAudience] 셋업 완료. Play 후 P 키로 즉시 등장을 확인하세요. (씬을 Ctrl+S 로 저장할 것)");
@@ -59,6 +64,52 @@ namespace ContextStage.EditorTools
                 return;
             }
             AssignSprites(view, overwrite: true);
+        }
+
+        /// <summary>무대 위를 돌아다닐 특별 관객 오브젝트를 만든다. 군중이 있으면 그 자식으로 넣는다.</summary>
+        static SpecialAudienceCrowdActor BuildCrowdActor()
+        {
+            var go = new GameObject("SpecialAudienceActor");
+            Undo.RegisterCreatedObjectUndo(go, "Create SpecialAudienceActor");
+
+            var crowd = Object.FindFirstObjectByType<CrowdSpawner>();
+            if (crowd != null) go.transform.SetParent(crowd.transform, false);
+            else go.transform.position = new Vector3(0f, -3f, 0f);
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = 10; // 등장할 때 관객 줄에 맞춰 매 프레임 다시 계산된다
+
+            return go.AddComponent<SpecialAudienceCrowdActor>();
+        }
+
+        static void AssignActorSprites(SpecialAudienceCrowdActor actor, bool overwrite = false)
+        {
+            if (actor == null) return;
+
+            var sprites = LoadSpecialSprites();
+            if (sprites.Count == 0) return;
+
+            var so = new SerializedObject(actor);
+            string[] fields = { "chillClip", "singalongClip", "moshClip" };
+            for (int i = 0; i < fields.Length && i < sprites.Count; i++)
+            {
+                var frames = so.FindProperty(fields[i])?.FindPropertyRelative("frames");
+                if (frames == null) continue;
+                if (!overwrite && frames.arraySize > 0) continue;
+
+                frames.arraySize = 1;
+                frames.GetArrayElementAtIndex(0).objectReferenceValue = sprites[i];
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static List<Sprite> LoadSpecialSprites()
+        {
+            var sprites = AssetDatabase.LoadAllAssetRepresentationsAtPath(SpecialSpriteSheet)
+                .OfType<Sprite>()
+                .ToList();
+            sprites.Sort((a, b) => TrailingNumber(a.name).CompareTo(TrailingNumber(b.name)));
+            return sprites;
         }
 
         static void AssignSprites(SpecialAudienceView view, bool overwrite = false)

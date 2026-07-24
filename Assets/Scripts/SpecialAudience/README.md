@@ -21,7 +21,8 @@ Tools/Special Audience/Setup Special Audience   →   Ctrl+S
 |---|---|
 | `SpecialAudienceTypes.cs` | `HeatStage`, `SpecialAudienceEndReason`, `SpecialHitReward` |
 | `SpecialAudienceManager.cs` | 타이머·셔플백·요구 관리·Special Hit 판정·이벤트 발행 + `SpecialAudience` 파사드 |
-| `SpecialAudienceView.cs` | 표시 전담 (아이콘 전환·게이지·애니메이션). 로직을 전혀 모름 |
+| `SpecialAudienceView.cs` | UI 표시 전담 (아이콘 전환·게이지·애니메이션). 로직을 전혀 모름 |
+| `SpecialAudienceCrowdActor.cs` | **무대 위 실물** — 일반 관객 사이에 섞여 돌아다니는 월드 스프라이트 |
 | `Editor/SpecialAudienceSetupMenu.cs` | 씬 셋업 + 그레이박스 UI |
 | `GameJamKit/Core/GameEvents.cs` | 이벤트 struct 3종 추가 (킷 변경 이력에 기록함) |
 
@@ -69,6 +70,30 @@ if (result.IsSpecialHit)
 - 어느 쪽이든 매니저가 점수·열기를 직접 건드리지 않는 건 그대로다
 
 Special 역할 카드는 3단계 모두 있다: `Card_02_Response`(Chill) / `Card_04_PassMic`(Singalong) / `Card_06_MoshPit`(Mosh).
+
+## 4-1. 무대 위 특별 관객 (`SpecialAudienceCrowdActor`)
+
+등장하면 `CrowdSpawner` 가 배치한 일반 관객 중 한 명의 옆자리를 골라 **그 줄에 섞여 선다.**
+`dwellDuration` 마다 다른 관객 자리로 걸어서 옮겨 다니고, 줄이 바뀌면 그 줄의
+**크기·정렬 순서를 물려받아** 앞뒤 관계가 깨지지 않는다.
+
+작동 방식:
+
+| 단계 | 내용 |
+|---|---|
+| 등장 | `SpecialAudienceSpawned` 구독 → 군중 오브젝트의 자식으로 들어가 자리 선정 |
+| 이동 | 관객 한 명을 골라 `HomeLocalPosition ± lateralOffset` 으로 걸어감. 진행 방향으로 스프라이트 반전 |
+| 제자리 | 일반 관객과 **같은 `CrowdMotionProfile`** (반동·흔들림·점프·스쿼시) |
+| 성공 | `celebrateMotion` 으로 크게 뛰다가 `celebrateDuration`(0.7초) 후 사라짐 |
+| 만료/종료 | 즉시 사라짐 |
+
+**매니저를 직접 참조하지 않고 EventBus 만 구독**하므로 UI 뷰(`SpecialAudienceView`)와
+동시에 켜둘 수 있다 — 게이지는 화면 위, 캐릭터는 무대 아래.
+
+주요 인스펙터 값: `moveSpeed`(1.6) / `dwellDuration`(1.8초) / `lateralOffset`(0.45) /
+`scaleMultiplier`(1.15 — 주변보다 살짝 커서 눈에 띈다) / `sortingOrderBonus`(1).
+
+`CrowdSpawner` 가 없거나 관객이 아직 배치되지 않았으면 `fallbackPosition` 에 조용히 선다.
 
 ## 5. 점수·열기 담당이 받는 이벤트
 
