@@ -53,6 +53,54 @@ namespace ContextStage
         [SerializeField, Tooltip("무대 오른쪽 조명")]
         Light2D rightStageLight;
 
+        [Header("픽셀 라이트")]
+        [SerializeField, Tooltip("좌우 Point Light에 저해상도 Point 필터 쿠키를 적용한다")]
+        bool usePixelLightStyle = true;
+
+        [SerializeField, Tooltip("비워두면 Resources/Lighting/PixelStageLightCookie를 자동으로 사용한다")]
+        Sprite pixelLightCookie;
+
+        [SerializeField, Range(0f, 1f), Tooltip("높을수록 빛 경계가 단단해져 픽셀 단계가 선명하다")]
+        float pixelLightFalloff = 0.95f;
+
+        [SerializeField, Range(0f, 1f), Tooltip("픽셀 라이트용 그림자 부드러움. 낮을수록 경계가 또렷하다")]
+        float pixelShadowSoftness = 0.05f;
+
+        [Header("픽셀 스포트라이트 셰이더")]
+        [SerializeField, Tooltip("월드 픽셀 격자에서 밝기와 조사각을 계산하는 스포트라이트를 사용한다")]
+        bool usePixelSpotlightShader = true;
+
+        [SerializeField, Range(1f, 256f), Tooltip("월드 1유닛당 픽셀 수. 현재 스프라이트 PPU에 맞춘다")]
+        float spotlightPixelsPerUnit = 100f;
+
+        [SerializeField, Range(2, 16), Tooltip("스포트라이트 밝기 단계 수")]
+        int spotlightBandCount = 6;
+
+        [SerializeField, Range(0f, 1f), Tooltip("픽셀 밝기 단계 사이를 월드 고정 디더로 섞는 정도")]
+        float spotlightDitherStrength = 0.18f;
+
+        [SerializeField, Range(0f, 2f), Tooltip("픽셀 조명 패스의 최종 강도")]
+        float pixelSpotlightIntensity = 0.06f;
+
+        [SerializeField, Range(0f, 1f), Tooltip("그림자를 위해 남겨둘 기존 Light2D 조명의 비율")]
+        float smoothLightContribution = 0.15f;
+
+        [Header("스포트라이트 움직임")]
+        [SerializeField, Tooltip("좌우 조명이 각자의 기준 방향을 중심으로 무대를 훑는다")]
+        bool animateSpotlights = true;
+
+        [SerializeField, Range(0f, 45f), Tooltip("기준 방향에서 좌우로 움직이는 최대 각도")]
+        float spotlightSweepDegrees = 15f;
+
+        [SerializeField, Range(0.01f, 2f), Tooltip("기본 회전 속도. 열기 단계에 따라 자동으로 빨라진다")]
+        float spotlightSweepSpeed = 0.22f;
+
+        [SerializeField, Tooltip("Spot Light의 최소·최대 Outer Angle")]
+        Vector2 spotlightOuterAngleRange = new Vector2(36f, 50f);
+
+        [SerializeField, Range(0.1f, 0.95f), Tooltip("Outer Angle에 대한 Inner Angle 비율")]
+        float spotlightInnerAngleRatio = 0.55f;
+
         [Header("단계별 프리셋")]
         [SerializeField, Tooltip("차분한 단계")]
         StageLightPreset chill = new StageLightPreset
@@ -119,13 +167,29 @@ namespace ContextStage
         Color _flashColor = Color.white;
 
         bool _warnedMissingLights;
+        bool _warnedMissingPixelCookie;
+        PixelSpotlight2D _leftPixelSpotlight;
+        PixelSpotlight2D _rightPixelSpotlight;
+        Quaternion _leftSpotlightRestRotation;
+        Quaternion _rightSpotlightRestRotation;
+        float _leftSpotlightRestInnerAngle;
+        float _leftSpotlightRestOuterAngle;
+        float _rightSpotlightRestInnerAngle;
+        float _rightSpotlightRestOuterAngle;
+        bool _spotlightPoseCaptured;
 
         public HeatStage CurrentStage => _stage;
         public bool IsFlashing => _flashing;
 
         float FlashTotal => Mathf.Max(0.0001f, flashInDuration + flashHoldDuration + flashOutDuration);
 
-        void Awake() => EnsurePresets();
+        void Awake()
+        {
+            EnsurePresets();
+            ApplyPixelLightStyle();
+            CaptureSpotlightPose();
+            EnsurePixelSpotlights();
+        }
 
         /// <summary>
         /// 프리셋 참조를 보장한다.
@@ -145,6 +209,8 @@ namespace ContextStage
             // 꺼졌다 켜져도 현재 단계 상태로 즉시 복구한다 (플래시 잔상 없음)
             _flashing = false;
             _flashElapsed = 0f;
+            CaptureSpotlightPose();
+            EnsurePixelSpotlights();
             ApplyLights();
         }
 
@@ -154,6 +220,7 @@ namespace ContextStage
             _flashing = false;
             _blend = 1f;
             _from = _to = PresetFor(_stage);
+            RestoreSpotlightPose();
             ApplyLights();
         }
 
@@ -201,7 +268,160 @@ namespace ContextStage
             leftStageLight = left;
             rightStageLight = right;
             _warnedMissingLights = false;
+            ApplyPixelLightStyle();
+            _spotlightPoseCaptured = false;
+            CaptureSpotlightPose();
+            EnsurePixelSpotlights();
             ApplyLights();
+        }
+
+        /// <summary>
+        /// 좌우 Point Light의 기존 각도·범위·색은 유지하고 픽셀 쿠키와 단단한 경계만 적용한다.
+        /// </summary>
+        public void ApplyPixelLightStyle()
+        {
+            if (!usePixelLightStyle) return;
+
+            if (pixelLightCookie == null)
+                pixelLightCookie = Resources.Load<Sprite>("Lighting/PixelStageLightCookie");
+
+            if (pixelLightCookie == null)
+            {
+                if (!_warnedMissingPixelCookie)
+                {
+                    _warnedMissingPixelCookie = true;
+                    Debug.LogWarning(
+                        "[StageLight] 픽셀 라이트 쿠키가 없습니다. " +
+                        "Tools/Lighting/Apply Pixel Stage Light Style을 실행하세요.",
+                        this);
+                }
+                return;
+            }
+
+            _warnedMissingPixelCookie = false;
+            ApplyPixelStyle(leftStageLight);
+            ApplyPixelStyle(rightStageLight);
+        }
+
+        void ApplyPixelStyle(Light2D light)
+        {
+            if (light == null || light.lightType != Light2D.LightType.Point) return;
+
+            light.lightCookieSprite = pixelLightCookie;
+            light.falloffIntensity = pixelLightFalloff;
+            light.shadowSoftness = pixelShadowSoftness;
+            light.shadowSoftnessFalloffIntensity = pixelShadowSoftness;
+        }
+
+        void EnsurePixelSpotlights()
+        {
+            if (!Application.isPlaying || !usePixelSpotlightShader) return;
+
+            _leftPixelSpotlight = EnsurePixelSpotlight(leftStageLight);
+            _rightPixelSpotlight = EnsurePixelSpotlight(rightStageLight);
+        }
+
+        PixelSpotlight2D EnsurePixelSpotlight(Light2D light)
+        {
+            if (light == null || light.lightType != Light2D.LightType.Point) return null;
+
+            var pixelSpotlight = light.GetComponent<PixelSpotlight2D>();
+            if (pixelSpotlight == null)
+                pixelSpotlight = light.gameObject.AddComponent<PixelSpotlight2D>();
+
+            pixelSpotlight.Configure(
+                spotlightPixelsPerUnit,
+                spotlightBandCount,
+                spotlightDitherStrength);
+            return pixelSpotlight;
+        }
+
+        void CaptureSpotlightPose()
+        {
+            if (_spotlightPoseCaptured || leftStageLight == null || rightStageLight == null) return;
+
+            _leftSpotlightRestRotation = leftStageLight.transform.localRotation;
+            _rightSpotlightRestRotation = rightStageLight.transform.localRotation;
+            _leftSpotlightRestInnerAngle = leftStageLight.pointLightInnerAngle;
+            _leftSpotlightRestOuterAngle = leftStageLight.pointLightOuterAngle;
+            _rightSpotlightRestInnerAngle = rightStageLight.pointLightInnerAngle;
+            _rightSpotlightRestOuterAngle = rightStageLight.pointLightOuterAngle;
+            _spotlightPoseCaptured = true;
+        }
+
+        void RestoreSpotlightPose()
+        {
+            if (!_spotlightPoseCaptured) return;
+
+            if (leftStageLight != null)
+            {
+                leftStageLight.transform.localRotation = _leftSpotlightRestRotation;
+                leftStageLight.pointLightInnerAngle = _leftSpotlightRestInnerAngle;
+                leftStageLight.pointLightOuterAngle = _leftSpotlightRestOuterAngle;
+            }
+
+            if (rightStageLight != null)
+            {
+                rightStageLight.transform.localRotation = _rightSpotlightRestRotation;
+                rightStageLight.pointLightInnerAngle = _rightSpotlightRestInnerAngle;
+                rightStageLight.pointLightOuterAngle = _rightSpotlightRestOuterAngle;
+            }
+        }
+
+        void UpdateSpotlightMotion()
+        {
+            if (!animateSpotlights || !_spotlightPoseCaptured) return;
+
+            float stageSpeedMultiplier = _stage switch
+            {
+                HeatStage.Mosh => 1.65f,
+                HeatStage.Singalong => 1f,
+                _ => 0.6f,
+            };
+            float time = Time.time * spotlightSweepSpeed * stageSpeedMultiplier * Mathf.PI * 2f;
+
+            float leftWave =
+                Mathf.Sin(time) * 0.78f +
+                Mathf.Sin(time * 0.43f + 1.1f) * 0.22f;
+            float rightWave =
+                Mathf.Sin(time * 0.91f + Mathf.PI) * 0.76f +
+                Mathf.Sin(time * 0.37f + 2.4f) * 0.24f;
+
+            if (leftStageLight != null)
+            {
+                leftStageLight.transform.localRotation =
+                    _leftSpotlightRestRotation *
+                    Quaternion.Euler(0f, 0f, leftWave * spotlightSweepDegrees);
+            }
+
+            if (rightStageLight != null)
+            {
+                rightStageLight.transform.localRotation =
+                    _rightSpotlightRestRotation *
+                    Quaternion.Euler(0f, 0f, rightWave * spotlightSweepDegrees);
+            }
+
+            float minimumOuterAngle = Mathf.Clamp(
+                Mathf.Min(spotlightOuterAngleRange.x, spotlightOuterAngleRange.y),
+                1f,
+                360f);
+            float maximumOuterAngle = Mathf.Clamp(
+                Mathf.Max(spotlightOuterAngleRange.x, spotlightOuterAngleRange.y),
+                minimumOuterAngle,
+                360f);
+            float leftWidth = 0.5f + Mathf.Sin(time * 0.58f + 0.4f) * 0.5f;
+            float rightWidth = 0.5f + Mathf.Sin(time * 0.63f + 2.2f) * 0.5f;
+
+            ApplySpotlightWidth(leftStageLight, Mathf.Lerp(minimumOuterAngle, maximumOuterAngle, leftWidth));
+            ApplySpotlightWidth(rightStageLight, Mathf.Lerp(minimumOuterAngle, maximumOuterAngle, rightWidth));
+        }
+
+        void ApplySpotlightWidth(Light2D light, float outerAngle)
+        {
+            if (light == null) return;
+
+            light.pointLightOuterAngle = outerAngle;
+            light.pointLightInnerAngle = outerAngle * spotlightInnerAngleRatio;
         }
 
         // ---------------- 매 프레임 ----------------
@@ -218,6 +438,7 @@ namespace ContextStage
             }
 
             HandleDebugKeys();
+            UpdateSpotlightMotion();
             ApplyLights();
         }
 
@@ -269,8 +490,22 @@ namespace ContextStage
             if (light == null) return;
 
             float pulse = Mathf.Sin(Time.time * speed + phase);
+            float finalIntensity = Mathf.Clamp(
+                baseIntensity + pulse * amplitude,
+                0f,
+                stageIntensityCeiling);
             light.color = color;
-            light.intensity = Mathf.Clamp(baseIntensity + pulse * amplitude, 0f, stageIntensityCeiling);
+            light.intensity = usePixelSpotlightShader
+                ? finalIntensity * smoothLightContribution
+                : finalIntensity;
+
+            PixelSpotlight2D pixelSpotlight =
+                light == leftStageLight ? _leftPixelSpotlight :
+                light == rightStageLight ? _rightPixelSpotlight :
+                null;
+            pixelSpotlight?.SetVisualLight(
+                color,
+                usePixelSpotlightShader ? finalIntensity * pixelSpotlightIntensity : 0f);
         }
 
         /// <summary>플래시 곡선. 0 → 1(치솟음) → 1(유지) → 0(복귀).</summary>
