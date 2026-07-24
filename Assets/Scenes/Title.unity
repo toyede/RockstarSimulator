@@ -250,7 +250,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1324515250}
         m_TargetAssemblyTypeName: GameJamKit.UIManager, Assembly-CSharp
-        m_MethodName: LoadNextScene
+        m_MethodName: StartGameNextScene
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

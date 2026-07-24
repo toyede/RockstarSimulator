@@ -25,10 +25,18 @@ namespace ContextStage
         [SerializeField, Min(1f)] float hoverScale = 1.12f;
         [SerializeField, Min(0f)] float hoverDuration = 0.12f;
 
+        /// <summary>
+        /// 지금 드래그 중인 카드. 없으면 null.
+        /// 특별 관객 드롭 영역처럼 "무엇을 들고 있는지"에 따라 표시를 바꿔야 하는 쪽이 읽는다.
+        /// (읽기 전용이며 카드 처리 순서에는 관여하지 않는다)
+        /// </summary>
+        public static CardDragHandler Current { get; private set; }
+
         RectTransform _rectTransform;
         LayoutElement _layoutElement;
         Canvas _sortingCanvas;
         CanvasGroup _canvasGroup;
+        CardDefinition _card;
 
         CardInput _cardInput;
         RectTransform _dragLayer;
@@ -47,6 +55,9 @@ namespace ContextStage
 
         public bool IsDragging => _dragging;
         public int HandIndex => _handIndex;
+
+        /// <summary>이 카드의 데이터. 드롭 대상이 카드 종류를 확인할 때 쓴다.</summary>
+        public CardDefinition Card => _card;
 
         void Awake()
         {
@@ -123,6 +134,7 @@ namespace ContextStage
             }
 
             _dragging = true;
+            Current = this;   // 드롭 대상이 "지금 무슨 카드를 들고 있는지" 볼 수 있게 한다
             _dragPointerId = eventData.pointerId;
             _originalParent = _rectTransform.parent;
             _originalSiblingIndex = _rectTransform.GetSiblingIndex();
@@ -157,17 +169,28 @@ namespace ContextStage
             bool shouldUse = IsAboveHand(eventData);
             var cardInput = _cardInput;
             int handIndex = _handIndex;
+            var originalParent = _originalParent;
 
-            RestoreToHand();
             _hovered = false;
             _dragging = false;
+            if (Current == this) Current = null;
             _dragPointerId = int.MinValue;
+            RemovePlaceholder();
+
+            // 사용을 먼저 시도한다. 성공하면 카드는 지금 놓인 자리(마우스 위치)에 그대로 두고
+            // 사용 연출이 거기서 재생된다. 손패로 되돌리면 제자리에서 사라지게 되므로 되돌리지 않는다.
+            if (shouldUse && cardInput != null && cardInput.TryUseCard(handIndex))
+            {
+                _originalParent = null;
+                if (originalParent is RectTransform parentRect)
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(parentRect); // 남은 카드 간격 정리
+                return;
+            }
+
+            // 사용하지 못했으면 원래대로 손패에 돌려놓는다
+            RestoreToHand();
             _canvasGroup.blocksRaycasts = true;
             SetSorting(0);
-
-            if (shouldUse && cardInput != null && cardInput.TryUseCard(handIndex))
-                return;
-
             AnimateScale(1f);
         }
 
@@ -177,6 +200,7 @@ namespace ContextStage
             if (_layoutElement == null) _layoutElement = GetComponent<LayoutElement>();
             if (_sortingCanvas == null) _sortingCanvas = GetComponent<Canvas>();
             if (_canvasGroup == null) _canvasGroup = GetComponent<CanvasGroup>();
+            if (_card == null) _card = GetComponent<CardDefinition>();
         }
 
         void ResetVisualState()
@@ -193,6 +217,7 @@ namespace ContextStage
 
             _hovered = false;
             _dragging = false;
+            if (Current == this) Current = null;
             _dragPointerId = int.MinValue;
             _pointerOffset = Vector2.zero;
         }

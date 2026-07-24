@@ -53,15 +53,28 @@ namespace ContextStage
             if (card.Role == CardRole.Utility)
                 return new CardEffectResult(HypeJudgement.Good, 0, 0f, false);
 
-            if (card.Role == CardRole.Special &&
-                specialRequest.IsActive &&
-                specialRequest.RequestedStage == card.TargetStage)
+            // 특수 카드는 "전부 아니면 전무"다.
+            // 특별 관객이 요구하는 타입으로, 그 관객에게 정확히 냈을 때만 성공한다.
+            // 그 외(관객이 없을 때·요구가 다를 때·엉뚱한 곳에 냈을 때)는 실패로 처리한다.
+            // 이렇게 하지 않으면 특별 관객과 무관하게 열기 단계만 맞으면 Perfect 가 나와
+            // "그냥 써도 성공"이 되어 버린다.
+            if (card.Role == CardRole.Special)
             {
+                if (specialRequest.IsActive && specialRequest.RequestedStage == card.TargetStage)
+                {
+                    return new CardEffectResult(
+                        HypeJudgement.Perfect,
+                        card.SpecialHitBaseScore,
+                        card.SpecialHitHeatDelta,
+                        true);
+                }
+
+                // 실패: 위험을 감수하고 던진 애드리브가 빗나간 것. 수치는 카드의 far 값으로 튜닝한다.
                 return new CardEffectResult(
-                    HypeJudgement.Perfect,
-                    card.SpecialHitBaseScore,
-                    card.SpecialHitHeatDelta,
-                    true);
+                    HypeJudgement.RiskMiss,
+                    card.FarBaseScore,
+                    card.FarHeatDelta,
+                    false);
             }
 
             HeatStage currentStage = config != null

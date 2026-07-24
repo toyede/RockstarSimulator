@@ -90,6 +90,18 @@ namespace GameJamKit
         public void LoadNextScene() => SceneLoader.LoadNext();
         public void QuitGame() => SceneLoader.Quit();
 
+        /// <summary>
+        /// 타이틀의 "시작" 버튼 전용: GameManager 는 DontDestroyOnLoad 라 씬을 넘어가도
+        /// 이전 GameOver/Paused 상태가 그대로 남는다. LoadNextScene 만 호출하면 상태가
+        /// GameOver 에 갇힌 채로 다음 씬이 열려 카드 입력·ESC 일시정지가 전부 먹통이 되므로,
+        /// 상태를 Ready 로 되돌린 뒤 다음 씬을 연다.
+        /// </summary>
+        public void StartGameNextScene()
+        {
+            if (GameManager.HasInstance) GameManager.Instance.ResetGame();
+            SceneLoader.LoadNext();
+        }
+
         // 버튼 OnClick 에 직접 연결하기 좋은 래퍼들
         public void StartGame() => GameManager.Instance.StartGame();
         public void TogglePause() => GameManager.Instance.TogglePause();
