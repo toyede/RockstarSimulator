@@ -52,12 +52,32 @@ namespace ContextStage
         bool _bound;
         bool _hovered;
         bool _dragging;
+        readonly Vector3[] _worldCorners = new Vector3[4];
 
         public bool IsDragging => _dragging;
         public int HandIndex => _handIndex;
 
         /// <summary>이 카드의 데이터. 드롭 대상이 카드 종류를 확인할 때 쓴다.</summary>
         public CardDefinition Card => _card;
+
+        /// <summary>현재 화면에 보이는 카드 가로폭의 절반. 스페셜 드롭 원의 반지름으로 쓴다.</summary>
+        public float DropRadiusPixels
+        {
+            get
+            {
+                if (_rectTransform == null) return 0f;
+
+                _rectTransform.GetWorldCorners(_worldCorners);
+                Camera camera = ResolveCanvasCamera();
+                Vector2 left = (
+                    RectTransformUtility.WorldToScreenPoint(camera, _worldCorners[0]) +
+                    RectTransformUtility.WorldToScreenPoint(camera, _worldCorners[1])) * 0.5f;
+                Vector2 right = (
+                    RectTransformUtility.WorldToScreenPoint(camera, _worldCorners[2]) +
+                    RectTransformUtility.WorldToScreenPoint(camera, _worldCorners[3])) * 0.5f;
+                return Vector2.Distance(left, right) * 0.5f;
+            }
+        }
 
         void Awake()
         {
@@ -170,6 +190,10 @@ namespace ContextStage
             var cardInput = _cardInput;
             int handIndex = _handIndex;
             var originalParent = _originalParent;
+            SpecialCardRequest specialRequest =
+                shouldUse && _card != null && _card.Role == CardRole.Special
+                    ? SpecialAudience.ResolveDropRequest(eventData.position, DropRadiusPixels)
+                    : SpecialCardRequest.None;
 
             _hovered = false;
             _dragging = false;
@@ -179,7 +203,9 @@ namespace ContextStage
 
             // 사용을 먼저 시도한다. 성공하면 카드는 지금 놓인 자리(마우스 위치)에 그대로 두고
             // 사용 연출이 거기서 재생된다. 손패로 되돌리면 제자리에서 사라지게 되므로 되돌리지 않는다.
-            if (shouldUse && cardInput != null && cardInput.TryUseCard(handIndex))
+            if (shouldUse &&
+                cardInput != null &&
+                cardInput.TryUseCard(handIndex, specialRequest))
             {
                 _originalParent = null;
                 if (originalParent is RectTransform parentRect)
@@ -298,6 +324,16 @@ namespace ContextStage
                 eventData.pressEventCamera,
                 corners[1]).y;
             return eventData.position.y > handTop;
+        }
+
+        Camera ResolveCanvasCamera()
+        {
+            if (_sortingCanvas == null) return null;
+
+            var rootCanvas = _sortingCanvas.rootCanvas;
+            return rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? rootCanvas.worldCamera
+                : null;
         }
 
         void AnimateScale(float multiplier)

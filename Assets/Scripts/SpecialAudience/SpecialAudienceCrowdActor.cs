@@ -107,8 +107,24 @@ namespace ContextStage
         float _repathAt;          // 다음에 자리를 옮길 시각
         float _targetScale = 1f;
         float _currentScale = 1f;
+        float _hoverScaleMultiplier = 1f;
         float _facing = 1f;       // 스프라이트 좌우 반전
         float _phase;             // 개체 고유 위상 (일반 관객과 리듬이 겹치지 않게)
+
+        public SpriteRenderer CharacterRenderer
+        {
+            get
+            {
+                if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+                return _renderer;
+            }
+        }
+
+        /// <summary>드롭 Hover가 본체 크기에 더할 최종 배율. 이동·점프 스케일과 곱해서 적용한다.</summary>
+        public void SetHoverScaleMultiplier(float multiplier)
+        {
+            _hoverScaleMultiplier = Mathf.Max(0.01f, multiplier);
+        }
 
         void Awake()
         {
@@ -296,8 +312,8 @@ namespace ContextStage
 
             _currentScale = Mathf.Lerp(_currentScale, _targetScale, Time.deltaTime * scaleLerpSpeed);
             visualRoot.localScale = new Vector3(
-                _facing * _currentScale * (1f + squash * 0.5f),
-                _currentScale * (1f - squash),
+                _facing * _currentScale * (1f + squash * 0.5f) * _hoverScaleMultiplier,
+                _currentScale * (1f - squash) * _hoverScaleMultiplier,
                 1f);
         }
 

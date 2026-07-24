@@ -19,6 +19,7 @@ namespace ContextStage.EditorTools
         const string PrefabFolder = "Assets/Prefabs/Audience";
         const string PrefabPath = PrefabFolder + "/SpecialAudience.prefab";
         const string SpriteSheet = "Assets/Sprites/Crowd/SpecialCrowd/Special_Crowd.png";
+        const string OutlineShaderPath = "Assets/Shaders/SpecialAudienceOutline.shader";
 
         // 캐릭터가 대략 3.7 x 6 유닛(스프라이트 367x599 @100PPU)이라 그보다 넉넉하게 잡는다.
         // 히트 영역: 가로 130% / 세로 120% (지시서 권장 범위)
@@ -49,6 +50,14 @@ namespace ContextStage.EditorTools
             sr.sortingOrder = 10;
             sr.sprite = LoadFirstSprite();
 
+            var highlight = new GameObject("Highlight");
+            // 본체의 이동·회전·스쿼시·Hover 확대를 Transform 상속으로 정확히 따라간다.
+            highlight.transform.SetParent(character.transform, false);
+            highlight.SetActive(false);
+            highlight.AddComponent<SpriteRenderer>();
+            var outline = highlight.AddComponent<SpecialAudienceOutline>();
+            SetField(outline, "outlineShader", AssetDatabase.LoadAssetAtPath<Shader>(OutlineShaderPath));
+
             var hitArea = new GameObject("HitArea");
             hitArea.transform.SetParent(root.transform, false);
             var box = hitArea.AddComponent<BoxCollider2D>();
@@ -67,6 +76,7 @@ namespace ContextStage.EditorTools
             var dropTarget = root.AddComponent<SpecialAudienceDropTarget>();
             SetField(dropTarget, "hitCollider", box);
             SetField(dropTarget, "hoverScaleTarget", visualRoot.transform);
+            SetField(dropTarget, "highlight", highlight);
             // followTarget 은 비워둔다 — 액터가 루트를 직접 옮기므로 따라다닐 필요가 없다
 
             AssignActorSprites(actor);
@@ -104,9 +114,77 @@ namespace ContextStage.EditorTools
                 dropTarget = root.AddComponent<SpecialAudienceDropTarget>();
                 SetField(dropTarget, "hitCollider", box);
 
-                var actor = root.GetComponentInChildren<SpecialAudienceCrowdActor>(true);
-                if (actor != null) SetField(dropTarget, "followTarget", actor.transform);
+                var existingActor = root.GetComponentInChildren<SpecialAudienceCrowdActor>(true);
+                if (existingActor != null) SetField(dropTarget, "followTarget", existingActor.transform);
                 changed = true;
+            }
+
+            var actor = root.GetComponentInChildren<SpecialAudienceCrowdActor>(true);
+            var visualRoot = actor != null
+                ? actor.transform.parent
+                : root.transform.Find("VisualRoot");
+            Transform highlightParent = actor != null ? actor.transform : visualRoot;
+            var highlight = highlightParent != null ? highlightParent.Find("Highlight") : null;
+            if (highlight == null && visualRoot != null)
+                highlight = visualRoot.Find("Highlight");
+
+            if (highlight == null && highlightParent != null)
+            {
+                var highlightObject = new GameObject("Highlight");
+                highlightObject.transform.SetParent(highlightParent, false);
+                highlightObject.SetActive(false);
+                highlightObject.AddComponent<SpriteRenderer>();
+                var outline = highlightObject.AddComponent<SpecialAudienceOutline>();
+                SetField(outline, "outlineShader", AssetDatabase.LoadAssetAtPath<Shader>(OutlineShaderPath));
+                highlight = highlightObject.transform;
+                changed = true;
+            }
+
+            if (highlight != null)
+            {
+                if (highlightParent != null && highlight.parent != highlightParent)
+                {
+                    highlight.SetParent(highlightParent, false);
+                    changed = true;
+                }
+
+                if (highlight.localPosition != Vector3.zero ||
+                    highlight.localRotation != Quaternion.identity ||
+                    highlight.localScale != Vector3.one)
+                {
+                    highlight.localPosition = Vector3.zero;
+                    highlight.localRotation = Quaternion.identity;
+                    highlight.localScale = Vector3.one;
+                    changed = true;
+                }
+
+                var outline = highlight.GetComponent<SpecialAudienceOutline>();
+                if (outline == null)
+                {
+                    outline = highlight.gameObject.AddComponent<SpecialAudienceOutline>();
+                    changed = true;
+                }
+
+                var serializedOutline = new SerializedObject(outline);
+                var shaderProperty = serializedOutline.FindProperty("outlineShader");
+                if (shaderProperty != null && shaderProperty.objectReferenceValue == null)
+                {
+                    shaderProperty.objectReferenceValue = AssetDatabase.LoadAssetAtPath<Shader>(OutlineShaderPath);
+                    serializedOutline.ApplyModifiedPropertiesWithoutUndo();
+                    changed = true;
+                }
+            }
+
+            if (dropTarget != null)
+            {
+                var serializedDropTarget = new SerializedObject(dropTarget);
+                var highlightProperty = serializedDropTarget.FindProperty("highlight");
+                if (highlightProperty != null && highlightProperty.objectReferenceValue == null && highlight != null)
+                {
+                    highlightProperty.objectReferenceValue = highlight.gameObject;
+                    serializedDropTarget.ApplyModifiedPropertiesWithoutUndo();
+                    changed = true;
+                }
             }
 
             if (changed)

@@ -68,6 +68,13 @@ namespace ContextStage
 
         /// <summary>현재 손패의 index 카드를 사용한다. 성공했을 때만 true를 반환한다.</summary>
         public bool SelectCard(int index)
+            => SelectCard(index, SpecialCardRequest.None);
+
+        /// <summary>
+        /// 드롭 순간 확정한 특별 관객 요청과 함께 카드를 사용한다.
+        /// 위치 정보가 없는 호출은 None을 사용하므로 특수 카드가 임의의 위치에서 성공하지 않는다.
+        /// </summary>
+        public bool SelectCard(int index, SpecialCardRequest specialRequest)
         {
             if (_selecting) return false;
             if (!GameManager.HasInstance || !GameManager.Instance.IsPlaying) return false;
@@ -90,7 +97,7 @@ namespace ContextStage
                     card,
                     currentHype,
                     HypeSystem.Instance.Config,
-                    SpecialAudience.CurrentRequest);
+                    specialRequest);
                 float multiplier = Hype.MultiplierFor(currentHype);
 
                 // 동기 EventBus 구독자가 현재 열기 배율로 점수를 먼저 반영한다.

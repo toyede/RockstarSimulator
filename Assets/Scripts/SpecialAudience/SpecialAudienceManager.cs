@@ -127,19 +127,17 @@ namespace ContextStage
         /// <summary>
         /// 드롭 위치 게이트를 적용해야 하는가.
         ///
-        /// 씬에 DropTarget 이 하나도 없으면 게이트를 걸지 않는다.
-        /// (안 그러면 판정 영역이 없다는 이유로 Special Hit 가 <b>영원히</b> 성립하지 않아,
-        ///  아무 로그도 없이 기능이 죽은 것처럼 보인다)
+        /// requireDropOnTarget이 켜져 있으면 타깃 누락도 실패로 처리한다.
+        /// 셋업 오류를 이유로 어디서나 Special Hit가 되는 fail-open 동작을 허용하지 않는다.
         /// </summary>
         public bool ShouldGateByDropTarget
         {
             get
             {
                 if (!requireDropOnTarget) return false;
-                if (CurrentDropTarget != null) return true;
-
-                WarnNoDropTargetOnce();
-                return false;
+                EnsureDropTargetRegistered();
+                if (CurrentDropTarget == null) WarnNoDropTargetOnce();
+                return true;
             }
         }
 
@@ -149,20 +147,48 @@ namespace ContextStage
         {
             if (_warnedNoDropTarget) return;
             _warnedNoDropTarget = true;
-            Debug.LogWarning("[SpecialAudience] 씬에 DropTarget 이 없어 드롭 위치 판정을 건너뜁니다. " +
-                             "특별 관객에게 대지 않아도 Special Hit 가 성립합니다. " +
+            Debug.LogWarning("[SpecialAudience] 씬에 DropTarget 이 없어 Special Hit 를 차단합니다. " +
                              "SpecialAudienceCrowdActor 의 ensureDropTarget 이 켜져 있는지 확인하세요.", this);
         }
 
         /// <summary>DropTarget 이 스스로 등록한다. (씬에 한 개만 있다고 가정)</summary>
         public void RegisterDropTarget(SpecialAudienceDropTarget target)
         {
-            if (target != null) CurrentDropTarget = target;
+            if (target == null) return;
+            CurrentDropTarget = target;
+            _warnedNoDropTarget = false;
         }
 
         public void UnregisterDropTarget(SpecialAudienceDropTarget target)
         {
             if (CurrentDropTarget == target) CurrentDropTarget = null;
+        }
+
+        void EnsureDropTargetRegistered()
+        {
+            if (CurrentDropTarget != null) return;
+            RegisterDropTarget(FindFirstObjectByType<SpecialAudienceDropTarget>());
+        }
+
+        /// <summary>드롭 순간의 확정 좌표로 현재 특별 관객 요청을 판정한다.</summary>
+        public SpecialCardRequest ResolveDropRequest(Vector2 screenPosition, float radiusPixels)
+        {
+            if (!HasActiveRequest) return SpecialCardRequest.None;
+            if (!requireDropOnTarget)
+                return new SpecialCardRequest(CurrentRequestType);
+
+            EnsureDropTargetRegistered();
+            if (CurrentDropTarget == null)
+            {
+                WarnNoDropTargetOnce();
+                return SpecialCardRequest.None;
+            }
+
+            return CurrentDropTarget.ContainsScreenCircle(
+                screenPosition,
+                Mathf.Max(0f, radiusPixels))
+                ? new SpecialCardRequest(CurrentRequestType)
+                : SpecialCardRequest.None;
         }
 
         // ---------------- 이벤트 ----------------
@@ -192,6 +218,8 @@ namespace ContextStage
 
         void Start()
         {
+            EnsureDropTargetRegistered();
+
             // 이미 공연이 진행 중인 상태에서 늦게 활성화돼도 자연스럽게 합류한다
             if (autoStart && GameManager.HasInstance && GameManager.Instance.IsPlaying) StartSystem();
             else view?.Hide(instant: true);
@@ -586,6 +614,15 @@ namespace ContextStage
 
                 return new SpecialCardRequest(manager.CurrentRequestType);
             }
+        }
+
+        /// <summary>드롭 순간의 화면 좌표와 카드 반지름으로 요청을 확정한다.</summary>
+        public static SpecialCardRequest ResolveDropRequest(
+            Vector2 screenPosition,
+            float radiusPixels)
+        {
+            if (!SpecialAudienceManager.HasInstance) return SpecialCardRequest.None;
+            return SpecialAudienceManager.Instance.ResolveDropRequest(screenPosition, radiusPixels);
         }
 
         /// <summary>현재 드롭 영역. 없으면 null. (카드 담당이 Hover 표시를 직접 하고 싶을 때)</summary>

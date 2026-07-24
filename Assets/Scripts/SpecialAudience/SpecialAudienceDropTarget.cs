@@ -18,9 +18,8 @@ namespace ContextStage
     ///   - Special Hit 계산을 복제하지 않고 SpecialAudienceManager 에 위임한다
     ///   - 포인터가 영역 안인지만 매 프레임 갱신해 Hover 표시와 드롭 판정에 쓴다
     ///
-    /// 드롭 판정을 카드 코드 수정 없이 붙이는 방법:
-    /// SpecialAudience.CurrentRequest 가 <b>포인터가 이 영역 안일 때만</b> 활성 요청을 돌려준다.
-    /// CardSystem 은 이미 그 값을 판정기에 넘기고 있으므로, 영역 밖에서 놓으면 자동으로 일반 카드 판정이 된다.
+    /// 드롭 순간 CardDragHandler 가 확정한 화면 좌표와 카드 반지름을 이 영역에 검사하고,
+    /// 성공한 요청만 CardSystem의 판정기로 전달한다.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class SpecialAudienceDropTarget : MonoBehaviour
@@ -54,6 +53,12 @@ namespace ContextStage
         [SerializeField, Tooltip("포인터가 영역 안일 때 켜지는 부가 오브젝트 (선택. 비워두면 크기만 변한다)")]
         GameObject highlight;
 
+        [SerializeField, Tooltip("외곽선 색상")]
+        Color outlineColor = Color.white;
+
+        [SerializeField, Min(0f), Tooltip("외곽선 두께(원본 텍스처 픽셀 기준)")]
+        float outlineThickness = 2f;
+
         [Header("카메라")]
         [SerializeField, Tooltip("스크린 → 월드 변환에 쓸 카메라. 비워두면 Camera.main")]
         Camera worldCamera;
@@ -64,6 +69,9 @@ namespace ContextStage
         bool _pointerInside;      // 순수 기하 판정 — 드롭 게이트가 쓴다
         bool _hoverVisible;       // 표시용 — Special 카드를 들고 있을 때만 켠다
         Vector3 _hoverBaseScale = Vector3.one;
+        float _currentHoverScale = 1f;
+        SpecialAudienceCrowdActor _hoverActor;
+        SpecialAudienceOutline _outline;
         bool _warnedNoCollider;
 
         /// <summary>지금 카드를 받을 수 있는 상태인가.</summary>
@@ -87,6 +95,8 @@ namespace ContextStage
         {
             if (hitCollider == null) hitCollider = GetComponentInChildren<Collider2D>(true);
             if (hoverScaleTarget != null) _hoverBaseScale = hoverScaleTarget.localScale;
+            ResolveHoverVisuals();
+            ResetHoverVisuals();
             SetActiveInternal(false);
         }
 
@@ -110,9 +120,14 @@ namespace ContextStage
         {
             EventBus.Subscribe<SpecialAudienceSpawned>(OnSpawned);
             EventBus.Subscribe<SpecialAudienceEnded>(OnEnded);
+            TryRegisterWithManager();
+        }
 
-            if (SpecialAudienceManager.HasInstance)
-                SpecialAudienceManager.Instance.RegisterDropTarget(this);
+        void Start()
+        {
+            // 씬 로드 시 매니저보다 OnEnable 이 먼저 실행될 수 있으므로
+            // 모든 Awake 이후인 Start 에서 한 번 더 등록을 보장한다.
+            TryRegisterWithManager();
         }
 
         void OnDisable()
@@ -125,7 +140,17 @@ namespace ContextStage
 
             // Disable 시 Hover·요청 상태를 정리해 다음에 켜질 때 잔상이 없게 한다
             SetHover(false);
+            ResetHoverVisuals();
             SetActiveInternal(false);
+        }
+
+        void TryRegisterWithManager()
+        {
+            if (!SpecialAudienceManager.HasInstance) return;
+
+            var manager = SpecialAudienceManager.Instance;
+            manager.RegisterDropTarget(this);
+            SetActiveInternal(manager.HasActiveRequest);
         }
 
         // ---------------- 이벤트 ----------------
@@ -166,7 +191,12 @@ namespace ContextStage
             }
 
             // 1) 기하 판정 — Hover 표시용으로만 캐시한다 (게이트는 IsPointerOver 가 즉석 계산)
-            _pointerInside = ContainsScreenPoint(ResolveCamera(), ReadPointerPosition());
+            var dragging = CardDragHandler.Current;
+            float radiusPixels = dragging != null ? dragging.DropRadiusPixels : 0f;
+            _pointerInside = ContainsScreenCircle(
+                ResolveCamera(),
+                ReadPointerPosition(),
+                radiusPixels);
 
             // 2) 표시 판정 — Special 카드를 드래그 중일 때만 켠다.
             SetHover(_pointerInside && ShouldShowHover());
@@ -193,24 +223,53 @@ namespace ContextStage
         /// <summary>확대·복귀를 부드럽게 따라가게 한다. (툭 끊기면 픽셀이 튀어 보인다)</summary>
         void UpdateHoverScale()
         {
-            if (hoverScaleTarget == null) return;
-
-            Vector3 target = _hoverVisible ? _hoverBaseScale * hoverScale : _hoverBaseScale;
-            hoverScaleTarget.localScale = Vector3.Lerp(
-                hoverScaleTarget.localScale,
+            float target = _hoverVisible ? hoverScale : 1f;
+            _currentHoverScale = Mathf.Lerp(
+                _currentHoverScale,
                 target,
                 1f - Mathf.Exp(-hoverScaleSpeed * Time.deltaTime));
+
+            if (_hoverActor != null)
+            {
+                _hoverActor.SetHoverScaleMultiplier(_currentHoverScale);
+                return;
+            }
+
+            if (hoverScaleTarget != null)
+                hoverScaleTarget.localScale = _hoverBaseScale * _currentHoverScale;
         }
 
         /// <summary>스크린 좌표가 영역 안인가. 카드가 UI 라서 이 경로를 쓴다.</summary>
         public bool ContainsScreenPoint(Camera camera, Vector2 screenPosition)
+            => ContainsScreenCircle(camera, screenPosition, 0f);
+
+        public bool ContainsScreenCircle(Vector2 screenPosition, float radiusPixels)
+            => ContainsScreenCircle(ResolveCamera(), screenPosition, radiusPixels);
+
+        /// <summary>
+        /// 스크린 좌표 중심의 원이 드롭 Collider와 겹치는가.
+        /// 반지름은 카드 화면 가로폭의 절반을 전달받아 해상도와 Canvas 배율 변화에 대응한다.
+        /// </summary>
+        public bool ContainsScreenCircle(
+            Camera camera,
+            Vector2 screenPosition,
+            float radiusPixels)
         {
-            if (camera == null) return false;
-            // z 는 카메라에서 z=0 평면까지의 거리. 직교 카메라에서는 x/y 가 z 와 무관하지만,
-            // 나중에 원근 카메라로 바꿔도 판정이 어긋나지 않도록 정석대로 넣는다.
-            float depth = Mathf.Abs(camera.transform.position.z);
-            Vector3 world = camera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, depth));
-            return ContainsWorldPoint(world);
+            if (camera == null || !IsActive) return false;
+
+            float depth = camera.WorldToScreenPoint(hitCollider.bounds.center).z;
+            if (depth <= 0f) return false;
+
+            Vector3 worldCenter3 = camera.ScreenToWorldPoint(
+                new Vector3(screenPosition.x, screenPosition.y, depth));
+            Vector2 worldCenter = worldCenter3;
+            if (radiusPixels <= 0f) return hitCollider.OverlapPoint(worldCenter);
+
+            Vector3 worldEdge3 = camera.ScreenToWorldPoint(
+                new Vector3(screenPosition.x + radiusPixels, screenPosition.y, depth));
+            float worldRadius = Vector2.Distance(worldCenter, (Vector2)worldEdge3);
+            Vector2 closest = hitCollider.ClosestPoint(worldCenter);
+            return (closest - worldCenter).sqrMagnitude <= worldRadius * worldRadius;
         }
 
         public bool ContainsWorldPoint(Vector2 worldPosition)
@@ -230,7 +289,10 @@ namespace ContextStage
         public bool TryDrop(HeatStage playedType, out SpecialHitReward reward)
         {
             reward = default;
-            if (!IsActive) return false;
+            var dragging = CardDragHandler.Current;
+            float radiusPixels = dragging != null ? dragging.DropRadiusPixels : 0f;
+            if (!ContainsScreenCircle(ResolveCamera(), ReadPointerPosition(), radiusPixels))
+                return false;
             if (!SpecialAudienceManager.HasInstance) return false;
 
             return SpecialAudienceManager.Instance.TrySpecialHit(playedType, out reward);
@@ -244,10 +306,35 @@ namespace ContextStage
             if (_hoverVisible == isHovered) return;
             _hoverVisible = isHovered;
 
-            if (highlight != null) highlight.SetActive(isHovered);
+            if (_outline != null) _outline.SetVisible(isHovered);
+            else if (highlight != null) highlight.SetActive(isHovered);
         }
 
         // ---------------- 유틸 ----------------
+
+        void ResolveHoverVisuals()
+        {
+            _hoverActor = hoverScaleTarget != null
+                ? hoverScaleTarget.GetComponentInChildren<SpecialAudienceCrowdActor>(true)
+                : GetComponentInChildren<SpecialAudienceCrowdActor>(true);
+
+            if (highlight == null || _hoverActor == null || _hoverActor.CharacterRenderer == null)
+                return;
+
+            _outline = highlight.GetComponent<SpecialAudienceOutline>();
+            if (_outline == null) _outline = highlight.AddComponent<SpecialAudienceOutline>();
+            _outline.Configure(_hoverActor.CharacterRenderer, outlineColor, outlineThickness);
+        }
+
+        void ResetHoverVisuals()
+        {
+            _currentHoverScale = 1f;
+            if (_hoverActor != null) _hoverActor.SetHoverScaleMultiplier(1f);
+            else if (hoverScaleTarget != null) hoverScaleTarget.localScale = _hoverBaseScale;
+
+            if (_outline != null) _outline.SetVisible(false);
+            else if (highlight != null) highlight.SetActive(false);
+        }
 
         Camera ResolveCamera()
         {

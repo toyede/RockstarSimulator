@@ -17,12 +17,16 @@ namespace ContextStage
         }
 
         public bool TryUseCard(int handIndex)
+            => TryUseCard(handIndex, SpecialCardRequest.None);
+
+        public bool TryUseCard(int handIndex, SpecialCardRequest specialRequest)
         {
             if (!CanUseCard(handIndex)) return false;
 
             var gameManager = GameManager.Instance;
             if (gameManager.State == GameState.Ready) gameManager.StartGame();
-            return gameManager.IsPlaying && CardSystem.Instance.SelectCard(handIndex);
+            return gameManager.IsPlaying &&
+                   CardSystem.Instance.SelectCard(handIndex, specialRequest);
         }
     }
 }

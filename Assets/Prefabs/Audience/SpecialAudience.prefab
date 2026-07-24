@@ -49,9 +49,14 @@ MonoBehaviour:
   hitCollider: {fileID: 1608626433301535613}
   followTarget: {fileID: 378121982140187770}
   followOffset: {x: 0, y: 0}
-  highlight: {fileID: 8301054570571648170}
   hoverScaleTarget: {fileID: 8346001614268982664}
   hoverScale: 1.1
+  hoverScaleSpeed: 12
+  onlyForSpecialCards: 1
+  requireMatchingStage: 0
+  highlight: {fileID: 8301054570571648170}
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineThickness: 2
   worldCamera: {fileID: 0}
 --- !u!1 &3798971918439476638
 GameObject:
@@ -83,7 +88,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 378121982140187770}
-  - {fileID: 8491763484887448330}
   m_Father: {fileID: 8691809137825887656}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4060288079119268086
@@ -116,7 +120,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8491763484887448330}
   m_Father: {fileID: 8346001614268982664}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &847094102704950687
@@ -192,6 +197,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.SpecialAudienceCrowdActor
   crowdSpawner: {fileID: 0}
   parentUnderCrowd: 1
+  motionRoot: {fileID: 0}
+  visualRoot: {fileID: 0}
   chillClip:
     clipName: Chill
     frames:
@@ -242,6 +249,9 @@ MonoBehaviour:
     squash: 0.18
     speedVariance: 0.2
     spriteCycleFps: 0
+  ensureDropTarget: 1
+  hitAreaSize: {x: 2.6, y: 3.6}
+  hitAreaOffset: {x: 0, y: 0}
   fallbackPosition: {x: 0, y: -3, z: 0}
 --- !u!1 &8301054570571648170
 GameObject:
@@ -253,6 +263,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8491763484887448330}
   - component: {fileID: 1741215691859521217}
+  - component: {fileID: 1974530202120554512}
   m_Layer: 0
   m_Name: Highlight
   m_TagString: Untagged
@@ -270,10 +281,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.08, y: 1.08, z: 1.08}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8346001614268982664}
+  m_Father: {fileID: 378121982140187770}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1741215691859521217
 SpriteRenderer:
@@ -334,6 +345,19 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &1974530202120554512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8301054570571648170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3547c0e7144aba41adc3b2ee5354736, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.SpecialAudienceOutline
+  outlineShader: {fileID: 4800000, guid: c9619d754de872048a7f5ef36b345524, type: 3}
 --- !u!1 &8438395580058734736
 GameObject:
   m_ObjectHideFlags: 0
