@@ -1,0 +1,283 @@
+using GameJamKit;
+using UnityEngine;
+
+namespace ContextStage
+{
+    /// <summary>
+    /// 특별 관객을 <b>무대 아래 일반 관객들 사이</b>에 세우고 돌아다니게 하는 월드 표현.
+    ///
+    /// - 등장하면 CrowdSpawner 가 배치한 관객 중 한 명의 자리를 골라 그 줄에 섞여 선다
+    /// - 일정 시간마다 다른 관객 자리로 옮겨 다닌다 (줄이 바뀌면 크기·정렬 순서도 그 줄을 따라간다)
+    /// - 걷는 동안에도 일반 관객과 같은 반동·흔들림·점프를 한다 (CrowdMotionProfile 재사용)
+    ///
+    /// 매니저를 직접 참조하지 않고 EventBus 만 구독하므로,
+    /// UI 쪽 SpecialAudienceView 와 <b>동시에</b> 붙여 쓸 수 있다 (게이지는 UI, 캐릭터는 무대).
+    ///
+    /// 관객이 아직 배치되지 않았거나 CrowdSpawner 가 없으면 제자리(fallback)에 선다.
+    /// </summary>
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(SpriteRenderer))]
+    public sealed class SpecialAudienceCrowdActor : MonoBehaviour
+    {
+        [Header("군중")]
+        [SerializeField, Tooltip("비워두면 씬에서 한 번만 찾아온다")]
+        CrowdSpawner crowdSpawner;
+
+        [SerializeField, Tooltip("체크하면 등장 시 군중 오브젝트의 자식으로 들어간다 (좌표계를 맞추기 위해 권장)")]
+        bool parentUnderCrowd = true;
+
+        [Header("요구별 스프라이트 (프레임 1장 = 정지 이미지)")]
+        [SerializeField] SpriteAnimationClip chillClip = new SpriteAnimationClip { clipName = "Chill" };
+        [SerializeField] SpriteAnimationClip singalongClip = new SpriteAnimationClip { clipName = "Singalong" };
+        [SerializeField] SpriteAnimationClip moshClip = new SpriteAnimationClip { clipName = "Mosh" };
+
+        [Header("돌아다니기")]
+        [SerializeField, Tooltip("이동 속도(초당 월드 유닛)")]
+        float moveSpeed = 1.6f;
+
+        [SerializeField, Tooltip("한 자리에 머무는 시간(초). 이 시간이 지나면 다른 관객 자리로 옮긴다")]
+        float dwellDuration = 1.8f;
+
+        [SerializeField, Tooltip("고른 관객 자리에서 좌우로 벗어나는 거리. 정확히 겹치지 않게 한다")]
+        float lateralOffset = 0.45f;
+
+        [SerializeField, Tooltip("옆 사람보다 살짝 앞에 세워 가려지지 않게 하는 정렬 보정")]
+        int sortingOrderBonus = 1;
+
+        [SerializeField, Tooltip("주변 관객 대비 크기 배율. 1보다 크면 눈에 잘 띈다")]
+        float scaleMultiplier = 1.15f;
+
+        [SerializeField, Tooltip("줄이 바뀔 때 크기가 따라붙는 속도")]
+        float scaleLerpSpeed = 6f;
+
+        [Header("움직임 (일반 관객과 같은 수치 구조)")]
+        [SerializeField]
+        CrowdMotionProfile motion = new CrowdMotionProfile
+        {
+            bobHeight = 0.07f, bobSpeed = 1.8f,
+            swayAngle = 7f, swaySpeed = 1.6f,
+            jumpHeight = 0.25f, jumpsPerSecond = 1.2f,
+            airTimeRatio = 0.7f, squash = 0.12f,
+        };
+
+        [SerializeField, Tooltip("Special Hit 성공 후 환호하다 사라지기까지의 시간(초). 매니저의 연출 유지시간과 맞추면 자연스럽다")]
+        float celebrateDuration = 0.7f;
+
+        [SerializeField, Tooltip("Special Hit 성공 시 잠깐 크게 뛰는 연출")]
+        CrowdMotionProfile celebrateMotion = new CrowdMotionProfile
+        {
+            bobHeight = 0.05f, bobSpeed = 2.5f,
+            swayAngle = 12f, swaySpeed = 3f,
+            jumpHeight = 0.6f, jumpsPerSecond = 2.4f,
+            airTimeRatio = 0.75f, squash = 0.18f,
+        };
+
+        [Header("군중이 없을 때")]
+        [SerializeField, Tooltip("CrowdSpawner 를 찾지 못했을 때 설 위치(월드)")]
+        Vector3 fallbackPosition = new Vector3(0f, -3f, 0f);
+
+        SpriteRenderer _renderer;
+        readonly SpriteAnimationPlayer _player = new SpriteAnimationPlayer();
+
+        bool _active;
+        bool _celebrating;
+        float _celebrateUntil;    // 환호 연출이 끝나는 시각
+        Vector3 _feet;            // 점프·반동을 뺀 실제 발 위치 (부모 기준 로컬)
+        Vector3 _anchor;          // 지금 향하고 있는 자리 (부모 기준 로컬)
+        float _repathAt;          // 다음에 자리를 옮길 시각
+        float _targetScale = 1f;
+        float _currentScale = 1f;
+        float _facing = 1f;       // 스프라이트 좌우 반전
+        float _phase;             // 개체 고유 위상 (일반 관객과 리듬이 겹치지 않게)
+
+        void Awake()
+        {
+            _renderer = GetComponent<SpriteRenderer>();
+            _player.Bind(_renderer);
+            _phase = Random.value * 10f;
+            SetVisible(false);
+        }
+
+        void OnEnable()
+        {
+            EventBus.Subscribe<SpecialAudienceSpawned>(OnSpawned);
+            EventBus.Subscribe<SpecialAudienceEnded>(OnEnded);
+        }
+
+        void OnDisable()
+        {
+            EventBus.Unsubscribe<SpecialAudienceSpawned>(OnSpawned);
+            EventBus.Unsubscribe<SpecialAudienceEnded>(OnEnded);
+        }
+
+        // ---------------- 이벤트 ----------------
+
+        void OnSpawned(SpecialAudienceSpawned e)
+        {
+            _celebrating = false;
+            ApplyClip(e.RequestType);
+            AttachToCrowd();
+            PickNewSpot(immediate: true);
+            SetVisible(true);
+        }
+
+        void OnEnded(SpecialAudienceEnded e)
+        {
+            // 성공했을 때만 잠깐 환호하고 사라진다. (숨기는 타이밍은 매니저의 연출 유지시간과 맞춘다)
+            if (e.Reason == SpecialAudienceEndReason.SpecialHit)
+            {
+                _celebrating = true;
+                _celebrateUntil = Time.time + Mathf.Max(0f, celebrateDuration);
+                return;
+            }
+            SetVisible(false);
+        }
+
+        // ---------------- 배치 ----------------
+
+        /// <summary>군중 오브젝트를 찾아 그 자식으로 들어간다. 좌표·크기 기준을 관객과 맞추기 위함.</summary>
+        void AttachToCrowd()
+        {
+            if (crowdSpawner == null) crowdSpawner = FindFirstObjectByType<CrowdSpawner>();
+
+            if (crowdSpawner == null)
+            {
+                transform.position = fallbackPosition;
+                return;
+            }
+
+            if (parentUnderCrowd && transform.parent != crowdSpawner.transform)
+                transform.SetParent(crowdSpawner.transform, worldPositionStays: false);
+        }
+
+        /// <summary>
+        /// 일반 관객 한 명을 골라 그 옆자리를 다음 목적지로 삼는다.
+        /// 관객의 줄 정보(높이·크기·정렬 순서)를 그대로 물려받아 자연스럽게 섞인다.
+        /// </summary>
+        void PickNewSpot(bool immediate)
+        {
+            _repathAt = Time.time + Mathf.Max(0.1f, dwellDuration);
+
+            var members = crowdSpawner != null ? crowdSpawner.Members : null;
+            if (members == null || members.Count == 0)
+            {
+                _anchor = transform.parent != null
+                    ? transform.parent.InverseTransformPoint(fallbackPosition)
+                    : fallbackPosition;
+                _targetScale = scaleMultiplier;
+                if (immediate) SnapToAnchor();
+                return;
+            }
+
+            // 후보를 몇 번 뽑아 지금 위치에서 너무 가깝지 않은 자리를 고른다 (제자리 걸음 방지)
+            CrowdMemberView picked = null;
+            for (int i = 0; i < 4; i++)
+            {
+                var candidate = members[Random.Range(0, members.Count)];
+                if (candidate == null) continue;
+                picked = candidate;
+                if (Mathf.Abs(candidate.HomeLocalPosition.x - transform.localPosition.x) > lateralOffset) break;
+            }
+            if (picked == null) return;
+
+            float side = Random.value < 0.5f ? -1f : 1f;
+            _anchor = picked.HomeLocalPosition + new Vector3(lateralOffset * side, 0f, 0f);
+
+            _targetScale = picked.BaseScale * scaleMultiplier;
+            _renderer.sortingOrder = picked.SortingOrder + sortingOrderBonus;
+
+            if (immediate) SnapToAnchor();
+        }
+
+        void SnapToAnchor()
+        {
+            _feet = _anchor;
+            transform.localPosition = _anchor;
+            _currentScale = _targetScale;
+        }
+
+        // ---------------- 움직임 ----------------
+
+        void Update()
+        {
+            _player.Tick(Time.deltaTime);
+            if (!_active) return;
+
+            // 환호가 끝나면 사라진다 (매니저가 특별 관객을 숨기는 타이밍과 맞춰둔다)
+            if (_celebrating && Time.time >= _celebrateUntil) { SetVisible(false); return; }
+
+            // 1) 자리 이동 — 목표 자리로 걸어간다. 환호 중에는 제자리에서 뛴다.
+            if (!_celebrating && Time.time >= _repathAt) PickNewSpot(immediate: false);
+
+            float dx = _anchor.x - _feet.x;
+            if (Mathf.Abs(dx) > 0.01f) _facing = Mathf.Sign(dx); // 진행 방향을 본다
+
+            if (!_celebrating)
+                _feet = Vector3.MoveTowards(_feet, _anchor, moveSpeed * Time.deltaTime);
+
+            // 2) 제자리 움직임 — 일반 관객과 같은 방식으로 반동·흔들림·점프
+            var profile = _celebrating ? celebrateMotion : motion;
+            EvaluateMotion(profile, Time.time + _phase, out float height, out float sway, out float squash);
+
+            // 발 위치는 따로 들고 있고 점프는 거기에 얹기만 한다 (점프하면서 자리가 밀려 올라가지 않는다)
+            transform.localPosition = _feet + new Vector3(0f, height, 0f);
+            transform.localRotation = Quaternion.Euler(0f, 0f, sway);
+
+            _currentScale = Mathf.Lerp(_currentScale, _targetScale, Time.deltaTime * scaleLerpSpeed);
+            transform.localScale = new Vector3(
+                _facing * _currentScale * (1f + squash * 0.5f),
+                _currentScale * (1f - squash),
+                1f);
+        }
+
+        /// <summary>
+        /// CrowdMemberView 와 같은 공식. (그쪽은 상태 전환 블렌드가 있어 인라인으로 계산하고,
+        /// 여기는 단일 프로필이라 이 함수를 쓴다. 수치 구조는 CrowdMotionProfile 로 공유한다)
+        /// </summary>
+        static void EvaluateMotion(CrowdMotionProfile p, float t, out float height, out float sway, out float squash)
+        {
+            height = 0f;
+            squash = 0f;
+
+            if (p.jumpHeight > 0.001f && p.jumpsPerSecond > 0.001f)
+            {
+                float air = Mathf.Clamp(p.airTimeRatio, 0.1f, 1f);
+                float cycle = Mathf.Repeat(t * p.jumpsPerSecond, 1f);
+
+                if (cycle < air) height = Mathf.Sin(Mathf.PI * (cycle / air)) * p.jumpHeight;
+                else squash = Mathf.Sin(Mathf.PI * ((cycle - air) / (1f - air))) * p.squash;
+            }
+
+            height += Mathf.Abs(Mathf.Sin(t * Mathf.PI * p.bobSpeed)) * p.bobHeight
+                      * (1f - Mathf.Clamp01(p.jumpHeight * 2f));
+
+            sway = Mathf.Sin(t * Mathf.PI * p.swaySpeed) * p.swayAngle;
+        }
+
+        // ---------------- 표시 ----------------
+
+        void ApplyClip(HeatStage requestType)
+        {
+            var clip = ResolveClip(requestType);
+            if (clip != null && clip.IsValid) _player.Play(clip, restart: true);
+        }
+
+        SpriteAnimationClip ResolveClip(HeatStage requestType)
+        {
+            switch (requestType)
+            {
+                case HeatStage.Chill:     return chillClip;
+                case HeatStage.Singalong: return singalongClip;
+                case HeatStage.Mosh:      return moshClip;
+                default:                  return null;
+            }
+        }
+
+        void SetVisible(bool visible)
+        {
+            _active = visible;
+            _celebrating = false;
+            if (_renderer != null) _renderer.enabled = visible;
+        }
+    }
+}
