@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3793454f94e3af47aff9c4584868043, type: 3}
+  m_Name: CrowdAmbienceConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CrowdAmbienceConfig
+  tiers:
+  - tierName: Low
+    soundId: crowd_low
+    clipOverride: {fileID: 0}
+    minNormalized: 0
+    volume: 0.8
+    fadeDurationOverride: 0
+  - tierName: Middle
+    soundId: crowd_middle
+    clipOverride: {fileID: 0}
+    minNormalized: 0.4
+    volume: 0.9
+    fadeDurationOverride: 0
+  - tierName: High
+    soundId: crowd_high
+    clipOverride: {fileID: 0}
+    minNormalized: 0.7
+    volume: 1
+    fadeDurationOverride: 0
+  crossfadeDuration: 1.2
+  hysteresis: 0.04
+  defaultAmbienceVolume: 1
+  startFadeDuration: 1.5
+  stopFadeDuration: 1

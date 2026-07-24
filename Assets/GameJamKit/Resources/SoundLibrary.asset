@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24909b4747ceb2842b5d1b3d33952e1e, type: 3}
+  m_Name: SoundLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::GameJamKit.SoundLibrary
+  sounds:
+  - id: crowd_low
+    clips:
+    - {fileID: 8300000, guid: d6ca14aff2c9cc244b1e43e9230746e9, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+  - id: crowd_middle
+    clips:
+    - {fileID: 8300000, guid: d9d403c7772aaaf4897419fb5a4d6def, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+  - id: crowd_high
+    clips:
+    - {fileID: 8300000, guid: d02550a51f8a8e94b9fba6640f6f12c7, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+  - id: crowd_mistake
+    clips:
+    - {fileID: 8300000, guid: dc1016183aa625444811f6bfe3a50cf9, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+  - id: guitar_solo
+    clips:
+    - {fileID: 8300000, guid: 8074fdfc912cc50478bfca30e7a74e2e, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+  - id: guitar_stroke
+    clips:
+    - {fileID: 8300000, guid: 5524091ba13378d4d8d3472159a13f97, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+  - id: hey_high
+    clips:
+    - {fileID: 8300000, guid: 3e278e2589c0ff5428dc17d632c3b0bb, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+  - id: hey_low
+    clips:
+    - {fileID: 8300000, guid: 2b25d9f067e392d40bd7a25d82b5298b, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02

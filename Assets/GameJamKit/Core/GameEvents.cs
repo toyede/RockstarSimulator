@@ -93,4 +93,15 @@ namespace GameJamKit
     /// 연출 담당: 조명 소등·야유 등 실패 연출을 여기에 붙인다.
     /// </summary>
     public struct HypeDepleted { }
+
+    /// <summary>
+    /// 관객 앰비언스 단계(low/middle/high...)가 바뀔 때 CrowdAmbienceSystem 이 발행.
+    /// 연출 담당: 조명 색·관객 애니메이션 속도를 사운드와 같은 타이밍에 바꾸고 싶을 때 구독한다.
+    /// </summary>
+    public struct CrowdAmbienceTierChanged
+    {
+        public int PreviousIndex;  // 이전 티어 (-1 = 없음)
+        public int Index;          // 새 티어 인덱스 (0 = 가장 낮음)
+        public string TierName;    // 콘픽에 적힌 티어 이름 ("Low" / "Middle" / "High" ...)
+    }
 }
