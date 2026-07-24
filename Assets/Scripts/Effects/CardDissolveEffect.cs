@@ -128,6 +128,11 @@ namespace ContextStage
                 ? dissolveTargets
                 : GetComponentsInChildren<Image>(true);
 
+            // 텍스트 대상이 비어 있으면 Image 가 아닌 Graphic(Text 등)을 자동으로 모은다.
+            // 프리팹마다 손으로 연결하지 않아도 되도록 하기 위함이고, 지정돼 있으면 건드리지 않는다.
+            if ((fadeGraphics == null || fadeGraphics.Length == 0) && textCanvasGroup == null)
+                fadeGraphics = CollectFadeGraphics();
+
             _originalMaterials = new Material[_targets.Length];
             _instances = new Material[_targets.Length];
             for (int i = 0; i < _targets.Length; i++)
@@ -142,6 +147,28 @@ namespace ContextStage
             }
 
             _seed = Vector4.zero;
+        }
+
+        /// <summary>디졸브 대상(Image)이 아닌 Graphic 만 모은다. (Text 등)</summary>
+        Graphic[] CollectFadeGraphics()
+        {
+            var all = GetComponentsInChildren<Graphic>(true);
+            int count = 0;
+            for (int i = 0; i < all.Length; i++)
+                if (!IsDissolveTarget(all[i])) count++;
+
+            var result = new Graphic[count];
+            int index = 0;
+            for (int i = 0; i < all.Length; i++)
+                if (!IsDissolveTarget(all[i])) result[index++] = all[i];
+            return result;
+        }
+
+        bool IsDissolveTarget(Graphic graphic)
+        {
+            for (int i = 0; i < _targets.Length; i++)
+                if (ReferenceEquals(_targets[i], graphic)) return true;
+            return false;
         }
 
         // ---------------- 공개 API ----------------
