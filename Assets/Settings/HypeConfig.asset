@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c57bfa7ac694abe4d81c776c142eeffe, type: 3}
+  m_Name: HypeConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.HypeConfig
+  startHype: 30
+  maxHype: 100
+  decayPerSecond: 1
+  perfectDelta: 30
+  goodDelta: 15
+  missDelta: -15
+  riskMissDelta: -25
+  encoreResetValue: 70
+  encoreDecayPauseDuration: 1.5

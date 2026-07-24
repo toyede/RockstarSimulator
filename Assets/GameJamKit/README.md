@@ -135,6 +135,9 @@ EventBus.Raise(new PlayerDied { Position = transform.position });
 킷이 기본 제공하는 이벤트 (`GameEvents.cs`):
 `GameStateChanged`, `ScoreChanged`, `EntityDamaged`, `EntityDied`, `WaveStarted`, `WaveCleared`
 
+이 프로젝트(CONTEXT STAGE)에서 추가한 이벤트 (`GameEvents.cs` 하단, 하단 "변경 이력" 참조):
+`HypeChanged`, `HypeJudgementApplied`, `EncoreTriggered`, `HypeDepleted` + `HypeJudgement` enum
+
 - 같은 핸들러를 두 번 구독해도 중복 등록되지 않는다.
 - 핸들러 하나가 예외를 던져도 나머지 핸들러는 정상 실행된다.
 - `EventBus.ClearAll()` 로 전체 해제 (플레이 시작 시 자동 호출됨).
@@ -530,3 +533,12 @@ Tools/GameJamKit/Export .unitypackage
 | 씬 전환 후 이벤트가 두 번 호출됨 | `OnDisable` 에서 `EventBus.Unsubscribe` 를 빠뜨림 |
 | 싱글턴이 null | `Awake()` 오버라이드 시 `base.Awake()` 누락 |
 | 카메라 흔들림이 안 보임 | 씬에 `MainCamera` 태그가 붙은 카메라가 없음 |
+
+---
+
+## 변경 이력 (프로젝트에서 킷을 수정한 기록)
+
+
+| 날짜 | 작업자 | 파일 | 내용 |
+|---|---|---|---|
+| 2026-07-24 | Claude | `Core/GameEvents.cs` | CONTEXT STAGE 호응도 이벤트 추가 — `HypeJudgement` enum, `HypeChanged`, `HypeJudgementApplied`, `EncoreTriggered`, `HypeDepleted`. (파일 상단 안내대로 프로젝트 고유 이벤트를 이 파일에 모음. 발행 주체는 `Assets/Scripts/Hype/HypeSystem.cs`) |
