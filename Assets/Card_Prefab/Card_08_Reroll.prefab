@@ -99,22 +99,22 @@ PrefabInstance:
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: artwork
       value: 
-      objectReference: {fileID: -4038964493999412825, guid: 590fdeb2881cb764c91d258cd4242adb, type: 3}
+      objectReference: {fileID: -1795189713533335737, guid: 38ed5377f171624468d1f14e2975f12a, type: 3}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: drawCount
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: cardColor.b
-      value: 0.2901961
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: cardColor.g
-      value: 0.6
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: cardColor.r
-      value: 0.9490196
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: description
