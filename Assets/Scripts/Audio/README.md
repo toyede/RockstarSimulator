@@ -62,6 +62,40 @@ void OnDisable() => EventBus.Unsubscribe<CrowdAmbienceTierChanged>(OnTier);
 void OnTier(CrowdAmbienceTierChanged e) => Debug.Log($"{e.PreviousIndex} → {e.Index} ({e.TierName})");
 ```
 
+## 4-1. 무대 BGM (`StageBgmPlayer`)
+
+`[CrowdAmbience]` 오브젝트에 함께 붙는다. 씬이 시작되면 `big_rock` 을 1.5초 페이드인으로 재생한다.
+
+| 인스펙터 | 기본값 | 설명 |
+|---|---|---|
+| `bgmId` | `big_rock` | SoundLibrary ID |
+| `startOn` | `SceneStart` | `PerformanceStart`(공연 시작 시) / `Manual` 로 변경 가능 |
+| `fadeInDuration` | 1.5초 | 페이드인 |
+| `stopOnGameOver` | 꺼짐 | 켜면 게임오버 시 페이드아웃 |
+
+**볼륨은 두 층으로 나뉜다.** 곡 자체 밸런스는 SoundLibrary 의 `big_rock` 항목 볼륨(= 0.5),
+플레이어가 옵션에서 만지는 값은 Bgm 채널 볼륨(`AudioVolumeSlider`)이다. 서로 곱해진다.
+
+```csharp
+Bgm.Play("big_rock");   // 곡 교체 (자동 크로스페이드)
+Bgm.Stop();
+Bgm.Volume = 0.8f;      // 채널 볼륨 (자동 저장)
+```
+
+## 4-2. 카드 효과음 (`CardSfxPlayer`)
+
+카드를 쓰면 `guitar_stroke` 가 재생된다. **카드 코드를 건드리지 않고 `CardSelected` 이벤트만 구독**하므로
+카드 담당이 로직을 바꿔도 사운드 쪽은 영향을 받지 않는다.
+
+| 인스펙터 | 기본값 | 설명 |
+|---|---|---|
+| `defaultSfxId` | `guitar_stroke` | 모든 카드 공통 소리 |
+| `cardOverrides` | 비어 있음 | 특정 `cardId` 만 다른 소리 (예: 기타 솔로 카드 → `guitar_solo`) |
+| `volumeScale` | 1 | 카드 효과음 볼륨 배율 |
+| 판정별 4칸 | 비어 있음 | Perfect/Good/Miss/RiskMiss 에 소리를 얹고 싶을 때 (`hey_high`, `crowd_mistake` …) |
+
+빈 칸은 조용히 넘어가므로 지금은 스트로크 한 방만 난다.
+
 ## 5. 볼륨 UI
 
 옵션 패널의 `Slider` 에 `AudioVolumeSlider` 를 붙이고 `channel` 만 고르면 끝이다.
@@ -83,6 +117,7 @@ void OnTier(CrowdAmbienceTierChanged e) => Debug.Log($"{e.PreviousIndex} → {e.
 
 | ID | 파일 | 용도 |
 |---|---|---|
+| `big_rock` | `Audio/BGM/Big Rock.mp3` | 무대 BGM (루프, 볼륨 0.5) |
 | `crowd_low` / `crowd_middle` / `crowd_high` | `Audio/BGM/` | 관객 앰비언스 (루프) |
 | `crowd_mistake` | `Audio/OneShot/Crowd_mistake.wav` | 실패 판정 |
 | `guitar_solo` / `guitar_stroke` | `Audio/OneShot/` | 카드 연출 |

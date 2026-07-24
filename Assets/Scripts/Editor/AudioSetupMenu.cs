@@ -24,6 +24,9 @@ namespace ContextStage.EditorTools
         /// <summary>사운드 ID → 클립 경로 매핑. 새 사운드가 늘어나면 이 표에만 추가하면 된다.</summary>
         static readonly (string id, string clipPath, bool loop, float volume)[] DefaultSounds =
         {
+            // BGM (루프). 곡 자체의 밸런스는 여기 volume 으로, 유저 설정은 Bgm 채널 볼륨으로 나눠 잡는다
+            ("big_rock",      "Assets/Audio/BGM/Big Rock.mp3",          true,  0.5f),
+
             // 관객 앰비언스 (루프)
             ("crowd_low",     "Assets/Audio/BGM/crowd_low.wav",         true,  1f),
             ("crowd_middle",  "Assets/Audio/BGM/crowd_middle.wav",      true,  1f),
@@ -61,6 +64,12 @@ namespace ContextStage.EditorTools
 
             // 옵션 UI 가 나오기 전까지 키보드로 확인할 수 있는 디버그 입력 ([ ] - = M T)
             if (go.GetComponent<CrowdAmbienceDebugInput>() == null) Undo.AddComponent<CrowdAmbienceDebugInput>(go);
+
+            // 무대 BGM (씬 시작과 동시에 big_rock 페이드인)
+            if (go.GetComponent<StageBgmPlayer>() == null) Undo.AddComponent<StageBgmPlayer>(go);
+
+            // 카드 사용 효과음 (CardSelected 이벤트 구독 → guitar_stroke)
+            if (go.GetComponent<CardSfxPlayer>() == null) Undo.AddComponent<CardSfxPlayer>(go);
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             Selection.activeGameObject = go;

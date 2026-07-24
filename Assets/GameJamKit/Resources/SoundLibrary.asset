@@ -77,3 +77,11 @@ MonoBehaviour:
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+  - id: big_rock
+    clips:
+    - {fileID: 8300000, guid: ab2eb68739d06a44e91a68eb02b2147c, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
