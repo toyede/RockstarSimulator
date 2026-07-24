@@ -32,7 +32,10 @@ namespace ContextStage
         bool useMoodSprites = true;
 
         SpriteRenderer _renderer;
+        TextMesh[] _labels;
         Vector3 _basePosition;
+        Vector3 _transitionOffset;
+        float _transitionAlpha = 1f;
 
         // 상태 블렌드: from → to 로 _blend(0~1) 만큼 섞어서 평가한다
         CrowdMotionProfile _from, _to;
@@ -59,6 +62,36 @@ namespace ContextStage
         public int SortingOrder => _renderer != null ? _renderer.sortingOrder : 0;
         public CrowdPreference Preference => preference;
 
+        public void SetTransitionState(Vector3 localOffset, float alpha)
+        {
+            _transitionOffset = localOffset;
+            _transitionAlpha = Mathf.Clamp01(alpha);
+            ApplyTransitionAlpha();
+        }
+
+        public void ClearTransitionState()
+        {
+            _transitionOffset = Vector3.zero;
+            _transitionAlpha = 1f;
+            ApplyTransitionAlpha();
+        }
+
+        void ApplyTransitionAlpha()
+        {
+            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            Color color = _renderer.color;
+            color.a = _transitionAlpha;
+            _renderer.color = color;
+
+            if (_labels == null) _labels = GetComponentsInChildren<TextMesh>(true);
+            for (int i = 0; i < _labels.Length; i++)
+            {
+                Color labelColor = _labels[i].color;
+                labelColor.a = _transitionAlpha;
+                _labels[i].color = labelColor;
+            }
+        }
+
         public void ConfigureIdentity(CrowdPreference audiencePreference, bool preservePrefabArtwork)
         {
             preference = audiencePreference;
@@ -70,6 +103,7 @@ namespace ContextStage
         void Initialize()
         {
             if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            if (_labels == null) _labels = GetComponentsInChildren<TextMesh>(true);
             _player.Bind(_renderer);
             _basePosition = transform.localPosition;
 
@@ -215,7 +249,8 @@ namespace ContextStage
 
             // --- 적용 ---
             float scale = baseScale * Blend(TierScale(_fromTier), TierScale(_toTier));
-            transform.localPosition = _basePosition + new Vector3(0f, height, 0f);
+            transform.localPosition =
+                _basePosition + _transitionOffset + new Vector3(0f, height, 0f);
             transform.localRotation = Quaternion.Euler(0f, 0f, sway * _flip);
             transform.localScale = new Vector3(
                 _flip * scale * (1f + squashAmount * 0.5f),   // 눌리면 옆으로 퍼진다

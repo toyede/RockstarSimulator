@@ -41,6 +41,53 @@ namespace ContextStage
     /// <summary>프리팹에 저장된 값과 현재 열기만으로 카드 결과를 계산하는 순수 판정기.</summary>
     public static class CardEffectResolver
     {
+        public static float CrowdScoreMultiplier(CrowdReactionGrade reaction)
+        {
+            switch (reaction)
+            {
+                case CrowdReactionGrade.Great: return 1.3f;
+                case CrowdReactionGrade.Weak: return 0.7f;
+                default: return 1f;
+            }
+        }
+
+        /// <summary>
+        /// Resolves a normal card from the current audience composition.
+        /// The audience coefficient is applied later so score has one authoritative formula.
+        /// </summary>
+        public static CardEffectResult ResolveForCrowd(
+            CardDefinition card,
+            CrowdReactionGrade reaction)
+        {
+            if (card == null)
+                return new CardEffectResult(HypeJudgement.Miss, 0, 0f, false);
+
+            if (card.Role == CardRole.Utility)
+                return new CardEffectResult(HypeJudgement.Good, 0, 0f, false);
+
+            switch (reaction)
+            {
+                case CrowdReactionGrade.Great:
+                    return new CardEffectResult(
+                        HypeJudgement.Perfect,
+                        card.BaseScore,
+                        card.ExactHeatDelta,
+                        false);
+                case CrowdReactionGrade.Good:
+                    return new CardEffectResult(
+                        HypeJudgement.Good,
+                        card.BaseScore,
+                        card.AdjacentHeatDelta,
+                        false);
+                default:
+                    return new CardEffectResult(
+                        HypeJudgement.Miss,
+                        card.BaseScore,
+                        card.FarHeatDelta,
+                        false);
+            }
+        }
+
         public static CardEffectResult Resolve(
             CardDefinition card,
             float currentHype,

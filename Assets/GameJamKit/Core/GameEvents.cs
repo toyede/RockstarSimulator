@@ -146,6 +146,27 @@ namespace GameJamKit
         public float Multiplier; // 카드를 낼 때의 열기 배율. 획득 점수 = BaseScore × Multiplier
     }
 
+    /// <summary>
+    /// Final authoritative result of one card play.
+    /// Score systems consume this event only; CardSelected remains for input/audio/visual feedback.
+    /// </summary>
+    public struct CardResolved
+    {
+        public string CardId;
+        public string DisplayName;
+        public int HandIndex;
+        public ContextStage.CardRole Role;
+        public ContextStage.CrowdPreference TargetPreference;
+        public ContextStage.CrowdReactionGrade CrowdReaction;
+        public HypeJudgement Judgement;
+        public int BaseScore;
+        public float HypeMultiplier;
+        public float CrowdMultiplier;
+        public int GainedScore;
+        public float HypeDelta;
+        public bool IsSpecialHit;
+    }
+
     // ------------------------------------------------------------------
     // 특별 관객 (SpecialAudienceManager 가 발행)
     // 매니저에는 C# event 도 함께 있으니, 직접 참조가 있으면 그쪽을 써도 된다.

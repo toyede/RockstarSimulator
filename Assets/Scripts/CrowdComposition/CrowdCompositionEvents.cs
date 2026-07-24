@@ -8,4 +8,11 @@ namespace GameJamKit
         public string CurrentPresetId;
         public string Source;
     }
+
+    public struct CrowdShiftStarted
+    {
+        public string EventName;
+        public string TargetPresetId;
+        public ContextStage.CrowdCompositionSnapshot Target;
+    }
 }

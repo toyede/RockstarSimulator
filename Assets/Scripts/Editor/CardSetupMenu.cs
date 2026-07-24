@@ -509,6 +509,7 @@ namespace ContextStage.EditorTools
             serialized.FindProperty("description").stringValue = seed.Description;
             serialized.FindProperty("role").enumValueIndex = (int)seed.Role;
             serialized.FindProperty("targetStage").enumValueIndex = (int)seed.TargetStage;
+            serialized.FindProperty("targetPreference").enumValueIndex = (int)seed.TargetStage;
             serialized.FindProperty("utilityEffect").enumValueIndex = (int)seed.UtilityEffect;
             serialized.FindProperty("artwork").objectReferenceValue = guitar;
             serialized.FindProperty("cardColor").colorValue = seed.Color;

@@ -17,16 +17,16 @@ namespace ContextStage
         /// <summary>씬 재시작 시 새로 초기화되도록 씬에 종속시킨다. (HypeSystem 과 동일)</summary>
         protected override bool Persistent => false;
 
-        void OnEnable() => EventBus.Subscribe<CardSelected>(OnCardSelected);
-        void OnDisable() => EventBus.Unsubscribe<CardSelected>(OnCardSelected);
+        void OnEnable() => EventBus.Subscribe<CardResolved>(OnCardResolved);
+        void OnDisable() => EventBus.Unsubscribe<CardResolved>(OnCardResolved);
 
-        void OnCardSelected(CardSelected e)
+        void OnCardResolved(CardResolved e)
         {
             if (!GameManager.HasInstance) return;
 
             // 획득 점수 = 카드 기본 점수 × 카드 낼 때의 열기 배율
-            int gained = Mathf.RoundToInt(e.BaseScore * e.Multiplier);
-            if (gained != 0) GameManager.Instance.AddScore(gained);
+            if (e.GainedScore != 0)
+                GameManager.Instance.AddScore(e.GainedScore);
         }
     }
 }

@@ -1,3 +1,4 @@
+using GameJamKit;
 using UnityEngine;
 
 namespace ContextStage
@@ -12,11 +13,23 @@ namespace ContextStage
 
         GUIStyle _box;
         GUIStyle _label;
+        GUIStyle _banner;
+        string _bannerText;
+        float _bannerUntil;
 
         void Awake()
         {
             if (manager == null) manager = GetComponent<CrowdCompositionManager>();
             if (manager == null) manager = FindFirstObjectByType<CrowdCompositionManager>();
+        }
+
+        void OnEnable() => EventBus.Subscribe<CrowdShiftStarted>(OnCrowdShiftStarted);
+        void OnDisable() => EventBus.Unsubscribe<CrowdShiftStarted>(OnCrowdShiftStarted);
+
+        void OnCrowdShiftStarted(CrowdShiftStarted e)
+        {
+            _bannerText = $"CROWD SHIFT!\n{e.EventName}";
+            _bannerUntil = Time.unscaledTime + 1.8f;
         }
 
         void OnGUI()
@@ -41,6 +54,12 @@ namespace ContextStage
             GUILayout.Space(6f);
             GUILayout.Label("F1 Balanced  F2 Formal  F3 Britpop  F4 Hardcore", _label);
             GUILayout.EndArea();
+
+            if (Time.unscaledTime < _bannerUntil)
+            {
+                Rect bannerRect = new Rect(Screen.width * 0.5f - 230f, 28f, 460f, 74f);
+                GUI.Box(bannerRect, _bannerText, _banner);
+            }
         }
 
         void DrawCount(CrowdPreference preference)
@@ -61,6 +80,13 @@ namespace ContextStage
             _label = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 14,
+                normal = { textColor = Color.white }
+            };
+            _banner = new GUIStyle(GUI.skin.box)
+            {
+                fontSize = 22,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
                 normal = { textColor = Color.white }
             };
         }

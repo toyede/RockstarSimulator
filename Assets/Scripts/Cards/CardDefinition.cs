@@ -39,6 +39,8 @@ namespace ContextStage
         [Header("역할")]
         [SerializeField] CardRole role;
         [SerializeField] HeatStage targetStage;
+        [SerializeField, Tooltip("Permanent audience taste this card appeals to. This is not the current Hype stage.")]
+        CrowdPreference targetPreference;
         [SerializeField] UtilityCardEffect utilityEffect;
 
         [Header("일반 단계 판정")]
@@ -66,7 +68,9 @@ namespace ContextStage
         public string Description => description;
         public CardRole Role => role;
         public HeatStage TargetStage => targetStage;
+        public CrowdPreference TargetPreference => targetPreference;
         public UtilityCardEffect UtilityEffect => utilityEffect;
+        public int BaseScore => exactBaseScore;
         public int ExactBaseScore => exactBaseScore;
         public int AdjacentBaseScore => adjacentBaseScore;
         public int FarBaseScore => farBaseScore;
@@ -85,5 +89,10 @@ namespace ContextStage
 
         public float PreviewHeatDelta(float currentHype, HypeConfig config)
             => CardEffectResolver.Resolve(this, currentHype, config, SpecialCardRequest.None).HeatDelta;
+
+        public CrowdReactionGrade PreviewCrowdReaction(CrowdCompositionSnapshot composition)
+            => Role == CardRole.Utility
+                ? CrowdReactionGrade.Good
+                : CrowdReactionEvaluator.Evaluate(composition, targetPreference);
     }
 }

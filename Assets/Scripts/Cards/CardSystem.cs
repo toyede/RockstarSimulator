@@ -14,6 +14,7 @@ namespace ContextStage
 
         readonly List<CardDefinition> _hand = new List<CardDefinition>();
         PreparedDeck<CardDefinition> _deck;
+        CrowdCompositionManager _crowdComposition;
 
         bool _selecting;
         bool _warnedInvalidPool;
@@ -29,7 +30,11 @@ namespace ContextStage
         public int PreparedDeckCount => _deck != null ? _deck.PreparedBatchCount : 0;
         public int CurrentDeckRemaining => _deck != null ? _deck.CurrentRemaining : 0;
 
-        protected override void OnAwake() => StartRun();
+        protected override void OnAwake()
+        {
+            _crowdComposition = FindFirstObjectByType<CrowdCompositionManager>();
+            StartRun();
+        }
 
         void OnEnable() => EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
         void OnDisable() => EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
@@ -93,12 +98,27 @@ namespace ContextStage
 
                 float currentHype = Hype.Current;
                 // 특별 관객이 요구 중이면 그 맥락을 판정기에 넘긴다. 없으면 None과 동일하게 동작한다.
-                var result = CardEffectResolver.Resolve(
-                    card,
-                    currentHype,
-                    HypeSystem.Instance.Config,
-                    specialRequest);
+                if (_crowdComposition == null)
+                    _crowdComposition = FindFirstObjectByType<CrowdCompositionManager>();
+
+                CrowdReactionGrade crowdReaction =
+                    card.Role == CardRole.Utility || _crowdComposition == null
+                        ? CrowdReactionGrade.Good
+                        : _crowdComposition.EvaluateReaction(card.TargetPreference);
+
+                var result = card.Role == CardRole.Normal
+                    ? CardEffectResolver.ResolveForCrowd(card, crowdReaction)
+                    : CardEffectResolver.Resolve(
+                        card,
+                        currentHype,
+                        HypeSystem.Instance.Config,
+                        specialRequest);
                 float multiplier = Hype.MultiplierFor(currentHype);
+                float crowdMultiplier = card.Role == CardRole.Normal
+                    ? CardEffectResolver.CrowdScoreMultiplier(crowdReaction)
+                    : 1f;
+                int gainedScore = Mathf.RoundToInt(
+                    result.BaseScore * multiplier * crowdMultiplier);
 
                 // 동기 EventBus 구독자가 현재 열기 배율로 점수를 먼저 반영한다.
                 EventBus.Raise(new CardSelected
@@ -109,7 +129,24 @@ namespace ContextStage
                     Judgement = result.Judgement,
                     Delta = result.HeatDelta,
                     BaseScore = result.BaseScore,
-                    Multiplier = multiplier
+                    Multiplier = multiplier * crowdMultiplier
+                });
+
+                EventBus.Raise(new CardResolved
+                {
+                    CardId = card.Id,
+                    DisplayName = card.DisplayName,
+                    HandIndex = index,
+                    Role = card.Role,
+                    TargetPreference = card.TargetPreference,
+                    CrowdReaction = crowdReaction,
+                    Judgement = result.Judgement,
+                    BaseScore = result.BaseScore,
+                    HypeMultiplier = multiplier,
+                    CrowdMultiplier = crowdMultiplier,
+                    GainedScore = gainedScore,
+                    HypeDelta = result.HeatDelta,
+                    IsSpecialHit = result.IsSpecialHit
                 });
 
                 // 이 카드의 점수 계산이 끝난 뒤 열기를 변경한다.

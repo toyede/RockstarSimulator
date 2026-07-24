@@ -84,6 +84,8 @@ namespace ContextStage.EditorTools
 
             if (host.GetComponent<CrowdCompositionDebugView>() == null)
                 Undo.AddComponent<CrowdCompositionDebugView>(host);
+            if (host.GetComponent<CrowdShiftDirector>() == null)
+                Undo.AddComponent<CrowdShiftDirector>(host);
 
             var spawnerObject = new SerializedObject(spawner);
             SetObjectReference(spawnerObject, "compositionManager", manager);
