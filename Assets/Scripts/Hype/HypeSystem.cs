@@ -4,12 +4,14 @@ using UnityEngine;
 namespace ContextStage
 {
     /// <summary>
-    /// 호응도 시스템 핵심 매니저. (기획: .myDox/"호응도" 기획.md)
+    /// 열기(구 호응도) 시스템 핵심 매니저. (기획: .myDox/열기(점수 배율) 시스템 작업계획.md)
     ///
+    /// 열기는 승패 조건이 아니라 "점수 배율"을 유지하는 긴장 요소다.
     /// - 공연 시작 시 30 에서 출발, 카드 선택 중 초당 1 감소
-    /// - 0 도달  → HypeDepleted 발행 + GameManager.GameOver()
-    /// - 100 도달 → EncoreTriggered 발행 → 호응도 70 + 1.5초 감소 정지
-    /// - 모든 수치는 HypeConfig 에셋에서 튜닝
+    /// - 0 도달  → 게임오버 아님. 배율이 최저(×1)로 유지될 뿐
+    /// - 100 도달 → 앙코르 아님. 100에 머물며 최고 배율(×5)을 지속
+    /// - 현재 열기에 따른 점수 배율은 CurrentMultiplier / Hype.Multiplier 로 읽는다
+    /// - 모든 수치는 HypeConfig 에셋에서 튜닝 (배율 테이블 포함)
     ///
     /// [다른 담당자용 API]
     ///   HypeSystem.Instance.ApplyJudgement(HypeJudgement.Perfect); // 카드 담당: 판정 결과 전달
@@ -23,9 +25,8 @@ namespace ContextStage
         [SerializeField, Tooltip("밸런스 수치 에셋. 비워두면 기본값으로 임시 생성됨 (경고 출력)")]
         HypeConfig config;
 
-        float _current;              // 현재 호응도
+        float _current;              // 현재 열기
         bool _decayPausedManually;   // 연출 담당이 SetDecayPaused 로 제어하는 정지 플래그
-        float _decayPausedUntil;     // 앙코르 직후 일시 정지가 풀리는 시각 (Time.time 기준)
 
         /// <summary>씬 재시작 시 새로 초기화되도록 씬에 종속시킨다. (GameManager 처럼 DontDestroyOnLoad 하지 않음)</summary>
         protected override bool Persistent => false;
@@ -34,8 +35,18 @@ namespace ContextStage
         public float Normalized => config == null ? 0f : Mathf.Clamp01(_current / config.maxHype);
         public HypeConfig Config => config;
 
-        /// <summary>지금 감소가 멈춰 있는가 (연출 정지 또는 앙코르 직후). 디버그 표시용.</summary>
-        public bool IsDecayPaused => _decayPausedManually || Time.time < _decayPausedUntil;
+        /// <summary>현재 열기에 해당하는 점수 배율 (×1~×5). 콘픽이 없으면 1.</summary>
+        public float CurrentMultiplier => config == null ? 1f : config.GetMultiplier(Normalized);
+
+        /// <summary>임의의 열기 비율(0~1)에 해당하는 점수 배율.</summary>
+        public float MultiplierAt(float hype01) => config == null ? 1f : config.GetMultiplier(hype01);
+
+        /// <summary>임의의 열기 원값(0~100)에 해당하는 점수 배율. (카드 담당이 사용)</summary>
+        public float MultiplierForRaw(float rawHype)
+            => config == null || config.maxHype <= 0f ? 1f : config.GetMultiplier(rawHype / config.maxHype);
+
+        /// <summary>지금 감소가 멈춰 있는가 (연출 정지). 디버그 표시용.</summary>
+        public bool IsDecayPaused => _decayPausedManually;
 
         protected override void OnAwake()
         {
@@ -63,7 +74,6 @@ namespace ContextStage
         public void ResetHype()
         {
             _decayPausedManually = false;
-            _decayPausedUntil = 0f;
             float prev = _current;
             _current = Mathf.Clamp(config.startHype, 0f, config.maxHype);
             RaiseChanged(_current - prev);
@@ -75,8 +85,8 @@ namespace ContextStage
             var gm = GameManager.Instance;
             if (gm == null || !gm.IsPlaying) return;
 
-            // 연출 중이거나 앙코르 직후에는 감소 정지 (기획 §7: 판단 구간에서만 떨어져야 공정함)
-            if (_decayPausedManually || Time.time < _decayPausedUntil) return;
+            // 연출 중에는 감소 정지 (판단 구간에서만 떨어져야 공정함)
+            if (_decayPausedManually) return;
 
             Change(-config.decayPerSecond * Time.deltaTime);
         }
@@ -105,7 +115,11 @@ namespace ContextStage
 
         // ---------------- 내부 로직 ----------------
 
-        /// <summary>호응도 증감 + 경계(0/100) 처리의 단일 통로. 값 변경은 반드시 여기로 모은다.</summary>
+        /// <summary>
+        /// 열기 증감 + 경계(0~100 클램프) 처리의 단일 통로. 값 변경은 반드시 여기로 모은다.
+        /// 열기는 승패 조건이 아니므로 0/100 에서 게임오버·앙코르 같은 특수 처리를 하지 않는다.
+        /// (0 이면 배율이 ×1 바닥, 100 이면 ×5 로 유지될 뿐)
+        /// </summary>
         void Change(float delta)
         {
             if (Mathf.Approximately(delta, 0f)) return;
@@ -113,30 +127,6 @@ namespace ContextStage
             float prev = _current;
             _current = Mathf.Clamp(_current + delta, 0f, config.maxHype);
             if (!Mathf.Approximately(prev, _current)) RaiseChanged(_current - prev);
-
-            if (_current >= config.maxHype) TriggerEncore();
-            else if (_current <= 0f) TriggerGameOver();
-        }
-
-        /// <summary>100 도달: 앙코르 발동 → 70으로 변경 → 잠시 감소 정지. (기획 §5)</summary>
-        void TriggerEncore()
-        {
-            // 카드 추가 드로우·연출은 이 이벤트 구독자(카드/연출 담당)가 처리한다
-            EventBus.Raise(new EncoreTriggered());
-
-            // 보상을 인식할 여유: 잠시 감소 정지 (코루틴 없이 시각 비교로 처리해 취소 걱정이 없다)
-            _decayPausedUntil = Time.time + config.encoreDecayPauseDuration;
-
-            float prev = _current;
-            _current = Mathf.Clamp(config.encoreResetValue, 0f, config.maxHype);
-            RaiseChanged(_current - prev);
-        }
-
-        /// <summary>0 도달: 공연 실패. GameOver 상태가 되면 Update/ApplyJudgement 가 모두 막힌다.</summary>
-        void TriggerGameOver()
-        {
-            EventBus.Raise(new HypeDepleted());
-            GameManager.Instance.GameOver();
         }
 
         void RaiseChanged(float delta)
@@ -166,6 +156,12 @@ namespace ContextStage
 
         /// <summary>현재 호응도의 0~1 비율.</summary>
         public static float Normalized => HypeSystem.HasInstance ? HypeSystem.Instance.Normalized : 0f;
+
+        /// <summary>현재 열기에 해당하는 점수 배율 (×1~×5). 시스템이 없으면 1.</summary>
+        public static float Multiplier => HypeSystem.HasInstance ? HypeSystem.Instance.CurrentMultiplier : 1f;
+
+        /// <summary>[카드 담당] 카드 낼 때의 열기 원값(0~100)에 해당하는 점수 배율.</summary>
+        public static float MultiplierFor(float rawHype) => HypeSystem.HasInstance ? HypeSystem.Instance.MultiplierForRaw(rawHype) : 1f;
 
         /// <summary>지금 감소가 멈춰 있는가 (연출 정지 또는 앙코르 직후).</summary>
         public static bool IsDecayPaused => HypeSystem.HasInstance && HypeSystem.Instance.IsDecayPaused;
