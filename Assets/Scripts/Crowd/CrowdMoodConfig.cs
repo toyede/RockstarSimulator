@@ -61,8 +61,24 @@ namespace ContextStage
         [Tooltip("호응도 비율(0~1)이 이 값 이상이면 이 상태")]
         [Range(0f, 1f)] public float minNormalized = 0f;
 
-        [Tooltip("이 상태에서 쓸 관객 스프라이트 세트. 관객마다 이 중 하나를 나눠 갖는다")]
+        [Tooltip("이 상태에서 쓸 관객 스프라이트 세트. 관객마다 이 중 하나를 나눠 갖는다 (정지 이미지)")]
         public Sprite[] sprites;
+
+        [Tooltip("관객별 애니메이션. 비워두면 위 sprites 를 정지 이미지로 쓴다.\n" +
+                 "채우면 관객마다 이 중 하나를 배정받아 프레임 애니메이션으로 움직인다.\n" +
+                 "(아트가 프레임을 주면 여기에 variant 를 늘려가면 되고, 코드는 그대로다)")]
+        public SpriteAnimationClip[] animationVariants;
+
+        /// <summary>이 상태가 프레임 애니메이션을 쓰는가.</summary>
+        public bool HasAnimation => animationVariants != null && animationVariants.Length > 0;
+
+        /// <summary>관객 번호 → 그 관객이 쓸 애니메이션 클립. 없으면 null.</summary>
+        public SpriteAnimationClip GetAnimationVariant(int seed)
+        {
+            if (!HasAnimation) return null;
+            int count = animationVariants.Length;
+            return animationVariants[((seed % count) + count) % count];
+        }
 
         [Tooltip("실루엣 색조. 조명 연출과 맞추면 상태 구분이 훨씬 쉬워진다")]
         public Color tint = Color.white;

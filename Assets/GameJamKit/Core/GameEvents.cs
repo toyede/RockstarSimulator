@@ -145,5 +145,35 @@ namespace GameJamKit
         public int BaseScore;    // 카드 기본 점수 (열기 배율 적용 전). 점수 담당이 구독해 누적한다
         public float Multiplier; // 카드를 낼 때의 열기 배율. 획득 점수 = BaseScore × Multiplier
     }
+
+    // ------------------------------------------------------------------
+    // 특별 관객 (SpecialAudienceManager 가 발행)
+    // 매니저에는 C# event 도 함께 있으니, 직접 참조가 있으면 그쪽을 써도 된다.
+    // ------------------------------------------------------------------
+
+    /// <summary>특별 관객이 등장했을 때 발행.</summary>
+    public struct SpecialAudienceSpawned
+    {
+        public ContextStage.SpecialAudienceRequestType RequestType;
+        public float Duration;   // 전체 제한시간(초)
+    }
+
+    /// <summary>특별 관객 요청이 끝났을 때 발행. 이유는 Reason 으로 구분한다.</summary>
+    public struct SpecialAudienceEnded
+    {
+        public ContextStage.SpecialAudienceRequestType RequestType;
+        public ContextStage.SpecialAudienceEndReason Reason;
+    }
+
+    /// <summary>
+    /// Special Hit 성공 시 발행. 한 요청당 정확히 한 번만 발행된다.
+    /// 점수·열기 담당: 이 이벤트를 구독해 Reward 를 적용하면 된다.
+    /// (특별 관객 시스템은 점수·열기를 직접 건드리지 않는다)
+    /// </summary>
+    public struct SpecialHitLanded
+    {
+        public ContextStage.SpecialAudienceRequestType RequestType;
+        public ContextStage.SpecialHitReward Reward;
+    }
 }
 
