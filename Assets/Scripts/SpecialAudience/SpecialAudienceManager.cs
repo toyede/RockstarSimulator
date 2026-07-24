@@ -104,6 +104,67 @@ namespace ContextStage
 
         public bool IsRunning => _phase != Phase.Stopped;
 
+        /// <summary>
+        /// 지금 카드를 받을 수 있는 드롭 영역. 없거나 요구가 없으면 null.
+        /// 특별 관객은 동시에 한 명이라 싱글턴을 새로 만들지 않고 이 프로퍼티로 노출한다.
+        /// </summary>
+        public SpecialAudienceDropTarget CurrentDropTarget { get; private set; }
+
+        /// <summary>
+        /// true 면 <b>드롭 영역 위에 놓았을 때만</b> Special Hit 가 성립한다.
+        /// false 면 예전처럼 요구가 살아 있는 동안 아무 곳에 내도 성립한다(키보드 사용 등).
+        /// </summary>
+        [Header("드롭 판정")]
+        [SerializeField, Tooltip("특별 관객 위에 카드를 놓아야만 Special Hit 로 인정")]
+        bool requireDropOnTarget = true;
+
+        public bool RequireDropOnTarget => requireDropOnTarget;
+
+        /// <summary>드롭 영역이 지금 포인터를 물고 있는가. (없으면 false)</summary>
+        public bool IsPointerOverDropTarget =>
+            CurrentDropTarget != null && CurrentDropTarget.IsPointerOver;
+
+        /// <summary>
+        /// 드롭 위치 게이트를 적용해야 하는가.
+        ///
+        /// 씬에 DropTarget 이 하나도 없으면 게이트를 걸지 않는다.
+        /// (안 그러면 판정 영역이 없다는 이유로 Special Hit 가 <b>영원히</b> 성립하지 않아,
+        ///  아무 로그도 없이 기능이 죽은 것처럼 보인다)
+        /// </summary>
+        public bool ShouldGateByDropTarget
+        {
+            get
+            {
+                if (!requireDropOnTarget) return false;
+                if (CurrentDropTarget != null) return true;
+
+                WarnNoDropTargetOnce();
+                return false;
+            }
+        }
+
+        bool _warnedNoDropTarget;
+
+        void WarnNoDropTargetOnce()
+        {
+            if (_warnedNoDropTarget) return;
+            _warnedNoDropTarget = true;
+            Debug.LogWarning("[SpecialAudience] 씬에 DropTarget 이 없어 드롭 위치 판정을 건너뜁니다. " +
+                             "특별 관객에게 대지 않아도 Special Hit 가 성립합니다. " +
+                             "SpecialAudienceCrowdActor 의 ensureDropTarget 이 켜져 있는지 확인하세요.", this);
+        }
+
+        /// <summary>DropTarget 이 스스로 등록한다. (씬에 한 개만 있다고 가정)</summary>
+        public void RegisterDropTarget(SpecialAudienceDropTarget target)
+        {
+            if (target != null) CurrentDropTarget = target;
+        }
+
+        public void UnregisterDropTarget(SpecialAudienceDropTarget target)
+        {
+            if (CurrentDropTarget == target) CurrentDropTarget = null;
+        }
+
         // ---------------- 이벤트 ----------------
 
         /// <summary>(요구 타입, 전체 제한시간)</summary>
@@ -444,6 +505,36 @@ namespace ContextStage
             Debug.Log($"[SpecialAudience] Debug Spawn: {_currentRequest}");
         }
 
+        [ContextMenu("Debug/Spawn Chill")]
+        void DebugSpawnChill() => DebugSpawnStage(HeatStage.Chill);
+
+        [ContextMenu("Debug/Spawn Singalong")]
+        void DebugSpawnSingalong() => DebugSpawnStage(HeatStage.Singalong);
+
+        [ContextMenu("Debug/Spawn Mosh")]
+        void DebugSpawnMosh() => DebugSpawnStage(HeatStage.Mosh);
+
+        [ContextMenu("Debug/Hide Special Audience")]
+        void DebugHide()
+        {
+            if (!Application.isPlaying) return;
+            if (_phase == Phase.Active || _phase == Phase.HitHold)
+                EndRequest(SpecialAudienceEndReason.StageEnded, hideInstant: true);
+            ScheduleNextSpawn();
+        }
+
+        void DebugSpawnStage(HeatStage stage)
+        {
+            if (!Application.isPlaying)
+            {
+                Debug.LogWarning("[SpecialAudience] Play Mode 에서만 동작합니다.");
+                return;
+            }
+            if (!IsRunning) StartSystem();
+            ForceSpawn(stage);
+            Debug.Log($"[SpecialAudience] Debug Spawn: {stage}");
+        }
+
         [ContextMenu("Debug/Resolve Current Request As Special Hit")]
         void DebugResolveCurrentAsSpecialHit()
         {
@@ -477,12 +568,29 @@ namespace ContextStage
 
         /// <summary>
         /// [카드 판정용] 지금 살아 있는 요청을 CardEffectResolver 가 쓰는 형태로 넘겨준다.
-        /// 활성 요청이 없으면 SpecialCardRequest.None.
+        ///
+        /// <b>드롭 위치 게이트가 여기 들어 있다.</b> requireDropOnTarget 이 켜져 있으면
+        /// 포인터가 특별 관객의 히트 영역 안일 때만 요청을 돌려준다.
+        /// 덕분에 카드 코드는 그대로 두고도 "특별 관객 위에 놓아야 성공"이 성립한다.
+        /// (영역 밖이면 None → 카드는 평소대로 일반 판정을 받는다)
         /// </summary>
-        public static SpecialCardRequest CurrentRequest =>
-            HasActiveRequest
-                ? new SpecialCardRequest(SpecialAudienceManager.Instance.CurrentRequestType)
-                : SpecialCardRequest.None;
+        public static SpecialCardRequest CurrentRequest
+        {
+            get
+            {
+                if (!HasActiveRequest) return SpecialCardRequest.None;
+
+                var manager = SpecialAudienceManager.Instance;
+                if (manager.ShouldGateByDropTarget && !manager.IsPointerOverDropTarget)
+                    return SpecialCardRequest.None;
+
+                return new SpecialCardRequest(manager.CurrentRequestType);
+            }
+        }
+
+        /// <summary>현재 드롭 영역. 없으면 null. (카드 담당이 Hover 표시를 직접 하고 싶을 때)</summary>
+        public static SpecialAudienceDropTarget CurrentDropTarget =>
+            SpecialAudienceManager.HasInstance ? SpecialAudienceManager.Instance.CurrentDropTarget : null;
 
         /// <summary>
         /// [카드 판정용] 카드가 자기 수치로 보상을 이미 적용한 뒤 요청을 소비시킨다.

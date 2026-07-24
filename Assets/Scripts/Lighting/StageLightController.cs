@@ -125,10 +125,19 @@ namespace ContextStage
 
         float FlashTotal => Mathf.Max(0.0001f, flashInDuration + flashHoldDuration + flashOutDuration);
 
-        void Awake()
+        void Awake() => EnsurePresets();
+
+        /// <summary>
+        /// 프리셋 참조를 보장한다.
+        ///
+        /// Awake 에서만 채우면 안 된다 — 같은 오브젝트에 붙은 다른 컴포넌트(StageLightEventBridge)의
+        /// OnEnable 이 이 컴포넌트의 Awake 보다 먼저 도는 경우가 있어서, 그때 SetHeatStage 가
+        /// 들어오면 null 참조가 난다. 값을 쓰기 직전마다 여기를 거치게 해서 순서에 의존하지 않는다.
+        /// </summary>
+        void EnsurePresets()
         {
-            _from = _to = PresetFor(_stage);
-            _blend = 1f;
+            if (_to == null) { _to = PresetFor(_stage); _blend = 1f; }
+            if (_from == null) _from = _to;
         }
 
         void OnEnable()
@@ -156,6 +165,7 @@ namespace ContextStage
         /// <summary>instant 를 켜면 보간 없이 즉시 적용한다. (공연 시작·리셋용)</summary>
         public void SetHeatStage(HeatStage stage, bool instant)
         {
+            EnsurePresets();
             var next = PresetFor(stage);
 
             // 같은 단계로 다시 들어오면 전환을 새로 시작하지 않는다
@@ -217,6 +227,8 @@ namespace ContextStage
         /// </summary>
         void ApplyLights()
         {
+            EnsurePresets();
+
             if (globalLight == null && leftStageLight == null && rightStageLight == null)
             {
                 WarnMissingLightsOnce();
@@ -224,7 +236,7 @@ namespace ContextStage
             }
 
             float blend = Mathf.Clamp01(_blend);
-            Color stageColor = Color.cyan;
+            Color stageColor = Color.Lerp(_from.color, _to.color, blend);
             float globalIntensity = Mathf.Lerp(_from.globalIntensity, _to.globalIntensity, blend);
             float baseIntensity = Mathf.Lerp(_from.stageBaseIntensity, _to.stageBaseIntensity, blend);
             float pulseSpeed = Mathf.Lerp(_from.pulseSpeed, _to.pulseSpeed, blend);
@@ -326,14 +338,18 @@ namespace ContextStage
 #endif
         }
 
+        // Play 중이 아니면 Update 가 돌지 않아 보간이 진행되지 않는다 → 에디터에서는 즉시 적용한다.
+        // (0.35초 전환을 눈으로 보려면 Play Mode 에서 눌러야 한다)
+        bool DebugInstant => !Application.isPlaying;
+
         [ContextMenu("Debug/Set Chill")]
-        void DebugSetChill() => SetHeatStage(HeatStage.Chill);
+        void DebugSetChill() => SetHeatStage(HeatStage.Chill, DebugInstant);
 
         [ContextMenu("Debug/Set Singalong")]
-        void DebugSetSingalong() => SetHeatStage(HeatStage.Singalong);
+        void DebugSetSingalong() => SetHeatStage(HeatStage.Singalong, DebugInstant);
 
         [ContextMenu("Debug/Set Mosh")]
-        void DebugSetMosh() => SetHeatStage(HeatStage.Mosh);
+        void DebugSetMosh() => SetHeatStage(HeatStage.Mosh, DebugInstant);
 
         [ContextMenu("Debug/Play Special Hit Flash")]
         void DebugPlaySpecialHitFlash() => PlaySpecialHitFlash();

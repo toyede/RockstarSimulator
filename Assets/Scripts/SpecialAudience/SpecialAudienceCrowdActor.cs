@@ -26,6 +26,15 @@ namespace ContextStage
         [SerializeField, Tooltip("체크하면 등장 시 군중 오브젝트의 자식으로 들어간다 (좌표계를 맞추기 위해 권장)")]
         bool parentUnderCrowd = true;
 
+        [Header("적용 대상 (프리팹 구조에 맞게 분리)")]
+        [SerializeField, Tooltip("위치를 옮길 대상. 비워두면 이 오브젝트.\n" +
+                                 "프리팹에서는 루트를 지정해야 HitArea 까지 함께 움직인다")]
+        Transform motionRoot;
+
+        [SerializeField, Tooltip("크기·회전을 적용할 대상. 비워두면 이 오브젝트.\n" +
+                                 "점프 스쿼시가 Collider 를 흔들지 않도록 시각 오브젝트만 지정한다")]
+        Transform visualRoot;
+
         [Header("요구별 스프라이트 (프레임 1장 = 정지 이미지)")]
         [SerializeField] SpriteAnimationClip chillClip = new SpriteAnimationClip { clipName = "Chill" };
         [SerializeField] SpriteAnimationClip singalongClip = new SpriteAnimationClip { clipName = "Singalong" };
@@ -72,6 +81,17 @@ namespace ContextStage
             airTimeRatio = 0.75f, squash = 0.18f,
         };
 
+        [Header("드롭 판정 영역")]
+        [SerializeField, Tooltip("씬에 SpecialAudienceDropTarget 이 없으면 런타임에 하나 만들어 붙인다.\n" +
+                                 "프리팹을 씬에 배치하지 않아도 카드 드롭 위치 판정이 동작하게 하기 위함")]
+        bool ensureDropTarget = true;
+
+        [SerializeField, Tooltip("자동 생성할 히트 영역 크기(월드 유닛). 캐릭터보다 살짝 넉넉하게")]
+        Vector2 hitAreaSize = new Vector2(2.6f, 3.6f);
+
+        [SerializeField, Tooltip("자동 생성할 히트 영역 오프셋")]
+        Vector2 hitAreaOffset = Vector2.zero;
+
         [Header("군중이 없을 때")]
         [SerializeField, Tooltip("CrowdSpawner 를 찾지 못했을 때 설 위치(월드)")]
         Vector3 fallbackPosition = new Vector3(0f, -3f, 0f);
@@ -95,7 +115,19 @@ namespace ContextStage
             _renderer = GetComponent<SpriteRenderer>();
             _player.Bind(_renderer);
             _phase = Random.value * 10f;
+
+            if (motionRoot == null) motionRoot = transform;
+            if (visualRoot == null) visualRoot = transform;
+
             SetVisible(false);
+        }
+
+        void Start()
+        {
+            // Awake 가 아니라 Start 에서 확인한다. 씬에 이미 배치된 DropTarget 들이
+            // 모두 Awake/OnEnable 을 마친 뒤여야 "없다"는 판단이 정확하다.
+            EnsureDropTarget();
+            WarnIfDuplicateActor();
         }
 
         void OnEnable()
@@ -133,6 +165,44 @@ namespace ContextStage
             SetVisible(false);
         }
 
+        // ---------------- 드롭 판정 영역 ----------------
+
+        /// <summary>
+        /// 씬에 드롭 판정 영역이 없으면 하나 만들어 붙인다.
+        ///
+        /// <b>형제 오브젝트로 만드는 이유:</b> 자식으로 두면 점프·스쿼시로 변하는 이 오브젝트의
+        /// 스케일을 물려받아 히트 영역이 같이 떨린다. 형제로 두고 위치만 따라가게 한다.
+        /// </summary>
+        void EnsureDropTarget()
+        {
+            if (!ensureDropTarget) return;
+            if (FindFirstObjectByType<SpecialAudienceDropTarget>() != null) return; // 이미 있으면 그것을 쓴다
+
+            var go = new GameObject("SpecialAudienceHitArea");
+            go.transform.SetParent(motionRoot.parent, false); // 형제로 붙인다
+            go.transform.position = motionRoot.position;
+
+            var box = go.AddComponent<BoxCollider2D>();
+            box.isTrigger = true;      // 물리 이동용이 아니라 드롭 영역 판정용
+            box.size = hitAreaSize;
+            box.offset = hitAreaOffset;
+
+            var target = go.AddComponent<SpecialAudienceDropTarget>();
+            target.Configure(box, motionRoot, visualRoot);
+
+            Debug.Log($"[SpecialAudience] 드롭 판정 영역을 자동 생성했습니다 (size={hitAreaSize}). " +
+                      "프리팹을 씬에 배치하면 그쪽이 우선 사용됩니다.", go);
+        }
+
+        void WarnIfDuplicateActor()
+        {
+            var actors = FindObjectsByType<SpecialAudienceCrowdActor>(FindObjectsSortMode.None);
+            if (actors.Length <= 1) return;
+
+            Debug.LogWarning($"[SpecialAudience] 특별 관객 액터가 {actors.Length}개 있습니다. " +
+                             "하나만 남기세요 — 여러 개면 등장 이벤트에 모두 반응해 관객이 여러 명 보입니다.", this);
+        }
+
         // ---------------- 배치 ----------------
 
         /// <summary>군중 오브젝트를 찾아 그 자식으로 들어간다. 좌표·크기 기준을 관객과 맞추기 위함.</summary>
@@ -142,12 +212,13 @@ namespace ContextStage
 
             if (crowdSpawner == null)
             {
-                transform.position = fallbackPosition;
+                motionRoot.position = fallbackPosition;
                 return;
             }
 
-            if (parentUnderCrowd && transform.parent != crowdSpawner.transform)
-                transform.SetParent(crowdSpawner.transform, worldPositionStays: false);
+            // 옮기는 것은 motionRoot 다. 프리팹에서는 루트라서 HitArea 까지 함께 따라간다.
+            if (parentUnderCrowd && motionRoot.parent != crowdSpawner.transform)
+                motionRoot.SetParent(crowdSpawner.transform, worldPositionStays: false);
         }
 
         /// <summary>
@@ -161,8 +232,8 @@ namespace ContextStage
             var members = crowdSpawner != null ? crowdSpawner.Members : null;
             if (members == null || members.Count == 0)
             {
-                _anchor = transform.parent != null
-                    ? transform.parent.InverseTransformPoint(fallbackPosition)
+                _anchor = motionRoot.parent != null
+                    ? motionRoot.parent.InverseTransformPoint(fallbackPosition)
                     : fallbackPosition;
                 _targetScale = scaleMultiplier;
                 if (immediate) SnapToAnchor();
@@ -176,7 +247,7 @@ namespace ContextStage
                 var candidate = members[Random.Range(0, members.Count)];
                 if (candidate == null) continue;
                 picked = candidate;
-                if (Mathf.Abs(candidate.HomeLocalPosition.x - transform.localPosition.x) > lateralOffset) break;
+                if (Mathf.Abs(candidate.HomeLocalPosition.x - motionRoot.localPosition.x) > lateralOffset) break;
             }
             if (picked == null) return;
 
@@ -192,7 +263,7 @@ namespace ContextStage
         void SnapToAnchor()
         {
             _feet = _anchor;
-            transform.localPosition = _anchor;
+            motionRoot.localPosition = _anchor;
             _currentScale = _targetScale;
         }
 
@@ -220,11 +291,11 @@ namespace ContextStage
             EvaluateMotion(profile, Time.time + _phase, out float height, out float sway, out float squash);
 
             // 발 위치는 따로 들고 있고 점프는 거기에 얹기만 한다 (점프하면서 자리가 밀려 올라가지 않는다)
-            transform.localPosition = _feet + new Vector3(0f, height, 0f);
-            transform.localRotation = Quaternion.Euler(0f, 0f, sway);
+            motionRoot.localPosition = _feet + new Vector3(0f, height, 0f);
+            visualRoot.localRotation = Quaternion.Euler(0f, 0f, sway);
 
             _currentScale = Mathf.Lerp(_currentScale, _targetScale, Time.deltaTime * scaleLerpSpeed);
-            transform.localScale = new Vector3(
+            visualRoot.localScale = new Vector3(
                 _facing * _currentScale * (1f + squash * 0.5f),
                 _currentScale * (1f - squash),
                 1f);

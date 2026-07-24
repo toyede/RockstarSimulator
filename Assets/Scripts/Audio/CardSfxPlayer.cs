@@ -35,10 +35,12 @@ namespace ContextStage
         float volumeScale = 1f;
 
         [Header("판정 반응 (비워두면 재생 안 함)")]
-        [SerializeField, Tooltip("Perfect 판정 시 추가로 낼 소리")] string perfectSfxId = "";
+        [SerializeField, Tooltip("Perfect 판정 시 추가로 낼 소리")] string perfectSfxId = "hey_high";
         [SerializeField, Tooltip("Good 판정 시 추가로 낼 소리")] string goodSfxId = "";
         [SerializeField, Tooltip("Miss 판정 시 추가로 낼 소리")] string missSfxId = "";
-        [SerializeField, Tooltip("RiskMiss 판정 시 추가로 낼 소리")] string riskMissSfxId = "";
+
+        [SerializeField, Tooltip("RiskMiss 판정 시 추가로 낼 소리. 특수 카드를 빗나가게 냈을 때 울린다")]
+        string riskMissSfxId = "crowd_mistake";
 
         void OnEnable() => EventBus.Subscribe<CardSelected>(OnCardSelected);
         void OnDisable() => EventBus.Unsubscribe<CardSelected>(OnCardSelected);
