@@ -15,19 +15,19 @@ MonoBehaviour:
   tiers:
   - tierName: Low
     soundId: crowd_low
-    clipOverride: {fileID: 0}
+    clipOverride: {fileID: 8300000, guid: d6ca14aff2c9cc244b1e43e9230746e9, type: 3}
     minNormalized: 0
     volume: 0.8
     fadeDurationOverride: 0
   - tierName: Middle
     soundId: crowd_middle
-    clipOverride: {fileID: 0}
+    clipOverride: {fileID: 8300000, guid: d9d403c7772aaaf4897419fb5a4d6def, type: 3}
     minNormalized: 0.4
     volume: 0.9
     fadeDurationOverride: 0
   - tierName: High
     soundId: crowd_high
-    clipOverride: {fileID: 0}
+    clipOverride: {fileID: 8300000, guid: d02550a51f8a8e94b9fba6640f6f12c7, type: 3}
     minNormalized: 0.7
     volume: 1
     fadeDurationOverride: 0
