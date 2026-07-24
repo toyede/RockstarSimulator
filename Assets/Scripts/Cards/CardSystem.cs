@@ -5,47 +5,34 @@ using UnityEngine;
 namespace ContextStage
 {
     /// <summary>
-    /// 덱, 손패와 숫자키 선택 흐름을 관리한다.
-    ///
-    /// - 새 공연 시작과 카드 사용 종료 시 손패를 CardDeckConfig.MinimumHandSize까지 보충한다.
-    /// - 손패가 최소 장수보다 많으면 초과 카드를 유지한다.
-    /// - 사용한 카드는 손패에서 사라진 뒤 드로우 더미에 다시 섞인다.
-    /// - 카드 효과는 MaximumHandSize까지 카드를 추가할 수 있다.
-    ///   (열기 MAX 앙코르 추가 드로우는 열기→점수 배율 전환으로 제거됨)
+    /// 프리팹 카드 손패와 10장 단위 현재/대기 덱을 관리한다.
+    /// 사용한 카드는 사라지고, 덱 묶음이 소진되면 미리 만든 다음 묶음으로 이어서 뽑는다.
     /// </summary>
     public sealed class CardSystem : MonoSingleton<CardSystem>
     {
         [SerializeField] CardDeckConfig config;
 
-        readonly List<CardData> _drawPile = new List<CardData>();
-        readonly List<CardData> _hand = new List<CardData>();
+        readonly List<CardDefinition> _hand = new List<CardDefinition>();
+        PreparedDeck<CardDefinition> _deck;
 
         bool _selecting;
-        bool _warnedEmptyDeck;
+        bool _warnedInvalidPool;
 
         protected override bool Persistent => false;
 
         public CardDeckConfig Config => config;
-        public IReadOnlyList<CardData> Hand => _hand;
+        public IReadOnlyList<CardDefinition> Hand => _hand;
         public int HandCount => _hand.Count;
         public int MinimumHandSize => config != null ? config.MinimumHandSize : 0;
         public int MaximumHandSize => config != null ? config.MaximumHandSize : 0;
         public int BonusCardCount => Mathf.Max(0, HandCount - MinimumHandSize);
+        public int PreparedDeckCount => _deck != null ? _deck.PreparedBatchCount : 0;
+        public int CurrentDeckRemaining => _deck != null ? _deck.CurrentRemaining : 0;
 
-        protected override void OnAwake()
-        {
-            StartRun();
-        }
+        protected override void OnAwake() => StartRun();
 
-        void OnEnable()
-        {
-            EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
-        }
-
-        void OnDisable()
-        {
-            EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
-        }
+        void OnEnable() => EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
+        void OnDisable() => EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
 
         void OnGameStateChanged(GameStateChanged e)
         {
@@ -55,33 +42,31 @@ namespace ContextStage
                 StartRun();
         }
 
-        /// <summary>새 공연용 덱과 손패를 준비한다. Ready 상태에서도 카드는 화면에 보인다.</summary>
+        /// <summary>새 공연용 현재 덱과 대기 덱을 만들고 기본 손패를 준비한다.</summary>
         public void StartRun()
         {
-            _drawPile.Clear();
+            _deck = null;
             _hand.Clear();
             _selecting = false;
-            _warnedEmptyDeck = false;
+            _warnedInvalidPool = false;
 
-            if (config == null || config.Cards == null || config.Cards.Count == 0)
+            if (config == null || !config.HasUsableCards)
             {
-                Debug.LogWarning("[CardSystem] CardDeckConfig가 비어 있습니다. Tools/Cards/Setup Card Prototype을 실행하세요.");
+                Debug.LogWarning("[CardSystem] 사용할 카드 프리팹이 없습니다. Tools/Cards/Setup Prefab Card System을 실행하세요.");
                 RaiseHandChanged();
                 return;
             }
 
-            for (int i = 0; i < config.Cards.Count; i++)
-            {
-                var card = config.Cards[i];
-                if (card != null) _drawPile.Add(card);
-            }
-
-            if (config.ShuffleOnStart) Shuffle(_drawPile);
+            _deck = new PreparedDeck<CardDefinition>(
+                config.GeneratedDeckSize,
+                config.PreparedDeckCount,
+                PickWeightedCard);
+            _deck.Reset();
             RefillToMinimumHand();
             RaiseHandChanged();
         }
 
-        /// <summary>현재 손패의 index 카드를 사용한다. 성공했을 때만 true.</summary>
+        /// <summary>현재 손패의 index 카드를 사용한다. 성공했을 때만 true를 반환한다.</summary>
         public bool SelectCard(int index)
         {
             if (_selecting) return false;
@@ -98,28 +83,32 @@ namespace ContextStage
             {
                 var card = _hand[index];
                 _hand.RemoveAt(index);
-                ReturnToDrawPile(card);
 
                 float currentHype = Hype.Current;
-                HypeJudgement judgement = card.ResolveJudgement(currentHype);
-                float delta = card.GetPreviewDelta(currentHype, HypeSystem.Instance.Config);
-                // 점수 배율은 카드를 낼 때(판정 적용 전)의 열기를 기준으로 잡는다.
+                var result = CardEffectResolver.Resolve(
+                    card,
+                    currentHype,
+                    HypeSystem.Instance.Config,
+                    SpecialCardRequest.None);
                 float multiplier = Hype.MultiplierFor(currentHype);
-                Hype.Apply(judgement);
 
+                // 동기 EventBus 구독자가 현재 열기 배율로 점수를 먼저 반영한다.
                 EventBus.Raise(new CardSelected
                 {
                     CardId = card.Id,
                     DisplayName = card.DisplayName,
                     HandIndex = index,
-                    Judgement = judgement,
-                    Delta = delta,
-                    BaseScore = card.BaseScore,
+                    Judgement = result.Judgement,
+                    Delta = result.HeatDelta,
+                    BaseScore = result.BaseScore,
                     Multiplier = multiplier
                 });
 
-                // 카드 효과와 그 과정에서 발생한 앙코르 드로우까지 모두 반영한 뒤 부족분만 보충한다.
-                RefillToMinimumHand();
+                // 이 카드의 점수 계산이 끝난 뒤 열기를 변경한다.
+                if (!Mathf.Approximately(result.HeatDelta, 0f))
+                    Hype.ApplyDelta(result.HeatDelta, result.Judgement);
+
+                ResolveHandEffect(card);
                 RaiseHandChanged();
                 return true;
             }
@@ -129,71 +118,122 @@ namespace ContextStage
             }
         }
 
-        public CardData GetCard(int index)
+        public CardDefinition GetCard(int index)
             => index >= 0 && index < _hand.Count ? _hand[index] : null;
 
-        /// <summary>
-        /// 카드 효과 등 외부 흐름에서 손패에 카드를 추가한다.
-        /// 최대 손패를 넘지 않으며 실제로 추가된 장수를 반환한다.
-        /// </summary>
+        /// <summary>외부 카드 효과가 손패 최대치 안에서 카드를 추가할 때 사용하는 API.</summary>
         public int AddCards(int count)
         {
-            int drawn = DrawCards(count, false);
+            int drawn = DrawCards(count);
             if (drawn > 0 && !_selecting) RaiseHandChanged();
             return drawn;
+        }
+
+        void ResolveHandEffect(CardDefinition card)
+        {
+            if (card.Role != CardRole.Utility)
+            {
+                RefillToMinimumHand();
+                return;
+            }
+
+            switch (card.UtilityEffect)
+            {
+                case UtilityCardEffect.Draw:
+                    DrawCards(card.DrawCount);
+                    break;
+                case UtilityCardEffect.Reroll:
+                    _hand.Clear();
+                    DrawCards(card.RerollDrawCount);
+                    break;
+                default:
+                    RefillToMinimumHand();
+                    break;
+            }
         }
 
         int RefillToMinimumHand()
         {
             int missing = Mathf.Max(0, MinimumHandSize - _hand.Count);
-            return DrawCards(missing, false);
+            return DrawCards(missing);
         }
 
-        int DrawCards(int count, bool isEncoreBonus)
+        int DrawCards(int count)
         {
             if (count <= 0) return 0;
 
             int drawn = 0;
-            while (drawn < count && _hand.Count < MaximumHandSize && DrawOne(isEncoreBonus))
+            while (drawn < count && _hand.Count < MaximumHandSize && DrawOne())
                 drawn++;
 
             return drawn;
         }
 
-        bool DrawOne(bool isEncoreBonus)
+        bool DrawOne()
         {
             if (_hand.Count >= MaximumHandSize) return false;
-
-            if (_drawPile.Count == 0)
+            if (_deck == null)
             {
-                if (!_warnedEmptyDeck)
+                if (!_warnedInvalidPool)
                 {
-                    Debug.LogWarning("[CardSystem] 드로우할 카드가 부족합니다. 덱의 카드 장수를 늘려주세요.");
-                    _warnedEmptyDeck = true;
+                    Debug.LogWarning("[CardSystem] 카드 풀에서 새 덱을 만들 수 없습니다.");
+                    _warnedInvalidPool = true;
                 }
                 return false;
             }
 
-            int last = _drawPile.Count - 1;
-            var card = _drawPile[last];
-            _drawPile.RemoveAt(last);
-            _hand.Add(card);
+            var card = _deck.Draw();
+            if (card == null)
+            {
+                if (!_warnedInvalidPool)
+                {
+                    Debug.LogWarning("[CardSystem] 카드 풀에서 새 덱을 만들 수 없습니다.");
+                    _warnedInvalidPool = true;
+                }
+                return false;
+            }
 
+            _hand.Add(card);
             EventBus.Raise(new CardDrawn
             {
                 CardId = card.Id,
                 DisplayName = card.DisplayName,
                 HandIndex = _hand.Count - 1,
-                IsEncoreBonus = isEncoreBonus
+                IsEncoreBonus = false
             });
+
             return true;
         }
 
-        void ReturnToDrawPile(CardData card)
+        CardDefinition PickWeightedCard()
         {
-            if (card == null) return;
-            _drawPile.Add(card);
-            Shuffle(_drawPile);
+            if (config == null || !config.HasUsableCards) return null;
+
+            float totalWeight = 0f;
+            var pool = config.CardPool;
+            for (int i = 0; i < pool.Count; i++)
+            {
+                var entry = pool[i];
+                if (entry != null && entry.IsUsable) totalWeight += entry.Weight;
+            }
+            if (totalWeight <= 0f) return null;
+
+            float roll = Random.value * totalWeight;
+            for (int i = 0; i < pool.Count; i++)
+            {
+                var entry = pool[i];
+                if (entry == null || !entry.IsUsable) continue;
+
+                roll -= entry.Weight;
+                if (roll <= 0f) return entry.Prefab;
+            }
+
+            for (int i = pool.Count - 1; i >= 0; i--)
+            {
+                if (pool[i] != null && pool[i].IsUsable) return pool[i].Prefab;
+            }
+
+            return null;
         }
 
         void RaiseHandChanged()
@@ -204,15 +244,6 @@ namespace ContextStage
                 BaseHandSize = MinimumHandSize,
                 BonusCardCount = BonusCardCount
             });
-        }
-
-        static void Shuffle(List<CardData> cards)
-        {
-            for (int i = cards.Count - 1; i > 0; i--)
-            {
-                int j = Random.Range(0, i + 1);
-                (cards[i], cards[j]) = (cards[j], cards[i]);
-            }
         }
     }
 }

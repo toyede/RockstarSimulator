@@ -15,20 +15,19 @@ MonoBehaviour:
   startHype: 30
   maxHype: 100
   decayPerSecond: 1
+  singalongMinHype: 50
+  moshMinHype: 80
   perfectDelta: 30
   goodDelta: 15
   missDelta: -15
   riskMissDelta: -25
   multiplierTiers:
-  - label: "낮음"
+  - label: Chill
     minNormalized: 0
     multiplier: 1
-  - label: "중간"
-    minNormalized: 0.34
-    multiplier: 2
-  - label: "높음"
-    minNormalized: 0.67
+  - label: Singalong
+    minNormalized: 0.5
     multiplier: 3
-  - label: MAX
-    minNormalized: 0.9
+  - label: Mosh
+    minNormalized: 0.8
     multiplier: 5

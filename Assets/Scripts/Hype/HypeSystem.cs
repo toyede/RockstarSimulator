@@ -99,10 +99,19 @@ namespace ContextStage
         /// </summary>
         public void ApplyJudgement(HypeJudgement judgement)
         {
-            var gm = GameManager.Instance;
-            if (gm == null || !gm.IsPlaying) return; // 게임오버 후 늦게 도착한 판정 무시
+            ApplyDelta(config.GetDelta(judgement), judgement);
+        }
 
-            float delta = config.GetDelta(judgement);
+        /// <summary>
+        /// 카드 프리팹에 저장된 정확한 열기 변화량을 적용한다.
+        /// 단계별 카드 수치는 HypeConfig의 기존 공통 판정값과 다르므로 이 경로를 사용한다.
+        /// </summary>
+        public void ApplyDelta(float delta, HypeJudgement judgement)
+        {
+            var gm = GameManager.Instance;
+            if (gm == null || !gm.IsPlaying) return;
+            if (Mathf.Approximately(delta, 0f)) return;
+
             EventBus.Raise(new HypeJudgementApplied { Judgement = judgement, Delta = delta });
             Change(delta);
         }
@@ -171,6 +180,13 @@ namespace ContextStage
         {
             if (!CheckInstance()) return;
             HypeSystem.Instance.ApplyJudgement(judgement);
+        }
+
+        /// <summary>[카드 담당] 프리팹에 저장된 정확한 열기 변화량을 적용.</summary>
+        public static void ApplyDelta(float delta, HypeJudgement judgement)
+        {
+            if (!CheckInstance()) return;
+            HypeSystem.Instance.ApplyDelta(delta, judgement);
         }
 
         /// <summary>[연출 담당] 연출 시작(true)/종료(false) 시 감소 정지·재개.</summary>
