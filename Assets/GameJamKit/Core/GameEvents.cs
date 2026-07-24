@@ -103,6 +103,7 @@ namespace GameJamKit
         public int PreviousIndex;  // 이전 티어 (-1 = 없음)
         public int Index;          // 새 티어 인덱스 (0 = 가장 낮음)
         public string TierName;    // 콘픽에 적힌 티어 이름 ("Low" / "Middle" / "High" ...)
+    }
 
     /// <summary>손패 구성이 바뀐 뒤 발행. 카드 UI가 구독한다.</summary>
     public struct HandChanged
@@ -130,5 +131,4 @@ namespace GameJamKit
         public HypeJudgement Judgement;
         public float Delta;
     }
-}
 }

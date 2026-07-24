@@ -543,3 +543,4 @@ Tools/GameJamKit/Export .unitypackage
 |---|---|---|---|
 | 2026-07-24 | Claude | `Core/GameEvents.cs` | CONTEXT STAGE 호응도 이벤트 추가 — `HypeJudgement` enum, `HypeChanged`, `HypeJudgementApplied`, `EncoreTriggered`, `HypeDepleted`. (파일 상단 안내대로 프로젝트 고유 이벤트를 이 파일에 모음. 발행 주체는 `Assets/Scripts/Hype/HypeSystem.cs`) |
 | 2026-07-24 | Claude | `Core/GameEvents.cs` | 관객 앰비언스 이벤트 `CrowdAmbienceTierChanged` 추가. (발행 주체는 `Assets/Scripts/Audio/CrowdAmbienceSystem.cs`. 앰비언스는 킷 BGM 채널을 쓰지 않고 자체 AudioSource 2개로 크로스페이드하므로 `AudioManager` 는 수정하지 않았다) |
+| 2026-07-24 | Codex | `Core/GameEvents.cs` | 병합 중 누락된 `CrowdAmbienceTierChanged`의 닫는 중괄호를 복구해 카드 이벤트 타입들을 `GameJamKit` 네임스페이스 직속으로 되돌림. |
