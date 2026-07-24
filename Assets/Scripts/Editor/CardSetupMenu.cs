@@ -4,6 +4,8 @@ using GameJamKit;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
@@ -65,8 +67,8 @@ namespace ContextStage.EditorTools
         {
             var deck = SyncCardPrefabsAndDeck();
             UpgradeLegacyHypeTiers();
-            BuildCardSystem(deck);
-            BuildCardCanvas();
+            var cardInput = BuildCardSystem(deck);
+            BuildCardCanvas(cardInput);
 
             AssetDatabase.SaveAssets();
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
@@ -419,32 +421,29 @@ namespace ContextStage.EditorTools
 
             var root = CreateUIObject("Card_Base", null);
             var rect = root.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(180f, 250f);
+            rect.sizeDelta = new Vector2(160f, 240f);
 
             var layout = root.AddComponent<LayoutElement>();
-            layout.preferredWidth = 180f;
-            layout.preferredHeight = 250f;
+            layout.preferredWidth = 160f;
+            layout.preferredHeight = 240f;
 
             var background = root.AddComponent<Image>();
             background.color = new Color(0.3f, 0.3f, 0.3f);
-            background.raycastTarget = false;
+            background.raycastTarget = true;
+
+            root.AddComponent<Canvas>();
+            root.AddComponent<CanvasGroup>();
+            root.AddComponent<GraphicRaycaster>();
+            root.AddComponent<CardDragHandler>();
 
             var art = CreateImage("Artwork", root.transform);
             SetRect(
                 art.rectTransform,
-                new Vector2(0.08f, 0.38f),
-                new Vector2(0.92f, 0.86f),
+                Vector2.zero,
+                Vector2.one,
                 Vector2.zero,
                 Vector2.zero);
             art.preserveAspect = true;
-
-            var number = CreateText("Number", root.transform, "1", 26, TextAnchor.UpperLeft);
-            SetRect(
-                number.rectTransform,
-                new Vector2(0f, 0.84f),
-                new Vector2(0.24f, 1f),
-                new Vector2(10f, -4f),
-                new Vector2(0f, -4f));
 
             var role = CreateText("Role", root.transform, "CHILL", 15, TextAnchor.UpperRight);
             SetRect(
@@ -472,7 +471,7 @@ namespace ContextStage.EditorTools
 
             root.AddComponent<CardDefinition>();
             var view = root.AddComponent<CardSlotUI>();
-            view.Configure(background, art, number, title, description, role);
+            view.Configure(background, art, title, description, role);
 
             PrefabUtility.SaveAsPrefabAsset(root, BasePrefabPath);
             Object.DestroyImmediate(root);
@@ -613,7 +612,7 @@ namespace ContextStage.EditorTools
             tier.FindPropertyRelative("multiplier").floatValue = multiplier;
         }
 
-        static void BuildCardSystem(CardDeckConfig deck)
+        static CardInput BuildCardSystem(CardDeckConfig deck)
         {
             var root = GameObject.Find("[CardSystem]");
             if (root == null)
@@ -623,7 +622,7 @@ namespace ContextStage.EditorTools
             }
 
             var system = EnsureComponent<CardSystem>(root);
-            EnsureComponent<CardInput>(root);
+            var cardInput = EnsureComponent<CardInput>(root);
             SetObjectField(system, "config", deck);
 
             var scoreRoot = GameObject.Find("[ScoreSystem]");
@@ -633,10 +632,23 @@ namespace ContextStage.EditorTools
                 Undo.RegisterCreatedObjectUndo(scoreRoot, "Create ScoreSystem");
             }
             EnsureComponent<PerformanceScoreSystem>(scoreRoot);
+            return cardInput;
         }
 
-        static void BuildCardCanvas()
+        static void BuildCardCanvas(CardInput cardInput)
         {
+            var eventSystem = Object.FindFirstObjectByType<EventSystem>();
+            var eventSystemGo = eventSystem != null ? eventSystem.gameObject : null;
+            if (eventSystemGo == null)
+            {
+                eventSystemGo = new GameObject("EventSystem");
+                Undo.RegisterCreatedObjectUndo(eventSystemGo, "Create EventSystem");
+            }
+
+            EnsureComponent<EventSystem>(eventSystemGo);
+            var inputModule = EnsureComponent<InputSystemUIInputModule>(eventSystemGo);
+            if (inputModule.actionsAsset == null) inputModule.AssignDefaultActions();
+
             var canvasGo = GameObject.Find("CardCanvas");
             if (canvasGo == null)
             {
@@ -653,6 +665,15 @@ namespace ContextStage.EditorTools
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
             EnsureComponent<GraphicRaycaster>(canvasGo);
+
+            var dragLayer = canvasGo.transform.Find("CardDragLayer") as RectTransform;
+            if (dragLayer == null)
+            {
+                var dragLayerGo = CreateUIObject("CardDragLayer", canvasGo.transform);
+                Undo.RegisterCreatedObjectUndo(dragLayerGo, "Create Card Drag Layer");
+                dragLayer = dragLayerGo.GetComponent<RectTransform>();
+            }
+            SetRect(dragLayer, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             var handUi = Object.FindFirstObjectByType<CardHandUI>();
             var handGo = handUi != null ? handUi.gameObject : GameObject.Find("CardHand");
@@ -694,9 +715,11 @@ namespace ContextStage.EditorTools
                 hintRect.anchoredPosition = new Vector2(0f, 16f);
                 hintRect.sizeDelta = new Vector2(600f, 32f);
             }
+            hint.text = "카드를 위로 드래그해 사용";
 
             handUi = handUi != null ? handUi : EnsureComponent<CardHandUI>(handGo);
-            handUi.Configure(handGo.transform, hint);
+            handUi.Configure(handGo.transform, hint, dragLayer, cardInput);
+            dragLayer.SetAsLastSibling();
             EditorUtility.SetDirty(handUi);
         }
 

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 590fdeb2881cb764c91d258cd4242adb
+guid: 57087f18029068549bd48304e9b94828
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4038964493999412825
-    second: card_guitar_0
+      213: -3480018490951135010
+    second: card_guitar (1)_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -139,7 +139,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: card_guitar_0
+      name: card_guitar (1)_0
       rect:
         serializedVersion: 2
         x: 0
@@ -154,8 +154,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7a9efba2137b2f7c0800000000000000
-      internalID: -4038964493999412825
+      spriteID: ed01113de9d74bfc0800000000000000
+      internalID: -3480018490951135010
       vertices: []
       indices: 
       edges: []
@@ -174,7 +174,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      card_guitar_0: -4038964493999412825
+      card_guitar (1)_0: -3480018490951135010
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

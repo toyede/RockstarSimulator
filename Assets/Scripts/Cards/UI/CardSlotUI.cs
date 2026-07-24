@@ -9,7 +9,6 @@ namespace ContextStage
     {
         [SerializeField] Image background;
         [SerializeField] Image artwork;
-        [SerializeField] Text numberText;
         [SerializeField] Text titleText;
         [SerializeField] Text descriptionText;
         [SerializeField] Text roleText;
@@ -17,16 +16,15 @@ namespace ContextStage
         void Awake()
         {
             var rectTransform = transform as RectTransform;
-            if (rectTransform != null) rectTransform.sizeDelta = new Vector2(180f, 250f);
+            if (rectTransform != null) rectTransform.sizeDelta = new Vector2(160f, 240f);
 
             var layout = GetComponent<LayoutElement>();
             if (layout != null)
             {
-                layout.preferredWidth = 180f;
-                layout.preferredHeight = 250f;
+                layout.preferredWidth = 160f;
+                layout.preferredHeight = 240f;
             }
 
-            ConfigureText(numberText, 18, 24);
             ConfigureText(titleText, 18, 26);
             ConfigureText(descriptionText, 13, 18);
             ConfigureText(roleText, 12, 16);
@@ -35,20 +33,18 @@ namespace ContextStage
         public void Configure(
             Image backgroundImage,
             Image artworkImage,
-            Text numberLabel,
             Text titleLabel,
             Text descriptionLabel,
             Text roleLabel)
         {
             background = backgroundImage;
             artwork = artworkImage;
-            numberText = numberLabel;
             titleText = titleLabel;
             descriptionText = descriptionLabel;
             roleText = roleLabel;
         }
 
-        public void Bind(CardDefinition card, int handIndex)
+        public void Bind(CardDefinition card)
         {
             if (card == null)
             {
@@ -65,7 +61,6 @@ namespace ContextStage
                 artwork.color = Color.white;
                 artwork.preserveAspect = true;
             }
-            if (numberText != null) numberText.text = (handIndex + 1).ToString();
             if (titleText != null) titleText.text = card.DisplayName;
             if (descriptionText != null) descriptionText.text = card.Description;
             if (roleText != null) roleText.text = GetRoleLabel(card);

@@ -10,13 +10,21 @@ namespace ContextStage
     {
         [SerializeField] Transform cardContainer;
         [SerializeField] Text hintText;
+        [SerializeField] RectTransform dragLayer;
+        [SerializeField] CardInput cardInput;
 
         readonly List<CardSlotUI> _activeViews = new List<CardSlotUI>();
 
-        public void Configure(Transform container, Text hintLabel)
+        public void Configure(
+            Transform container,
+            Text hintLabel,
+            RectTransform dragRoot,
+            CardInput input)
         {
             cardContainer = container;
             hintText = hintLabel;
+            dragLayer = dragRoot;
+            cardInput = input;
         }
 
         void OnEnable()
@@ -71,14 +79,23 @@ namespace ContextStage
                     continue;
                 }
 
-                view.Bind(card, i);
+                var dragHandler = instance.GetComponent<CardDragHandler>();
+                if (dragHandler == null)
+                {
+                    Debug.LogWarning($"[CardHandUI] {card.name} 프리팹에 CardDragHandler가 없습니다.");
+                    PoolManager.Despawn(instance);
+                    continue;
+                }
+
+                view.Bind(card);
+                dragHandler.Bind(i, cardInput, dragLayer, parent as RectTransform);
                 _activeViews.Add(view);
             }
 
             if (hintText != null)
             {
                 hintText.text = system.HandCount > 0
-                    ? $"숫자키 1~{system.HandCount}로 카드 선택"
+                    ? "카드를 위로 드래그해 사용"
                     : "카드를 준비하는 중";
             }
 
