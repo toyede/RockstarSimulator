@@ -1,0 +1,98 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a96fc7e2c1a6c34795e1a030968c7a7, type: 3}
+  m_Name: CrowdMoodConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CrowdMoodConfig
+  tiers:
+  - moodName: Low
+    minNormalized: 0
+    sprites:
+    - {fileID: 7888285402856387962, guid: 4d14472e95a0b934081081e5bb3e5a46, type: 3}
+    - {fileID: -5129910817859619480, guid: 4d14472e95a0b934081081e5bb3e5a46, type: 3}
+    - {fileID: 5655085481733680427, guid: 4d14472e95a0b934081081e5bb3e5a46, type: 3}
+    - {fileID: 1856415983345241451, guid: 4d14472e95a0b934081081e5bb3e5a46, type: 3}
+    - {fileID: 5766192394409111348, guid: 4d14472e95a0b934081081e5bb3e5a46, type: 3}
+    - {fileID: 2791897172526504103, guid: 4d14472e95a0b934081081e5bb3e5a46, type: 3}
+    - {fileID: 3093615099326541347, guid: 4d14472e95a0b934081081e5bb3e5a46, type: 3}
+    - {fileID: -1890919103001908384, guid: 4d14472e95a0b934081081e5bb3e5a46, type: 3}
+    - {fileID: 4195663661391788040, guid: 4d14472e95a0b934081081e5bb3e5a46, type: 3}
+    - {fileID: 2239459944786445353, guid: 4d14472e95a0b934081081e5bb3e5a46, type: 3}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    scaleMultiplier: 0.96
+    motion:
+      bobHeight: 0.03
+      bobSpeed: 0.8
+      swayAngle: 2
+      swaySpeed: 0.6
+      jumpHeight: 0
+      jumpsPerSecond: 0
+      airTimeRatio: 0.7
+      squash: 0.12
+      speedVariance: 0.25
+      spriteCycleFps: 0
+  - moodName: Middle
+    minNormalized: 0.4
+    sprites:
+    - {fileID: -8406111350065207431, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    - {fileID: 8928600212475790382, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    - {fileID: 4017995185086594630, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    - {fileID: 4851814729860977190, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    - {fileID: -8661948064976413227, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    - {fileID: 8028717504841145575, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    - {fileID: -7654055966209920961, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    - {fileID: 5889853494991567300, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    - {fileID: -1673366453168605521, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    - {fileID: 2719059299034497170, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    - {fileID: -3964956853046161146, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    - {fileID: -7260550298417396765, guid: 43038c1cf36dc384ab07352642813f0c, type: 3}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    scaleMultiplier: 1
+    motion:
+      bobHeight: 0.08
+      bobSpeed: 1.6
+      swayAngle: 6
+      swaySpeed: 1.3
+      jumpHeight: 0
+      jumpsPerSecond: 0
+      airTimeRatio: 0.7
+      squash: 0.12
+      speedVariance: 0.2
+      spriteCycleFps: 0
+  - moodName: High
+    minNormalized: 0.7
+    sprites:
+    - {fileID: -192967411525127944, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
+    - {fileID: -7248120004535117324, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
+    - {fileID: 7948055718385230587, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
+    - {fileID: 4935785543105481709, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
+    - {fileID: -7997924058571844942, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
+    - {fileID: -2599655201805745128, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
+    - {fileID: 560263598611071751, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
+    - {fileID: -3089889217913929513, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
+    - {fileID: -7487942386446793351, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
+    - {fileID: 4816776658377144383, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
+    - {fileID: -1026453491489542106, guid: a07c85d1d09b79a49a295a5ba2a98593, type: 3}
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    scaleMultiplier: 1.05
+    motion:
+      bobHeight: 0.04
+      bobSpeed: 2
+      swayAngle: 8
+      swaySpeed: 2.2
+      jumpHeight: 0.45
+      jumpsPerSecond: 1.8
+      airTimeRatio: 0.7
+      squash: 0.15
+      speedVariance: 0.15
+      spriteCycleFps: 0
+  moodBlendDuration: 0.6
+  hysteresis: 0.04
