@@ -2669,6 +2669,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1297954601}
   m_CullTransparentMesh: 1
+--- !u!1 &1309943765
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1309943766}
+  m_Layer: 5
+  m_Name: CardDragLayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1309943766
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1309943765}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1557128084}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1398186782
 GameObject:
   m_ObjectHideFlags: 0
@@ -3184,6 +3219,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CardHandUI
   cardContainer: {fileID: 1541731745}
   hintText: {fileID: 1701468850}
+  dragLayer: {fileID: 1309943766}
+  cardInput: {fileID: 831138396}
 --- !u!114 &1541731747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3306,6 +3343,7 @@ RectTransform:
   m_Children:
   - {fileID: 1541731745}
   - {fileID: 1701468849}
+  - {fileID: 1309943766}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -3673,7 +3711,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\uC22B\uC790\uD0A4\uB85C \uCE74\uB4DC\uB97C \uC120\uD0DD"
+  m_Text: "\uCE74\uB4DC\uB97C \uC704\uB85C \uB4DC\uB798\uADF8\uD574 \uC0AC\uC6A9"
 --- !u!222 &1701468851
 CanvasRenderer:
   m_ObjectHideFlags: 0

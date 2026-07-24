@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 0658b3c0faca3f7488875b53e8bd6fa8
+guid: 287c05c64ab068e469c1996b7ff69e10
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5011833554431258250
-    second: card_rock_horns_0
+      213: -1342602428571810244
+    second: card_drum_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -139,7 +139,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: card_rock_horns_0
+      name: card_drum_0
       rect:
         serializedVersion: 2
         x: 0
@@ -154,8 +154,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 671ddb2afe3627ab0800000000000000
-      internalID: -5011833554431258250
+      spriteID: c368662643e1e5de0800000000000000
+      internalID: -1342602428571810244
       vertices: []
       indices: 
       edges: []
@@ -174,7 +174,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      card_rock_horns_0: -5011833554431258250
+      card_drum_0: -1342602428571810244
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
