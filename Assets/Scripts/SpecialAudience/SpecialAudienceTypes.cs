@@ -1,18 +1,8 @@
 namespace ContextStage
 {
-    /// <summary>
-    /// 특별 관객이 요구하는 반응 타입.
-    ///
-    /// 프로젝트 조사 결과 Chill/Singalong/Mosh 를 나타내는 기존 enum 이 없어 새로 만든다.
-    /// (CardData 는 열기 구간만 보고 Perfect/Miss 를 판정하므로 맥락 타입 개념이 없었다)
-    /// 나중에 카드에 맥락 타입이 생기면 이 enum 을 카드 쪽에서 그대로 재사용하면 된다.
-    /// </summary>
-    public enum SpecialAudienceRequestType
-    {
-        Chill,      // 조용히 듣고 싶어함 (기타 솔로 등)
-        Singalong,  // 떼창하고 싶어함
-        Mosh        // 격렬하게 놀고 싶어함
-    }
+    // 특별 관객이 요구하는 반응 타입은 카드 시스템의 HeatStage(Chill/Singalong/Mosh)를 그대로 쓴다.
+    // (정의 위치: Assets/Scripts/Cards/CardDefinition.cs)
+    // 같은 의미의 enum 을 두 벌 두면 변환 코드와 불일치 버그가 생기므로 재사용한다.
 
     /// <summary>특별 관객 요청이 끝난 이유. 하나의 종료 이벤트로 묶어 처리한다.</summary>
     public enum SpecialAudienceEndReason

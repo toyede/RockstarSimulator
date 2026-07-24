@@ -79,12 +79,12 @@ namespace ContextStage
 
         Phase _phase = Phase.Stopped;
         float _phaseDeadline;                 // 현재 페이즈가 끝나는 시각 (Time.time 기준)
-        SpecialAudienceRequestType _currentRequest;
+        HeatStage _currentRequest;
         bool _hitRaisedForCurrentRequest;     // 한 요청당 Special Hit 이벤트 1회 보장
         float _lastReportedRemaining = -1f;   // 같은 값 중복 통지 방지
 
         /// <summary>셔플 백. 매 등장마다 새 리스트를 만들지 않고 재사용한다.</summary>
-        readonly List<SpecialAudienceRequestType> _bag = new List<SpecialAudienceRequestType>(3);
+        readonly List<HeatStage> _bag = new List<HeatStage>(3);
 
         /// <summary>씬 재시작 시 새로 초기화되도록 씬에 종속시킨다. (HypeSystem·CardSystem 과 동일)</summary>
         protected override bool Persistent => false;
@@ -92,7 +92,7 @@ namespace ContextStage
         // ---------------- 공개 상태 ----------------
 
         public bool HasActiveRequest => _phase == Phase.Active;
-        public SpecialAudienceRequestType CurrentRequestType => _currentRequest;
+        public HeatStage CurrentRequestType => _currentRequest;
         public float RequestDuration => requestDuration;
 
         public float RemainingTime =>
@@ -107,19 +107,19 @@ namespace ContextStage
         // ---------------- 이벤트 ----------------
 
         /// <summary>(요구 타입, 전체 제한시간)</summary>
-        public event Action<SpecialAudienceRequestType, float> OnSpecialAudienceSpawned;
+        public event Action<HeatStage, float> OnSpecialAudienceSpawned;
 
         /// <summary>(남은 시간, 전체 제한시간) — 요구 중 매 프레임</summary>
         public event Action<float, float> OnRequestTimeChanged;
 
         /// <summary>(요구 타입) — 제한시간 초과로 사라짐</summary>
-        public event Action<SpecialAudienceRequestType> OnSpecialAudienceExpired;
+        public event Action<HeatStage> OnSpecialAudienceExpired;
 
         /// <summary>(요구 타입, 종료 사유) — 모든 종료를 하나로 받고 싶을 때</summary>
-        public event Action<SpecialAudienceRequestType, SpecialAudienceEndReason> OnSpecialAudienceEnded;
+        public event Action<HeatStage, SpecialAudienceEndReason> OnSpecialAudienceEnded;
 
         /// <summary>(요구 타입, 보상) — 한 요청당 정확히 1회</summary>
-        public event Action<SpecialAudienceRequestType, SpecialHitReward> OnSpecialHit;
+        public event Action<HeatStage, SpecialHitReward> OnSpecialHit;
 
         // ---------------- 수명 주기 ----------------
 
@@ -197,7 +197,7 @@ namespace ContextStage
         public void ForceSpawnRandom() => ForceSpawn(TakeFromBag());
 
         /// <summary>지정한 타입으로 즉시 등장시킨다. 이미 활성 요청이 있으면 교체한다.</summary>
-        public void ForceSpawn(SpecialAudienceRequestType requestType)
+        public void ForceSpawn(HeatStage requestType)
         {
             if (_phase == Phase.Active || _phase == Phase.HitHold)
                 EndRequest(SpecialAudienceEndReason.ReplacedByDebug, hideInstant: true);
@@ -212,16 +212,45 @@ namespace ContextStage
         /// 실패하면 false 를 돌려주고 <b>현재 요청은 그대로 유지된다</b> (남은 시간도 계속 감소).
         /// 어느 쪽이든 이 함수는 점수·열기를 직접 건드리지 않는다.
         /// </summary>
-        public bool TrySpecialHit(SpecialAudienceRequestType playedType, out SpecialHitReward reward)
+        public bool TrySpecialHit(HeatStage playedType, out SpecialHitReward reward)
         {
             reward = default;
+            if (!CanAcceptHit(playedType)) return false;
 
+            reward = new SpecialHitReward(specialHitBaseScore, specialHitBonusHeat);
+            CompleteHit(reward);
+            return true;
+        }
+
+        /// <summary>
+        /// [카드 판정 경로용] 카드가 자기 수치(CardDefinition 의 SpecialHitBaseScore/HeatDelta)로
+        /// 이미 보상을 적용한 뒤, 요청을 소비만 시킬 때 쓴다.
+        ///
+        /// TrySpecialHit 과 달리 매니저의 보상 수치를 쓰지 않는다.
+        /// (같은 히트에 매니저 400점 + 카드 400점이 이중 적용되는 것을 막기 위함)
+        /// 이벤트에는 <b>실제로 적용된</b> 값이 실려 나간다.
+        /// </summary>
+        public bool ConsumeRequest(HeatStage playedType, int appliedBaseScore, float appliedHeatDelta)
+        {
+            if (!CanAcceptHit(playedType)) return false;
+
+            CompleteHit(new SpecialHitReward(appliedBaseScore, appliedHeatDelta), alreadyApplied: true);
+            return true;
+        }
+
+        /// <summary>지금 이 타입의 히트를 받아줄 수 있는가.</summary>
+        bool CanAcceptHit(HeatStage playedType)
+        {
             // 만료된 프레임과 호출이 겹쳐도 여기서 걸린다 (Update 가 먼저 Phase 를 바꿨으면 Active 가 아니다)
             if (_phase != Phase.Active) return false;
             if (playedType != _currentRequest) return false;
             if (_hitRaisedForCurrentRequest) return false; // 같은 프레임 중복 호출 방지
+            return true;
+        }
 
-            reward = new SpecialHitReward(specialHitBaseScore, specialHitBonusHeat);
+        /// <summary>히트 성공 처리의 단일 통로. 이벤트는 한 요청당 정확히 한 번만 나간다.</summary>
+        void CompleteHit(SpecialHitReward reward, bool alreadyApplied = false)
+        {
             _hitRaisedForCurrentRequest = true;
 
             // 1. 제한시간 중지 → 2. 이벤트 → 3. 연출 → (4. 유지 후 숨김·다음 간격 시작은 Update 에서)
@@ -229,16 +258,19 @@ namespace ContextStage
             _phaseDeadline = Time.time + Mathf.Max(0f, specialHitHoldDuration);
 
             var type = _currentRequest;
-            var payload = reward;
 
-            OnSpecialHit?.Invoke(type, payload);
+            OnSpecialHit?.Invoke(type, reward);
             OnSpecialAudienceEnded?.Invoke(type, SpecialAudienceEndReason.SpecialHit);
-            EventBus.Raise(new SpecialHitLanded { RequestType = type, Reward = payload });
+            EventBus.Raise(new SpecialHitLanded
+            {
+                RequestType = type,
+                Reward = reward,
+                AlreadyApplied = alreadyApplied
+            });
             EventBus.Raise(new SpecialAudienceEnded { RequestType = type, Reason = SpecialAudienceEndReason.SpecialHit });
 
             view?.PlaySpecialHit();
-            Log($"Special Hit: {type} ({payload})");
-            return true;
+            Log($"Special Hit: {type} ({reward}){(alreadyApplied ? " [카드가 이미 적용함]" : "")}");
         }
 
         // ---------------- 타이머 ----------------
@@ -291,7 +323,7 @@ namespace ContextStage
             view?.SetRemaining(remaining, requestDuration);
         }
 
-        void Spawn(SpecialAudienceRequestType requestType)
+        void Spawn(HeatStage requestType)
         {
             _currentRequest = requestType;
             _hitRaisedForCurrentRequest = false;
@@ -336,9 +368,9 @@ namespace ContextStage
         void RefillBag()
         {
             _bag.Clear();
-            _bag.Add(SpecialAudienceRequestType.Chill);
-            _bag.Add(SpecialAudienceRequestType.Singalong);
-            _bag.Add(SpecialAudienceRequestType.Mosh);
+            _bag.Add(HeatStage.Chill);
+            _bag.Add(HeatStage.Singalong);
+            _bag.Add(HeatStage.Mosh);
 
             for (int i = _bag.Count - 1; i > 0; i--)
             {
@@ -347,7 +379,7 @@ namespace ContextStage
             }
         }
 
-        SpecialAudienceRequestType TakeFromBag()
+        HeatStage TakeFromBag()
         {
             if (_bag.Count == 0) RefillBag();
 
@@ -443,8 +475,25 @@ namespace ContextStage
         public static float RemainingTime =>
             SpecialAudienceManager.HasInstance ? SpecialAudienceManager.Instance.RemainingTime : 0f;
 
+        /// <summary>
+        /// [카드 판정용] 지금 살아 있는 요청을 CardEffectResolver 가 쓰는 형태로 넘겨준다.
+        /// 활성 요청이 없으면 SpecialCardRequest.None.
+        /// </summary>
+        public static SpecialCardRequest CurrentRequest =>
+            HasActiveRequest
+                ? new SpecialCardRequest(SpecialAudienceManager.Instance.CurrentRequestType)
+                : SpecialCardRequest.None;
+
+        /// <summary>
+        /// [카드 판정용] 카드가 자기 수치로 보상을 이미 적용한 뒤 요청을 소비시킨다.
+        /// 매니저 보상은 쓰지 않으므로 이중 적용이 생기지 않는다.
+        /// </summary>
+        public static bool ConsumeRequest(HeatStage playedType, int appliedBaseScore, float appliedHeatDelta)
+            => SpecialAudienceManager.HasInstance &&
+               SpecialAudienceManager.Instance.ConsumeRequest(playedType, appliedBaseScore, appliedHeatDelta);
+
         /// <summary>씬에 시스템이 없으면 아무 일도 없이 false. (억지로 생성하지 않는다)</summary>
-        public static bool TryHit(SpecialAudienceRequestType playedType, out SpecialHitReward reward)
+        public static bool TryHit(HeatStage playedType, out SpecialHitReward reward)
         {
             if (!SpecialAudienceManager.HasInstance)
             {

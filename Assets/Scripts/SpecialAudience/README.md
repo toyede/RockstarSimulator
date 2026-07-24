@@ -19,7 +19,7 @@ Tools/Special Audience/Setup Special Audience   →   Ctrl+S
 
 | 파일 | 책임 |
 |---|---|
-| `SpecialAudienceTypes.cs` | `SpecialAudienceRequestType`, `SpecialAudienceEndReason`, `SpecialHitReward` |
+| `SpecialAudienceTypes.cs` | `HeatStage`, `SpecialAudienceEndReason`, `SpecialHitReward` |
 | `SpecialAudienceManager.cs` | 타이머·셔플백·요구 관리·Special Hit 판정·이벤트 발행 + `SpecialAudience` 파사드 |
 | `SpecialAudienceView.cs` | 표시 전담 (아이콘 전환·게이지·애니메이션). 로직을 전혀 모름 |
 | `Editor/SpecialAudienceSetupMenu.cs` | 씬 셋업 + 그레이박스 UI |
@@ -38,26 +38,37 @@ Tools/Special Audience/Setup Special Audience   →   Ctrl+S
 | 연출 유지 `specialHitHoldDuration` | 0.7초 |
 | 디버그 키 `debugSpawnKey` | P |
 
-## 4. 카드 담당이 나중에 연결할 지점
+## 4. 카드 시스템과의 연결 (완료됨)
 
-**지금은 카드 코드에 아무것도 넣지 않았다.** 나중에 이 한 줄만 추가하면 된다.
+요구 타입은 **카드 시스템의 `HeatStage`(Chill/Singalong/Mosh)를 그대로 쓴다.**
+같은 의미의 enum 을 두 벌 두지 않기 위해 `SpecialAudienceRequestType` 은 폐기했다.
+
+`CardSystem.SelectCard()` 에서 실제로 이어지는 부분은 두 곳뿐이다.
 
 ```csharp
-// CardSystem.SelectCard() 안, 판정 직후 등
-if (SpecialAudience.TryHit(cardType, out var reward))
-{
-    // 점수·열기 담당이 reward.BonusBaseScore / reward.BonusHeat 를 적용
-}
+// 1) 판정기에 지금 요구 중인 맥락을 넘긴다 (없으면 SpecialCardRequest.None 과 동일)
+var result = CardEffectResolver.Resolve(card, currentHype, config, SpecialAudience.CurrentRequest);
+
+// 2) 특수 히트였다면 요청을 소비시킨다 (보상은 카드 수치로 이미 적용됨)
+if (result.IsSpecialHit)
+    SpecialAudience.ConsumeRequest(card.TargetStage, result.BaseScore, result.HeatDelta);
 ```
 
-직접 참조가 있으면 `specialAudienceManager.TrySpecialHit(cardType, out var reward)` 도 동일하다.
+**보상 이중 적용 주의.** 점수·열기는 카드가 자기 수치(`CardDefinition.SpecialHitBaseScore/HeatDelta`)로
+`CardSelected` 경로를 통해 이미 적용한다. 그래서 카드 경로는 매니저 보상을 쓰지 않는
+`ConsumeRequest` 를 호출하고, 이때 `SpecialHitLanded.AlreadyApplied` 가 `true` 로 나간다.
 
-- 맞으면 `true` + 보상 반환, 제한시간 정지 → 연출 → 0.7초 뒤 숨김 → 다음 간격 시작
-- 틀리면 `false`, **요청은 그대로 유지되고 남은 시간도 계속 감소**
-- 어느 쪽이든 점수·열기는 이 시스템이 직접 건드리지 않는다
+| API | 쓰는 곳 | 보상 |
+|---|---|---|
+| `SpecialAudience.CurrentRequest` | 카드 판정기에 맥락 전달 | – |
+| `SpecialAudience.ConsumeRequest(stage, score, heat)` | 카드 경로 (보상 이미 적용됨) | 이벤트에 실제 적용값 전달, `AlreadyApplied = true` |
+| `SpecialAudience.TryHit(stage, out reward)` | 카드 밖에서 단독 판정할 때 | 매니저 인스펙터 값(400/25) 반환, 호출부가 적용 |
 
-카드에 맥락 타입이 아직 없으므로, 카드 담당은 `CardData` 에 `SpecialAudienceRequestType` 필드를 하나 추가하고
-그 값을 넘기면 된다. (이 enum 은 카드 쪽에서 그대로 재사용하라고 만든 것)
+- 맞으면 제한시간 정지 → 연출 → 0.7초 뒤 숨김 → 다음 간격 시작
+- 틀리면 **요청은 그대로 유지되고 남은 시간도 계속 감소**
+- 어느 쪽이든 매니저가 점수·열기를 직접 건드리지 않는 건 그대로다
+
+Special 역할 카드는 3단계 모두 있다: `Card_02_Response`(Chill) / `Card_04_PassMic`(Singalong) / `Card_06_MoshPit`(Mosh).
 
 ## 5. 점수·열기 담당이 받는 이벤트
 

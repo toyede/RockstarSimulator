@@ -82,7 +82,7 @@ namespace ContextStage
         // ---------------- 매니저가 호출하는 API ----------------
 
         /// <summary>특별 관객 등장.</summary>
-        public void Show(SpecialAudienceRequestType requestType, float duration)
+        public void Show(HeatStage requestType, float duration)
         {
             _hideAt = -1f;
             SetRootActive(true);
@@ -123,7 +123,7 @@ namespace ContextStage
 
         // ---------------- 내부 ----------------
 
-        void ApplyIcon(SpecialAudienceRequestType requestType)
+        void ApplyIcon(HeatStage requestType)
         {
             // (1) 클립 방식 — 프레임 1장이면 정지 이미지, 여러 장이면 애니메이션
             var clip = ResolveClip(requestType);
@@ -131,19 +131,19 @@ namespace ContextStage
             else _player.SetSprite(null);
 
             // (2) 오브젝트 방식 — 타입별로 다른 오브젝트를 켜고 끈다 (그레이박스 텍스트 등)
-            SetActiveSafe(chillIcon, requestType == SpecialAudienceRequestType.Chill);
-            SetActiveSafe(singalongIcon, requestType == SpecialAudienceRequestType.Singalong);
-            SetActiveSafe(moshIcon, requestType == SpecialAudienceRequestType.Mosh);
+            SetActiveSafe(chillIcon, requestType == HeatStage.Chill);
+            SetActiveSafe(singalongIcon, requestType == HeatStage.Singalong);
+            SetActiveSafe(moshIcon, requestType == HeatStage.Mosh);
         }
 
         /// <summary>요구 타입 → 클립. 비어 있으면 null (그때는 오브젝트 방식만 동작).</summary>
-        SpriteAnimationClip ResolveClip(SpecialAudienceRequestType requestType)
+        SpriteAnimationClip ResolveClip(HeatStage requestType)
         {
             switch (requestType)
             {
-                case SpecialAudienceRequestType.Chill:     return chillClip;
-                case SpecialAudienceRequestType.Singalong: return singalongClip;
-                case SpecialAudienceRequestType.Mosh:      return moshClip;
+                case HeatStage.Chill:     return chillClip;
+                case HeatStage.Singalong: return singalongClip;
+                case HeatStage.Mosh:      return moshClip;
                 default:                                   return null;
             }
         }

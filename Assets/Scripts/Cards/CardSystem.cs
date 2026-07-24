@@ -85,11 +85,12 @@ namespace ContextStage
                 _hand.RemoveAt(index);
 
                 float currentHype = Hype.Current;
+                // 특별 관객이 요구 중이면 그 맥락을 판정기에 넘긴다. 없으면 None과 동일하게 동작한다.
                 var result = CardEffectResolver.Resolve(
                     card,
                     currentHype,
                     HypeSystem.Instance.Config,
-                    SpecialCardRequest.None);
+                    SpecialAudience.CurrentRequest);
                 float multiplier = Hype.MultiplierFor(currentHype);
 
                 // 동기 EventBus 구독자가 현재 열기 배율로 점수를 먼저 반영한다.
@@ -107,6 +108,10 @@ namespace ContextStage
                 // 이 카드의 점수 계산이 끝난 뒤 열기를 변경한다.
                 if (!Mathf.Approximately(result.HeatDelta, 0f))
                     Hype.ApplyDelta(result.HeatDelta, result.Judgement);
+
+                // 특수 히트였다면 특별 관객 요청을 소비시킨다. (보상은 위에서 이미 적용됐으므로 매니저는 연출·이벤트만)
+                if (result.IsSpecialHit)
+                    SpecialAudience.ConsumeRequest(card.TargetStage, result.BaseScore, result.HeatDelta);
 
                 ResolveHandEffect(card);
                 RaiseHandChanged();
