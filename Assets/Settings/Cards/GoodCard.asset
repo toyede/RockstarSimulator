@@ -18,4 +18,5 @@ MonoBehaviour:
     \uCC38\uC5EC\uB97C \uB04C\uC5B4\uB0B8\uB2E4."
   favorableHypeMin: 20
   favorableHypeMax: 55
+  artwork: {fileID: -901948347361613307, guid: 76f5311e67c7a6d40aa73ec5eee74688, type: 3}
   prototypeColor: {r: 0.2, g: 0.4, b: 0.65, a: 1}

@@ -16,6 +16,7 @@ namespace ContextStage
         [SerializeField, TextArea(2, 4)] string description = "";
         [SerializeField, Range(0f, 100f)] float favorableHypeMin;
         [SerializeField, Range(0f, 100f)] float favorableHypeMax = 100f;
+        [SerializeField] Sprite artwork;
         [SerializeField] Color prototypeColor = new Color(0.25f, 0.3f, 0.4f);
 
         public string Id => id;
@@ -23,6 +24,7 @@ namespace ContextStage
         public string Description => description;
         public float FavorableHypeMin => Mathf.Min(favorableHypeMin, favorableHypeMax);
         public float FavorableHypeMax => Mathf.Max(favorableHypeMin, favorableHypeMax);
+        public Sprite Artwork => artwork;
         public Color PrototypeColor => prototypeColor;
 
         public bool IsFavorable(float currentHype)

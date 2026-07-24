@@ -25,5 +25,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4b164a52fc01fcb4d8fc222a5fcd8295, type: 2}
   - {fileID: 11400000, guid: 2552987b4b1d2e74f85e17415f4099ee, type: 2}
   - {fileID: 11400000, guid: 0662a70b970d9dd4ca4d6f08714f1ad8, type: 2}
-  baseHandSize: 4
+  minimumHandSize: 3
+  maximumHandSize: 9
   shuffleOnStart: 1

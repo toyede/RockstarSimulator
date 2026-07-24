@@ -15,6 +15,7 @@ namespace ContextStage.EditorTools
     {
         const string CardFolder = "Assets/Settings/Cards";
         const string DeckPath = CardFolder + "/CardDeckConfig.asset";
+        const string ArtFolder = "Assets/Art_Assets";
 
         [MenuItem("Tools/Cards/Setup Card Prototype", false, 0)]
         public static void SetupCardPrototype()
@@ -33,22 +34,26 @@ namespace ContextStage.EditorTools
         {
             EnsureFolder(CardFolder);
 
+            var clapRhythm = LoadSprite(ArtFolder + "/card_clap_rhythm.png");
+            var guitar = LoadSprite(ArtFolder + "/card_guitar.png");
+            var rockHorns = LoadSprite(ArtFolder + "/card_rock_horns.png");
+
             var quietVerse = GetOrCreateCard(
                 "PerfectCard", "quiet_verse", "Quiet Verse",
                 "차분한 관객에게 분위기를 쌓아 올린다.",
-                0f, 35f, new Color(0.15f, 0.55f, 0.35f));
+                0f, 35f, new Color(0.15f, 0.55f, 0.35f), guitar);
             var crowdCall = GetOrCreateCard(
                 "GoodCard", "crowd_call", "Crowd Call",
                 "달아오르기 시작한 관객의 참여를 끌어낸다.",
-                20f, 55f, new Color(0.2f, 0.4f, 0.65f));
+                20f, 55f, new Color(0.2f, 0.4f, 0.65f), clapRhythm);
             var guitarSolo = GetOrCreateCard(
                 "MissCard", "guitar_solo", "Guitar Solo",
                 "충분히 달아오른 무대에서 솔로를 터뜨린다.",
-                45f, 80f, new Color(0.55f, 0.35f, 0.2f));
+                45f, 80f, new Color(0.55f, 0.35f, 0.2f), guitar);
             var stageDive = GetOrCreateCard(
                 "RiskMissCard", "stage_dive", "Stage Dive",
                 "절정에 가까운 관객에게 몸을 던진다.",
-                70f, 100f, new Color(0.6f, 0.2f, 0.25f));
+                70f, 100f, new Color(0.6f, 0.2f, 0.25f), rockHorns);
 
             var deck = GetOrCreateDeck(new[] { quietVerse, crowdCall, guitarSolo, stageDive });
             AssetDatabase.SaveAssets();
@@ -62,7 +67,8 @@ namespace ContextStage.EditorTools
             string description,
             float favorableHypeMin,
             float favorableHypeMax,
-            Color color)
+            Color color,
+            Sprite artwork)
         {
             string path = $"{CardFolder}/{assetName}.asset";
             var card = AssetDatabase.LoadAssetAtPath<CardData>(path);
@@ -78,6 +84,7 @@ namespace ContextStage.EditorTools
             serialized.FindProperty("description").stringValue = description;
             serialized.FindProperty("favorableHypeMin").floatValue = favorableHypeMin;
             serialized.FindProperty("favorableHypeMax").floatValue = favorableHypeMax;
+            serialized.FindProperty("artwork").objectReferenceValue = artwork;
             serialized.FindProperty("prototypeColor").colorValue = color;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(card);
@@ -104,7 +111,8 @@ namespace ContextStage.EditorTools
                     cards.GetArrayElementAtIndex(index++).objectReferenceValue = prototypes[i];
             }
 
-            serialized.FindProperty("baseHandSize").intValue = 4;
+            serialized.FindProperty("minimumHandSize").intValue = 3;
+            serialized.FindProperty("maximumHandSize").intValue = 9;
             serialized.FindProperty("shuffleOnStart").boolValue = true;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(deck);
@@ -128,7 +136,11 @@ namespace ContextStage.EditorTools
         static void BuildCardCanvas()
         {
             var existing = Object.FindFirstObjectByType<CardHandUI>();
-            if (existing != null) return;
+            if (existing != null)
+            {
+                UpgradeExistingCardCanvas(existing);
+                return;
+            }
 
             var canvasGo = GameObject.Find("CardCanvas");
             if (canvasGo == null)
@@ -152,7 +164,7 @@ namespace ContextStage.EditorTools
             handRect.anchorMin = handRect.anchorMax = new Vector2(0.5f, 0f);
             handRect.pivot = new Vector2(0.5f, 0f);
             handRect.anchoredPosition = new Vector2(0f, 55f);
-            handRect.sizeDelta = new Vector2(1100f, 230f);
+            handRect.sizeDelta = new Vector2(1520f, 235f);
 
             var layout = handGo.AddComponent<HorizontalLayoutGroup>();
             layout.spacing = 16f;
@@ -162,7 +174,7 @@ namespace ContextStage.EditorTools
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
 
-            var slots = new CardSlotUI[5];
+            var slots = new CardSlotUI[9];
             for (int i = 0; i < slots.Length; i++)
                 slots[i] = CreateCardSlot(handGo.transform, i);
 
@@ -177,15 +189,74 @@ namespace ContextStage.EditorTools
             handUi.Configure(slots, hint);
         }
 
+        static void UpgradeExistingCardCanvas(CardHandUI handUi)
+        {
+            const int targetSlotCount = 9;
+
+            var hand = handUi.gameObject;
+            var handRect = hand.GetComponent<RectTransform>();
+            if (handRect != null)
+            {
+                Undo.RecordObject(handRect, "Resize Card Hand");
+                handRect.sizeDelta = new Vector2(1520f, 235f);
+            }
+
+            var existingSlots = hand.GetComponentsInChildren<CardSlotUI>(true);
+            if (existingSlots.Length == 0)
+            {
+                Debug.LogWarning("[Cards] 기존 CardHand에 복제할 카드 슬롯이 없습니다.");
+                return;
+            }
+
+            var slots = new CardSlotUI[targetSlotCount];
+            int reusedCount = Mathf.Min(existingSlots.Length, targetSlotCount);
+            for (int i = 0; i < reusedCount; i++) slots[i] = existingSlots[i];
+
+            for (int i = reusedCount; i < targetSlotCount; i++)
+            {
+                var clone = Object.Instantiate(existingSlots[0].gameObject, hand.transform);
+                clone.name = $"CardSlot_{i + 1}";
+                clone.transform.SetSiblingIndex(i);
+                Undo.RegisterCreatedObjectUndo(clone, "Add Card Slot");
+                slots[i] = clone.GetComponent<CardSlotUI>();
+            }
+
+            for (int i = 0; i < targetSlotCount; i++)
+            {
+                var slotRect = slots[i].GetComponent<RectTransform>();
+                if (slotRect != null)
+                {
+                    Undo.RecordObject(slotRect, "Resize Card Slot");
+                    slotRect.sizeDelta = new Vector2(150f, 225f);
+                }
+
+                var slotLayout = slots[i].GetComponent<LayoutElement>();
+                if (slotLayout != null)
+                {
+                    Undo.RecordObject(slotLayout, "Resize Card Slot");
+                    slotLayout.preferredWidth = 150f;
+                    slotLayout.preferredHeight = 225f;
+                }
+            }
+
+            var serialized = new SerializedObject(handUi);
+            var slotsProperty = serialized.FindProperty("slots");
+            slotsProperty.arraySize = targetSlotCount;
+            for (int i = 0; i < targetSlotCount; i++)
+                slotsProperty.GetArrayElementAtIndex(i).objectReferenceValue = slots[i];
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(handUi);
+        }
+
         static CardSlotUI CreateCardSlot(Transform parent, int index)
         {
             var slotGo = CreateUIObject($"CardSlot_{index + 1}", parent);
             var rect = slotGo.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(190f, 220f);
+            rect.sizeDelta = new Vector2(150f, 225f);
 
             var layout = slotGo.AddComponent<LayoutElement>();
-            layout.preferredWidth = 190f;
-            layout.preferredHeight = 220f;
+            layout.preferredWidth = 150f;
+            layout.preferredHeight = 225f;
 
             var background = slotGo.AddComponent<Image>();
             background.color = new Color(0.25f, 0.3f, 0.4f);
@@ -203,6 +274,18 @@ namespace ContextStage.EditorTools
             var slot = slotGo.AddComponent<CardSlotUI>();
             slot.Configure(background, number, title, delta);
             return slot;
+        }
+
+        static Sprite LoadSprite(string path)
+        {
+            var assets = AssetDatabase.LoadAllAssetsAtPath(path);
+            for (int i = 0; i < assets.Length; i++)
+            {
+                if (assets[i] is Sprite sprite) return sprite;
+            }
+
+            Debug.LogWarning($"[Cards] 카드 아트 Sprite를 찾지 못했습니다: {path}");
+            return null;
         }
 
         static Text CreateText(string name, Transform parent, string content, int fontSize, TextAnchor alignment)
