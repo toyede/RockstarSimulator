@@ -105,6 +105,7 @@ namespace GameJamKit
         public string TierName;    // 콘픽에 적힌 티어 이름 ("Low" / "Middle" / "High" ...)
     }
 
+
     /// <summary>
     /// 관객 비주얼 상태(low/middle/high...)가 바뀔 때 CrowdMoodDirector 가 발행.
     /// 관객 스프라이트 자체는 ICrowdMoodReactor 로 직접 갱신되므로,
@@ -115,5 +116,32 @@ namespace GameJamKit
         public int PreviousIndex;  // 이전 상태 (-1 = 없음)
         public int Index;          // 새 상태 인덱스 (0 = 가장 낮음)
         public string MoodName;    // 콘픽에 적힌 상태 이름
+
+    /// <summary>손패 구성이 바뀐 뒤 발행. 카드 UI가 구독한다.</summary>
+    public struct HandChanged
+    {
+        public int Count;
+        public int BaseHandSize;
+        public int BonusCardCount;
+    }
+
+    /// <summary>덱에서 카드가 손패로 들어올 때 발행.</summary>
+    public struct CardDrawn
+    {
+        public string CardId;
+        public string DisplayName;
+        public int HandIndex;
+        public bool IsEncoreBonus;
+    }
+
+    /// <summary>숫자키로 카드가 선택되어 호응도 판정이 적용될 때 발행.</summary>
+    public struct CardSelected
+    {
+        public string CardId;
+        public string DisplayName;
+        public int HandIndex;
+        public HypeJudgement Judgement;
+        public float Delta;
+
     }
 }
