@@ -1,3 +1,4 @@
+using GameJamKit;
 using UnityEngine;
 
 namespace ContextStage
@@ -117,7 +118,12 @@ namespace ContextStage
 
         void OnDisable()
         {
-            if (CrowdMoodDirector.HasInstance) CrowdMoodDirector.Instance.Unregister(this);
+            // During play-mode exit or scene teardown, HasInstance can still be true while
+            // Instance intentionally returns null because SingletonRuntime is quitting.
+            if (SingletonRuntime.IsQuitting || !CrowdMoodDirector.HasInstance) return;
+
+            CrowdMoodDirector director = CrowdMoodDirector.Instance;
+            if (director != null) director.Unregister(this);
         }
 
         /// <summary>
