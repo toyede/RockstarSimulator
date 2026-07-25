@@ -4863,6 +4863,91 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1451535427}
   m_CullTransparentMesh: 1
+--- !u!1 &1466933570
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1466933572}
+  - component: {fileID: 1466933571}
+  m_Layer: 0
+  m_Name: '[DecorativeCrowd]'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1466933571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1466933570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51a13e478005d92448ec06eaaf090da4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.DecorativeCrowd
+  variants:
+  - {fileID: 21300000, guid: e2a47d7cad0949749a5adb6a1494deb6, type: 3}
+  - {fileID: 21300000, guid: d0786ff16609f6949b53e1d12412f31c, type: 3}
+  maxCount: 9
+  audienceRatioForFull: 0.8
+  minimumWhenAnyAudience: 1
+  spreadWidth: 16
+  verticalJitter: 0.3
+  baseScale: 1
+  scaleJitter: 0.12
+  seed: 4321
+  sortingLayer: Default
+  sortingOrder: 2
+  sortingOrderSpan: 3
+  calmMotion:
+    bobHeight: 0.03
+    bobSpeed: 0.9
+    swayAngle: 2
+    swaySpeed: 0.8
+    jumpHeight: 0
+    jumpsPerSecond: 0
+    airTimeRatio: 0.6
+    squash: 0.03
+    speedVariance: 0.2
+    spriteCycleFps: 0
+  hypeMotion:
+    bobHeight: 0.09
+    bobSpeed: 2.4
+    swayAngle: 8
+    swaySpeed: 2.2
+    jumpHeight: 0.32
+    jumpsPerSecond: 1.8
+    airTimeRatio: 0.7
+    squash: 0.14
+    speedVariance: 0.2
+    spriteCycleFps: 0
+  comboForFullMotion: 10
+  motionBlendSpeed: 3
+  transitionDuration: 0.45
+  appearRise: 0.5
+  stagger: 0.06
+--- !u!4 &1466933572
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1466933570}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1472280333
 GameObject:
   m_ObjectHideFlags: 0
@@ -5336,6 +5421,22 @@ PrefabInstance:
     - target: {fileID: 2135933040274056952, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_Name
       value: GameOverCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 2970080556729224127, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 157.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 2970080556729224127, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 139.7191
+      objectReference: {fileID: 0}
+    - target: {fileID: 2970080556729224127, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 733.07
+      objectReference: {fileID: 0}
+    - target: {fileID: 2970080556729224127, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -125.8029
       objectReference: {fileID: 0}
     - target: {fileID: 3640169816863125802, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_Pivot.x
@@ -6588,7 +6689,9 @@ MonoBehaviour:
   skipButton: {fileID: 348109424}
   dimAlpha: 0.6
   dimFadeSpeed: 6
-  glowColor: {r: 1, g: 0.95, b: 0.7, a: 0.55}
+  chillGlowColor: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 0.54901963}
+  singalongGlowColor: {r: 0.39215687, g: 0.19215687, b: 0.91764706, a: 0.54901963}
+  moshGlowColor: {r: 0.9411765, g: 0.12156863, b: 0.12156863, a: 0.54901963}
   glowPulseSpeed: 3
 --- !u!114 &1966428204
 MonoBehaviour:
@@ -7349,3 +7452,4 @@ SceneRoots:
   - {fileID: 865710563}
   - {fileID: 1916874867}
   - {fileID: 1262919237}
+  - {fileID: 1466933572}

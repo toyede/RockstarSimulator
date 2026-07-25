@@ -93,8 +93,10 @@ namespace ContextStage.EditorTools
             SpriteSheetAnimator[] animators = Object.FindObjectsByType<SpriteSheetAnimator>(
                 FindObjectsInactive.Include,
                 FindObjectsSortMode.None);
+            // 씬에 Friends / Friends (1) / Friends (2) 세 명이 있다 — 이름으로 시작만 맞춘다
             for (int i = 0; i < animators.Length; i++)
-                if (animators[i].name == "Friends") targets.Add(animators[i]);
+                if (animators[i].name.StartsWith("Friends", System.StringComparison.Ordinal))
+                    targets.Add(animators[i]);
 
             if (targets.Count == 0)
             {

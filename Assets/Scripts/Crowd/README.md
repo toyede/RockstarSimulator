@@ -94,3 +94,39 @@ CrowdMood.ReleaseForcedMood();  // 호응도 추종으로 복귀
 
 `Space` 로 공연 시작 → `1`(Perfect) 을 두세 번 눌러 호응도를 70% 이상으로 올리면 High 로 바뀌며 관객이 뛴다.
 `3`·`4` 로 떨어뜨리면 다시 가라앉는다. (`HypeDebugInput`)
+
+---
+
+## 장식용 배경 군중 (`DecorativeCrowd`)
+
+```
+Tools/Art/Setup Decorative Crowd   →   Ctrl+S
+```
+
+배경 뒤쪽에 서 있는 그림. **판정도 점수도 없다** — 실제 관객(`AudienceRosterSystem`)과
+혼동하지 말 것. 관객 명단과 콤보를 **읽기만** 하고 어느 시스템도 수정하지 않는다.
+
+| 반응 | 구독 이벤트 | 동작 |
+|---|---|---|
+| 모이고 흩어짐 | `AudienceSummaryChanged` | 관객 수 / (정원 × `audienceRatioForFull`) 비율 → 0 ~ `maxCount`(9) |
+| 들썩임 | `ComboChanged` | 콤보 0 → `comboForFullMotion`(10) 사이를 `calmMotion` ~ `hypeMotion` 으로 섞는다 |
+
+인원 비율을 **정원 대비**로 계산하므로 관객 정원 설정이 바뀌어도 자동으로 따라간다.
+관객이 한 명이라도 있으면 `minimumWhenAnyAudience` 만큼은 남겨 배경이 통째로 비지 않게 한다.
+
+움직임은 일반 관객과 **같은 공식**(`CrowdMotionEvaluator.EvaluateBlended`)을 쓴다.
+뒤쪽 사람들만 다른 리듬으로 흔들리면 눈에 거슬리기 때문이다.
+
+개체는 Awake 에 `maxCount` 만큼 한 번 만들어 두고 보이고 숨기기만 한다 —
+관객이 드나들 때마다 Instantiate/Destroy 하지 않는다.
+여러 명이 동시에 바뀔 때는 `stagger` 만큼 한 명씩 늦춰 우르르 떠오르지 않게 한다.
+
+### 정렬 주의
+
+현재 씬의 sortingOrder: `night_city_ground` = 0, `stage_lights` = 1, 관객 = 5부터, 밴드 = 45.
+장식 군중의 기본값은 **2**(+ `sortingOrderSpan` 3단계)라 배경 앞·관객 뒤에 선다.
+**0보다 낮게 두면 배경에 가려 아예 보이지 않는다.**
+
+### 확인
+
+인스펙터 `⋮` → `Debug/Show All` · `Debug/Hide All` · `Debug/Max Motion` · `Debug/Calm Motion`
