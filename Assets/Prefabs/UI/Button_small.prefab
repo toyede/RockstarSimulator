@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4000000000000001}
   - component: {fileID: 4000000000000002}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Button_small
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -67,7 +67,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1205776407840972037, guid: 952424b6cfbceb741a8d4b90e9c1161c, type: 3}
+  m_Sprite: {fileID: 2823644854331176187, guid: fee224513718c6444be30032156ab0b5, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -106,8 +106,8 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: -7293006983133732075, guid: 0123162498c750f4cb27a2ce06e0fda0, type: 3}
-    m_PressedSprite: {fileID: 5406650827824776741, guid: 0dc085a38887beb40b12e7a7cc1f7282, type: 3}
+    m_HighlightedSprite: {fileID: 9078907144531409976, guid: 40150b212b694b54eba9545322e7e0d9, type: 3}
+    m_PressedSprite: {fileID: 8842968022812354503, guid: f737e1252da753840890183a4ec96a43, type: 3}
     m_SelectedSprite: {fileID: 0}
     m_DisabledSprite: {fileID: 0}
   m_AnimationTriggers:
