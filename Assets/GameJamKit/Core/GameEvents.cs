@@ -80,6 +80,14 @@ namespace GameJamKit
         public float Delta;       // 이 판정으로 적용된 증감량
     }
 
+    /// <summary>공연 경과 시간이 갱신될 때마다 PerformanceTimerSystem 이 발행. 타이머 바 UI가 구독한다.</summary>
+    public struct PerformanceTimeChanged
+    {
+        public float Elapsed;     // 경과 시간(초)
+        public float Duration;    // 총 제한시간(초)
+        public float Normalized;  // 0~1 비율 (게이지 fillAmount 용)
+    }
+
     /// <summary>
     /// 관객 앰비언스 단계(low/middle/high...)가 바뀔 때 CrowdAmbienceSystem 이 발행.
     /// 연출 담당: 조명 색·관객 애니메이션 속도를 사운드와 같은 타이밍에 바꾸고 싶을 때 구독한다.

@@ -552,4 +552,5 @@ Tools/GameJamKit/Export .unitypackage
 | 2026-07-25 | Codex | `Core/GameManager.cs`, `UI/UIPopup.cs`, `Core/HitStop.cs`, `Feedback/CameraShake.cs` | 중첩 팝업의 일시정지 소유권을 분리하고, HitStop·카메라 흔들림이 자신이 적용한 상태만 복원하도록 변경했다. |
 | 2026-07-25 | Codex | `Save/Save.cs`, `Combat/Health.cs`, `Combat/DamageOnContact.cs`, `UI/HealthBar.cs`, `Spawn/WaveManager.cs` | 연속 저장을 dirty/flush 방식으로 바꾸고, 체력 UI를 이벤트 기반으로 전환했다. 대상별 접촉 피해 쿨다운과 웨이브 중단 후 자식 코루틴 취소를 보강했다. |
 | 2026-07-25 | Codex | `Core/GameEvents.cs` | 실제 발행되지 않던 `EncoreTriggered`, `HypeDepleted`를 제거하고 `SpecialHitLanded`에 연출 유지시간을 추가해 시스템 간 중복 수치를 없앴다. |
+| 2026-07-25 | Claude | `Core/GameEvents.cs` | 공연 시간(타이머) 이벤트 `PerformanceTimeChanged` 추가. (발행 주체는 `Assets/Scripts/Timer/PerformanceTimerSystem.cs`. 제한시간 초과 시 목표 점수 미달성이면 `GameManager.GameOver()`를 호출한다) |
 
