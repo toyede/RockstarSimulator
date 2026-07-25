@@ -71,8 +71,14 @@ namespace ContextStage
             if (card.Role == CardRole.Utility)
                 return card.UtilityEffect == UtilityCardEffect.Draw ? "UTILITY · DRAW" : "UTILITY · REROLL";
 
-            string stage = card.TargetStage.ToString().ToUpperInvariant();
-            return card.Role == CardRole.Special ? $"SPECIAL · {stage}" : stage;
+            AudienceReactionProfile profile = card.AudienceReaction;
+            if (profile == null || !profile.AppliesToAudience)
+                return "AUDIENCE DATA MISSING";
+
+            return
+                $"PREF C{profile.ChillScore} " +
+                $"S{profile.SingalongScore} M{profile.MoshScore}  " +
+                $"STAGE {profile.CalmScore}/{profile.MiddleScore}/{profile.ExcitedScore}";
         }
 
         static void ConfigureText(Text text, int minSize, int maxSize)

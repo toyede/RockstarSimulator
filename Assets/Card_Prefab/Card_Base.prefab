@@ -367,6 +367,15 @@ MonoBehaviour:
   farHeatDelta: -5
   specialHitBaseScore: 400
   specialHitHeatDelta: 25
+  audienceReaction:
+    appliesToAudience: 1
+    chillScore: 1
+    singalongScore: 1
+    moshScore: 1
+    calmScore: 1
+    middleScore: 2
+    excitedScore: 3
+    engagementMultiplier: 1
   drawCount: 2
   rerollDrawCount: 3
   artwork: {fileID: 0}

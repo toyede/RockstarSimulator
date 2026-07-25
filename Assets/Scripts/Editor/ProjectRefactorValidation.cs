@@ -43,6 +43,7 @@ namespace ContextStage.EditorTools
             try
             {
                 ValidatePureRuntimeRules(failures);
+                ValidateCardAudienceProfiles(failures);
                 for (int i = 0; i < ScenePaths.Length; i++)
                 {
                     EditorSceneManager.OpenScene(ScenePaths[i], OpenSceneMode.Single);
@@ -65,6 +66,8 @@ namespace ContextStage.EditorTools
 
         static void ValidatePureRuntimeRules(List<string> failures)
         {
+            AudienceFoundationValidation.CollectFailures(failures);
+
             var tiers = new List<ValidationTier> { null };
             if (HypeTierUtil.Resolve(tiers, 1f) != -1)
                 failures.Add("HypeTierUtil accepted a list containing no valid tiers.");
@@ -102,15 +105,92 @@ namespace ContextStage.EditorTools
             HypeSystem hype = UnityEngine.Object.FindFirstObjectByType<HypeSystem>();
             SpecialAudienceManager special =
                 UnityEngine.Object.FindFirstObjectByType<SpecialAudienceManager>();
+            AudienceRosterSystem audience =
+                UnityEngine.Object.FindFirstObjectByType<AudienceRosterSystem>(
+                    FindObjectsInactive.Include);
+            AudienceRosterPresenter presenter =
+                UnityEngine.Object.FindFirstObjectByType<AudienceRosterPresenter>(
+                    FindObjectsInactive.Include);
 
-            Require(composition != null, $"{prefix} CrowdCompositionManager missing.", failures);
-            Require(spawner != null, $"{prefix} CrowdSpawner missing.", failures);
             Require(cards != null, $"{prefix} CardSystem missing.", failures);
-            Require(hype != null && hype.Config != null, $"{prefix} HypeConfig missing.", failures);
-            Require(
-                special != null && special.Config != null,
-                $"{prefix} SpecialAudienceConfig missing.",
-                failures);
+
+            if (scenePath == "Assets/Scenes/Main.unity")
+            {
+                Require(
+                    audience != null,
+                    $"{prefix} staged AudienceRosterSystem missing.",
+                    failures);
+                Require(
+                    presenter != null,
+                    $"{prefix} AudienceRosterPresenter missing.",
+                    failures);
+                if (audience != null)
+                {
+                    Require(
+                        audience.enabled,
+                        $"{prefix} AudienceRosterSystem must be enabled.",
+                        failures);
+                    Require(
+                        audience.EngagementConfig != null,
+                        $"{prefix} AudienceEngagementConfig missing.",
+                        failures);
+                    Require(
+                        audience.FlowConfig != null,
+                        $"{prefix} AudienceFlowConfig missing.",
+                        failures);
+                }
+                if (presenter != null)
+                {
+                    Require(
+                        presenter.enabled,
+                        $"{prefix} AudienceRosterPresenter must be enabled.",
+                        failures);
+                    Require(
+                        presenter.MemberPrefab != null,
+                        $"{prefix} AudienceMember prefab missing.",
+                        failures);
+                }
+                if (cards != null)
+                {
+                    Require(
+                        cards.AudienceRoster == audience,
+                        $"{prefix} CardSystem is not bound to AudienceRosterSystem.",
+                        failures);
+                }
+
+                Require(
+                    spawner == null || !spawner.enabled,
+                    $"{prefix} legacy CrowdSpawner must be disabled.",
+                    failures);
+                Require(
+                    composition == null || !composition.enabled,
+                    $"{prefix} legacy CrowdCompositionManager must be disabled.",
+                    failures);
+                Require(
+                    hype == null || !hype.enabled,
+                    $"{prefix} legacy HypeSystem must be disabled.",
+                    failures);
+                Require(
+                    special == null || !special.enabled,
+                    $"{prefix} legacy SpecialAudienceManager must be disabled.",
+                    failures);
+            }
+            else
+            {
+                Require(
+                    composition != null,
+                    $"{prefix} CrowdCompositionManager missing.",
+                    failures);
+                Require(spawner != null, $"{prefix} CrowdSpawner missing.", failures);
+                Require(
+                    hype != null && hype.Config != null,
+                    $"{prefix} HypeConfig missing.",
+                    failures);
+                Require(
+                    special != null && special.Config != null,
+                    $"{prefix} SpecialAudienceConfig missing.",
+                    failures);
+            }
 
             Light2D[] lights = UnityEngine.Object.FindObjectsByType<Light2D>(
                 FindObjectsInactive.Include,
@@ -127,7 +207,7 @@ namespace ContextStage.EditorTools
                 $"{prefix} expected at most one Global Light 2D, found {globalLightCount}.",
                 failures);
 
-            if (composition != null)
+            if (composition != null && scenePath != "Assets/Scenes/Main.unity")
             {
                 Require(
                     composition.Config != null,
@@ -136,7 +216,7 @@ namespace ContextStage.EditorTools
                 ValidateCompositionConfig(prefix, composition.Config, failures);
             }
 
-            if (spawner != null)
+            if (spawner != null && scenePath != "Assets/Scenes/Main.unity")
             {
                 RequireReference(spawner, "compositionManager", prefix, failures);
                 RequireReference(spawner, "chillPrefab", prefix, failures);
@@ -144,33 +224,66 @@ namespace ContextStage.EditorTools
                 RequireReference(spawner, "moshPrefab", prefix, failures);
             }
 
-            if (cards != null)
-                RequireReference(cards, "crowdComposition", prefix, failures);
-
             SpecialAudienceCrowdActor[] actors =
                 UnityEngine.Object.FindObjectsByType<SpecialAudienceCrowdActor>(
                     FindObjectsInactive.Include,
                     FindObjectsSortMode.None);
-            Require(
-                actors.Length == 1,
-                $"{prefix} expected one SpecialAudienceCrowdActor, found {actors.Length}.",
-                failures);
-            for (int i = 0; i < actors.Length; i++)
-                RequireReference(actors[i], "crowdSpawner", prefix, failures);
+            if (scenePath != "Assets/Scenes/Main.unity")
+            {
+                Require(
+                    actors.Length == 1,
+                    $"{prefix} expected one SpecialAudienceCrowdActor, found {actors.Length}.",
+                    failures);
+                for (int i = 0; i < actors.Length; i++)
+                    RequireReference(actors[i], "crowdSpawner", prefix, failures);
+            }
 
             SpecialAudienceDropTarget[] targets =
                 UnityEngine.Object.FindObjectsByType<SpecialAudienceDropTarget>(
                     FindObjectsInactive.Include,
                     FindObjectsSortMode.None);
-            Require(
-                targets.Length == 1,
-                $"{prefix} expected one SpecialAudienceDropTarget, found {targets.Length}.",
-                failures);
-            for (int i = 0; i < targets.Length; i++)
+            if (scenePath != "Assets/Scenes/Main.unity")
             {
                 Require(
-                    targets[i].HitCollider != null,
-                    $"{prefix} SpecialAudienceDropTarget collider missing.",
+                    targets.Length == 1,
+                    $"{prefix} expected one SpecialAudienceDropTarget, found {targets.Length}.",
+                    failures);
+                for (int i = 0; i < targets.Length; i++)
+                {
+                    Require(
+                        targets[i].HitCollider != null,
+                        $"{prefix} SpecialAudienceDropTarget collider missing.",
+                        failures);
+                }
+            }
+        }
+
+        static void ValidateCardAudienceProfiles(List<string> failures)
+        {
+            string[] guids = AssetDatabase.FindAssets(
+                "t:Prefab",
+                new[] { "Assets/Card_Prefab" });
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                CardDefinition card =
+                    prefab != null ? prefab.GetComponent<CardDefinition>() : null;
+                if (card == null) continue;
+
+                AudienceReactionProfile profile = card.AudienceReaction;
+                Require(
+                    profile != null,
+                    $"[{path}] AudienceReactionProfile missing.",
+                    failures);
+                if (profile == null) continue;
+                Require(
+                    profile.TryValidate(out _),
+                    $"[{path}] AudienceReactionProfile is invalid.",
+                    failures);
+                Require(
+                    card.Role == CardRole.Utility || profile.AppliesToAudience,
+                    $"[{path}] performance card does not apply to the audience.",
                     failures);
             }
         }
