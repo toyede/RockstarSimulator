@@ -51,6 +51,45 @@ namespace ContextStage
             return false;
         }
 
+        public bool TryGetPreferenceHoverTarget(
+            Vector2 worldPosition,
+            out AudienceMemberActor actor)
+        {
+            actor = null;
+            int bestSortingOrder = int.MinValue;
+            float bestDistanceSquared = float.PositiveInfinity;
+            int bestId = int.MaxValue;
+
+            foreach (AudienceMemberActor candidate in _actors.Values)
+            {
+                if (candidate == null ||
+                    !candidate.ContainsPreferenceHoverPoint(worldPosition))
+                    continue;
+
+                int sortingOrder = candidate.SortingOrder;
+                float distanceSquared =
+                    (candidate.PreferenceHoverCenter - worldPosition).sqrMagnitude;
+                int id = candidate.BoundId.Value;
+
+                bool isBetter =
+                    sortingOrder > bestSortingOrder ||
+                    (sortingOrder == bestSortingOrder &&
+                     (distanceSquared < bestDistanceSquared ||
+                      (Mathf.Approximately(
+                           distanceSquared,
+                           bestDistanceSquared) &&
+                       id < bestId)));
+                if (!isBetter) continue;
+
+                actor = candidate;
+                bestSortingOrder = sortingOrder;
+                bestDistanceSquared = distanceSquared;
+                bestId = id;
+            }
+
+            return actor != null;
+        }
+
         void OnEnable()
         {
             EventBus.Subscribe<AudienceJoined>(OnAudienceJoined);

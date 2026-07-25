@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0372096cbe469cf438a5bfe9a7445efe, type: 3}
+  m_Name: AudiencePreferenceHoverConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudiencePreferenceHoverConfig
+  revealDelay: 1
+  chillColor: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 1}
+  singalongColor: {r: 0.39215687, g: 0.19215687, b: 0.91764706, a: 1}
+  moshColor: {r: 0.9411765, g: 0.12156863, b: 0.12156863, a: 1}
+  outlineThickness: 2
