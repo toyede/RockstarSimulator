@@ -10,8 +10,7 @@ namespace ContextStage
     /// 동작: GameStateChanged 이벤트를 구독하다가 GameOver 상태가 되면 스스로 Open()
     /// (기존 GameOverPopup 과 동시에 뜬다 — GameOverPopup 은 재시작 전용 디버그 팝업으로 별도 유지).
     /// "저장" 버튼(OnClickSave)을 누르면 LeaderboardStore 에 기록하고 LeaderboardPopup 으로 넘어간다.
-    /// 단, 제한시간 초과 + 목표 미달성으로 실패한 판(PerformanceTimer.Failed)에서는 열리지 않는다 —
-    /// 실패한 공연은 점수를 리더보드에 기록할 수 없다.
+    /// 클리어/게임오버 여부와 무관하게 항상 동일하게 열려 점수를 저장할 수 있다.
     ///
     /// 씬 배치 규칙 (킷 UIPopup 공통):
     /// - 팝업 루트 오브젝트는 반드시 "활성 상태"로 둘 것 (startHidden 이 알아서 숨김)
@@ -37,7 +36,6 @@ namespace ContextStage
         void OnGameStateChanged(GameStateChanged e)
         {
             if (e.Current != GameState.GameOver) return;
-            if (PerformanceTimer.Failed) return; // 목표 미달성으로 실패한 판은 점수 저장 불가
             Open();
         }
 

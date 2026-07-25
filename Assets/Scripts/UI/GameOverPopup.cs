@@ -8,11 +8,9 @@ namespace ContextStage
     /// GameManager가 GameOver 상태가 되면 화면 중앙에 뜨는 팝업. 킷 UIPopup 상속.
     ///
     /// 동작: GameStateChanged 이벤트를 구독하다가 GameOver 상태가 되면 스스로 Open().
-    /// 이 팝업은 성공/실패(목표 점수 달성 여부)와 무관하게 항상 뜨므로,
-    /// 목표 미달성으로 점수 저장이 막힌 경우(ScoreEntryPopup 이 열리지 않는 경우)에도
-    /// 타이틀로 돌아갈 방법과 리더보드 조회 방법이 이 팝업의 버튼으로 남아 있어야 한다.
-    /// (리더보드 "조회"는 성공/실패와 무관하게 항상 가능 — 막히는 건 "저장"뿐이다.
-    ///  또한 LeaderboardPopup 이 GameOver 시 스스로도 자동으로 열리므로 이 버튼은 보조 수단이다)
+    /// 이 팝업은 성공/실패(목표 점수 달성 여부)와 무관하게 항상 뜨고, ScoreEntryPopup/LeaderboardPopup 도
+    /// 성공/실패와 무관하게 항상 같은 방식으로 열리므로 타이틀로 돌아갈 방법과 리더보드 조회 방법이
+    /// 이 팝업의 버튼으로도 보조 수단으로 남아 있다.
     /// 재시작은 HypeDebugInput 의 R 키(GameManager.RestartScene) 가 처리하고,
     /// 버튼을 달고 싶으면 OnClickRestart / OnClickTitle / OnClickLeaderboard 를 버튼 OnClick 에 연결하면 된다.
     ///
@@ -41,6 +39,15 @@ namespace ContextStage
 
         [SerializeField, Tooltip("달성 비율에 따른 랭크 이미지")]
         Image rankImage;
+
+        [SerializeField, Tooltip("클리어/게임오버 결과에 따라 스프라이트를 바꿔 보여줄 이미지 (GameOverImage)")]
+        Image resultImage;
+
+        [SerializeField, Tooltip("목표 점수 달성(성공) 시 resultImage에 표시할 스프라이트")]
+        Sprite clearSprite;
+
+        [SerializeField, Tooltip("목표 점수 미달성(실패) 시 resultImage에 표시할 스프라이트")]
+        Sprite failSprite;
 
         [SerializeField, Tooltip("랭크 구간 (minRatio 오름차순). ScoreRankUI와 동일한 판정 로직(GetRankIndex)을 쓴다")]
         ScoreRankUI.RankTier[] rankTiers =
@@ -92,6 +99,13 @@ namespace ContextStage
                 Sprite icon = rankTiers[index].icon;
                 rankImage.sprite = icon;
                 rankImage.enabled = icon != null;
+            }
+
+            if (resultImage != null)
+            {
+                Sprite sprite = PerformanceTimer.Failed ? failSprite : clearSprite;
+                resultImage.sprite = sprite;
+                resultImage.enabled = sprite != null;
             }
         }
 

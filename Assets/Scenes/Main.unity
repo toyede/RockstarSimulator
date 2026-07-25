@@ -831,7 +831,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.8235294}
+  m_Color: {r: 0.24528301, g: 0.24528301, b: 0.24528301, a: 0.5176471}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4920,29 +4920,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 366608384066516368, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_FontData.m_FontSize
-      value: 71
-      objectReference: {fileID: 0}
     - target: {fileID: 1628124209102341082, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 165538480}
     - target: {fileID: 1737632950551179077, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1613860735}
+    - target: {fileID: 1737632950551179077, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 165538480}
-    - target: {fileID: 2099456077572340531, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 362.2
+    - target: {fileID: 1737632950551179077, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnClickTitle
       objectReference: {fileID: 0}
-    - target: {fileID: 2099456077572340531, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 362
-      objectReference: {fileID: 0}
-    - target: {fileID: 2099456077572340531, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -128
+    - target: {fileID: 1737632950551179077, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ContextStage.GameOverPopup, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 2135933040274056952, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_Name
@@ -5028,31 +5024,23 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5702526506398307174, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 359.24
-      objectReference: {fileID: 0}
-    - target: {fileID: 5702526506398307174, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 145.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5702526506398307174, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 302
-      objectReference: {fileID: 0}
-    - target: {fileID: 5702526506398307174, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -43
-      objectReference: {fileID: 0}
-    - target: {fileID: 9130050562114915791, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_FontData.m_FontSize
-      value: 123
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 7114327695624180809, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+--- !u!114 &1613860735 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3406294723818511092, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+  m_PrefabInstance: {fileID: 1613860734}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06129afcf96751f4698658c2f9cba636, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.GameOverPopup
 --- !u!1 &1635609044
 GameObject:
   m_ObjectHideFlags: 0
@@ -6627,7 +6615,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 21
   m_TargetDisplay: 0
 --- !u!224 &2095474761
 RectTransform:
