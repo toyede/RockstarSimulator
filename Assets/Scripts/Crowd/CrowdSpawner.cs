@@ -65,10 +65,6 @@ namespace ContextStage
         CrowdCompositionSnapshot _queuedComposition;
         bool _hasQueuedComposition;
 
-        // AudienceInflowSystem(관객 유입/이탈)이 스폰한 관객. 프리셋 그리드(_members)와는 별개 목록으로 둬서
-        // CrowdCompositionManager 기반 프리셋 교체(BuildReplacements 등) 인덱스 계산에 영향을 주지 않는다.
-        readonly List<CrowdMemberView> _additionalMembers = new List<CrowdMemberView>();
-
         public IReadOnlyList<CrowdMemberView> Members => _members;
 
         void OnEnable() => EventBus.Subscribe<CrowdCompositionChanged>(OnCompositionChanged);
@@ -396,59 +392,6 @@ namespace ContextStage
                 else DestroyImmediate(_members[i].gameObject);
             }
             _members.Clear();
-
-            for (int i = 0; i < _additionalMembers.Count; i++)
-            {
-                if (_additionalMembers[i] == null) continue;
-                if (Application.isPlaying) Destroy(_additionalMembers[i].gameObject);
-                else DestroyImmediate(_additionalMembers[i].gameObject);
-            }
-            _additionalMembers.Clear();
-        }
-
-        // ------------------------------------------------------------------
-        // 관객 유입/이탈 연동 (AudienceInflowSystem 전용, 추가 전용 API)
-        // CrowdCompositionManager 프리셋(_members, 21명 고정 그리드)과는 완전히 별개로 동작한다.
-        // 프리셋 전환 로직(BuildReplacements/TransitionComposition)은 건드리지 않는다.
-        // ------------------------------------------------------------------
-
-        /// <summary>관객 1명을 프리셋 그리드 밖에 추가로 스폰한다. 신규 유입 시 AudienceInflowSystem 이 호출한다.</summary>
-        public CrowdMemberView SpawnAdditional(CrowdPreference preference)
-        {
-            int slot = _additionalMembers.Count;
-            CrowdMemberView view = CreateMember(
-                _members.Count + slot,
-                AdditionalSlotPosition(slot),
-                frontRowScale,
-                baseSortingOrder + rows + 1,
-                preference);
-
-            if (view != null) _additionalMembers.Add(view);
-            return view;
-        }
-
-        /// <summary>SpawnAdditional 로 추가된 관객을 퇴장 연출과 함께 제거한다. 이탈 시 AudienceInflowSystem 이 호출한다.</summary>
-        public void DespawnAdditional(CrowdMemberView member)
-        {
-            if (member == null) return;
-            int slot = _additionalMembers.IndexOf(member);
-            if (slot < 0) return;
-
-            _additionalMembers.RemoveAt(slot);
-            StartCoroutine(AnimateExit(member, slot, 0f));
-        }
-
-        // 프리셋 그리드보다 앞쪽(음의 y)에 별도 줄로 배치해 기존 21명 그리드와 겹치지 않게 한다.
-        // 정식 배치는 프리셋 시스템 자체가 가변 인원 모델로 개편되면 다시 설계될 잠정 값이다.
-        Vector3 AdditionalSlotPosition(int slot)
-        {
-            int perRow = Mathf.Max(1, membersPerRow);
-            int column = slot % perRow;
-            int extraRow = slot / perRow;
-            float rowWidth = horizontalSpacing * (perRow - 1);
-            float x = -rowWidth * 0.5f + horizontalSpacing * column;
-            float y = -rowSpacing * (extraRow + 1);
-            return new Vector3(x, y, 0f);
         }
 
         bool ValidateDependencies()

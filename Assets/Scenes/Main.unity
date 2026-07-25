@@ -1621,53 +1621,6 @@ MonoBehaviour:
   maxAngle: 5
   frequency: 22
   decay: 1.8
---- !u!1 &825351702
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 825351704}
-  - component: {fileID: 825351703}
-  m_Layer: 0
-  m_Name: '[AudienceInflowSystem]'
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &825351703
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 825351702}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e753d32e3c711a44b813817c36944d2c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceInflowSystem
-  config: {fileID: 11400000, guid: 017f86510825d8742905ecf421bbd9cb, type: 2}
-  crowdSpawner: {fileID: 938531266}
-  enableDebugInput: 1
---- !u!4 &825351704
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 825351702}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &831138395
 GameObject:
   m_ObjectHideFlags: 0
@@ -1770,7 +1723,7 @@ MonoBehaviour:
   sortingLayer: Default
   baseSortingOrder: 0
   seed: 12345
-  spawnOnStart: 0
+  spawnOnStart: 1
   compositionManager: {fileID: 938531271}
   chillPrefab: {fileID: 5891243429165091210, guid: 0b0b89f7ded894d47bfce32be578e2ee, type: 3}
   singalongPrefab: {fileID: 8242818790128268861, guid: f8909efea2943634c93ff168daee5621, type: 3}
@@ -4788,4 +4741,3 @@ SceneRoots:
   - {fileID: 1713894531}
   - {fileID: 677778744}
   - {fileID: 396843110}
-  - {fileID: 825351704}

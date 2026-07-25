@@ -553,5 +553,4 @@ Tools/GameJamKit/Export .unitypackage
 | 2026-07-25 | Codex | `Save/Save.cs`, `Combat/Health.cs`, `Combat/DamageOnContact.cs`, `UI/HealthBar.cs`, `Spawn/WaveManager.cs` | 연속 저장을 dirty/flush 방식으로 바꾸고, 체력 UI를 이벤트 기반으로 전환했다. 대상별 접촉 피해 쿨다운과 웨이브 중단 후 자식 코루틴 취소를 보강했다. |
 | 2026-07-25 | Codex | `Core/GameEvents.cs` | 실제 발행되지 않던 `EncoreTriggered`, `HypeDepleted`를 제거하고 `SpecialHitLanded`에 연출 유지시간을 추가해 시스템 간 중복 수치를 없앴다. |
 | 2026-07-25 | Claude | `Core/GameEvents.cs` | 공연 시간(타이머) 이벤트 `PerformanceTimeChanged` 추가. (발행 주체는 `Assets/Scripts/Timer/PerformanceTimerSystem.cs`. 제한시간 초과 시 목표 점수 미달성이면 `GameManager.GameOver()`를 호출한다) |
-| 2026-07-25 | Claude | `Core/GameEvents.cs` | 관객 유입/이탈 이벤트 `AudienceMemberSpawned`, `AudienceMemberExited`, `AudienceCountChanged` 추가. (발행 주체는 `Assets/Scripts/AudienceLifecycle/AudienceInflowSystem.cs`. 개인별 몰입도 시스템은 별도 담당자가 CrowdComposition 쪽에서 개편 중이며, 이 이벤트들은 그 작업이 끝나면 MemberId 를 키로 이어붙이도록 선행 구현한 것) |
 
