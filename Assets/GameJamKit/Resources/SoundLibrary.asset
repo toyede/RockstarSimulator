@@ -93,3 +93,19 @@ MonoBehaviour:
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+  - id: card_tempo_up
+    clips:
+    - {fileID: 8300000, guid: b62f7c25f8166684781bb953261187bb, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+  - id: card_response_call
+    clips:
+    - {fileID: 8300000, guid: 9762630e4cabd0d4ca2a685b8b77a6fa, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02

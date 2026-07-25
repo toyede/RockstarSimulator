@@ -42,6 +42,34 @@ namespace ContextStage.EditorTools
 
             // UI 버튼 클릭
             ("ui_click_wooden", "Assets/Audio/OneShot/UI/UI_Click_wooden.wav", false, 1f),
+
+            // 카드별 전용 효과음 (placeholder). 사운드 담당자가 아래 경로에 파일만 넣으면
+            // Register Audio Clips To Library 를 다시 눌러 자동 등록된다. 파일이 없으면
+            // 경고만 찍고 건너뛰므로 지금 당장 없어도 안전하다.
+            ("card_tempo_up",      "Assets/Audio/OneShot/Cards/Card_TempoUp.wav",      false, 1f),
+            ("card_response_call", "Assets/Audio/OneShot/Cards/Card_ResponseCall.wav", false, 1f),
+            ("card_hands_up",      "Assets/Audio/OneShot/Cards/Card_HandsUp.wav",      false, 1f),
+            ("card_pass_mic",      "Assets/Audio/OneShot/Cards/Card_PassMic.wav",      false, 1f),
+            ("card_open_mosh_pit", "Assets/Audio/OneShot/Cards/Card_OpenMoshPit.wav",  false, 1f),
+            ("card_draw_two",      "Assets/Audio/OneShot/Cards/Card_DrawTwo.wav",      false, 1f),
+            ("card_reroll_hand",   "Assets/Audio/OneShot/Cards/Card_RerollHand.wav",   false, 1f),
+        };
+
+        /// <summary>
+        /// CardDefinition.id → SoundLibrary sfxId 매핑. 카드별로 다른 소리를 내고 싶을 때 이 표만 고치면 된다.
+        /// guitar_solo 는 이미 클립이 있어 바로 연결되고, 나머지는 위 DefaultSounds 의 placeholder 클립이
+        /// 채워지는 순간 Assign Card Sfx Overrides 메뉴로 자동 연결된다.
+        /// </summary>
+        static readonly (string cardId, string sfxId)[] CardSfxMap =
+        {
+            ("tempo_up",      "card_tempo_up"),
+            ("response_call", "card_response_call"),
+            ("hands_up",      "card_hands_up"),
+            ("pass_mic",      "card_pass_mic"),
+            ("guitar_solo",   "guitar_solo"),
+            ("open_mosh_pit", "card_open_mosh_pit"),
+            ("draw_two",      "card_draw_two"),
+            ("reroll_hand",   "card_reroll_hand"),
         };
 
         [MenuItem("Tools/Audio/Setup Crowd Ambience", false, 0)]
@@ -72,8 +100,12 @@ namespace ContextStage.EditorTools
             // 무대 BGM (씬 시작과 동시에 big_rock 페이드인)
             if (go.GetComponent<StageBgmPlayer>() == null) Undo.AddComponent<StageBgmPlayer>(go);
 
-            // 카드 사용 효과음 (CardSelected 이벤트 구독 → guitar_stroke)
-            if (go.GetComponent<CardSfxPlayer>() == null) Undo.AddComponent<CardSfxPlayer>(go);
+            // 카드 사용 효과음 (CardSelected 이벤트 구독 → guitar_stroke, 카드별 override 는 아래에서 자동 배선)
+            var cardSfxPlayer = go.GetComponent<CardSfxPlayer>();
+            if (cardSfxPlayer == null) cardSfxPlayer = Undo.AddComponent<CardSfxPlayer>(go);
+
+            // 카드별 효과음 자동 배선 (클립이 실제로 있는 카드만, 기존 수동 설정은 건드리지 않음)
+            AssignCardSfxOverrides(cardSfxPlayer, GetOrCreateLibrary());
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             Selection.activeGameObject = go;
@@ -143,6 +175,64 @@ namespace ContextStage.EditorTools
             AssetDatabase.SaveAssets();
             Debug.Log($"[Audio] {LibraryPath} 생성 완료. (Resources 폴더라 AudioManager 가 자동 로드한다)");
             return asset;
+        }
+
+        // ---------------- 카드 효과음 ----------------
+
+        [MenuItem("Tools/Audio/Assign Card Sfx Overrides", false, 21)]
+        public static void AssignCardSfxOverridesInScene()
+        {
+            var library = GetOrCreateLibrary();
+            var players = Object.FindObjectsByType<CardSfxPlayer>(FindObjectsSortMode.None);
+            if (players.Length == 0)
+            {
+                Debug.LogWarning("[Audio] 씬에 CardSfxPlayer 가 없습니다. 먼저 Setup Crowd Ambience 를 실행하세요.");
+                return;
+            }
+
+            foreach (var player in players) AssignCardSfxOverrides(player, library);
+        }
+
+        /// <summary>
+        /// CardSfxMap 을 기준으로 cardOverrides 를 채운다. 클립이 실제로 등록된 카드만 추가하고,
+        /// 이미 override 가 있는 cardId(팀원이 인스펙터에서 손댄 값 포함)는 건드리지 않는다.
+        /// </summary>
+        static void AssignCardSfxOverrides(CardSfxPlayer player, SoundLibrary library)
+        {
+            if (player == null) return;
+
+            var so = new SerializedObject(player);
+            var list = so.FindProperty("cardOverrides");
+
+            int added = 0, alreadySet = 0, pendingClip = 0;
+            foreach (var (cardId, sfxId) in CardSfxMap)
+            {
+                if (FindCardOverrideIndex(list, cardId) >= 0) { alreadySet++; continue; }
+
+                var entry = library.Find(sfxId);
+                if (entry == null || entry.clips == null || entry.clips.Length == 0) { pendingClip++; continue; }
+
+                list.arraySize++;
+                var element = list.GetArrayElementAtIndex(list.arraySize - 1);
+                element.FindPropertyRelative("cardId").stringValue = cardId;
+                element.FindPropertyRelative("sfxId").stringValue = sfxId;
+                added++;
+            }
+
+            if (added > 0)
+            {
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(player);
+            }
+
+            Debug.Log($"[Audio] {player.name} 카드 효과음 배선: {added}개 추가, {alreadySet}개 이미 설정됨, {pendingClip}개 클립 대기 중");
+        }
+
+        static int FindCardOverrideIndex(SerializedProperty list, string cardId)
+        {
+            for (int i = 0; i < list.arraySize; i++)
+                if (list.GetArrayElementAtIndex(i).FindPropertyRelative("cardId").stringValue == cardId) return i;
+            return -1;
         }
 
         // ---------------- 콘픽 ----------------
