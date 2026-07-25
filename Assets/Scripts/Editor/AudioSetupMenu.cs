@@ -46,7 +46,7 @@ namespace ContextStage.EditorTools
             // 카드별 전용 효과음 (placeholder). 사운드 담당자가 아래 경로에 파일만 넣으면
             // Register Audio Clips To Library 를 다시 눌러 자동 등록된다. 파일이 없으면
             // 경고만 찍고 건너뛰므로 지금 당장 없어도 안전하다.
-            ("card_tempo_up",      "Assets/Audio/OneShot/Cards/Card_TempoUp.wav",      false, 1f),
+            ("card_tempo_up",      "Assets/Audio/OneShot/Cards/Card_tempo_up.wav",     false, 1f),
             ("card_response_call", "Assets/Audio/OneShot/Cards/Card_ResponseCall.wav", false, 1f),
             ("card_hands_up",      "Assets/Audio/OneShot/Cards/Card_HandsUp.wav",      false, 1f),
             ("card_pass_mic",      "Assets/Audio/OneShot/Cards/Card_PassMic.wav",      false, 1f),
@@ -122,12 +122,30 @@ namespace ContextStage.EditorTools
             var so = new SerializedObject(library);
             var list = so.FindProperty("sounds");
 
-            int added = 0, missing = 0;
+            int added = 0, missing = 0, resynced = 0;
             foreach (var (id, clipPath, loop, volume) in DefaultSounds)
             {
-                if (FindEntryIndex(list, id) >= 0) continue; // 이미 등록됨 → 팀원이 만진 설정을 덮어쓰지 않는다
-
                 var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(clipPath);
+                int idx = FindEntryIndex(list, id);
+
+                if (idx >= 0)
+                {
+                    // 이미 등록된 id → 볼륨/피치 등 수동 튜닝은 보존한다.
+                    // 단, 클립 참조가 끊어져 있으면(파일을 지우고 새로 만들어 guid 가 바뀐 경우 등)
+                    // 표의 경로로 다시 연결해준다. 유효한 클립이 이미 있으면 절대 덮어쓰지 않는다
+                    // (팀원이 다른 용도로 의도적으로 바꿔둔 경우일 수 있으므로).
+                    var existingClips = list.GetArrayElementAtIndex(idx).FindPropertyRelative("clips");
+                    bool broken = existingClips.arraySize == 0
+                                  || existingClips.GetArrayElementAtIndex(0).objectReferenceValue == null;
+                    if (broken && clip != null)
+                    {
+                        existingClips.arraySize = 1;
+                        existingClips.GetArrayElementAtIndex(0).objectReferenceValue = clip;
+                        resynced++;
+                    }
+                    continue;
+                }
+
                 if (clip == null)
                 {
                     Debug.LogWarning($"[Audio] 클립을 찾지 못해 '{id}' 등록을 건너뜁니다: {clipPath}");
@@ -154,7 +172,7 @@ namespace ContextStage.EditorTools
             AssetDatabase.SaveAssets();
             library.InvalidateCache();
 
-            Debug.Log($"[Audio] SoundLibrary 갱신: {added}개 추가, {missing}개 클립 없음 ({LibraryPath})");
+            Debug.Log($"[Audio] SoundLibrary 갱신: {added}개 추가, {resynced}개 끊어진 참조 복구, {missing}개 클립 없음 ({LibraryPath})");
         }
 
         static int FindEntryIndex(SerializedProperty list, string id)
