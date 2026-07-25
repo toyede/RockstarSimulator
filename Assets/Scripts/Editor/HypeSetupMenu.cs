@@ -137,11 +137,13 @@ namespace ContextStage.EditorTools
 
         // ---------------- 점수 UI ----------------
 
+        const int DefaultTargetScore = 5000; // 기획 확정 전 임시 목표점수 (baseScore=100 기준 추정치)
+
         static void BuildScoreUI(Transform canvas)
         {
             if (Object.FindFirstObjectByType<ScoreUI>() != null) return; // 이미 배치됨
 
-            var scoreGo = CreateText("ScoreText", canvas, "SCORE 0", TextAnchor.UpperLeft);
+            var scoreGo = CreateText("ScoreText", canvas, $"SCORE 0 / {DefaultTargetScore}", TextAnchor.UpperLeft);
             var rect = scoreGo.GetComponent<RectTransform>();
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f); // 좌측 상단
             rect.pivot = new Vector2(0f, 1f);
@@ -152,6 +154,11 @@ namespace ContextStage.EditorTools
 
             var ui = scoreGo.gameObject.AddComponent<ScoreUI>();
             SetObjectField(ui, "scoreText", scoreGo);
+
+            // targetScore 는 int 필드라 SetObjectField(Object 전용) 대신 SerializedProperty 로 직접 설정
+            var serialized = new SerializedObject(ui);
+            serialized.FindProperty("targetScore").intValue = DefaultTargetScore;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // ---------------- UI 생성 헬퍼 ----------------
