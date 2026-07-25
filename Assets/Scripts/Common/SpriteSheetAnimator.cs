@@ -28,10 +28,25 @@ namespace ContextStage
         [SerializeField, Tooltip("체크하면 Time.unscaledDeltaTime 을 쓴다 (일시정지 중에도 움직임)")]
         bool useUnscaledTime = false;
 
+        [SerializeField, Min(0f), Tooltip(
+            "재생 속도 배율. 1이 기본. 피버타임처럼 잠깐 빨라져야 할 때 코드가 바꾼다. " +
+            "클립의 fps 를 직접 건드리지 않으므로 원래 속도가 보존된다")]
+        float speedMultiplier = 1f;
+
         [SerializeField] SpriteAnimationPlayer player = new SpriteAnimationPlayer();
 
         /// <summary>이름 → 클립. 매번 리스트를 순회하지 않도록 한 번만 만든다.</summary>
         Dictionary<string, SpriteAnimationClip> _lookup;
+
+        /// <summary>
+        /// 재생 속도 배율. 클립의 fps 대신 Tick 에 넘기는 시간을 늘려 속도를 바꾼다 —
+        /// 클립 데이터를 건드리지 않으므로 원래 속도로 되돌릴 때 값이 유실되지 않는다.
+        /// </summary>
+        public float SpeedMultiplier
+        {
+            get => speedMultiplier;
+            set => speedMultiplier = Mathf.Max(0f, value);
+        }
 
         public SpriteAnimationPlayer Player => player;
         public bool IsPlaying => player.IsPlaying;
@@ -49,7 +64,8 @@ namespace ContextStage
             if (!string.IsNullOrEmpty(defaultClip)) Play(defaultClip);
         }
 
-        void Update() => player.Tick(useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime);
+        void Update() => player.Tick(
+            (useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime) * speedMultiplier);
 
         void BuildLookup()
         {
