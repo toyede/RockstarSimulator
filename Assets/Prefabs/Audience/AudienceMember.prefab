@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 5644551428577973444}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 10.3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -117,7 +117,7 @@ Transform:
   m_GameObject: {fileID: 6198195922123842218}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 10.300001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -331,8 +331,14 @@ MonoBehaviour:
   warningFill: {fileID: 6025635051255080226}
   warningBackgroundRenderer: {fileID: 539263493422959381}
   warningFillRenderer: {fileID: 2094249438230026238}
+  warningBackgroundColor: {r: 0.06, g: 0.07, b: 0.1, a: 0.9}
+  warningFillColor: {r: 0.95, g: 0.19, b: 0.16, a: 1}
   enterDuration: 0.35
   exitDuration: 0.45
+  enterDistance: 1.2
+  enterStartScale: 0.55
+  exitDistance: 1.6
+  layoutFollowSpeed: 4
   reactionPulseDuration: 0.22
   reactionPulseScale: 0.18
   calmBobHeight: 0.025

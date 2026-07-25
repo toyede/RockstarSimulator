@@ -22,20 +22,53 @@ namespace ContextStage
         [SerializeField] Transform warningFill;
         [SerializeField] SpriteRenderer warningBackgroundRenderer;
         [SerializeField] SpriteRenderer warningFillRenderer;
+        [SerializeField] Color warningBackgroundColor = new Color(0.06f, 0.07f, 0.10f, 0.9f);
+        [SerializeField] Color warningFillColor = new Color(0.95f, 0.19f, 0.16f, 1f);
 
         [Header("Motion")]
-        [SerializeField, Min(0f)] float enterDuration = 0.35f;
-        [SerializeField, Min(0f)] float exitDuration = 0.45f;
+        [SerializeField, Min(0f)] float enterDuration = 0.6f;
+        [SerializeField, Min(0f)] float exitDuration = 0.7f;
+        [SerializeField, Min(0f)] float enterDistance = 1.2f;
+        [SerializeField, Min(0f)] float enterStartScale = 0.55f;
+        [SerializeField, Min(0f)] float exitDistance = 1.6f;
+        [SerializeField, Min(0.01f)] float layoutFollowSpeed = 4f;
         [SerializeField, Min(0f)] float reactionPulseDuration = 0.22f;
         [SerializeField, Min(0f)] float reactionPulseScale = 0.18f;
         [SerializeField, Min(0f)] float calmBobHeight = 0.025f;
         [SerializeField, Min(0f)] float middleBobHeight = 0.07f;
         [SerializeField, Min(0f)] float excitedBobHeight = 0.16f;
 
+        // 에셋 없이 코드만으로 그리는 호응도 바용 1x1 흰색 스프라이트.
+        // pixelsPerUnit=1이라 localScale이 곧 월드 유닛 크기가 된다.
+        static Sprite _solidSprite;
+        static Sprite SolidSprite
+        {
+            get
+            {
+                if (_solidSprite == null)
+                {
+                    var texture = new Texture2D(1, 1);
+                    texture.SetPixel(0, 0, Color.white);
+                    texture.Apply();
+                    _solidSprite = Sprite.Create(
+                        texture,
+                        new Rect(0f, 0f, 1f, 1f),
+                        new Vector2(0.5f, 0.5f),
+                        1f);
+                }
+                return _solidSprite;
+            }
+        }
+
         AudienceSnapshot _snapshot;
         AudienceId _boundId;
         Vector3 _layoutPosition;
         float _layoutScale = 1f;
+        // 실제로 화면에 그려지는 위치·크기. 재배치 시 목표값(_layoutPosition/_layoutScale)을
+        // 향해 서서히 따라가며, 관객 수 변화로 인한 순간이동을 막는다.
+        Vector3 _currentLayoutPosition;
+        float _currentLayoutScale = 1f;
+        bool _hasLayout;
         float _calmUpperBound = 33f;
         float _phase;
         float _visibility;
@@ -64,7 +97,13 @@ namespace ContextStage
                     "[AudienceMemberActor] Prefab references are incomplete.",
                     this);
                 enabled = false;
+                return;
             }
+
+            warningBackgroundRenderer.sprite = SolidSprite;
+            warningFillRenderer.sprite = SolidSprite;
+            warningBackgroundRenderer.color = warningBackgroundColor;
+            warningFillRenderer.color = warningFillColor;
         }
 
         public void OnSpawned()
@@ -77,6 +116,7 @@ namespace ContextStage
             _exiting = false;
             _exitCompleted = null;
             _phase = UnityEngine.Random.value * Mathf.PI * 2f;
+            _hasLayout = false;
             if (warningRoot != null) warningRoot.SetActive(false);
             ApplyTransform();
         }
@@ -100,6 +140,7 @@ namespace ContextStage
             _visibility = 0f;
             _exiting = false;
             _exitElapsed = 0f;
+            _hasLayout = false;
             ApplySnapshot(snapshot);
         }
 
@@ -121,6 +162,16 @@ namespace ContextStage
             characterRenderer.sortingOrder = sortingOrder;
             warningBackgroundRenderer.sortingOrder = sortingOrder + 20;
             warningFillRenderer.sortingOrder = sortingOrder + 21;
+
+            // 스폰 직후 첫 배치는 즉시 스냅하고, 이후 관객 수 변화로 인한
+            // 재배치만 Update()에서 서서히 따라가게 한다.
+            if (!_hasLayout)
+            {
+                _currentLayoutPosition = _layoutPosition;
+                _currentLayoutScale = _layoutScale;
+                _hasLayout = true;
+            }
+
             ApplyTransform();
         }
 
@@ -144,6 +195,11 @@ namespace ContextStage
             if (!IsBound) return;
 
             float deltaTime = Time.deltaTime;
+
+            float followStep = layoutFollowSpeed * deltaTime;
+            _currentLayoutPosition = Vector3.MoveTowards(_currentLayoutPosition, _layoutPosition, followStep);
+            _currentLayoutScale = Mathf.MoveTowards(_currentLayoutScale, _layoutScale, followStep);
+
             if (_exiting)
             {
                 _exitElapsed += deltaTime;
@@ -236,12 +292,19 @@ namespace ContextStage
                     Mathf.Clamp01(_reactionPulseRemaining / reactionPulseDuration) *
                     Mathf.PI) * reactionPulseScale
                 : 0f;
-            float exitOffset = _exiting ? (1f - _visibility) * 0.8f : 0f;
+
+            // 입장은 뒤에서 작게 다가오고, 퇴장은 뒤로 물러나며 사라진다. (기획서 §9)
+            float depthOffset = _exiting
+                ? (1f - _visibility) * exitDistance
+                : (1f - _visibility) * enterDistance;
+            float sizeRatio = _exiting
+                ? _visibility
+                : Mathf.Lerp(enterStartScale, 1f, _visibility);
 
             transform.localPosition =
-                _layoutPosition + new Vector3(0f, bob + exitOffset, 0f);
+                _currentLayoutPosition + new Vector3(0f, bob + depthOffset, 0f);
             transform.localScale =
-                Vector3.one * (_layoutScale * _visibility * (1f + pulse));
+                Vector3.one * (_currentLayoutScale * sizeRatio * (1f + pulse));
 
             Color color = _characterColor;
             color.a *= _visibility;
