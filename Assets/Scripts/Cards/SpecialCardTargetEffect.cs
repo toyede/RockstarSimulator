@@ -17,6 +17,9 @@ namespace ContextStage
     {
         [SerializeField] SpecialCardTargetEffectType effectType;
 
+        [Header("Target Hit Reward")]
+        [SerializeField, Min(0)] int targetScoreBonus;
+
         [Header("Random Audience Arrival")]
         [SerializeField, Min(0)] int minimumArrivalCount = 1;
         [SerializeField, Min(0)] int maximumArrivalCount = 3;
@@ -30,6 +33,7 @@ namespace ContextStage
         [SerializeField, Min(0f)] float otherPreferenceEngagement = 1f;
 
         public SpecialCardTargetEffectType EffectType => effectType;
+        public int TargetScoreBonus => Mathf.Max(0, targetScoreBonus);
         public int MinimumArrivalCount => Mathf.Max(0, minimumArrivalCount);
         public int MaximumArrivalCount => Mathf.Max(0, maximumArrivalCount);
         public float EngagementIncrease => Mathf.Max(0f, engagementIncrease);
@@ -43,6 +47,12 @@ namespace ContextStage
             if (effectType == SpecialCardTargetEffectType.None)
             {
                 error = "A targeted special-card effect is required.";
+                return false;
+            }
+
+            if (targetScoreBonus < 0)
+            {
+                error = "Target score bonus cannot be negative.";
                 return false;
             }
 
