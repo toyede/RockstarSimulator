@@ -1,43 +1,43 @@
 fileFormatVersion: 2
-guid: e249d8543e4fb73468f4050465402e54
+guid: 6f1e88df814d2814db8b2b2ddea5cf7e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7721573863499122755
-    second: Video_4_0016_0
+      213: -5722726972494845783
+    second: Video_4_0048_0
   - first:
-      213: 1665641050104609361
-    second: Video_4_0016_1
+      213: 8656191199644131269
+    second: Video_4_0048_1
   - first:
-      213: 1419810810755302814
-    second: Video_4_0016_2
+      213: 7214394475405851643
+    second: Video_4_0048_2
   - first:
-      213: 907511269388855293
-    second: Video_4_0016_3
+      213: -9001711399389323542
+    second: Video_4_0048_3
   - first:
-      213: -3109393138253921294
-    second: Video_4_0016_4
+      213: -2923364254818503538
+    second: Video_4_0048_4
   - first:
-      213: -7552087978815345891
-    second: Video_4_0016_5
+      213: -8499335986836606691
+    second: Video_4_0048_5
   - first:
-      213: -7326686516188341025
-    second: Video_4_0016_6
+      213: 4868143999681309166
+    second: Video_4_0048_6
   - first:
-      213: -5612269681455570857
-    second: Video_4_0016_7
+      213: -4038580673303748144
+    second: Video_4_0048_7
   - first:
-      213: -8154316087668356060
-    second: Video_4_0016_8
+      213: -7476220489066957966
+    second: Video_4_0048_8
   - first:
-      213: 3514099860914340326
-    second: Video_4_0016_9
+      213: 8893534642917977633
+    second: Video_4_0048_9
   - first:
-      213: -5939998699825700243
-    second: Video_4_0016_10
+      213: 6873769678140176603
+    second: Video_4_0048_10
   - first:
-      213: 3056439922203888768
-    second: Video_4_0016_11
+      213: 5803640135860042185
+    second: Video_4_0048_11
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -70,7 +70,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -108,7 +108,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -137,19 +137,19 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 364
-        width: 188
-        height: 312
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: db7b1375b7577d490800000000000000
-      internalID: -7721573863499122755
+      spriteID: 8d27f10e654306947acf7807bd85b292
+      internalID: -1024640794
       vertices: []
       indices: 
       edges: []
@@ -158,20 +158,20 @@ TextureImporter:
       name: Video_4_0016_1
       rect:
         serializedVersion: 2
-        x: 209
-        y: 364
-        width: 211
-        height: 316
+        x: 213
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 15a3bcac5bb8d1710800000000000000
-      internalID: 1665641050104609361
+      spriteID: 0d6afca8c1626a847abb2a3e2acb1e6b
+      internalID: -104414883
       vertices: []
       indices: 
       edges: []
@@ -180,20 +180,20 @@ TextureImporter:
       name: Video_4_0016_2
       rect:
         serializedVersion: 2
-        x: 447
-        y: 365
-        width: 163
-        height: 312
+        x: 426
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: e95445fe86e24b310800000000000000
-      internalID: 1419810810755302814
+      spriteID: 3976b230287eb424884487c827fb1de6
+      internalID: -2083932329
       vertices: []
       indices: 
       edges: []
@@ -202,20 +202,20 @@ TextureImporter:
       name: Video_4_0016_3
       rect:
         serializedVersion: 2
-        x: 687
-        y: 364
-        width: 144
-        height: 316
+        x: 639
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: df72699f0b0289c00800000000000000
-      internalID: 907511269388855293
+      spriteID: a9e593404e5e2e54c9938395be5277a5
+      internalID: 1300417617
       vertices: []
       indices: 
       edges: []
@@ -224,20 +224,20 @@ TextureImporter:
       name: Video_4_0016_4
       rect:
         serializedVersion: 2
-        x: 861
-        y: 364
-        width: 208
-        height: 315
+        x: 852
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2f3865f3a6739d4d0800000000000000
-      internalID: -3109393138253921294
+      spriteID: f916d6fb3202919498a7f4b6439e106b
+      internalID: -1795912303
       vertices: []
       indices: 
       edges: []
@@ -246,20 +246,20 @@ TextureImporter:
       name: Video_4_0016_5
       rect:
         serializedVersion: 2
-        x: 1072
-        y: 364
-        width: 205
-        height: 320
+        x: 1065
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d1ba636fef7913790800000000000000
-      internalID: -7552087978815345891
+      spriteID: 615d4f00174b8264b907231078b4a35e
+      internalID: -563534881
       vertices: []
       indices: 
       edges: []
@@ -268,20 +268,20 @@ TextureImporter:
       name: Video_4_0016_6
       rect:
         serializedVersion: 2
-        x: 17
+        x: 0
         y: 0
-        width: 163
-        height: 309
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: fdc13f59e61625a90800000000000000
-      internalID: -7326686516188341025
+      spriteID: ebc7e03101d942249b7751a2f17d78b0
+      internalID: -831863740
       vertices: []
       indices: 
       edges: []
@@ -290,20 +290,20 @@ TextureImporter:
       name: Video_4_0016_7
       rect:
         serializedVersion: 2
-        x: 215
+        x: 213
         y: 0
-        width: 195
-        height: 314
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 7506525b5763d12b0800000000000000
-      internalID: -5612269681455570857
+      spriteID: 0a156fc9fde06bc428c2a9c018aa982f
+      internalID: -901764804
       vertices: []
       indices: 
       edges: []
@@ -312,20 +312,20 @@ TextureImporter:
       name: Video_4_0016_8
       rect:
         serializedVersion: 2
-        x: 458
+        x: 426
         y: 0
-        width: 141
-        height: 314
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 42c4640c8bc06de80800000000000000
-      internalID: -8154316087668356060
+      spriteID: 2d5d015f0a59b1f49985d31f66d4e014
+      internalID: -606571847
       vertices: []
       indices: 
       edges: []
@@ -334,20 +334,20 @@ TextureImporter:
       name: Video_4_0016_9
       rect:
         serializedVersion: 2
-        x: 666
+        x: 639
         y: 0
-        width: 171
-        height: 319
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 6e18c0b743794c030800000000000000
-      internalID: 3514099860914340326
+      spriteID: 646de9a4eda302d4881fc88f0ac34402
+      internalID: 771725336
       vertices: []
       indices: 
       edges: []
@@ -356,20 +356,20 @@ TextureImporter:
       name: Video_4_0016_10
       rect:
         serializedVersion: 2
-        x: 875
+        x: 852
         y: 0
-        width: 177
-        height: 312
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d626b9a67a2e09da0800000000000000
-      internalID: -5939998699825700243
+      spriteID: 503514c6ad67a654a9b5762134f84a55
+      internalID: 659120706
       vertices: []
       indices: 
       edges: []
@@ -378,20 +378,20 @@ TextureImporter:
       name: Video_4_0016_11
       rect:
         serializedVersion: 2
-        x: 1046
+        x: 1065
         y: 0
-        width: 234
-        height: 315
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 08c09406ae7aa6a20800000000000000
-      internalID: 3056439922203888768
+      spriteID: 16a9d26d07e7f8a4590dd3d04f77c72a
+      internalID: -2004676984
       vertices: []
       indices: 
       edges: []
@@ -400,7 +400,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -408,20 +408,22 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":6.0,"y":2.0},"gridSpriteSize":{"x":213.0,"y":360.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Video_4_0016_0: -7721573863499122755
-      Video_4_0016_1: 1665641050104609361
-      Video_4_0016_10: -5939998699825700243
-      Video_4_0016_11: 3056439922203888768
-      Video_4_0016_2: 1419810810755302814
-      Video_4_0016_3: 907511269388855293
-      Video_4_0016_4: -3109393138253921294
-      Video_4_0016_5: -7552087978815345891
-      Video_4_0016_6: -7326686516188341025
-      Video_4_0016_7: -5612269681455570857
-      Video_4_0016_8: -8154316087668356060
-      Video_4_0016_9: 3514099860914340326
+      Video_4_0016_0: -1024640794
+      Video_4_0016_1: -104414883
+      Video_4_0016_10: 659120706
+      Video_4_0016_11: -2004676984
+      Video_4_0016_2: -2083932329
+      Video_4_0016_3: 1300417617
+      Video_4_0016_4: -1795912303
+      Video_4_0016_5: -563534881
+      Video_4_0016_6: -831863740
+      Video_4_0016_7: -901764804
+      Video_4_0016_8: -606571847
+      Video_4_0016_9: 771725336
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
