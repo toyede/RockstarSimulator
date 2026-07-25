@@ -105,7 +105,7 @@ namespace ContextStage
             AudienceId = audienceId;
             PreferenceScore = preferenceScore;
             StageScore = stageScore;
-            Value = Mathf.Max(0, preferenceScore + stageScore);
+            Value = preferenceScore + stageScore;
         }
 
         public AudienceId AudienceId { get; }

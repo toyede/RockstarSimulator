@@ -163,10 +163,28 @@ namespace ContextStage
                 }
 
                 _hand.RemoveAt(index);
+                bool isSpecialHit =
+                    card.Role == CardRole.Special &&
+                    specialRequest.IsActive &&
+                    specialRequest.RequestedStage == card.TargetStage &&
+                    SpecialAudience.HasActiveRequest;
+                int specialBonusScore =
+                    isSpecialHit ? card.SpecialHitBaseScore : 0;
+                int rawScore = gainedScore + specialBonusScore;
+                ComboResolution combo = ComboSystem.HasInstance
+                    ? ComboSystem.Instance.ResolveCard(
+                        card.Role,
+                        rawScore,
+                        isSpecialHit)
+                    : new ComboResolution(0, 1f, rawScore > 0);
+                int finalScore = card.Role == CardRole.Utility
+                    ? 0
+                    : Mathf.RoundToInt(rawScore * combo.Multiplier);
                 HypeJudgement feedback = ResolveFeedback(
                     gainedScore,
                     positiveReactionCount,
                     _audienceReactions.Count);
+                if (isSpecialHit) feedback = HypeJudgement.Perfect;
 
                 // CardSelected is retained as the input/audio/visual notification contract.
                 // Gameplay score and engagement use the per-audience result above.
@@ -177,8 +195,8 @@ namespace ContextStage
                     HandIndex = index,
                     Judgement = feedback,
                     Delta = 0f,
-                    BaseScore = gainedScore,
-                    Multiplier = 1f
+                    BaseScore = rawScore,
+                    Multiplier = combo.Multiplier
                 });
 
                 EventBus.Raise(new CardResolved
@@ -192,13 +210,26 @@ namespace ContextStage
                         ? CrowdReactionGrade.Good
                         : CrowdReactionGrade.Weak,
                     Judgement = feedback,
-                    BaseScore = gainedScore,
-                    HypeMultiplier = 1f,
+                    BaseScore = rawScore,
+                    HypeMultiplier = combo.Multiplier,
                     CrowdMultiplier = 1f,
-                    GainedScore = gainedScore,
+                    GainedScore = finalScore,
                     HypeDelta = 0f,
-                    IsSpecialHit = false
+                    IsSpecialHit = isSpecialHit,
+                    RawAudienceScore = gainedScore,
+                    SpecialBonusScore = specialBonusScore,
+                    RawScore = rawScore,
+                    ComboCount = combo.Combo,
+                    ComboMultiplier = combo.Multiplier
                 });
+
+                if (isSpecialHit)
+                {
+                    SpecialAudience.ConsumeRequest(
+                        card.TargetStage,
+                        specialBonusScore,
+                        0f);
+                }
 
                 ResolveHandEffect(card, handCountBeforeUse);
                 RaiseHandChanged();

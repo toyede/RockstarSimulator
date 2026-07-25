@@ -1,5 +1,6 @@
 using GameJamKit;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ContextStage
 {
@@ -21,10 +22,12 @@ namespace ContextStage
     {
         [Header("군중")]
         [SerializeField, Tooltip("비워두면 씬에서 한 번만 찾아온다")]
-        CrowdSpawner crowdSpawner;
+        [FormerlySerializedAs("crowdSpawner")]
+        AudienceRosterPresenter audiencePresenter;
 
         [SerializeField, Tooltip("체크하면 등장 시 군중 오브젝트의 자식으로 들어간다 (좌표계를 맞추기 위해 권장)")]
-        bool parentUnderCrowd = true;
+        [FormerlySerializedAs("parentUnderCrowd")]
+        bool parentUnderAudience = true;
 
         [Header("적용 대상 (프리팹 구조에 맞게 분리)")]
         [SerializeField, Tooltip("위치를 옮길 대상. 비워두면 이 오브젝트.\n" +
@@ -232,18 +235,27 @@ namespace ContextStage
         /// <summary>군중 오브젝트를 찾아 그 자식으로 들어간다. 좌표·크기 기준을 관객과 맞추기 위함.</summary>
         bool AttachToCrowd()
         {
-            if (crowdSpawner == null)
+            if (audiencePresenter == null)
+                audiencePresenter =
+                    FindFirstObjectByType<AudienceRosterPresenter>();
+
+            if (audiencePresenter == null ||
+                audiencePresenter.MemberRoot == null)
             {
                 Debug.LogError(
-                    "[SpecialAudience] CrowdSpawner 참조가 없습니다. 씬 설정 도구로 참조를 연결하세요.",
+                    "[SpecialAudience] AudienceRosterPresenter와 MemberRoot가 필요합니다.",
                     this);
                 SetVisible(false);
                 return false;
             }
 
-            // 옮기는 것은 motionRoot 다. 프리팹에서는 루트라서 HitArea 까지 함께 따라간다.
-            if (parentUnderCrowd && motionRoot.parent != crowdSpawner.transform)
-                motionRoot.SetParent(crowdSpawner.transform, worldPositionStays: false);
+            if (parentUnderAudience &&
+                motionRoot.parent != audiencePresenter.MemberRoot)
+            {
+                motionRoot.SetParent(
+                    audiencePresenter.MemberRoot,
+                    worldPositionStays: false);
+            }
 
             return true;
         }
@@ -256,32 +268,25 @@ namespace ContextStage
         {
             _repathAt = Time.time + Mathf.Max(0.1f, dwellDuration);
 
-            var members = crowdSpawner != null ? crowdSpawner.Members : null;
-            if (members == null || members.Count == 0)
+            if (audiencePresenter == null ||
+                !audiencePresenter.TryGetRandomVisualAnchor(
+                    out Vector3 position,
+                    out float scale,
+                    out int sortingOrder))
             {
                 Debug.LogWarning(
-                    "[SpecialAudience] 배치된 군중이 없어 특별 관객을 표시하지 않습니다.",
+                    "[SpecialAudience] 배치할 개별 관객 앵커가 없습니다.",
                     this);
                 SetVisible(false);
                 return;
             }
 
-            // 후보를 몇 번 뽑아 지금 위치에서 너무 가깝지 않은 자리를 고른다 (제자리 걸음 방지)
-            CrowdMemberView picked = null;
-            for (int i = 0; i < 4; i++)
-            {
-                var candidate = members[Random.Range(0, members.Count)];
-                if (candidate == null) continue;
-                picked = candidate;
-                if (Mathf.Abs(candidate.HomeLocalPosition.x - motionRoot.localPosition.x) > lateralOffset) break;
-            }
-            if (picked == null) return;
-
             float side = Random.value < 0.5f ? -1f : 1f;
-            _anchor = picked.HomeLocalPosition + new Vector3(lateralOffset * side, 0f, 0f);
+            _anchor =
+                position + new Vector3(lateralOffset * side, 0f, 0f);
 
-            _targetScale = picked.BaseScale * scaleMultiplier;
-            _renderer.sortingOrder = picked.SortingOrder + sortingOrderBonus;
+            _targetScale = scale * scaleMultiplier;
+            _renderer.sortingOrder = sortingOrder + sortingOrderBonus;
 
             if (immediate) SnapToAnchor();
         }

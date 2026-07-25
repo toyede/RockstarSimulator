@@ -259,7 +259,7 @@ namespace ContextStage.EditorTools
             var go = CreateUIObject(name, parent);
             var text = go.AddComponent<Text>();
             text.text = content;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); // 그레이박스용 내장 폰트
+            text.font = ProjectFontTool.LegacyFont; // 그레이박스용 내장 폰트
             text.fontSize = 26;
             text.alignment = anchor;
             text.color = new Color(0.9f, 0.9f, 0.9f);

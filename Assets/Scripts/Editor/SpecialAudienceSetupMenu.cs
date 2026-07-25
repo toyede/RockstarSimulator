@@ -26,23 +26,39 @@ namespace ContextStage.EditorTools
         [MenuItem("Tools/Special Audience/Setup Special Audience", false, 0)]
         public static void SetupScene()
         {
-            var go = GameObject.Find("[SpecialAudience]");
+            var manager = Object.FindFirstObjectByType<SpecialAudienceManager>(
+                FindObjectsInactive.Include);
+            GameObject go = manager != null ? manager.gameObject : null;
             if (go == null)
             {
                 go = new GameObject("[SpecialAudience]");
                 Undo.RegisterCreatedObjectUndo(go, "Create SpecialAudience");
+                manager = Undo.AddComponent<SpecialAudienceManager>(go);
             }
 
-            var manager = go.GetComponent<SpecialAudienceManager>() ?? Undo.AddComponent<SpecialAudienceManager>(go);
-            var view = Object.FindFirstObjectByType<SpecialAudienceView>() ?? BuildGreyboxView();
+            go.SetActive(true);
+            manager.enabled = true;
+
+            var view = Object.FindFirstObjectByType<SpecialAudienceView>(
+                FindObjectsInactive.Include) ?? BuildGreyboxView();
+            view.transform.root.gameObject.SetActive(true);
+            view.enabled = true;
 
             SetObjectField(manager, "config", GetOrCreateConfig());
             SetObjectField(manager, "view", view);
             AssignSprites(view);
 
             // 무대 위 실물 특별 관객 (군중 사이를 돌아다닌다). UI 뷰와 동시에 쓸 수 있다.
-            var actor = Object.FindFirstObjectByType<SpecialAudienceCrowdActor>() ?? BuildCrowdActor();
+            var actor = Object.FindFirstObjectByType<SpecialAudienceCrowdActor>(
+                FindObjectsInactive.Include) ?? BuildCrowdActor();
+            actor.gameObject.SetActive(true);
+            actor.enabled = true;
+            AudienceRosterPresenter presenter =
+                Object.FindFirstObjectByType<AudienceRosterPresenter>(
+                    FindObjectsInactive.Include);
+            SetObjectField(actor, "audiencePresenter", presenter);
             AssignActorSprites(actor);
+            EnsureDropTarget(actor);
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             Selection.activeGameObject = go;
@@ -89,14 +105,46 @@ namespace ContextStage.EditorTools
             var go = new GameObject("SpecialAudienceActor");
             Undo.RegisterCreatedObjectUndo(go, "Create SpecialAudienceActor");
 
-            var crowd = Object.FindFirstObjectByType<CrowdSpawner>();
-            if (crowd != null) go.transform.SetParent(crowd.transform, false);
+            var presenter = Object.FindFirstObjectByType<AudienceRosterPresenter>(
+                FindObjectsInactive.Include);
+            if (presenter != null && presenter.MemberRoot != null)
+                go.transform.SetParent(presenter.MemberRoot, false);
             else go.transform.position = new Vector3(0f, -3f, 0f);
 
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sortingOrder = 10; // 등장할 때 관객 줄에 맞춰 매 프레임 다시 계산된다
 
-            return go.AddComponent<SpecialAudienceCrowdActor>();
+            var actor = go.AddComponent<SpecialAudienceCrowdActor>();
+            SetObjectField(actor, "audiencePresenter", presenter);
+            return actor;
+        }
+
+        static void EnsureDropTarget(SpecialAudienceCrowdActor actor)
+        {
+            if (actor == null) return;
+
+            var target = Object.FindFirstObjectByType<SpecialAudienceDropTarget>(
+                FindObjectsInactive.Include);
+            if (target == null)
+            {
+                var targetObject = new GameObject("SpecialAudienceHitArea");
+                Undo.RegisterCreatedObjectUndo(
+                    targetObject,
+                    "Create Special Audience Hit Area");
+                targetObject.transform.SetParent(actor.transform.parent, false);
+                targetObject.transform.position = actor.transform.position;
+
+                var collider = Undo.AddComponent<BoxCollider2D>(targetObject);
+                collider.isTrigger = true;
+                collider.size = new Vector2(2.6f, 3.4f);
+                collider.offset = new Vector2(0f, 0.4f);
+                target = Undo.AddComponent<SpecialAudienceDropTarget>(targetObject);
+                target.Configure(collider, actor.transform, actor.transform);
+            }
+
+            target.gameObject.SetActive(true);
+            target.enabled = true;
+            target.Configure(target.HitCollider, actor.transform, actor.transform);
         }
 
         static void AssignActorSprites(SpecialAudienceCrowdActor actor, bool overwrite = false)
@@ -262,7 +310,7 @@ namespace ContextStage.EditorTools
 
             var text = go.AddComponent<Text>();
             text.text = label;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = ProjectFontTool.LegacyFont;
             text.fontSize = 34;
             text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleCenter;
@@ -303,7 +351,7 @@ namespace ContextStage.EditorTools
             var go = CreateUIObject(name, parent);
             var text = go.AddComponent<Text>();
             text.text = content;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = ProjectFontTool.LegacyFont;
             text.fontSize = size;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = new Color(0.9f, 0.9f, 0.9f);

@@ -202,22 +202,22 @@ namespace ContextStage
             if (_model == null || !_model.TryGet(id, out AudienceSnapshot previous))
                 return false;
 
-            int clampedReaction = Mathf.Max(0, reactionValue);
+            int signedReaction = reactionValue;
             float multiplier = Mathf.Max(0f, cardEngagementMultiplier);
             float engagementDelta =
-                clampedReaction *
+                signedReaction *
                 _model.EngagementRules.EngagementPerReactionPoint *
                 multiplier;
             float appliedDelta =
                 _model.EngagementRules.Clamp(previous.Engagement + engagementDelta) -
                 previous.Engagement;
 
-            if (appliedDelta <= 0f)
+            if (Mathf.Approximately(appliedDelta, 0f))
             {
                 current = previous;
                 EventBus.Raise(new AudienceCardReacted(
                     cardId ?? string.Empty,
-                    clampedReaction,
+                    signedReaction,
                     0f,
                     previous,
                     current));
@@ -237,7 +237,7 @@ namespace ContextStage
             current = change.Current;
             EventBus.Raise(new AudienceCardReacted(
                 cardId ?? string.Empty,
-                clampedReaction,
+                signedReaction,
                 current.Engagement - previous.Engagement,
                 previous,
                 current));

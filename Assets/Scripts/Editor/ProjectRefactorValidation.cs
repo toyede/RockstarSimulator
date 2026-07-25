@@ -171,8 +171,8 @@ namespace ContextStage.EditorTools
                     $"{prefix} legacy HypeSystem must be disabled.",
                     failures);
                 Require(
-                    special == null || !special.enabled,
-                    $"{prefix} legacy SpecialAudienceManager must be disabled.",
+                    special != null && special.enabled && special.Config != null,
+                    $"{prefix} active SpecialAudienceManager with config missing.",
                     failures);
             }
             else
@@ -235,7 +235,7 @@ namespace ContextStage.EditorTools
                     $"{prefix} expected one SpecialAudienceCrowdActor, found {actors.Length}.",
                     failures);
                 for (int i = 0; i < actors.Length; i++)
-                    RequireReference(actors[i], "crowdSpawner", prefix, failures);
+                    RequireReference(actors[i], "audiencePresenter", prefix, failures);
             }
 
             SpecialAudienceDropTarget[] targets =

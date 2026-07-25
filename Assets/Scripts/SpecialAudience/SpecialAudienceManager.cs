@@ -373,7 +373,13 @@ namespace ContextStage
             switch (_phase)
             {
                 case Phase.Waiting:
-                    if (Time.time >= _phaseDeadline) Spawn(TakeFromBag());
+                    if (Time.time >= _phaseDeadline)
+                    {
+                        if (TryTakeAvailableRequest(out HeatStage requestType))
+                            Spawn(requestType);
+                        else
+                            _phaseDeadline = Time.time + 1f;
+                    }
                     break;
 
                 case Phase.Active:
@@ -473,6 +479,41 @@ namespace ContextStage
             var picked = _bag[last];
             _bag.RemoveAt(last);
             return picked;
+        }
+
+        bool TryTakeAvailableRequest(out HeatStage requestType)
+        {
+            requestType = default;
+            if (!CardSystem.HasInstance) return false;
+
+            if (_bag.Count == 0) RefillBag();
+            for (int i = _bag.Count - 1; i >= 0; i--)
+            {
+                HeatStage candidate = _bag[i];
+                if (!HasMatchingSpecialCardInHand(candidate)) continue;
+
+                requestType = candidate;
+                _bag.RemoveAt(i);
+                return true;
+            }
+
+            return false;
+        }
+
+        static bool HasMatchingSpecialCardInHand(HeatStage requestType)
+        {
+            if (!CardSystem.HasInstance) return false;
+
+            IReadOnlyList<CardDefinition> hand = CardSystem.Instance.Hand;
+            for (int i = 0; i < hand.Count; i++)
+            {
+                CardDefinition card = hand[i];
+                if (card != null &&
+                    card.Role == CardRole.Special &&
+                    card.TargetStage == requestType)
+                    return true;
+            }
+            return false;
         }
 
         // ---------------- 디버그 ----------------

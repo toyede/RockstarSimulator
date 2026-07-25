@@ -109,6 +109,10 @@ namespace ContextStage
         public AudienceSnapshot Snapshot => _snapshot;
         public bool IsBound => _boundId.IsValid;
         public AudienceReactionPopup ReactionPopup => reactionPopup;
+        public Vector3 LayoutPosition => _currentLayoutPosition;
+        public float LayoutScale => _currentLayoutScale;
+        public int SortingOrder =>
+            characterRenderer != null ? characterRenderer.sortingOrder : 0;
 
         void Awake()
         {
@@ -219,13 +223,19 @@ namespace ContextStage
 
         public void PlayReaction(int reactionValue, float engagementDelta)
         {
-            if (_exiting || !enabled || reactionPopup == null) return;
+            if (_exiting || !enabled) return;
+
+            // 단일 결과 UI 원칙: 관객 반응은 애니메이션(펄스)으로만 구분한다.
+            // 캐릭터 위 "LOVE IT +25" 같은 점수 텍스트는 우측 상단 HUD 로 일원화했으므로 띄우지 않는다.
+            // (reactionPopup 은 다른 경로가 참조할 수 있어 컴포넌트 자체는 남겨둔다)
             if (reactionValue > 0)
                 _reactionPulseRemaining = reactionPulseDuration;
-            reactionPopup.Show(
-                reactionValue,
-                engagementDelta,
-                characterRenderer.sortingOrder + 30);
+        }
+
+        public void PlayDeparture()
+        {
+            // 이탈은 캐릭터가 나가는 모습(PlayExit)으로 확인한다.
+            // "LEFT THE SHOW" 텍스트는 단일 UI 원칙에 따라 표시하지 않는다.
         }
 
         public void PlayExit(Action completed)
