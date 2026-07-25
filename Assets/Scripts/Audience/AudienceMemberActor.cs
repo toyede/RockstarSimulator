@@ -22,6 +22,8 @@ namespace ContextStage
         [SerializeField] Transform warningFill;
         [SerializeField] SpriteRenderer warningBackgroundRenderer;
         [SerializeField] SpriteRenderer warningFillRenderer;
+        [SerializeField] Color warningBackgroundColor = new Color(0.06f, 0.07f, 0.10f, 0.9f);
+        [SerializeField] Color warningFillColor = new Color(0.95f, 0.19f, 0.16f, 1f);
 
         [Header("Motion")]
         [SerializeField, Min(0f)] float enterDuration = 0.6f;
@@ -35,6 +37,28 @@ namespace ContextStage
         [SerializeField, Min(0f)] float calmBobHeight = 0.025f;
         [SerializeField, Min(0f)] float middleBobHeight = 0.07f;
         [SerializeField, Min(0f)] float excitedBobHeight = 0.16f;
+
+        // 에셋 없이 코드만으로 그리는 호응도 바용 1x1 흰색 스프라이트.
+        // pixelsPerUnit=1이라 localScale이 곧 월드 유닛 크기가 된다.
+        static Sprite _solidSprite;
+        static Sprite SolidSprite
+        {
+            get
+            {
+                if (_solidSprite == null)
+                {
+                    var texture = new Texture2D(1, 1);
+                    texture.SetPixel(0, 0, Color.white);
+                    texture.Apply();
+                    _solidSprite = Sprite.Create(
+                        texture,
+                        new Rect(0f, 0f, 1f, 1f),
+                        new Vector2(0.5f, 0.5f),
+                        1f);
+                }
+                return _solidSprite;
+            }
+        }
 
         AudienceSnapshot _snapshot;
         AudienceId _boundId;
@@ -73,7 +97,13 @@ namespace ContextStage
                     "[AudienceMemberActor] Prefab references are incomplete.",
                     this);
                 enabled = false;
+                return;
             }
+
+            warningBackgroundRenderer.sprite = SolidSprite;
+            warningFillRenderer.sprite = SolidSprite;
+            warningBackgroundRenderer.color = warningBackgroundColor;
+            warningFillRenderer.color = warningFillColor;
         }
 
         public void OnSpawned()
