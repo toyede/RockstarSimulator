@@ -28,6 +28,9 @@ namespace ContextStage
         [Header("Crisis Warning")]
         [SerializeField] GameObject crisisWarningRoot;
 
+        [Header("Card Reaction")]
+        [SerializeField] AudienceReactionPopup reactionPopup;
+
         [Header("Motion")]
         [SerializeField, Min(0f)] float enterDuration = 0.6f;
         [SerializeField, Min(0f)] float exitDuration = 0.7f;
@@ -88,6 +91,7 @@ namespace ContextStage
         public AudienceId BoundId => _boundId;
         public AudienceSnapshot Snapshot => _snapshot;
         public bool IsBound => _boundId.IsValid;
+        public AudienceReactionPopup ReactionPopup => reactionPopup;
 
         void Awake()
         {
@@ -98,7 +102,9 @@ namespace ContextStage
                 warningRoot == null ||
                 warningFill == null ||
                 warningBackgroundRenderer == null ||
-                warningFillRenderer == null)
+                warningFillRenderer == null ||
+                reactionPopup == null ||
+                !reactionPopup.IsConfigured)
             {
                 Debug.LogError(
                     "[AudienceMemberActor] Prefab references are incomplete.",
@@ -128,6 +134,7 @@ namespace ContextStage
             if (warningRoot != null) warningRoot.SetActive(false);
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
+            if (reactionPopup != null) reactionPopup.ResetVisual();
             ApplyTransform();
         }
 
@@ -141,6 +148,7 @@ namespace ContextStage
             if (warningRoot != null) warningRoot.SetActive(false);
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
+            if (reactionPopup != null) reactionPopup.ResetVisual();
         }
 
         public void Bind(AudienceSnapshot snapshot, float calmUpperBound)
@@ -176,6 +184,7 @@ namespace ContextStage
             characterRenderer.sortingOrder = sortingOrder;
             warningBackgroundRenderer.sortingOrder = sortingOrder + 20;
             warningFillRenderer.sortingOrder = sortingOrder + 21;
+            reactionPopup.SetSortingOrder(sortingOrder + 30);
 
             // 스폰 직후 첫 배치는 즉시 스냅하고, 이후 관객 수 변화로 인한
             // 재배치만 Update()에서 서서히 따라가게 한다.
@@ -189,10 +198,15 @@ namespace ContextStage
             ApplyTransform();
         }
 
-        public void PlayReaction(int reactionValue)
+        public void PlayReaction(int reactionValue, float engagementDelta)
         {
-            if (reactionValue <= 0 || _exiting) return;
-            _reactionPulseRemaining = reactionPulseDuration;
+            if (_exiting || !enabled || reactionPopup == null) return;
+            if (reactionValue > 0)
+                _reactionPulseRemaining = reactionPulseDuration;
+            reactionPopup.Show(
+                reactionValue,
+                engagementDelta,
+                characterRenderer.sortingOrder + 30);
         }
 
         public void PlayExit(Action completed)

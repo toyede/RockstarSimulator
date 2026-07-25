@@ -9,6 +9,7 @@ preference, engagement, and engagement stage.
 - `AudienceRosterSystem`: Unity lifecycle, EventBus publication, and empty-roster game over
 - `AudienceRosterPresenter`: one-to-one mapping between `AudienceId` and pooled actors
 - `AudienceMemberActor`: per-member sprite, stage motion, warning bar, and transitions
+- `AudienceReactionPopup`: pooled per-member card score or engagement-delta feedback
 - `AudienceReactionResolver`: pure preference + engagement-stage card calculation
 - `AudienceEngagementConfig`: engagement range, stage boundaries, decay, reaction multiplier
 - `AudienceFlowConfig`: initial/max count, preference weights, deterministic seed
@@ -60,3 +61,9 @@ Performance cards calculate each member independently:
 
 The per-member results update engagement and their sum becomes the authoritative
 card score. Utility cards explicitly opt out of audience reactions.
+
+Each `AudienceMember` owns one reusable world-space reaction popup. It listens
+through the presenter to `AudienceCardReacted`, displays the per-member reaction
+score by default, and can be switched in the prefab Inspector to show the
+actually applied engagement delta. Zero values are hidden by default so utility
+cards do not create misleading feedback.
