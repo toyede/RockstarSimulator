@@ -1,9 +1,19 @@
 using System;
+using System.Collections.Generic;
 using GameJamKit;
 using UnityEngine;
 
 namespace ContextStage
 {
+    /// <summary>(성향, 참여도 단계) 한 조합에 대한 동물별 애니메이션 세트.</summary>
+    [Serializable]
+    public struct AnimatedVariantGroup
+    {
+        public CrowdPreference preference;
+        public AudienceEngagementStage stage;
+        public SpriteAnimationClip[] variants;
+    }
+
     [DisallowMultipleComponent]
     [RequireComponent(typeof(SpriteRenderer))]
     public sealed class AudienceMemberActor : MonoBehaviour, IPoolable
@@ -17,12 +27,10 @@ namespace ContextStage
         [SerializeField] Color singalongColor = Color.white;
         [SerializeField] Color moshColor = Color.white;
 
-        [Header("Character Animation (optional per stage)")]
-        [Tooltip("Singalong + Calm 단계에서 재생할 동물별 애니메이션. 비워두면 singalongSprite 정지 이미지를 쓴다.\n" +
-                 "Tools/Audience/Import Animated Species Sheet 로 채운다.")]
-        [SerializeField] SpriteAnimationClip[] singalongCalmVariants;
-        [Tooltip("Singalong + Excited 단계에서 재생할 동물별 애니메이션. 비워두면 singalongSprite 정지 이미지를 쓴다.")]
-        [SerializeField] SpriteAnimationClip[] singalongExcitedVariants;
+        [Header("Character Animation (optional per preference/stage)")]
+        [Tooltip("아트가 준비된 (성향, 단계) 조합만 채우면 된다. 목록에 없는 조합은 정지 스프라이트로 자동 폴백한다.\n" +
+                 "Tools/Audience/Import Animated Species Sheets 로 채운다.")]
+        [SerializeField] List<AnimatedVariantGroup> animatedVariants = new List<AnimatedVariantGroup>();
 
         readonly SpriteAnimationPlayer _player = new SpriteAnimationPlayer();
 
@@ -322,16 +330,16 @@ namespace ContextStage
         /// <summary>같은 관객은 항상 같은 동물 variant 를 쓰도록 id 로 결정한다.</summary>
         SpriteAnimationClip AnimationVariantFor(CrowdPreference preference, AudienceEngagementStage stage)
         {
-            SpriteAnimationClip[] variants = preference == CrowdPreference.Singalong
-                ? stage == AudienceEngagementStage.Calm
-                    ? singalongCalmVariants
-                    : stage == AudienceEngagementStage.Excited
-                        ? singalongExcitedVariants
-                        : null
-                : null;
+            for (int i = 0; i < animatedVariants.Count; i++)
+            {
+                AnimatedVariantGroup group = animatedVariants[i];
+                if (group.preference != preference || group.stage != stage) continue;
 
-            if (variants == null || variants.Length == 0) return null;
-            return variants[Mod(_boundId.Value, variants.Length)];
+                SpriteAnimationClip[] variants = group.variants;
+                if (variants == null || variants.Length == 0) return null;
+                return variants[Mod(_boundId.Value, variants.Length)];
+            }
+            return null;
         }
 
         static int Mod(int value, int length) => length <= 0 ? 0 : ((value % length) + length) % length;

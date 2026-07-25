@@ -15,10 +15,14 @@ namespace ContextStage.EditorTools
     /// </summary>
     public static class AudienceAnimationImportTool
     {
-        static readonly (string folder, string fieldName, string clipName)[] Sources =
+        /// <summary>
+        /// 폴더 → (성향, 참여도 단계) 매핑표. 아트가 새 조합을 주면 여기에 한 줄만 추가하면 된다.
+        /// AudienceMemberActor 쪽 코드는 그대로다 (CrowdSetupMenu.MoodSheets 와 같은 방식).
+        /// </summary>
+        static readonly (string folder, CrowdPreference preference, AudienceEngagementStage stage, string clipName)[] Sources =
         {
-            ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Calm", "singalongCalmVariants", "Singalong_Calm"),
-            ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Hype", "singalongExcitedVariants", "Singalong_Excited"),
+            ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Calm", CrowdPreference.Singalong, AudienceEngagementStage.Calm, "Singalong_Calm"),
+            ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Hype", CrowdPreference.Singalong, AudienceEngagementStage.Excited, "Singalong_Excited"),
         };
 
         [MenuItem("Tools/Audience/Import Animated Species Sheets")]
@@ -42,6 +46,7 @@ namespace ContextStage.EditorTools
             }
 
             var so = new SerializedObject(actor);
+            SerializedProperty listProp = so.FindProperty("animatedVariants");
             int totalClips = 0;
 
             foreach (var source in Sources)
@@ -49,17 +54,11 @@ namespace ContextStage.EditorTools
                 SpriteAnimationClip[] clips = BuildSpeciesClips(source.folder, source.clipName);
                 if (clips == null) continue;
 
-                SerializedProperty field = so.FindProperty(source.fieldName);
-                if (field == null)
-                {
-                    Debug.LogWarning(
-                        $"[AudienceAnim] AudienceMemberActor 에 '{source.fieldName}' 필드가 없습니다.");
-                    continue;
-                }
-
-                WriteClips(field, clips);
+                WriteGroup(listProp, source.preference, source.stage, clips);
                 totalClips += clips.Length;
-                Debug.Log($"[AudienceAnim] '{source.folder}' → {source.fieldName} : 동물 {clips.Length}종 연결.");
+                Debug.Log(
+                    $"[AudienceAnim] '{source.folder}' → {source.preference}/{source.stage} : " +
+                    $"동물 {clips.Length}종 연결.");
             }
 
             so.ApplyModifiedPropertiesWithoutUndo();
@@ -128,6 +127,41 @@ namespace ContextStage.EditorTools
                 };
             }
             return clips;
+        }
+
+        /// <summary>(성향, 단계) 에 해당하는 목록 항목을 찾아 덮어쓰거나, 없으면 새로 추가한다.</summary>
+        static void WriteGroup(
+            SerializedProperty listProp,
+            CrowdPreference preference,
+            AudienceEngagementStage stage,
+            SpriteAnimationClip[] clips)
+        {
+            int index = FindGroupIndex(listProp, preference, stage);
+            if (index < 0)
+            {
+                index = listProp.arraySize;
+                listProp.arraySize++;
+            }
+
+            SerializedProperty element = listProp.GetArrayElementAtIndex(index);
+            element.FindPropertyRelative("preference").enumValueIndex = (int)preference;
+            element.FindPropertyRelative("stage").enumValueIndex = (int)stage;
+            WriteClips(element.FindPropertyRelative("variants"), clips);
+        }
+
+        static int FindGroupIndex(
+            SerializedProperty listProp,
+            CrowdPreference preference,
+            AudienceEngagementStage stage)
+        {
+            for (int i = 0; i < listProp.arraySize; i++)
+            {
+                SerializedProperty element = listProp.GetArrayElementAtIndex(i);
+                if ((CrowdPreference)element.FindPropertyRelative("preference").enumValueIndex == preference &&
+                    (AudienceEngagementStage)element.FindPropertyRelative("stage").enumValueIndex == stage)
+                    return i;
+            }
+            return -1;
         }
 
         static void WriteClips(SerializedProperty arrayProperty, SpriteAnimationClip[] clips)
