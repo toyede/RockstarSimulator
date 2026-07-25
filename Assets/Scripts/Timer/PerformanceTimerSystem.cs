@@ -23,6 +23,7 @@ namespace ContextStage
 
         float _elapsed;
         bool _ended; // 시간 초과 판정을 한 번만 실행하기 위한 가드
+        bool _pausedManually; // 연출 담당(튜토리얼 등)이 SetPaused 로 제어하는 정지 플래그
 
         protected override bool Persistent => false;
 
@@ -30,6 +31,7 @@ namespace ContextStage
         public float Duration => config == null ? 0f : config.duration;
         public float Normalized => Duration <= 0f ? 0f : Mathf.Clamp01(_elapsed / Duration);
         public int TargetScore => config == null ? 0 : config.targetScore;
+        public bool IsPaused => _pausedManually;
 
         /// <summary>현재 점수가 목표 점수 미달인지. 특정 트리거가 아니라 항상 실시간으로 계산된다.</summary>
         public bool Failed => GameManager.HasInstance && GameManager.Instance.Score < TargetScore;
@@ -52,9 +54,12 @@ namespace ContextStage
             RaiseChanged();
         }
 
+        /// <summary>[연출/튜토리얼 전용] true 인 동안 제한시간이 흐르지 않는다.</summary>
+        public void SetPaused(bool paused) => _pausedManually = paused;
+
         void Update()
         {
-            if (config == null || _ended) return;
+            if (config == null || _ended || _pausedManually) return;
 
             var gm = GameManager.Instance;
             if (gm == null || !gm.IsPlaying) return;
@@ -115,5 +120,15 @@ namespace ContextStage
 
         /// <summary>현재 점수가 목표 점수 미달인지(실시간 계산). 씬에 시스템이 없으면 false.</summary>
         public static bool Failed => PerformanceTimerSystem.HasInstance && PerformanceTimerSystem.Instance.Failed;
+
+        /// <summary>제한시간이 수동으로 정지된 상태인지. 씬에 시스템이 없으면 false.</summary>
+        public static bool IsPaused => PerformanceTimerSystem.HasInstance && PerformanceTimerSystem.Instance.IsPaused;
+
+        /// <summary>[연출/튜토리얼 전용] true 인 동안 제한시간이 흐르지 않는다.</summary>
+        public static void SetPaused(bool paused)
+        {
+            if (PerformanceTimerSystem.HasInstance)
+                PerformanceTimerSystem.Instance.SetPaused(paused);
+        }
     }
 }
