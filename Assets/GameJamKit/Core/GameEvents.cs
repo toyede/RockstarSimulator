@@ -197,5 +197,41 @@ namespace GameJamKit
         /// </summary>
         public bool AlreadyApplied;
     }
+
+    // ------------------------------------------------------------------
+    // 관객 유입/이탈 (AudienceInflowSystem 이 발행)
+    // 개인별 몰입도(0~100) 시스템은 별도 담당자가 CrowdComposition 쪽에서 개편 중이며,
+    // 이 이벤트들은 그 작업과 무관하게 "신규 유입"과 "이탈"만 선행 구현한 것이다.
+    // 개인 몰입도 시스템이 완성되면, 몰입도가 0이 된 시점에
+    // AudienceLifecycle.RequestExit(memberId, reason) 을 호출해 이어붙이면 된다.
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// 신규 관객(공연 시작 시 초기 관객 포함)이 유입되었을 때 발행.
+    /// 개인 몰입도 시스템은 이 이벤트를 구독해 MemberId 를 키로 자기 쪽 데이터를 만들면 된다.
+    /// </summary>
+    public struct AudienceMemberSpawned
+    {
+        public int MemberId;
+        public ContextStage.CrowdPreference Preference;
+        public float InitialImmersion; // 기획 3.1 기준 30~50 무작위 (AudienceLifecycleConfig 에서 조정)
+    }
+
+    /// <summary>이탈 처리가 실제로 일어났을 때(AudienceLifecycle.RequestExit 호출 결과) 발행.</summary>
+    public struct AudienceMemberExited
+    {
+        public int MemberId;
+        public ContextStage.AudienceExitReason Reason;
+    }
+
+    /// <summary>
+    /// 관객 수가 바뀔 때마다 발행. 지금은 AudienceInflowSystem 이 들고 있는 임시 카운터 기준이며,
+    /// 개인 몰입도 시스템과 통합되면 그쪽 로스터 카운트로 교체될 예정이다.
+    /// </summary>
+    public struct AudienceCountChanged
+    {
+        public int Count;
+        public int MaxCount;
+    }
 }
 
