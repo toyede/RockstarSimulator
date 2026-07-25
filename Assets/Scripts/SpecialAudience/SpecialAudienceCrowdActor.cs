@@ -116,6 +116,21 @@ namespace ContextStage
             }
         }
 
+        /// <summary>지금 무대에 나와 있는가. (말풍선 등 부속 연출이 표시 여부를 맞출 때 쓴다)</summary>
+        public bool IsActive => _active;
+
+        /// <summary>
+        /// 현재 줄에 맞춰 적용 중인 크기. 앞줄이면 크고 뒷줄이면 작다.
+        /// 말풍선처럼 본체와 함께 커져야 하는 부속물이 이 값을 곱해서 쓴다.
+        /// </summary>
+        public float CurrentVisualScale => Mathf.Max(0.01f, _currentScale * _hoverScaleMultiplier);
+
+        /// <summary>
+        /// 바라보는 방향(-1 또는 1). visualRoot 의 X 스케일에 곱해지므로,
+        /// visualRoot 아래에 글자를 두면 좌우가 뒤집힌다 — 말풍선은 루트 쪽에 두고 이 값을 참고만 한다.
+        /// </summary>
+        public float Facing => _facing;
+
         /// <summary>드롭 Hover가 본체 크기에 더할 최종 배율. 이동·점프 스케일과 곱해서 적용한다.</summary>
         public void SetHoverScaleMultiplier(float multiplier)
         {

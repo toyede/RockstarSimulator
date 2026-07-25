@@ -1,6 +1,7 @@
 # 무대 조명 (CONTEXT STAGE)
 
-열기 단계(`HeatStage`)를 조명 색·강도·펄스로 보여주고, Special Hit 순간 화면을 번쩍인다.
+**객석에서 가장 많은 성향(`CrowdPreference`)** 을 조명 색·강도·펄스로 보여주고,
+Special Hit 순간 화면을 번쩍인다. (조명 프리셋 자체는 `HeatStage` 세 종류를 그대로 쓴다)
 URP 2D Light **3개만** 쓴다 (Global 1 + 좌우 2). 좌우 Point Light에는
 64×64 Point 필터 쿠키를 사용해 빛의 밝기와 경계가 픽셀 단계로 보이게 한다.
 Shader Graph·노멀맵·Bloom은 사용하지 않는다.
@@ -55,15 +56,40 @@ controller.PlaySpecialHitFlash(HeatStage.Mosh);   // 요청 타입 색으로
 
 ## 4. 연결 (`StageLightEventBridge`)
 
-두 시스템 **어느 쪽도 수정하지 않고** 이미 발행 중인 EventBus 이벤트만 구독한다.
+어느 시스템도 **수정하지 않고** 이미 발행 중인 EventBus 이벤트만 구독한다.
 
 | 이벤트 | 처리 |
 |---|---|
-| `HypeChanged` | `HypeConfig.ResolveStage(e.Value)` 로 단계를 계산해 **바뀐 순간만** 조명 갱신 |
+| `AudienceSummaryChanged` | 관객 명단에서 최다 성향을 구해 **바뀐 순간만** 조명 갱신 (기본 동작) |
+| `HypeChanged` | `HypeConfig.ResolveStage(e.Value)` 로 단계 계산 — `presetSource = 열기 단계` 일 때만 |
 | `SpecialHitLanded` | 요청 타입 색으로 플래시 (점수·열기는 건드리지 않음) |
-| `GameStateChanged` | Ready/Playing 에 현재 열기 단계로 맞춤 (이전 판 색 잔상 제거) |
+| `GameStateChanged` | Ready/Playing 에 현재 값으로 맞춤 (이전 판 색 잔상 제거) |
 
-단계 판정에 **카드 판정과 같은 `HypeConfig.ResolveStage()`** 를 쓰므로,
+### presetSource — 인스펙터에서 전환
+
+- **관객 최다 성향**(기본): 객석에서 제일 많은 성향의 색으로 무대를 비춘다.
+  Chill 관객이 많으면 시안, Mosh 가 많으면 빨강. 관객이 드나들 때마다 따라 바뀐다.
+- **열기 단계**: 예전 동작. 열기 수치로 단계를 계산한다.
+
+씬에 `AudienceRosterSystem` 이 없거나 관객이 0명이면 경고 한 번 남기고 열기 단계로 **자동 폴백**한다.
+
+> **관객 명단의 출처는 `AudienceRosterSystem` 하나다.**
+> `CrowdComposition`/`CrowdSpawner`(`[Crowd]` 오브젝트) 는 씬에서 컴포넌트가 꺼져 있는
+> 이전 세대 시스템이므로 조명이 그쪽을 보면 안 된다. 실제로 한 번 잘못 물렸다가 고쳤다.
+
+`AudienceSummaryChanged` 는 트리거로만 쓴다 — 요약에는 몰입 단계(Calm/Middle/Excited)
+카운트만 있고 성향별 인원이 없어서, 인원은 `AudienceRoster.Members` 에서 직접 센다.
+관객이 10명 안팎이라 매번 세도 부담이 없다.
+
+### 동점 처리
+
+최다가 둘 이상이면 **현재 적용 중인 성향을 그대로 유지한다.** 5:5 근처에서 관객이
+한 명씩 드나들 때 조명이 깜빡이는 것을 막기 위해서다. 현재 성향이 최다가 아니면
+`tieBreakPriority`(기본 Mosh → Singalong → Chill) 순서로 고른다.
+판정은 `Common/CrowdMajorityResolver.TryResolveMajority()` 하나만 쓴다 — 다른 연출도 같은
+규칙이 필요하면 이 함수를 그대로 부르면 된다.
+
+열기 단계 방식을 쓸 때는 **카드 판정과 같은 `HypeConfig.ResolveStage()`** 를 쓰므로,
 조명이 보여주는 단계와 카드가 채점하는 단계가 어긋날 수 없다.
 
 ## 5. 왜 코루틴을 안 쓰나

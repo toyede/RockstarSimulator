@@ -75,6 +75,11 @@ A successful targeted use does not also apply the general audience profile.
 Target effects operate through `AudienceRosterSystem`; the former Crowd/Hype
 calculation remains disabled.
 
+`AudienceFlowTextUI` shows arrivals and departures as aggregated counts above the
+crowd (`+1 관객` / `-3 관객`). It subscribes to `AudienceJoined` / `AudienceDeparted`
+and ignores `Initialization` / `Reset` so filling the roster at showtime is not
+announced. See `Scripts/Feedback/README.md`.
+
 Each `AudienceMember` owns one reusable world-space reaction popup. It listens
 through the presenter to `AudienceCardReacted`, displays the per-member reaction
 score by default, and can be switched in the prefab Inspector to show the

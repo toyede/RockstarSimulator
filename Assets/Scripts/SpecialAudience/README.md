@@ -25,6 +25,8 @@ Tools/Special Audience/Setup Special Audience   →   Ctrl+S
 | `SpecialAudienceManager.cs` | 타이머·셔플백·요구 관리·Special Hit 판정·이벤트 발행 + `SpecialAudience` 파사드 |
 | `SpecialAudienceView.cs` | UI 표시 전담 (아이콘 전환·게이지·애니메이션). 로직을 전혀 모름 |
 | `SpecialAudienceCrowdActor.cs` | **무대 위 실물** — 일반 관객 사이에 섞여 돌아다니는 월드 스프라이트 |
+| `SpecialAudienceSpeechBubble.cs` | 머리 위 말풍선 (1.5초마다 "Mosh!" 등) → `Scripts/Feedback/README.md` |
+| `SpecialHitRewardBanner.cs` | 저격 성공 시 얻은 보상 배너 → `Scripts/Feedback/README.md` |
 | `Editor/SpecialAudienceSetupMenu.cs` | 씬 셋업 + 그레이박스 UI |
 | `GameJamKit/Core/GameEvents.cs` | 이벤트 struct 3종 추가 (킷 변경 이력에 기록함) |
 
