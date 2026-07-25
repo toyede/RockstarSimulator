@@ -39,6 +39,9 @@ namespace ContextStage.EditorTools
             ("guitar_stroke", "Assets/Audio/OneShot/Guitar_Stroke.wav", false, 1f),
             ("hey_high",      "Assets/Audio/OneShot/Hey_high.wav",      false, 1f),
             ("hey_low",       "Assets/Audio/OneShot/Hey_low.wav",       false, 1f),
+
+            // UI 버튼 클릭
+            ("ui_click_wooden", "Assets/Audio/OneShot/UI/UI_Click_wooden.wav", false, 1f),
         };
 
         [MenuItem("Tools/Audio/Setup Crowd Ambience", false, 0)]

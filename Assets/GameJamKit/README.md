@@ -554,4 +554,5 @@ Tools/GameJamKit/Export .unitypackage
 | 2026-07-25 | Codex | `Core/GameEvents.cs` | 실제 발행되지 않던 `EncoreTriggered`, `HypeDepleted`를 제거하고 `SpecialHitLanded`에 연출 유지시간을 추가해 시스템 간 중복 수치를 없앴다. |
 | 2026-07-25 | Claude | `Core/GameEvents.cs` | 공연 시간(타이머) 이벤트 `PerformanceTimeChanged` 추가. (발행 주체는 `Assets/Scripts/Timer/PerformanceTimerSystem.cs`. 제한시간 초과 시 목표 점수 미달성이면 `GameManager.GameOver()`를 호출한다) |
 | 2026-07-25 | Codex | `Core/MonoSingleton.cs` | 애플리케이션 종료 중에는 `HasInstance`가 false를 반환하게 해, 종료 콜백에서 인스턴스 유무 확인 직후 null 인스턴스에 접근하는 수명주기 오류를 방지했다. |
+| 2026-07-25 | Claude | `Audio/AudioManager.cs` | `PlaySfx(string id)` 1-파라미터 오버로드 추가. 기존 `PlaySfx(string, float)`는 파라미터가 2개라 `Button.OnClick()` UnityEvent 인스펙터 드롭다운에 노출되지 않아(Unity는 0/1개 파라미터 메서드만 표시, 기본값 무시), 버튼 클릭 사운드를 코드 없이 수동 연결하려는 팀 요구에 맞춰 추가함. |
 

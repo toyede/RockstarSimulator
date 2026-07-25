@@ -85,3 +85,11 @@ MonoBehaviour:
     pitchMax: 1
     loop: 1
     minInterval: 0.02
+  - id: ui_click_wooden
+    clips:
+    - {fileID: 8300000, guid: c407b0217c5bd514fa30f4d86c83eef2, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
