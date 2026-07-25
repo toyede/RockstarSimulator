@@ -217,10 +217,18 @@ namespace ContextStage
                     ? 0
                     : Mathf.RoundToInt(rawScore * combo.Multiplier);
                 int feverAudienceCount = audienceRoster.Members.Count;
-                int feverBonusScore = FeverSystem.HasInstance
+                bool isFeverActive =
+                    FeverSystem.HasInstance &&
+                    FeverSystem.Instance.IsActive;
+                int feverBonusScore = isFeverActive
                     ? FeverSystem.Instance.CalculateCardBonus(feverAudienceCount)
                     : 0;
-                int finalScore = comboScore + feverBonusScore;
+                // Fever replaces the card's normal score. Reactions and targeted
+                // effects still change the audience, but only the per-audience
+                // Fever reward is added to the run score.
+                int finalScore = isFeverActive
+                    ? feverBonusScore
+                    : comboScore;
                 HypeJudgement feedback = isSpecialHit
                     ? HypeJudgement.Perfect
                     : ResolveFeedback(

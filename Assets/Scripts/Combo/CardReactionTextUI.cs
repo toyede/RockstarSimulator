@@ -71,6 +71,13 @@ namespace ContextStage
 
         void OnCardResolved(CardResolved e)
         {
+            if (e.FeverBonusScore > 0)
+            {
+                SetAlpha(0f);
+                _animating = false;
+                return;
+            }
+
             // Utility 카드는 점수 평가 대상이 아니다
             if (e.Role == CardRole.Utility && e.GainedScore == 0) return;
 

@@ -289,6 +289,17 @@ namespace ContextStage
                 characterRenderer.sortingOrder + 30);
         }
 
+        public void PlayFeverBonus(int score)
+        {
+            if (_exiting || !enabled || reactionPopup == null || score <= 0)
+                return;
+
+            _reactionPulseRemaining = reactionPulseDuration;
+            reactionPopup.ShowFever(
+                score,
+                characterRenderer.sortingOrder + 30);
+        }
+
         public void PlayExit(Action completed)
             => PlayExit(AudienceExitStyle.Default, completed);
 

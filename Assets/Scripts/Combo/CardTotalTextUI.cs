@@ -89,8 +89,7 @@ namespace ContextStage
             // 이 줄은 숫자 점수만 보여준다.
             if (e.FeverBonusScore > 0)
             {
-                return $"+{e.GainedScore:N0} SCORE  " +
-                    $"FEVER +{e.FeverBonusScore:N0}";
+                return $"FEVER +{e.FeverBonusScore:N0} SCORE";
             }
             if (e.GainedScore > 0) return $"+{e.GainedScore:N0} SCORE";
             if (e.GainedScore < 0) return $"{e.GainedScore:N0} SCORE";
