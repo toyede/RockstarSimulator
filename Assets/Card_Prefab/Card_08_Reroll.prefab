@@ -118,8 +118,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: description
-      value: "\uD604\uC7AC \uD328\uB97C \uBAA8\uB450 \uC5C6\uC560\uACE0 \uCE74\uB4DC
-        3\uC7A5\uC744 \uBF51\uB294\uB2E4."
+      value: "\uD604\uC7AC \uD328\uB97C \uBAA8\uB450 \uBC84\uB9AC\uACE0 \uAC19\uC740
+        \uC218\uB9CC\uD07C \uC0C8\uB85C \uBF51\uB294\uB2E4."
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: displayName
