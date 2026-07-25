@@ -58,7 +58,10 @@ namespace ContextStage
             bool rosterChanged = false;
 
             // 1) 몰입도 자연 감소 → 상태 변화·이탈 이벤트
-            if (_model.ApplyNaturalDecay(Time.deltaTime, _changes, _removed))
+            // SuppressEngagementDecay: 튜토리얼이 관객 몰입도를 고정하는 동안만 true.
+            // (TrySetEngagement/TryChangeEngagement 수동 호출은 계속 동작한다)
+            if (!SuppressEngagementDecay &&
+                _model.ApplyNaturalDecay(Time.deltaTime, _changes, _removed))
             {
                 for (int i = 0; i < _changes.Count; i++)
                 {
@@ -96,6 +99,9 @@ namespace ContextStage
 
         /// <summary>[튜토리얼 전용] true 인 동안 자연 유입을 멈춘다. 평소에는 false.</summary>
         public bool SuppressNaturalArrivals { get; set; }
+
+        /// <summary>[튜토리얼 전용] true인 동안 관객 개별 몰입도 자연 감소를 멈춘다. 평소에는 false.</summary>
+        public bool SuppressEngagementDecay { get; set; }
 
         public bool ResetRoster()
         {

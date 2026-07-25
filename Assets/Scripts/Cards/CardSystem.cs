@@ -88,6 +88,14 @@ namespace ContextStage
             RaiseHandChanged();
         }
 
+        /// <summary>손패를 지정한 카드로 강제 교체한다. 덱은 건드리지 않는다. (튜토리얼 등 고정 손패용)</summary>
+        public void SetHand(IReadOnlyList<CardDefinition> cards)
+        {
+            _hand.Clear();
+            if (cards != null) _hand.AddRange(cards);
+            RaiseHandChanged();
+        }
+
         /// <summary>현재 손패의 index 카드를 사용한다. 성공했을 때만 true를 반환한다.</summary>
         public bool SelectCard(int index)
             => SelectCard(index, SpecialCardRequest.None);

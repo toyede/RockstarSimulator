@@ -61,6 +61,13 @@ namespace ContextStage
             return Mathf.Max(0, audienceCount) * config.FeverScorePerAudience;
         }
 
+        /// <summary>[튜토리얼 전용] 실제 콤보 조건과 무관하게 피버타임을 즉시 시작한다. 이미 활성 중이면 무시.</summary>
+        public void ForceStart()
+        {
+            if (_isActive) return;
+            StartFever(config != null ? config.FeverComboInterval : 0);
+        }
+
         void OnComboChanged(ComboChanged e)
         {
             if (_isActive ||
