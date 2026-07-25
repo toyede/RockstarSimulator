@@ -25,9 +25,14 @@ namespace ContextStage
         [SerializeField] Color warningBackgroundColor = new Color(0.06f, 0.07f, 0.10f, 0.9f);
         [SerializeField] Color warningFillColor = new Color(0.95f, 0.19f, 0.16f, 1f);
 
+        [Header("Crisis Warning")]
+        [SerializeField] GameObject crisisWarningRoot;
+
         [Header("Motion")]
         [SerializeField, Min(0f)] float enterDuration = 0.6f;
         [SerializeField, Min(0f)] float exitDuration = 0.7f;
+        [SerializeField, Min(0f)] float crisisExitDuration = 0.5f;
+        [SerializeField, Min(0f)] float crisisHorizontalTravel = 3.2f;
         [SerializeField, Min(0f)] float enterDistance = 1.2f;
         [SerializeField, Min(0f)] float enterStartScale = 0.55f;
         [SerializeField, Min(0f)] float exitDistance = 1.6f;
@@ -75,6 +80,8 @@ namespace ContextStage
         float _reactionPulseRemaining;
         float _exitElapsed;
         bool _exiting;
+        AudienceExitStyle _exitStyle;
+        float _exitDirection = 1f;
         Color _characterColor = Color.white;
         Action _exitCompleted;
 
@@ -114,10 +121,13 @@ namespace ContextStage
             _reactionPulseRemaining = 0f;
             _exitElapsed = 0f;
             _exiting = false;
+            _exitStyle = AudienceExitStyle.Default;
             _exitCompleted = null;
             _phase = UnityEngine.Random.value * Mathf.PI * 2f;
             _hasLayout = false;
             if (warningRoot != null) warningRoot.SetActive(false);
+            if (crisisWarningRoot != null)
+                crisisWarningRoot.SetActive(false);
             ApplyTransform();
         }
 
@@ -127,7 +137,10 @@ namespace ContextStage
             _boundId = default;
             _exitCompleted = null;
             _exiting = false;
+            _exitStyle = AudienceExitStyle.Default;
             if (warningRoot != null) warningRoot.SetActive(false);
+            if (crisisWarningRoot != null)
+                crisisWarningRoot.SetActive(false);
         }
 
         public void Bind(AudienceSnapshot snapshot, float calmUpperBound)
@@ -139,6 +152,7 @@ namespace ContextStage
             _calmUpperBound = Mathf.Max(0.01f, calmUpperBound);
             _visibility = 0f;
             _exiting = false;
+            _exitStyle = AudienceExitStyle.Default;
             _exitElapsed = 0f;
             _hasLayout = false;
             ApplySnapshot(snapshot);
@@ -182,12 +196,29 @@ namespace ContextStage
         }
 
         public void PlayExit(Action completed)
+            => PlayExit(AudienceExitStyle.Default, completed);
+
+        public void PlayExit(
+            AudienceExitStyle style,
+            Action completed)
         {
             if (_exiting) return;
             _exiting = true;
+            _exitStyle = style;
+            _exitDirection = Mathf.Abs(_currentLayoutPosition.x) > 0.05f
+                ? Mathf.Sign(_currentLayoutPosition.x)
+                : (_boundId.Value & 1) == 0 ? -1f : 1f;
             _exitElapsed = 0f;
             _exitCompleted = completed;
             if (warningRoot != null) warningRoot.SetActive(false);
+            if (crisisWarningRoot != null)
+                crisisWarningRoot.SetActive(false);
+        }
+
+        public void SetCrisisThreatened(bool threatened)
+        {
+            if (crisisWarningRoot != null)
+                crisisWarningRoot.SetActive(threatened && !_exiting);
         }
 
         void Update()
@@ -203,7 +234,11 @@ namespace ContextStage
             if (_exiting)
             {
                 _exitElapsed += deltaTime;
-                float duration = Mathf.Max(0.01f, exitDuration);
+                float duration = Mathf.Max(
+                    0.01f,
+                    _exitStyle == AudienceExitStyle.NearbyConcert
+                        ? crisisExitDuration
+                        : exitDuration);
                 _visibility = 1f - Mathf.Clamp01(_exitElapsed / duration);
                 ApplyTransform();
 
@@ -294,15 +329,39 @@ namespace ContextStage
                 : 0f;
 
             // 입장은 뒤에서 작게 다가오고, 퇴장은 뒤로 물러나며 사라진다. (기획서 §9)
-            float depthOffset = _exiting
-                ? (1f - _visibility) * exitDistance
-                : (1f - _visibility) * enterDistance;
-            float sizeRatio = _exiting
-                ? _visibility
-                : Mathf.Lerp(enterStartScale, 1f, _visibility);
+            float exitProgress = _exiting ? 1f - _visibility : 0f;
+            Vector3 motionOffset;
+            float sizeRatio;
+            if (_exiting &&
+                _exitStyle == AudienceExitStyle.NearbyConcert)
+            {
+                float travel = Mathf.Pow(exitProgress, 1.35f);
+                motionOffset = new Vector3(
+                    _exitDirection * crisisHorizontalTravel * travel,
+                    Mathf.Sin(exitProgress * Mathf.PI * 5f) * 0.08f,
+                    0f);
+                sizeRatio = Mathf.Lerp(0.75f, 1f, _visibility);
+                transform.localRotation = Quaternion.Euler(
+                    0f,
+                    0f,
+                    -_exitDirection * exitProgress * 8f);
+            }
+            else
+            {
+                float depthOffset = _exiting
+                    ? exitProgress * exitDistance
+                    : (1f - _visibility) * enterDistance;
+                motionOffset = new Vector3(0f, depthOffset, 0f);
+                sizeRatio = _exiting
+                    ? _visibility
+                    : Mathf.Lerp(enterStartScale, 1f, _visibility);
+                transform.localRotation = Quaternion.identity;
+            }
 
             transform.localPosition =
-                _currentLayoutPosition + new Vector3(0f, bob + depthOffset, 0f);
+                _currentLayoutPosition +
+                new Vector3(0f, bob, 0f) +
+                motionOffset;
             transform.localScale =
                 Vector3.one * (_currentLayoutScale * sizeRatio * (1f + pulse));
 
