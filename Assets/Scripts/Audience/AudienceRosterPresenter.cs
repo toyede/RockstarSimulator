@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using GameJamKit;
 using UnityEngine;
@@ -18,6 +19,9 @@ namespace ContextStage
         [SerializeField, Min(0.01f)] float frontRowScale = 0.58f;
         [SerializeField, Range(0.5f, 1f)] float rowScaleFalloff = 0.86f;
         [SerializeField] int baseSortingOrder = 5;
+        [SerializeField, Min(0f), Tooltip(
+            "카드 중앙 임팩트 뒤에 관객별 반응이 터질 때까지의 실시간 지연")]
+        float cardReactionPresentationDelay = 0.05f;
 
         readonly Dictionary<AudienceId, AudienceMemberActor> _actors =
             new Dictionary<AudienceId, AudienceMemberActor>();
@@ -171,7 +175,26 @@ namespace ContextStage
             if (FeverSystem.HasInstance && FeverSystem.Instance.IsActive)
                 return;
 
-            actor.PlayReaction(e.ReactionValue, e.EngagementDelta);
+            StartCoroutine(PlayReactionAfterDelay(e));
+        }
+
+        IEnumerator PlayReactionAfterDelay(AudienceCardReacted reaction)
+        {
+            if (cardReactionPresentationDelay > 0f)
+                yield return new WaitForSecondsRealtime(
+                    cardReactionPresentationDelay);
+
+            if (FeverSystem.HasInstance && FeverSystem.Instance.IsActive)
+                yield break;
+            if (_actors.TryGetValue(
+                    reaction.Current.Id,
+                    out AudienceMemberActor actor) &&
+                actor != null)
+            {
+                actor.PlayReaction(
+                    reaction.ReactionValue,
+                    reaction.EngagementDelta);
+            }
         }
 
         void OnFeverBonusAwarded(FeverBonusAwarded e)
@@ -180,6 +203,15 @@ namespace ContextStage
 
             int scorePerAudience = e.BonusScore / e.AudienceCount;
             if (scorePerAudience <= 0) return;
+
+            StartCoroutine(PlayFeverBonusAfterDelay(scorePerAudience));
+        }
+
+        IEnumerator PlayFeverBonusAfterDelay(int scorePerAudience)
+        {
+            if (cardReactionPresentationDelay > 0f)
+                yield return new WaitForSecondsRealtime(
+                    cardReactionPresentationDelay);
 
             foreach (AudienceMemberActor actor in _actors.Values)
             {

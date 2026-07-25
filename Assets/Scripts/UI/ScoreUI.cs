@@ -1,3 +1,4 @@
+using System.Collections;
 using GameJamKit;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,19 +18,51 @@ namespace ContextStage
     {
         [SerializeField] Text scoreText;
         [SerializeField, Tooltip("점수 앞에 붙는 라벨")] string prefix = "SCORE ";
+        [SerializeField, Min(0f)] float cardPresentationDelay = 0.085f;
+
+        float _lastCardPresentationAt = float.NegativeInfinity;
+        Coroutine _scoreRoutine;
 
         void OnEnable()
         {
             EventBus.Subscribe<ScoreChanged>(OnScoreChanged);
+            EventBus.Subscribe<CardPresentationStarted>(OnCardPresentationStarted);
 
             // 씬 로드 직후 이벤트가 오기 전에도 현재 점수와 동기화
             if (GameManager.HasInstance) Refresh(GameManager.Instance.Score);
             else Refresh(0);
         }
 
-        void OnDisable() => EventBus.Unsubscribe<ScoreChanged>(OnScoreChanged);
+        void OnDisable()
+        {
+            EventBus.Unsubscribe<ScoreChanged>(OnScoreChanged);
+            EventBus.Unsubscribe<CardPresentationStarted>(OnCardPresentationStarted);
+            _scoreRoutine = null;
+        }
 
-        void OnScoreChanged(ScoreChanged e) => Refresh(e.Score);
+        void OnCardPresentationStarted(CardPresentationStarted _) =>
+            _lastCardPresentationAt = Time.unscaledTime;
+
+        void OnScoreChanged(ScoreChanged e)
+        {
+            bool followsCard =
+                Time.unscaledTime - _lastCardPresentationAt < 0.1f;
+            if (!followsCard || cardPresentationDelay <= 0f)
+            {
+                Refresh(e.Score);
+                return;
+            }
+
+            if (_scoreRoutine != null) StopCoroutine(_scoreRoutine);
+            _scoreRoutine = StartCoroutine(RefreshAfterDelay(e.Score));
+        }
+
+        IEnumerator RefreshAfterDelay(int score)
+        {
+            yield return new WaitForSecondsRealtime(cardPresentationDelay);
+            _scoreRoutine = null;
+            Refresh(score);
+        }
 
         void Refresh(int score)
         {

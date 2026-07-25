@@ -33,6 +33,7 @@ namespace ContextStage
         [SerializeField, Min(0f)] float riseDistance = 0.55f;
         [SerializeField, Min(0.01f)] float startScale = 0.65f;
         [SerializeField, Min(0.01f)] float peakScale = 1.2f;
+        [SerializeField, Min(0.01f)] float strongPeakScale = 1.55f;
         [SerializeField, Range(0f, 1f)] float fadeStart = 0.55f;
 
         [Header("Fever")]
@@ -55,6 +56,7 @@ namespace ContextStage
         float _elapsed;
         bool _initialized;
         bool _showing;
+        float _activePeakScale = 1.2f;
         int _lastReactionValue;
         float _lastEngagementDelta;
         FloatingWorldTextPool _feverPool;
@@ -63,6 +65,8 @@ namespace ContextStage
         public AudienceReactionDisplayMode DisplayMode => displayMode;
         public bool IsConfigured => valueText != null;
         public bool IsShowing => _showing;
+        public int StrongReactionThreshold => strongReactionThreshold;
+        public int StrongNegativeThreshold => strongNegativeThreshold;
         public int LastReactionValue => _lastReactionValue;
         public float LastEngagementDelta => _lastEngagementDelta;
         public string DisplayedText =>
@@ -101,8 +105,8 @@ namespace ContextStage
                 _baseLocalPosition + Vector3.up * (riseDistance * easedRise);
 
             float scale = progress < 0.25f
-                ? Mathf.Lerp(startScale, peakScale, progress / 0.25f)
-                : Mathf.Lerp(peakScale, 1f, (progress - 0.25f) / 0.75f);
+                ? Mathf.Lerp(startScale, _activePeakScale, progress / 0.25f)
+                : Mathf.Lerp(_activePeakScale, 1f, (progress - 0.25f) / 0.75f);
             transform.localScale = _baseLocalScale * scale;
 
             float alpha = progress <= fadeStart
@@ -138,7 +142,10 @@ namespace ContextStage
             ShowText(
                 FormatValue(reactionValue, engagementDelta),
                 ResolveColor(reactionValue),
-                sortingOrder);
+                sortingOrder,
+                IsStrongPositive(reactionValue)
+                    ? strongPeakScale
+                    : peakScale);
         }
 
         public void ShowDeparture(int sortingOrder)
@@ -147,7 +154,11 @@ namespace ContextStage
             if (!_initialized) CaptureBaseTransform();
 
             _feverPool?.StopAll();
-            ShowText("LEFT THE SHOW", departedColor, sortingOrder);
+            ShowText(
+                "LEFT THE SHOW",
+                departedColor,
+                sortingOrder,
+                peakScale);
         }
 
         public void ShowFever(int score, int sortingOrder)
@@ -169,6 +180,12 @@ namespace ContextStage
         {
             if (valueText != null) valueText.renderer.sortingOrder = sortingOrder;
         }
+
+        public bool IsStrongPositive(int reactionValue)
+            => reactionValue >= strongReactionThreshold;
+
+        public bool IsStrongNegative(int reactionValue)
+            => reactionValue <= strongNegativeThreshold;
 
         public void ResetVisual()
         {
@@ -196,6 +213,8 @@ namespace ContextStage
             {
                 string score =
                     reactionValue.ToString(CultureInfo.InvariantCulture);
+                if (IsStrongPositive(reactionValue))
+                    return "LOVE IT!\n" + FormatSigned(score, reactionValue);
                 return FormatSigned(score, reactionValue);
             }
 
@@ -217,7 +236,11 @@ namespace ContextStage
                 : positiveColor;
         }
 
-        void ShowText(string text, Color color, int sortingOrder)
+        void ShowText(
+            string text,
+            Color color,
+            int sortingOrder,
+            float activePeakScale)
         {
             valueText.text = text;
             valueText.color = color;
@@ -226,6 +249,7 @@ namespace ContextStage
 
             _elapsed = 0f;
             _showing = true;
+            _activePeakScale = Mathf.Max(0.01f, activePeakScale);
             transform.localPosition = _baseLocalPosition;
             transform.localScale = _baseLocalScale * startScale;
         }
@@ -247,6 +271,7 @@ namespace ContextStage
             riseDistance = Mathf.Max(0f, riseDistance);
             startScale = Mathf.Max(0.01f, startScale);
             peakScale = Mathf.Max(0.01f, peakScale);
+            strongPeakScale = Mathf.Max(peakScale, strongPeakScale);
             feverPoolCapacity = Mathf.Max(1, feverPoolCapacity);
         }
 #endif

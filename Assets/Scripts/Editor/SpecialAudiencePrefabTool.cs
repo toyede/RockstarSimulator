@@ -69,10 +69,13 @@ namespace ContextStage.EditorTools
             // ---- 컴포넌트 ----
             // 군중 사이를 돌아다니는 기존 액터를 그대로 재사용한다 (이벤트 구독형이라 프리팹에서도 동작)
             var actor = character.AddComponent<SpecialAudienceCrowdActor>();
+            var personalityVFX =
+                character.AddComponent<SpecialAudiencePersonalityVFX>();
             // 위치는 루트가 옮겨져야 HitArea 가 함께 따라오고,
             // 점프 스쿼시는 시각 오브젝트에만 걸려야 Collider 가 흔들리지 않는다
             SetObjectField(actor, "motionRoot", root.transform);
             SetObjectField(actor, "visualRoot", visualRoot.transform);
+            SetObjectField(actor, "personalityVFX", personalityVFX);
 
             var dropTarget = root.AddComponent<SpecialAudienceDropTarget>();
             SetObjectField(dropTarget, "hitCollider", box);
@@ -121,6 +124,28 @@ namespace ContextStage.EditorTools
             }
 
             var actor = root.GetComponentInChildren<SpecialAudienceCrowdActor>(true);
+            if (actor != null)
+            {
+                var personalityVFX =
+                    actor.GetComponent<SpecialAudiencePersonalityVFX>();
+                if (personalityVFX == null)
+                {
+                    personalityVFX =
+                        actor.gameObject.AddComponent<SpecialAudiencePersonalityVFX>();
+                    changed = true;
+                }
+
+                var serializedActor = new SerializedObject(actor);
+                var vfxProperty =
+                    serializedActor.FindProperty("personalityVFX");
+                if (vfxProperty != null &&
+                    vfxProperty.objectReferenceValue == null)
+                {
+                    vfxProperty.objectReferenceValue = personalityVFX;
+                    serializedActor.ApplyModifiedPropertiesWithoutUndo();
+                    changed = true;
+                }
+            }
             var visualRoot = actor != null
                 ? actor.transform.parent
                 : root.transform.Find("VisualRoot");

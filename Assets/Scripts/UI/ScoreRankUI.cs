@@ -1,3 +1,4 @@
+using System.Collections;
 using GameJamKit;
 using UnityEngine;
 using UnityEngine.UI;
@@ -59,6 +60,9 @@ namespace ContextStage
         int _score;
         float _targetFill;
         int _rankIndex = -1;
+        [SerializeField, Min(0f)] float cardPresentationDelay = 0.085f;
+        float _lastCardPresentationAt = float.NegativeInfinity;
+        Coroutine _scoreRoutine;
 
         /// <summary>지금 랭크 이름. 결과 화면에서 읽어 쓸 수 있다.</summary>
         public string CurrentRankLabel =>
@@ -77,6 +81,7 @@ namespace ContextStage
         void OnEnable()
         {
             EventBus.Subscribe<ScoreChanged>(OnScoreChanged);
+            EventBus.Subscribe<CardPresentationStarted>(OnCardPresentationStarted);
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
 
             // 씬 로드 직후 이벤트가 오기 전에도 현재 점수와 맞춘다
@@ -87,7 +92,9 @@ namespace ContextStage
         void OnDisable()
         {
             EventBus.Unsubscribe<ScoreChanged>(OnScoreChanged);
+            EventBus.Unsubscribe<CardPresentationStarted>(OnCardPresentationStarted);
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
+            _scoreRoutine = null;
         }
 
         void Update()
@@ -101,7 +108,31 @@ namespace ContextStage
 
         void OnScoreChanged(ScoreChanged e)
         {
-            _score = e.Score;
+            bool followsCard =
+                Time.unscaledTime - _lastCardPresentationAt < 0.1f;
+            if (!followsCard || cardPresentationDelay <= 0f)
+            {
+                ApplyScore(e.Score);
+                return;
+            }
+
+            if (_scoreRoutine != null) StopCoroutine(_scoreRoutine);
+            _scoreRoutine = StartCoroutine(ApplyScoreAfterDelay(e.Score));
+        }
+
+        void OnCardPresentationStarted(CardPresentationStarted _) =>
+            _lastCardPresentationAt = Time.unscaledTime;
+
+        IEnumerator ApplyScoreAfterDelay(int score)
+        {
+            yield return new WaitForSecondsRealtime(cardPresentationDelay);
+            _scoreRoutine = null;
+            ApplyScore(score);
+        }
+
+        void ApplyScore(int score)
+        {
+            _score = score;
             Refresh(instant: false);
         }
 
@@ -109,6 +140,11 @@ namespace ContextStage
         {
             // 새 공연 준비에는 게이지를 즉시 0으로 되돌린다 (이전 판 잔상 제거)
             if (e.Current != GameState.Ready) return;
+            if (_scoreRoutine != null)
+            {
+                StopCoroutine(_scoreRoutine);
+                _scoreRoutine = null;
+            }
             _score = 0;
             Refresh(instant: true);
         }

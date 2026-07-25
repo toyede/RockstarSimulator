@@ -391,7 +391,18 @@ MonoBehaviour:
   riseDistance: 0.55
   startScale: 0.65
   peakScale: 1.2
+  strongPeakScale: 1.55
   fadeStart: 0.55
+  feverColor: {r: 1, g: 0.82, b: 0.12, a: 1}
+  feverPoolCapacity: 5
+  feverStyle:
+    duration: 1.35
+    riseDistance: 0.9
+    startScale: 0.85
+    peakScale: 1.55
+    fadeStart: 0.68
+    fontSize: 5.5
+    fontStyle: 1
 --- !u!1 &5644551428577973444
 GameObject:
   m_ObjectHideFlags: 0
@@ -723,6 +734,7 @@ GameObject:
   - component: {fileID: 5056129692359729334}
   - component: {fileID: 5969635406370495418}
   - component: {fileID: 1886025634550606897}
+  - component: {fileID: 4750493014263167139}
   m_Layer: 0
   m_Name: AudienceMember
   m_TagString: Untagged
@@ -2856,6 +2868,9 @@ MonoBehaviour:
   warningFillColor: {r: 0.95, g: 0.19, b: 0.16, a: 1}
   crisisWarningRoot: {fileID: 292989487695128454}
   reactionPopup: {fileID: 8040250188077979625}
+  reactionVFX: {fileID: 4750493014263167139}
+  loveItJumpDuration: 0.28
+  loveItJumpHeight: 0.38
   preferenceHoverCollider: {fileID: 6281537315486310667}
   preferenceOutline: {fileID: 3167203155230065215}
   enterDuration: 0.35
@@ -2903,3 +2918,22 @@ MonoBehaviour:
     spriteCycleFps: 0
   motionBlendDuration: 0.6
   allowHorizontalFlip: 1
+--- !u!114 &4750493014263167139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8075282913593493854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c72734162878b724189795dd6270b7bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceReactionVFX
+  headLocalPosition: {x: 0, y: 1.55, z: -0.05}
+  ellipsisLocalPosition: {x: 0, y: 1.82, z: -0.05}
+  arrowLocalPosition: {x: 0, y: 1.72, z: -0.05}
+  feetLocalPosition: {x: 0, y: 0.12, z: -0.05}
+  flashSize: 0.44
+  ellipsisDuration: 0.58
+  arrowDuration: 0.5

@@ -37,6 +37,7 @@ namespace ContextStage
         Canvas _sortingCanvas;
         CanvasGroup _canvasGroup;
         CardDefinition _card;
+        CardPixelTrail _pixelTrail;
 
         CardInput _cardInput;
         RectTransform _dragLayer;
@@ -122,6 +123,14 @@ namespace ContextStage
                      cardInput != null &&
                      dragLayer != null &&
                      handArea != null;
+            if (_bound && _card != null)
+            {
+                _pixelTrail.Bind(
+                    dragLayer,
+                    _card.Role,
+                    _card.TargetStage,
+                    _card.CardColor);
+            }
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -166,9 +175,15 @@ namespace ContextStage
             AnimateScale(hoverScale);
 
             if (TryGetPointerLocalPosition(eventData, out var pointerPosition))
+            {
                 _pointerOffset = _rectTransform.anchoredPosition - pointerPosition;
+                _pixelTrail.Begin(_rectTransform.anchoredPosition);
+            }
             else
+            {
                 _pointerOffset = Vector2.zero;
+                _pixelTrail.Begin(_rectTransform.anchoredPosition);
+            }
         }
 
         public void OnDrag(PointerEventData eventData)
@@ -177,6 +192,7 @@ namespace ContextStage
             if (!TryGetPointerLocalPosition(eventData, out var pointerPosition)) return;
 
             _rectTransform.anchoredPosition = pointerPosition + _pointerOffset;
+            _pixelTrail.AddPoint(_rectTransform.anchoredPosition);
         }
 
         public void OnEndDrag(PointerEventData eventData)
@@ -193,6 +209,7 @@ namespace ContextStage
                     : SpecialCardRequest.None;
 
             _dragging = false;
+            _pixelTrail.End();
             if (Current == this) Current = null;
             _dragPointerId = int.MinValue;
             RemovePlaceholder();
@@ -223,6 +240,12 @@ namespace ContextStage
             if (_sortingCanvas == null) _sortingCanvas = GetComponent<Canvas>();
             if (_canvasGroup == null) _canvasGroup = GetComponent<CanvasGroup>();
             if (_card == null) _card = GetComponent<CardDefinition>();
+            if (_pixelTrail == null)
+            {
+                _pixelTrail = GetComponent<CardPixelTrail>();
+                if (_pixelTrail == null)
+                    _pixelTrail = gameObject.AddComponent<CardPixelTrail>();
+            }
         }
 
         void ResetVisualState()

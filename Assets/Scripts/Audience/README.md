@@ -10,6 +10,7 @@ preference, engagement, and engagement stage.
 - `AudienceRosterPresenter`: one-to-one mapping between `AudienceId` and pooled actors
 - `AudienceMemberActor`: per-member sprite, stage motion, warning bar, and transitions
 - `AudienceReactionPopup`: pooled per-member card score or engagement-delta feedback
+- `AudienceReactionVFX`: reusable per-member pixel particles, flash, ellipsis, and departure trail
 - `AudienceReactionResolver`: pure preference + engagement-stage card calculation
 - `AudienceEngagementConfig`: engagement range, stage boundaries, decay, reaction multiplier
 - `AudienceFlowConfig`: initial/max count, preference weights, deterministic seed
@@ -85,3 +86,20 @@ through the presenter to `AudienceCardReacted`, displays the per-member reaction
 score by default, and can be switched in the prefab Inspector to show the
 actually applied engagement delta. Zero values are hidden by default so utility
 cards do not create misleading feedback.
+
+The same pooled member owns one `AudienceReactionVFX`. It creates its particle
+renderers once and replays them without per-reaction Instantiate/Destroy:
+
+- strong positive (`AudienceReactionPopup.strongReactionThreshold` or above):
+  gold/orange `LOVE IT!` burst, one-frame white flash, and a short jump
+- positive: restrained mint `INTERESTED` burst
+- strong negative (`strongNegativeThreshold` or below): head-local muted square
+  smoke, broken notes, vertical frustration lines, and a three-pixel ellipsis;
+  gravity is disabled so the effect hangs around the head instead of falling
+- Fever bonus: a dense white-to-gold burst of large voxel chunks and small
+  gold-dust pixels, fired 0.05 seconds after the card impact
+- departure: world-space dust every 0.1 seconds plus a 0.5-second direction arrow
+
+Reaction colors are fixed feedback colors and never use the member preference
+colors. Preference still answers what the member likes; reaction VFX only
+answers how the last card landed.

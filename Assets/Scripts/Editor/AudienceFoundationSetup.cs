@@ -72,6 +72,10 @@ namespace ContextStage.EditorTools
                 AudienceMemberActor actor = root.GetComponent<AudienceMemberActor>();
                 if (actor == null)
                     actor = root.AddComponent<AudienceMemberActor>();
+                AudienceReactionVFX reactionVFX =
+                    root.GetComponent<AudienceReactionVFX>();
+                if (reactionVFX == null)
+                    reactionVFX = root.AddComponent<AudienceReactionVFX>();
 
                 Transform warningRoot = FindOrCreateChild(root.transform, "WarningBar");
                 warningRoot.localPosition = new Vector3(0f, 1.25f, 0f);
@@ -161,6 +165,7 @@ namespace ContextStage.EditorTools
                     backgroundRenderer);
                 SetReference(serialized, "warningFillRenderer", fillRenderer);
                 SetReference(serialized, "reactionPopup", reactionPopup);
+                SetReference(serialized, "reactionVFX", reactionVFX);
                 serialized.ApplyModifiedPropertiesWithoutUndo();
 
                 character.sprite = moshSource.sprite;

@@ -1,3 +1,4 @@
+using System.Collections;
 using GameJamKit;
 using TMPro;
 using UnityEngine;
@@ -17,12 +18,14 @@ namespace ContextStage
         [SerializeField] Color normalColor = new Color(1f, 0.88f, 0.25f, 1f);
         [SerializeField] Color lostColor = new Color(1f, 0.25f, 0.2f, 1f);
         [SerializeField] Color feverColor = new Color(0.25f, 1f, 0.95f, 1f);
+        [SerializeField, Min(0f)] float cardPresentationDelay = 0.085f;
 
         int _currentCombo;
         float _currentMultiplier = 1f;
         float _restoreAt;
         bool _showingLost;
         bool _showingFever;
+        Coroutine _comboPresentationRoutine;
 
         void OnEnable()
         {
@@ -44,6 +47,7 @@ namespace ContextStage
         {
             EventBus.Unsubscribe<ComboChanged>(OnComboChanged);
             EventBus.Unsubscribe<FeverStateChanged>(OnFeverStateChanged);
+            _comboPresentationRoutine = null;
         }
 
         void Update()
@@ -67,6 +71,23 @@ namespace ContextStage
 
         void OnComboChanged(ComboChanged e)
         {
+            if (_comboPresentationRoutine != null)
+                StopCoroutine(_comboPresentationRoutine);
+            _comboPresentationRoutine = StartCoroutine(
+                ShowComboAfterDelay(e));
+        }
+
+        IEnumerator ShowComboAfterDelay(ComboChanged change)
+        {
+            if (cardPresentationDelay > 0f)
+                yield return new WaitForSecondsRealtime(
+                    cardPresentationDelay);
+            _comboPresentationRoutine = null;
+            ApplyComboChanged(change);
+        }
+
+        void ApplyComboChanged(ComboChanged e)
+        {
             _currentCombo = e.CurrentCombo;
             _currentMultiplier = e.Multiplier;
             if (!e.WasLost)
@@ -84,6 +105,11 @@ namespace ContextStage
 
         void OnFeverStateChanged(FeverStateChanged e)
         {
+            if (_comboPresentationRoutine != null)
+            {
+                StopCoroutine(_comboPresentationRoutine);
+                _comboPresentationRoutine = null;
+            }
             _showingFever = e.IsActive;
             _showingLost = false;
             if (_showingFever)
@@ -127,6 +153,7 @@ namespace ContextStage
         void OnValidate()
         {
             lostMessageDuration = Mathf.Max(0.1f, lostMessageDuration);
+            cardPresentationDelay = Mathf.Max(0f, cardPresentationDelay);
         }
 #endif
     }

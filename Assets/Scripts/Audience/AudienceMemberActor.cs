@@ -18,6 +18,7 @@ namespace ContextStage
 
     [DisallowMultipleComponent]
     [RequireComponent(typeof(SpriteRenderer))]
+    [RequireComponent(typeof(AudienceReactionVFX))]
     public sealed class AudienceMemberActor : MonoBehaviour, IPoolable
     {
         [Header("Character")]
@@ -50,6 +51,9 @@ namespace ContextStage
 
         [Header("Card Reaction")]
         [SerializeField] AudienceReactionPopup reactionPopup;
+        [SerializeField] AudienceReactionVFX reactionVFX;
+        [SerializeField, Min(0f)] float loveItJumpDuration = 0.28f;
+        [SerializeField, Min(0f)] float loveItJumpHeight = 0.38f;
 
         [Header("Preference Hover")]
         [SerializeField] Collider2D preferenceHoverCollider;
@@ -142,6 +146,7 @@ namespace ContextStage
         AudienceEngagementStage _motionStage = AudienceEngagementStage.Calm;
         float _visibility;
         float _reactionPulseRemaining;
+        float _reactionJumpRemaining;
         float _exitElapsed;
         bool _exiting;
         AudienceExitStyle _exitStyle;
@@ -153,6 +158,7 @@ namespace ContextStage
         public AudienceSnapshot Snapshot => _snapshot;
         public bool IsBound => _boundId.IsValid;
         public AudienceReactionPopup ReactionPopup => reactionPopup;
+        public AudienceReactionVFX ReactionVFX => reactionVFX;
         public Vector3 LayoutLocalPosition => _layoutPosition;
         public float LayoutScale => _layoutScale;
         public int SortingOrder =>
@@ -164,6 +170,11 @@ namespace ContextStage
 
         void Awake()
         {
+            if (reactionVFX == null)
+                reactionVFX = GetComponent<AudienceReactionVFX>();
+            if (reactionVFX == null)
+                reactionVFX = gameObject.AddComponent<AudienceReactionVFX>();
+
             if (characterRenderer == null ||
                 chillSprite == null ||
                 singalongSprite == null ||
@@ -195,6 +206,7 @@ namespace ContextStage
             _boundId = default;
             _visibility = 0f;
             _reactionPulseRemaining = 0f;
+            _reactionJumpRemaining = 0f;
             _exitElapsed = 0f;
             _exiting = false;
             _exitStyle = AudienceExitStyle.Default;
@@ -207,6 +219,7 @@ namespace ContextStage
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
             if (reactionPopup != null) reactionPopup.ResetVisual();
+            if (reactionVFX != null) reactionVFX.ResetVisual();
             SetPreferenceReveal(false, default, 0f);
             ApplyTransform();
         }
@@ -225,6 +238,7 @@ namespace ContextStage
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
             if (reactionPopup != null) reactionPopup.ResetVisual();
+            if (reactionVFX != null) reactionVFX.ResetVisual();
             SetPreferenceReveal(false, default, 0f);
         }
 
@@ -267,6 +281,9 @@ namespace ContextStage
             warningBackgroundRenderer.sortingOrder = sortingOrder + 20;
             warningFillRenderer.sortingOrder = sortingOrder + 21;
             reactionPopup.SetSortingOrder(sortingOrder + 30);
+            reactionVFX.SetSorting(
+                characterRenderer.sortingLayerName,
+                sortingOrder + 24);
 
             // 스폰 직후 첫 배치는 즉시 스냅하고, 이후 관객 수 변화로 인한
             // 재배치만 Update()에서 서서히 따라가게 한다.
@@ -285,6 +302,21 @@ namespace ContextStage
             if (_exiting || !enabled || reactionPopup == null) return;
             if (reactionValue != 0)
                 _reactionPulseRemaining = reactionPulseDuration;
+
+            if (reactionPopup.IsStrongPositive(reactionValue))
+            {
+                _reactionJumpRemaining = loveItJumpDuration;
+                reactionVFX.PlayLoveIt();
+            }
+            else if (reactionValue > 0)
+            {
+                reactionVFX.PlayInterested();
+            }
+            else if (reactionPopup.IsStrongNegative(reactionValue))
+            {
+                reactionVFX.PlayBored();
+            }
+
             reactionPopup.Show(
                 reactionValue,
                 engagementDelta,
@@ -297,6 +329,7 @@ namespace ContextStage
                 return;
 
             _reactionPulseRemaining = reactionPulseDuration;
+            reactionVFX.PlayFeverBurst();
             reactionPopup.ShowFever(
                 score,
                 characterRenderer.sortingOrder + 30);
@@ -321,6 +354,17 @@ namespace ContextStage
             if (warningRoot != null) warningRoot.SetActive(false);
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
+
+            float duration = Mathf.Max(
+                0.01f,
+                _exitStyle == AudienceExitStyle.NearbyConcert
+                    ? crisisExitDuration
+                    : exitDuration);
+            Vector2 worldDirection =
+                _exitStyle == AudienceExitStyle.NearbyConcert
+                    ? Vector2.right * _exitDirection
+                    : Vector2.up;
+            reactionVFX.PlayDeparture(worldDirection, duration);
         }
 
         public void SetCrisisThreatened(bool threatened)
@@ -383,6 +427,8 @@ namespace ContextStage
                 ApplyTransform();
 
                 if (_exitElapsed < duration) return;
+                if (reactionVFX != null && reactionVFX.HasLiveParticles)
+                    return;
                 Action completed = _exitCompleted;
                 _exitCompleted = null;
                 _boundId = default;
@@ -393,6 +439,7 @@ namespace ContextStage
             float enterSpeed = enterDuration > 0f ? deltaTime / enterDuration : 1f;
             _visibility = Mathf.MoveTowards(_visibility, 1f, enterSpeed);
             _reactionPulseRemaining = Mathf.Max(0f, _reactionPulseRemaining - deltaTime);
+            _reactionJumpRemaining = Mathf.Max(0f, _reactionJumpRemaining - deltaTime);
             ApplyTransform();
         }
 
@@ -534,6 +581,11 @@ namespace ContextStage
                     Mathf.Clamp01(_reactionPulseRemaining / reactionPulseDuration) *
                     Mathf.PI) * reactionPulseScale
                 : 0f;
+            float reactionJump = loveItJumpDuration > 0f
+                ? Mathf.Sin(
+                    Mathf.Clamp01(_reactionJumpRemaining / loveItJumpDuration) *
+                    Mathf.PI) * loveItJumpHeight
+                : 0f;
 
             // 입장은 뒤에서 작게 다가오고, 퇴장은 뒤로 물러나며 사라진다. (기획서 §9)
             float exitProgress = _exiting ? 1f - _visibility : 0f;
@@ -568,7 +620,7 @@ namespace ContextStage
 
             transform.localPosition =
                 _currentLayoutPosition +
-                new Vector3(0f, bob, 0f) +
+                new Vector3(0f, bob + reactionJump, 0f) +
                 motionOffset;
             // 착지 스쿼시: 눌리면 세로로 줄고 가로로 퍼진다 (점프에 무게감을 준다)
             float scale = _currentLayoutScale * sizeRatio * (1f + pulse);

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using GameJamKit;
 using UnityEngine;
@@ -78,6 +79,10 @@ namespace ContextStage
         [SerializeField] SpriteAnimationClip chillClip = new SpriteAnimationClip { clipName = "Chill" };
         [SerializeField] SpriteAnimationClip singalongClip = new SpriteAnimationClip { clipName = "Singalong" };
         [SerializeField] SpriteAnimationClip moshClip = new SpriteAnimationClip { clipName = "Mosh" };
+
+        [Header("성향 픽셀 VFX")]
+        [SerializeField] SpecialAudiencePersonalityVFX personalityVFX;
+        [SerializeField, Min(0f)] float cardImpactReactionDelay = 0.05f;
 
         [Header("돌아다니기")]
         [SerializeField, Tooltip("이동 속도(초당 월드 유닛)")]
@@ -164,6 +169,8 @@ namespace ContextStage
         float _hoverScaleMultiplier = 1f;
         float _facing = 1f;       // 스프라이트 좌우 반전
         float _phase;             // 개체 고유 위상 (일반 관객과 리듬이 겹치지 않게)
+        HeatStage _activeStage;
+        Coroutine _personalityHitRoutine;
 
         public SpriteRenderer CharacterRenderer
         {
@@ -200,6 +207,13 @@ namespace ContextStage
             _renderer = GetComponent<SpriteRenderer>();
             _player.Bind(_renderer);
             _phase = Random.value * 10f;
+            if (personalityVFX == null)
+            {
+                personalityVFX = GetComponent<SpecialAudiencePersonalityVFX>();
+                if (personalityVFX == null)
+                    personalityVFX =
+                        gameObject.AddComponent<SpecialAudiencePersonalityVFX>();
+            }
 
             if (motionRoot == null)
             {
@@ -242,6 +256,12 @@ namespace ContextStage
             EventBus.Unsubscribe<SpecialAudienceSpawned>(OnSpawned);
             EventBus.Unsubscribe<SpecialHitLanded>(OnSpecialHit);
             EventBus.Unsubscribe<SpecialAudienceEnded>(OnEnded);
+            if (_personalityHitRoutine != null)
+            {
+                StopCoroutine(_personalityHitRoutine);
+                _personalityHitRoutine = null;
+            }
+            if (personalityVFX != null) personalityVFX.Hide();
         }
 
         // ---------------- 이벤트 ----------------
@@ -249,6 +269,7 @@ namespace ContextStage
         void OnSpawned(SpecialAudienceSpawned e)
         {
             _celebrating = false;
+            _activeStage = e.RequestType;
             ApplyClip(e.RequestType);
             if (!AttachToCrowd()) return;
             PickNewSpot(immediate: true);
@@ -291,6 +312,26 @@ namespace ContextStage
                 CameraShake.ShakeFor(
                     Mathf.Max(0f, effect.shakeStrength),
                     Mathf.Max(0.01f, effect.shakeDuration));
+            }
+
+            if (_personalityHitRoutine != null)
+                StopCoroutine(_personalityHitRoutine);
+            _personalityHitRoutine = StartCoroutine(
+                PlayPersonalityHitAfterDelay(e.RequestType));
+        }
+
+        IEnumerator PlayPersonalityHitAfterDelay(HeatStage stage)
+        {
+            if (cardImpactReactionDelay > 0f)
+                yield return new WaitForSecondsRealtime(
+                    cardImpactReactionDelay);
+
+            _personalityHitRoutine = null;
+            if (_active &&
+                personalityVFX != null &&
+                stage == _activeStage)
+            {
+                personalityVFX.PlayAccent(strong: true);
             }
         }
 
@@ -423,6 +464,12 @@ namespace ContextStage
 
             _targetScale = picked.LayoutScale * scaleMultiplier;
             _renderer.sortingOrder = picked.SortingOrder + sortingOrderBonus;
+            if (personalityVFX != null)
+            {
+                personalityVFX.SetSorting(
+                    _renderer.sortingLayerName,
+                    _renderer.sortingOrder + 2);
+            }
 
             if (immediate) SnapToAnchor();
         }
@@ -485,6 +532,23 @@ namespace ContextStage
             _active = visible;
             _celebrating = false;
             if (_renderer != null) _renderer.enabled = visible;
+            if (personalityVFX == null) return;
+
+            if (visible)
+            {
+                personalityVFX.Show(
+                    _activeStage,
+                    _renderer != null
+                        ? _renderer.sortingLayerName
+                        : "Default",
+                    _renderer != null
+                        ? _renderer.sortingOrder + 2
+                        : 12);
+            }
+            else
+            {
+                personalityVFX.Hide();
+            }
         }
     }
 }
