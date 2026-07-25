@@ -365,12 +365,6 @@ namespace ContextStage.EditorTools
             changed |= SetSceneComponentsEnabled<CrowdShiftDirector>(scene, false);
             changed |= SetSceneComponentsEnabled<HypeSystem>(scene, false);
             changed |= SetSceneComponentsEnabled<HypeDebugInput>(scene, false);
-            changed |= SetSceneComponentsEnabled<SpecialAudienceManager>(
-                scene,
-                false);
-            changed |= SetSceneComponentsEnabled<SpecialAudienceDropTarget>(
-                scene,
-                false);
             changed |= SetSceneComponentsEnabled<StageLightEventBridge>(
                 scene,
                 false);
@@ -385,14 +379,6 @@ namespace ContextStage.EditorTools
                 scene,
                 "HypeCanvas/HypeGauge",
                 false);
-            changed |= SetSceneObjectActive(
-                scene,
-                "[Crowd]/SpecialAudience",
-                false);
-            changed |= SetSceneObjectActive(
-                scene,
-                "SpecialAudienceCanvas",
-                false);
             return changed;
         }
 
@@ -404,8 +390,6 @@ namespace ContextStage.EditorTools
             CountEnabled<CrowdShiftDirector>(scene) +
             CountEnabled<HypeSystem>(scene) +
             CountEnabled<HypeDebugInput>(scene) +
-            CountEnabled<SpecialAudienceManager>(scene) +
-            CountEnabled<SpecialAudienceDropTarget>(scene) +
             CountEnabled<StageLightEventBridge>(scene) +
             CountEnabled<CrowdAmbienceSystem>(scene) +
             CountEnabled<CrowdAmbienceDebugInput>(scene);

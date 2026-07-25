@@ -123,7 +123,10 @@ namespace ContextStage.EditorTools
             {
                 SpecialAudienceCrowdActor specialActor = specialActors[i];
                 var actorObject = new SerializedObject(specialActor);
-                SetObjectReference(actorObject, "crowdSpawner", spawner);
+                AudienceRosterPresenter presenter =
+                    Object.FindFirstObjectByType<AudienceRosterPresenter>(
+                        FindObjectsInactive.Include);
+                SetObjectReference(actorObject, "audiencePresenter", presenter);
                 actorObject.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(specialActor);
             }

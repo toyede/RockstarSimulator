@@ -159,6 +159,11 @@ namespace GameJamKit
         public int GainedScore;
         public float HypeDelta;
         public bool IsSpecialHit;
+        public int RawAudienceScore;
+        public int SpecialBonusScore;
+        public int RawScore;
+        public int ComboCount;
+        public float ComboMultiplier;
     }
 
     // ------------------------------------------------------------------

@@ -19,9 +19,13 @@ namespace ContextStage
         [SerializeField] AudienceReactionDisplayMode displayMode =
             AudienceReactionDisplayMode.ReactionScore;
         [SerializeField] bool showZero;
-        [SerializeField, Min(1)] int strongReactionThreshold = 5;
+        [SerializeField, Min(1)] int strongReactionThreshold = 15;
+        [SerializeField] int strongNegativeThreshold = -10;
         [SerializeField] Color positiveColor = new Color(1f, 0.92f, 0.28f, 1f);
         [SerializeField] Color strongColor = new Color(0.35f, 1f, 0.5f, 1f);
+        [SerializeField] Color negativeColor = new Color(1f, 0.55f, 0.2f, 1f);
+        [SerializeField] Color strongNegativeColor = new Color(1f, 0.2f, 0.18f, 1f);
+        [SerializeField] Color departedColor = new Color(0.8f, 0.82f, 0.88f, 1f);
         [SerializeField] Color zeroColor = new Color(0.7f, 0.7f, 0.7f, 1f);
 
         [Header("Motion")]
@@ -108,15 +112,18 @@ namespace ContextStage
                 return;
             }
 
-            valueText.text = FormatValue(reactionValue, engagementDelta);
-            valueText.color = ResolveColor(reactionValue);
-            valueText.renderer.sortingOrder = sortingOrder;
-            valueText.enabled = true;
+            ShowText(
+                FormatValue(reactionValue, engagementDelta),
+                ResolveColor(reactionValue),
+                sortingOrder);
+        }
 
-            _elapsed = 0f;
-            _showing = true;
-            transform.localPosition = _baseLocalPosition;
-            transform.localScale = _baseLocalScale * startScale;
+        public void ShowDeparture(int sortingOrder)
+        {
+            if (!enabled || !IsConfigured) return;
+            if (!_initialized) CaptureBaseTransform();
+
+            ShowText("LEFT THE SHOW", departedColor, sortingOrder);
         }
 
         public void SetSortingOrder(int sortingOrder)
@@ -144,12 +151,12 @@ namespace ContextStage
             {
                 string score =
                     reactionValue.ToString(CultureInfo.InvariantCulture);
-                return FormatSigned(score, reactionValue);
+                return $"{ResolveLabel(reactionValue)} {FormatSigned(score, reactionValue)}";
             }
 
             string delta =
                 engagementDelta.ToString("0.#", CultureInfo.InvariantCulture);
-            return FormatSigned(delta, engagementDelta);
+            return $"{ResolveLabel(reactionValue)} {FormatSigned(delta, engagementDelta)}";
         }
 
         static string FormatSigned(string value, float numericValue) =>
@@ -157,10 +164,34 @@ namespace ContextStage
 
         Color ResolveColor(int reactionValue)
         {
-            if (reactionValue <= 0) return zeroColor;
+            if (reactionValue <= strongNegativeThreshold) return strongNegativeColor;
+            if (reactionValue < 0) return negativeColor;
+            if (reactionValue == 0) return zeroColor;
             return reactionValue >= strongReactionThreshold
                 ? strongColor
                 : positiveColor;
+        }
+
+        string ResolveLabel(int reactionValue)
+        {
+            if (reactionValue >= strongReactionThreshold) return "LOVE IT!";
+            if (reactionValue > 0) return "INTERESTED";
+            if (reactionValue <= strongNegativeThreshold) return "BORED";
+            if (reactionValue < 0) return "NOT FOR ME";
+            return "NO REACTION";
+        }
+
+        void ShowText(string text, Color color, int sortingOrder)
+        {
+            valueText.text = text;
+            valueText.color = color;
+            valueText.renderer.sortingOrder = sortingOrder;
+            valueText.enabled = true;
+
+            _elapsed = 0f;
+            _showing = true;
+            transform.localPosition = _baseLocalPosition;
+            transform.localScale = _baseLocalScale * startScale;
         }
 
         void CaptureBaseTransform()
@@ -175,6 +206,7 @@ namespace ContextStage
         void OnValidate()
         {
             strongReactionThreshold = Mathf.Max(1, strongReactionThreshold);
+            strongNegativeThreshold = Mathf.Min(-1, strongNegativeThreshold);
             duration = Mathf.Max(0.05f, duration);
             riseDistance = Mathf.Max(0f, riseDistance);
             startScale = Mathf.Max(0.01f, startScale);
