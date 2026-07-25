@@ -144,6 +144,7 @@ namespace ContextStage
                 int positiveReactionCount = 0;
                 int reactionAudienceCount = 0;
                 bool isSpecialHit = false;
+                int specialBonusScore = 0;
 
                 bool matchesTargetedRequest =
                     card.Role == CardRole.Special &&
@@ -169,7 +170,10 @@ namespace ContextStage
                     // 드롭과 카드 사용은 같은 프레임에 동기적으로 처리된다.
                     // 요청 소비에 성공한 경우에만 저격 효과를 적용하고, 만료 등으로
                     // 소비하지 못했다면 일반 사용으로 자연스럽게 처리한다.
-                    if (SpecialAudience.ConsumeRequest(card.TargetStage, 0, 0f))
+                    if (SpecialAudience.ConsumeRequest(
+                            card.TargetStage,
+                            targetEffect.TargetScoreBonus,
+                            0f))
                     {
                         if (!SpecialCardTargetEffectExecutor.TryExecute(
                                 targetEffect,
@@ -186,6 +190,7 @@ namespace ContextStage
                         }
 
                         isSpecialHit = true;
+                        specialBonusScore = targetEffect.TargetScoreBonus;
                     }
                 }
 
@@ -201,7 +206,7 @@ namespace ContextStage
                 }
 
                 _hand.RemoveAt(index);
-                int rawScore = gainedScore;
+                int rawScore = gainedScore + specialBonusScore;
                 ComboResolution combo = ComboSystem.HasInstance
                     ? ComboSystem.Instance.ResolveCard(
                         card.Role,
@@ -249,7 +254,7 @@ namespace ContextStage
                     HypeDelta = 0f,
                     IsSpecialHit = isSpecialHit,
                     RawAudienceScore = gainedScore,
-                    SpecialBonusScore = 0,
+                    SpecialBonusScore = specialBonusScore,
                     RawScore = rawScore,
                     ComboCount = combo.Combo,
                     ComboMultiplier = combo.Multiplier
