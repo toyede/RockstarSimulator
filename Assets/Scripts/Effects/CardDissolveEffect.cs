@@ -14,7 +14,7 @@ namespace ContextStage
     ///   부모·위치도 건드리지 않는다. 실제 제거·반환·드로우는 카드 담당 시스템의 몫이다.
     ///
     /// UI Image 는 MaterialPropertyBlock 을 쓸 수 없어 카드별 Material 인스턴스를 만든다.
-    /// (손패 최대 4장이라 부담이 없다) 만든 인스턴스는 Reset·OnDestroy 에서 정리하고,
+    /// 만든 인스턴스는 Reset·OnDestroy 에서 정리하고,
     /// 원본 Material 은 절대 건드리지 않으므로 다른 카드에 값이 번지지 않는다.
     ///
     /// [카드 담당이 나중에 호출할 API]

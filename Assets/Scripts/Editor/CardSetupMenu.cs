@@ -73,7 +73,7 @@ namespace ContextStage.EditorTools
 
             AssetDatabase.SaveAssets();
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-            Debug.Log("[Cards] 프리팹 카드 8종, 이중 10장 덱, 동적 4장 손패 셋업 완료.");
+            Debug.Log("[Cards] 프리팹 카드 8종, 이중 10장 덱, 동적 손패 셋업 완료.");
         }
 
         [MenuItem("Tools/Cards/Setup Card Prototype", false, 100)]
@@ -94,7 +94,6 @@ namespace ContextStage.EditorTools
                 if (deck.GeneratedDeckSize != 10) errors.Add($"덱 크기가 10이 아닙니다: {deck.GeneratedDeckSize}");
                 if (deck.PreparedDeckCount != 2) errors.Add($"준비 덱 수가 2가 아닙니다: {deck.PreparedDeckCount}");
                 if (deck.MinimumHandSize != 3) errors.Add($"기본 손패가 3이 아닙니다: {deck.MinimumHandSize}");
-                if (deck.MaximumHandSize != 4) errors.Add($"최대 손패가 4가 아닙니다: {deck.MaximumHandSize}");
 
                 for (int i = 0; i < deck.CardPool.Count; i++)
                 {
@@ -114,7 +113,22 @@ namespace ContextStage.EditorTools
                     errors.Add($"{seeds[i].FileName} 프리팹이 없습니다.");
                     continue;
                 }
-                if (prefab.GetComponent<CardDefinition>() == null) errors.Add($"{seeds[i].FileName}에 CardDefinition이 없습니다.");
+                var definition = prefab.GetComponent<CardDefinition>();
+                if (definition == null)
+                {
+                    errors.Add($"{seeds[i].FileName}에 CardDefinition이 없습니다.");
+                }
+                else
+                {
+                    if (definition.Role != seeds[i].Role)
+                        errors.Add(
+                            $"{seeds[i].FileName} 역할이 생성 기준과 다릅니다: " +
+                            $"{definition.Role}/{seeds[i].Role}");
+                    if (definition.UtilityEffect != seeds[i].UtilityEffect)
+                        errors.Add(
+                            $"{seeds[i].FileName} 유틸리티 효과가 생성 기준과 다릅니다: " +
+                            $"{definition.UtilityEffect}/{seeds[i].UtilityEffect}");
+                }
                 if (prefab.GetComponent<CardSlotUI>() == null) errors.Add($"{seeds[i].FileName}에 CardSlotUI가 없습니다.");
             }
 
@@ -130,7 +144,9 @@ namespace ContextStage.EditorTools
             if (errors.Count > 0)
                 throw new InvalidOperationException("[Cards] 검증 실패:\n- " + string.Join("\n- ", errors));
 
-            Debug.Log("[Cards] 검증 완료: 카드 8종, 가중치 1, 이중 10장 덱, 3~4장 손패, 카드 효과 설정이 정상입니다.");
+            Debug.Log(
+                "[Cards] 검증 완료: 카드 8종 각 1장 + Normal 보너스 2장, " +
+                "가중치 1, 이중 10장 덱, 기본 3장 손패, 카드 효과 설정이 정상입니다.");
         }
 
         [MenuItem("Tools/Cards/Run Play Mode Smoke Test", false, 2)]
@@ -156,27 +172,20 @@ namespace ContextStage.EditorTools
             float hypeBefore = Hype.Current;
             int scoreBefore = gameManager.Score;
             int handBefore = system.HandCount;
-            var firstResult = CardEffectResolver.Resolve(
+            int expectedScoreGain = ResolveExpectedAudienceScore(
                 firstCard,
-                hypeBefore,
-                HypeSystem.Instance.Config,
-                SpecialCardRequest.None);
-            int expectedScoreGain = Mathf.RoundToInt(firstResult.BaseScore * Hype.MultiplierFor(hypeBefore));
-            float expectedHype = Mathf.Clamp(
-                hypeBefore + firstResult.HeatDelta,
-                0f,
-                HypeSystem.Instance.Config.maxHype);
+                system.AudienceRoster.Members);
 
             if (!system.SelectCard(0))
                 throw new InvalidOperationException("[Cards] 첫 카드 사용에 실패했습니다.");
             if (gameManager.Score - scoreBefore != expectedScoreGain)
-                throw new InvalidOperationException("[Cards] 카드 사용 전 열기 배율로 점수가 계산되지 않았습니다.");
-            if (!Mathf.Approximately(Hype.Current, expectedHype))
-                throw new InvalidOperationException("[Cards] 점수 계산 후 열기 변화가 적용되지 않았습니다.");
+                throw new InvalidOperationException("[Cards] 관객별 반응값 합계로 점수가 계산되지 않았습니다.");
+            if (!Mathf.Approximately(Hype.Current, hypeBefore))
+                throw new InvalidOperationException("[Cards] 관객별 카드 처리 중 열기 값이 임의로 변경됐습니다.");
 
             int expectedFirstHand = firstCard.Role == CardRole.Utility &&
                                     firstCard.UtilityEffect == UtilityCardEffect.Draw
-                ? Mathf.Min(system.MaximumHandSize, handBefore - 1 + firstCard.DrawCount)
+                ? handBefore - 1 + firstCard.DrawCount
                 : firstCard.Role == CardRole.Utility &&
                   firstCard.UtilityEffect == UtilityCardEffect.Reroll
                     ? handBefore
@@ -188,8 +197,8 @@ namespace ContextStage.EditorTools
             // 충분히 사용해 10장 묶음 경계를 여러 번 넘기고도 항상 대기 덱이 유지되는지 확인한다.
             for (int i = 0; i < 30; i++)
             {
-                if (system.HandCount < system.MinimumHandSize || system.HandCount > system.MaximumHandSize)
-                    throw new InvalidOperationException($"[Cards] {i + 1}회차 손패 범위가 잘못되었습니다: {system.HandCount}");
+                if (system.HandCount < system.MinimumHandSize)
+                    throw new InvalidOperationException($"[Cards] {i + 1}회차 손패가 기본 수보다 적습니다: {system.HandCount}");
                 if (!system.SelectCard(0))
                     throw new InvalidOperationException($"[Cards] {i + 1}회차 연속 카드 사용에 실패했습니다.");
                 if (system.PreparedDeckCount != 2 || system.CurrentDeckRemaining <= 0)
@@ -200,11 +209,12 @@ namespace ContextStage.EditorTools
             NormalizeHandToMinimum(system);
             ExerciseUtilityCard(system, UtilityCardEffect.Draw);
             ExerciseUtilityCard(system, UtilityCardEffect.Reroll);
+            ValidateHandCentering(system);
 
             Debug.Log(
                 $"[Cards] Play Mode 스모크 테스트 완료: 첫 카드={firstCard.DisplayName}, " +
-                $"첫 사용 후 손패={expectedFirstHand}, 드로우 3→4장, 리롤→3장, " +
-                $"30회 연속 사용 및 덱 경계 통과 정상.");
+                $"첫 사용 후 손패={expectedFirstHand}, 드로우·리롤 정상, " +
+                $"3/4/5/7/10장 중앙 정렬, 30회 연속 사용 및 덱 경계 통과 정상.");
         }
 
         static void NormalizeHandToMinimum(CardSystem system)
@@ -248,7 +258,7 @@ namespace ContextStage.EditorTools
                 if (targetIndex >= 0)
                 {
                     if (targetEffect == UtilityCardEffect.Reroll)
-                        system.AddCards(system.MaximumHandSize - system.HandCount);
+                        system.AddCards(2);
 
                     int before = system.HandCount;
                     var card = system.GetCard(targetIndex);
@@ -256,7 +266,7 @@ namespace ContextStage.EditorTools
                         throw new InvalidOperationException($"[Cards] {targetEffect} 카드 사용에 실패했습니다.");
 
                     int expected = targetEffect == UtilityCardEffect.Draw
-                        ? Mathf.Min(system.MaximumHandSize, before - 1 + card.DrawCount)
+                        ? before - 1 + card.DrawCount
                         : before;
                     if (system.HandCount != expected)
                         throw new InvalidOperationException(
@@ -269,6 +279,84 @@ namespace ContextStage.EditorTools
             }
 
             throw new InvalidOperationException($"[Cards] 200회 안에 {targetEffect} 카드를 찾지 못했습니다.");
+        }
+
+        static int ResolveExpectedAudienceScore(
+            CardDefinition card,
+            IReadOnlyList<AudienceSnapshot> members)
+        {
+            if (card == null || card.AudienceReaction == null || members == null)
+                throw new InvalidOperationException("[Cards] 관객별 예상 점수를 계산할 데이터가 없습니다.");
+
+            int total = 0;
+            for (int i = 0; i < members.Count; i++)
+                total += AudienceReactionResolver.Resolve(
+                    card.AudienceReaction,
+                    members[i]).Value;
+            return total;
+        }
+
+        static void ValidateHandCentering(CardSystem system)
+        {
+            NormalizeHandToMinimum(system);
+
+            var handUi = Object.FindFirstObjectByType<CardHandUI>();
+            if (handUi == null)
+                throw new InvalidOperationException("[Cards] 중앙 정렬을 검증할 CardHandUI를 찾지 못했습니다.");
+
+            var handRect = handUi.transform as RectTransform;
+            var sizeFitter = handUi.GetComponent<ContentSizeFitter>();
+            if (handRect == null ||
+                sizeFitter == null ||
+                sizeFitter.horizontalFit != ContentSizeFitter.FitMode.PreferredSize)
+            {
+                throw new InvalidOperationException(
+                    "[Cards] CardHand의 가로 ContentSizeFitter가 Preferred Size로 설정되지 않았습니다.");
+            }
+
+            var rootCanvas = handUi.GetComponentInParent<Canvas>()?.rootCanvas;
+            Camera camera = rootCanvas != null &&
+                            rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? rootCanvas.worldCamera
+                : null;
+            int[] targetCounts = { 3, 4, 5, 7, 10 };
+
+            for (int i = 0; i < targetCounts.Length; i++)
+            {
+                int targetCount = targetCounts[i];
+                int missing = targetCount - system.HandCount;
+                if (missing > 0 && system.AddCards(missing) != missing)
+                    throw new InvalidOperationException(
+                        $"[Cards] 중앙 정렬 검증용 손패를 {targetCount}장까지 늘리지 못했습니다.");
+
+                Canvas.ForceUpdateCanvases();
+                LayoutRebuilder.ForceRebuildLayoutImmediate(handRect);
+                Canvas.ForceUpdateCanvases();
+
+                if (handRect.childCount != targetCount)
+                    throw new InvalidOperationException(
+                        $"[Cards] {targetCount}장 검증 중 UI 카드 수가 다릅니다: {handRect.childCount}");
+
+                var first = (RectTransform)handRect.GetChild(0);
+                var last = (RectTransform)handRect.GetChild(handRect.childCount - 1);
+                float firstCenter = RectTransformUtility.WorldToScreenPoint(
+                    camera,
+                    first.position).x;
+                float lastCenter = RectTransformUtility.WorldToScreenPoint(
+                    camera,
+                    last.position).x;
+                float handCenter = RectTransformUtility.WorldToScreenPoint(
+                    camera,
+                    handRect.position).x;
+                float contentCenter = (firstCenter + lastCenter) * 0.5f;
+
+                if (Mathf.Abs(contentCenter - handCenter) > 0.5f)
+                {
+                    throw new InvalidOperationException(
+                        $"[Cards] {targetCount}장 손패가 중앙에서 벗어났습니다: " +
+                        $"{contentCenter:0.##}/{handCenter:0.##}");
+                }
+            }
         }
 
         public static CardDeckConfig SyncCardPrefabsAndDeck()
@@ -302,12 +390,12 @@ namespace ContextStage.EditorTools
                 new CardSeed(
                     "Card_02_Response", "response_call", "호응 유도",
                     "관객의 첫 반응을 이끌어낸다.",
-                    CardRole.Special, HeatStage.Chill, UtilityCardEffect.None,
+                    CardRole.Normal, HeatStage.Chill, UtilityCardEffect.None,
                     FromHex("#16A9B3")),
                 new CardSeed(
                     "Card_03_HandsUp", "hands_up", "손 머리 위로!",
                     "함께 따라 할 동작으로 무대를 묶는다.",
-                    CardRole.Normal, HeatStage.Singalong, UtilityCardEffect.None,
+                    CardRole.Special, HeatStage.Singalong, UtilityCardEffect.None,
                     FromHex("#6431EA")),
                 new CardSeed(
                     "Card_04_PassMic", "pass_mic", "마이크 넘기기",
@@ -420,11 +508,10 @@ namespace ContextStage.EditorTools
                 bonusCopies += copiesBeyondRequired;
                 if (copiesBeyondRequired == 0) continue;
 
-                if (pair.Key.Role != CardRole.Normal &&
-                    pair.Key.Role != CardRole.Utility)
+                if (pair.Key.Role != CardRole.Normal)
                 {
                     errors.Add(
-                        $"Generated deck duplicated ineligible special card '{pair.Key.Id}'.");
+                        $"Generated deck duplicated non-normal card '{pair.Key.Id}'.");
                 }
 
                 if (copiesBeyondRequired >= 2)
@@ -443,7 +530,7 @@ namespace ContextStage.EditorTools
             if (expectedBonusCopies >= 2 && !repeatedBonusCard)
             {
                 errors.Add(
-                    "Generated deck does not allow the same normal/utility card " +
+                    "Generated deck does not allow the same normal card " +
                     "to fill both bonus slots.");
             }
         }
@@ -642,12 +729,6 @@ namespace ContextStage.EditorTools
                 serialized.FindProperty("generatedDeckSize").intValue = 10;
                 serialized.FindProperty("preparedDeckCount").intValue = 2;
                 serialized.FindProperty("minimumHandSize").intValue = 3;
-                serialized.FindProperty("maximumHandSize").intValue = 4;
-            }
-            else
-            {
-                var maximum = serialized.FindProperty("maximumHandSize");
-                if (maximum != null && maximum.intValue > 4) maximum.intValue = 4;
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();

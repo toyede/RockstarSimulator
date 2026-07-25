@@ -32,4 +32,3 @@ MonoBehaviour:
   generatedDeckSize: 10
   preparedDeckCount: 2
   minimumHandSize: 3
-  maximumHandSize: 4

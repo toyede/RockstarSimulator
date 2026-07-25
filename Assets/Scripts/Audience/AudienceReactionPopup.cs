@@ -22,6 +22,7 @@ namespace ContextStage
         [SerializeField, Min(1)] int strongReactionThreshold = 5;
         [SerializeField] Color positiveColor = new Color(1f, 0.92f, 0.28f, 1f);
         [SerializeField] Color strongColor = new Color(0.35f, 1f, 0.5f, 1f);
+        [SerializeField] Color negativeColor = new Color(1f, 0.28f, 0.24f, 1f);
         [SerializeField] Color zeroColor = new Color(0.7f, 0.7f, 0.7f, 1f);
 
         [Header("Motion")]
@@ -157,7 +158,8 @@ namespace ContextStage
 
         Color ResolveColor(int reactionValue)
         {
-            if (reactionValue <= 0) return zeroColor;
+            if (reactionValue < 0) return negativeColor;
+            if (reactionValue == 0) return zeroColor;
             return reactionValue >= strongReactionThreshold
                 ? strongColor
                 : positiveColor;

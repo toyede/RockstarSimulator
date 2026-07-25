@@ -92,6 +92,10 @@ namespace ContextStage
         public AudienceSnapshot Snapshot => _snapshot;
         public bool IsBound => _boundId.IsValid;
         public AudienceReactionPopup ReactionPopup => reactionPopup;
+        public Vector3 LayoutLocalPosition => _layoutPosition;
+        public float LayoutScale => _layoutScale;
+        public int SortingOrder =>
+            characterRenderer != null ? characterRenderer.sortingOrder : 0;
 
         void Awake()
         {
@@ -201,7 +205,7 @@ namespace ContextStage
         public void PlayReaction(int reactionValue, float engagementDelta)
         {
             if (_exiting || !enabled || reactionPopup == null) return;
-            if (reactionValue > 0)
+            if (reactionValue != 0)
                 _reactionPulseRemaining = reactionPulseDuration;
             reactionPopup.Show(
                 reactionValue,

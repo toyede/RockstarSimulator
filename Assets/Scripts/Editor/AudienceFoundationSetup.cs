@@ -358,6 +358,22 @@ namespace ContextStage.EditorTools
                     failures.Add(
                         $"[{path}] Non-performance cards must keep every audience " +
                         "value and multiplier at zero.");
+
+                if (card.Role == CardRole.Special)
+                {
+                    SpecialCardTargetEffect targetEffect =
+                        card.SpecialTargetEffect;
+                    string targetError = targetEffect == null
+                        ? "Data is missing."
+                        : string.Empty;
+                    if (targetEffect == null ||
+                        !targetEffect.TryValidate(out targetError))
+                    {
+                        failures.Add(
+                            $"[{path}] Invalid targeted special-card effect: " +
+                            targetError);
+                    }
+                }
             }
         }
 

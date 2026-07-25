@@ -7,7 +7,7 @@ namespace ContextStage
     /// <summary>
     /// Builds one complete generated deck batch from the configured card pool.
     /// Every usable card is included once, then remaining slots are filled from
-    /// normal and utility cards with replacement before the batch is shuffled.
+    /// normal cards with replacement before the batch is shuffled.
     /// </summary>
     public static class CardDeckBatchBuilder
     {
@@ -43,7 +43,7 @@ namespace ContextStage
                 }
 
                 baseCards.Add(card);
-                if (card.Role == CardRole.Normal || card.Role == CardRole.Utility)
+                if (card.Role == CardRole.Normal)
                     bonusCandidates.Add(entry);
             }
 
@@ -66,7 +66,7 @@ namespace ContextStage
             {
                 error =
                     "Generated deck has bonus slots, but there are no usable " +
-                    "normal or utility cards.";
+                    "normal cards.";
                 return false;
             }
 
@@ -79,7 +79,7 @@ namespace ContextStage
                 if (bonusCard == null)
                 {
                     cards = null;
-                    error = "Failed to select a normal or utility bonus card.";
+                    error = "Failed to select a normal bonus card.";
                     return false;
                 }
 
