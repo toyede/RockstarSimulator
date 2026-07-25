@@ -33,6 +33,7 @@ namespace ContextStage
         Initialization,
         NaturalArrival,
         SmallTalkReplacement,
+        SpecialCardTarget,
         RuntimeCommand
     }
 
@@ -40,6 +41,7 @@ namespace ContextStage
     {
         NaturalDecay,
         CardReaction,
+        SpecialCardTarget,
         RuntimeCommand
     }
 

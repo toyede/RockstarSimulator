@@ -17,6 +17,7 @@ namespace ContextStage
         readonly List<CardDefinition> _hand = new List<CardDefinition>();
         readonly List<AudienceReactionResult> _audienceReactions =
             new List<AudienceReactionResult>(10);
+        readonly List<AudienceId> _audienceIds = new List<AudienceId>(10);
         PreparedDeck<CardDefinition> _deck;
 
         bool _selecting;
@@ -28,7 +29,6 @@ namespace ContextStage
         public IReadOnlyList<CardDefinition> Hand => _hand;
         public int HandCount => _hand.Count;
         public int MinimumHandSize => config != null ? config.MinimumHandSize : 0;
-        public int MaximumHandSize => config != null ? config.MaximumHandSize : 0;
         public int BonusCardCount => Mathf.Max(0, HandCount - MinimumHandSize);
         public int PreparedDeckCount => _deck != null ? _deck.PreparedBatchCount : 0;
         public int CurrentDeckRemaining => _deck != null ? _deck.CurrentRemaining : 0;
@@ -131,60 +131,83 @@ namespace ContextStage
                     return false;
                 }
 
-                _audienceReactions.Clear();
-                IReadOnlyList<AudienceSnapshot> members = audienceRoster.Members;
                 int gainedScore = 0;
                 int positiveReactionCount = 0;
-                for (int i = 0; i < members.Count; i++)
-                {
-                    AudienceReactionResult reaction =
-                        AudienceReactionResolver.Resolve(profile, members[i]);
-                    _audienceReactions.Add(reaction);
-                    gainedScore += reaction.Value;
-                    if (reaction.Value > 0) positiveReactionCount++;
-                }
+                int reactionAudienceCount = 0;
+                bool isSpecialHit = false;
 
-                for (int i = 0; i < _audienceReactions.Count; i++)
+                bool matchesTargetedRequest =
+                    card.Role == CardRole.Special &&
+                    specialRequest.IsActive &&
+                    card.TargetStage == specialRequest.RequestedStage;
+                if (matchesTargetedRequest)
                 {
-                    AudienceReactionResult reaction = _audienceReactions[i];
-                    if (!audienceRoster.TryApplyCardReaction(
-                            reaction.AudienceId,
-                            card.Id,
-                            reaction.Value,
-                            profile.EngagementMultiplier,
-                            out _))
+                    SpecialCardTargetEffect targetEffect =
+                        card.SpecialTargetEffect;
+                    string targetError = targetEffect == null
+                        ? "Target effect data is missing."
+                        : string.Empty;
+                    if (targetEffect == null ||
+                        !targetEffect.TryValidate(out targetError))
                     {
                         Debug.LogError(
-                            $"[CardSystem] Failed to apply '{card.Id}' to audience " +
-                            $"{reaction.AudienceId}.",
-                            this);
+                            $"[CardSystem] Special card '{card.Id}' has invalid " +
+                            $"target effect data: {targetError}",
+                            card);
                         return false;
+                    }
+
+                    // 드롭과 카드 사용은 같은 프레임에 동기적으로 처리된다.
+                    // 요청 소비에 성공한 경우에만 저격 효과를 적용하고, 만료 등으로
+                    // 소비하지 못했다면 일반 사용으로 자연스럽게 처리한다.
+                    if (SpecialAudience.ConsumeRequest(card.TargetStage, 0, 0f))
+                    {
+                        if (!SpecialCardTargetEffectExecutor.TryExecute(
+                                targetEffect,
+                                audienceRoster,
+                                _audienceIds,
+                                out _,
+                                out string executionError))
+                        {
+                            Debug.LogError(
+                                $"[CardSystem] Failed to execute targeted effect " +
+                                $"for '{card.Id}': {executionError}",
+                                card);
+                            return false;
+                        }
+
+                        isSpecialHit = true;
                     }
                 }
 
+                if (!isSpecialHit &&
+                    !TryApplyGeneralAudienceReaction(
+                        card,
+                        profile,
+                        out gainedScore,
+                        out positiveReactionCount,
+                        out reactionAudienceCount))
+                {
+                    return false;
+                }
+
                 _hand.RemoveAt(index);
-                bool isSpecialHit =
-                    card.Role == CardRole.Special &&
-                    specialRequest.IsActive &&
-                    specialRequest.RequestedStage == card.TargetStage &&
-                    SpecialAudience.HasActiveRequest;
-                int specialBonusScore =
-                    isSpecialHit ? card.SpecialHitBaseScore : 0;
-                int rawScore = gainedScore + specialBonusScore;
+                int rawScore = gainedScore;
                 ComboResolution combo = ComboSystem.HasInstance
                     ? ComboSystem.Instance.ResolveCard(
                         card.Role,
                         rawScore,
                         isSpecialHit)
-                    : new ComboResolution(0, 1f, rawScore > 0);
+                    : new ComboResolution(0, 1f, isSpecialHit || rawScore > 0);
                 int finalScore = card.Role == CardRole.Utility
                     ? 0
                     : Mathf.RoundToInt(rawScore * combo.Multiplier);
-                HypeJudgement feedback = ResolveFeedback(
-                    gainedScore,
-                    positiveReactionCount,
-                    _audienceReactions.Count);
-                if (isSpecialHit) feedback = HypeJudgement.Perfect;
+                HypeJudgement feedback = isSpecialHit
+                    ? HypeJudgement.Perfect
+                    : ResolveFeedback(
+                        gainedScore,
+                        positiveReactionCount,
+                        reactionAudienceCount);
 
                 // CardSelected is retained as the input/audio/visual notification contract.
                 // Gameplay score and engagement use the per-audience result above.
@@ -206,7 +229,7 @@ namespace ContextStage
                     HandIndex = index,
                     Role = card.Role,
                     TargetPreference = card.TargetPreference,
-                    CrowdReaction = gainedScore > 0
+                    CrowdReaction = isSpecialHit || gainedScore > 0
                         ? CrowdReactionGrade.Good
                         : CrowdReactionGrade.Weak,
                     Judgement = feedback,
@@ -217,19 +240,11 @@ namespace ContextStage
                     HypeDelta = 0f,
                     IsSpecialHit = isSpecialHit,
                     RawAudienceScore = gainedScore,
-                    SpecialBonusScore = specialBonusScore,
+                    SpecialBonusScore = 0,
                     RawScore = rawScore,
                     ComboCount = combo.Combo,
                     ComboMultiplier = combo.Multiplier
                 });
-
-                if (isSpecialHit)
-                {
-                    SpecialAudience.ConsumeRequest(
-                        card.TargetStage,
-                        specialBonusScore,
-                        0f);
-                }
 
                 ResolveHandEffect(card, handCountBeforeUse);
                 RaiseHandChanged();
@@ -239,6 +254,49 @@ namespace ContextStage
             {
                 _selecting = false;
             }
+        }
+
+        bool TryApplyGeneralAudienceReaction(
+            CardDefinition card,
+            AudienceReactionProfile profile,
+            out int gainedScore,
+            out int positiveReactionCount,
+            out int audienceCount)
+        {
+            _audienceReactions.Clear();
+            IReadOnlyList<AudienceSnapshot> members = audienceRoster.Members;
+            gainedScore = 0;
+            positiveReactionCount = 0;
+            audienceCount = members.Count;
+
+            for (int i = 0; i < members.Count; i++)
+            {
+                AudienceReactionResult reaction =
+                    AudienceReactionResolver.Resolve(profile, members[i]);
+                _audienceReactions.Add(reaction);
+                gainedScore += reaction.Value;
+                if (reaction.Value > 0) positiveReactionCount++;
+            }
+
+            for (int i = 0; i < _audienceReactions.Count; i++)
+            {
+                AudienceReactionResult reaction = _audienceReactions[i];
+                if (audienceRoster.TryApplyCardReaction(
+                        reaction.AudienceId,
+                        card.Id,
+                        reaction.Value,
+                        profile.EngagementMultiplier,
+                        out _))
+                    continue;
+
+                Debug.LogError(
+                    $"[CardSystem] Failed to apply '{card.Id}' to audience " +
+                    $"{reaction.AudienceId}.",
+                    this);
+                return false;
+            }
+
+            return true;
         }
 
         static HypeJudgement ResolveFeedback(
@@ -258,7 +316,7 @@ namespace ContextStage
         public CardDefinition GetCard(int index)
             => index >= 0 && index < _hand.Count ? _hand[index] : null;
 
-        /// <summary>외부 카드 효과가 손패 최대치 안에서 카드를 추가할 때 사용하는 API.</summary>
+        /// <summary>외부 카드 효과로 손패에 카드를 추가할 때 사용하는 API.</summary>
         public int AddCards(int count)
         {
             int drawn = DrawCards(count);
@@ -300,7 +358,7 @@ namespace ContextStage
             if (count <= 0) return 0;
 
             int drawn = 0;
-            while (drawn < count && _hand.Count < MaximumHandSize && DrawOne())
+            while (drawn < count && DrawOne())
                 drawn++;
 
             return drawn;
@@ -308,7 +366,6 @@ namespace ContextStage
 
         bool DrawOne()
         {
-            if (_hand.Count >= MaximumHandSize) return false;
             if (_deck == null)
             {
                 if (!_warnedInvalidPool)

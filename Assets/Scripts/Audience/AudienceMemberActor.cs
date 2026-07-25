@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace ContextStage
 {
-    /// <summary>(성향, 참여도 단계) 한 조합에 대한 동물별 애니메이션 세트.</summary>
+    /// <summary>
+    /// One set of species animation variants for an audience preference and engagement stage.
+    /// </summary>
     [Serializable]
     public struct AnimatedVariantGroup
     {
@@ -28,11 +30,12 @@ namespace ContextStage
         [SerializeField] Color moshColor = Color.white;
 
         [Header("Character Animation (optional per preference/stage)")]
-        [Tooltip("아트가 준비된 (성향, 단계) 조합만 채우면 된다. 목록에 없는 조합은 정지 스프라이트로 자동 폴백한다.\n" +
-                 "Tools/Audience/Import Animated Species Sheets 로 채운다.")]
-        [SerializeField] List<AnimatedVariantGroup> animatedVariants = new List<AnimatedVariantGroup>();
+        [Tooltip("Configured preference/stage pairs use animation. Missing pairs use the matching static sprite.")]
+        [SerializeField] List<AnimatedVariantGroup> animatedVariants =
+            new List<AnimatedVariantGroup>();
 
-        readonly SpriteAnimationPlayer _player = new SpriteAnimationPlayer();
+        readonly SpriteAnimationPlayer _animationPlayer =
+            new SpriteAnimationPlayer();
 
         [Header("Departure Warning")]
         [SerializeField] GameObject warningRoot;
@@ -109,8 +112,8 @@ namespace ContextStage
         public AudienceSnapshot Snapshot => _snapshot;
         public bool IsBound => _boundId.IsValid;
         public AudienceReactionPopup ReactionPopup => reactionPopup;
-        public Vector3 LayoutPosition => _currentLayoutPosition;
-        public float LayoutScale => _currentLayoutScale;
+        public Vector3 LayoutLocalPosition => _layoutPosition;
+        public float LayoutScale => _layoutScale;
         public int SortingOrder =>
             characterRenderer != null ? characterRenderer.sortingOrder : 0;
 
@@ -138,7 +141,7 @@ namespace ContextStage
             warningFillRenderer.sprite = SolidSprite;
             warningBackgroundRenderer.color = warningBackgroundColor;
             warningFillRenderer.color = warningFillColor;
-            _player.Bind(characterRenderer);
+            _animationPlayer.Bind(characterRenderer);
         }
 
         public void OnSpawned()
@@ -153,6 +156,7 @@ namespace ContextStage
             _exitCompleted = null;
             _phase = UnityEngine.Random.value * Mathf.PI * 2f;
             _hasLayout = false;
+            _animationPlayer.Stop();
             if (warningRoot != null) warningRoot.SetActive(false);
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
@@ -167,6 +171,7 @@ namespace ContextStage
             _exitCompleted = null;
             _exiting = false;
             _exitStyle = AudienceExitStyle.Default;
+            _animationPlayer.Stop();
             if (warningRoot != null) warningRoot.SetActive(false);
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
@@ -185,7 +190,9 @@ namespace ContextStage
             _exitStyle = AudienceExitStyle.Default;
             _exitElapsed = 0f;
             _hasLayout = false;
-            ApplySnapshot(snapshot);
+            _snapshot = snapshot;
+            ApplyVisual(snapshot.Preference, snapshot.Stage);
+            UpdateWarning();
         }
 
         public void ApplySnapshot(AudienceSnapshot snapshot)
@@ -223,19 +230,13 @@ namespace ContextStage
 
         public void PlayReaction(int reactionValue, float engagementDelta)
         {
-            if (_exiting || !enabled) return;
-
-            // 단일 결과 UI 원칙: 관객 반응은 애니메이션(펄스)으로만 구분한다.
-            // 캐릭터 위 "LOVE IT +25" 같은 점수 텍스트는 우측 상단 HUD 로 일원화했으므로 띄우지 않는다.
-            // (reactionPopup 은 다른 경로가 참조할 수 있어 컴포넌트 자체는 남겨둔다)
-            if (reactionValue > 0)
+            if (_exiting || !enabled || reactionPopup == null) return;
+            if (reactionValue != 0)
                 _reactionPulseRemaining = reactionPulseDuration;
-        }
-
-        public void PlayDeparture()
-        {
-            // 이탈은 캐릭터가 나가는 모습(PlayExit)으로 확인한다.
-            // "LEFT THE SHOW" 텍스트는 단일 UI 원칙에 따라 표시하지 않는다.
+            reactionPopup.Show(
+                reactionValue,
+                engagementDelta,
+                characterRenderer.sortingOrder + 30);
         }
 
         public void PlayExit(Action completed)
@@ -269,7 +270,7 @@ namespace ContextStage
             if (!IsBound) return;
 
             float deltaTime = Time.deltaTime;
-            _player.Tick(deltaTime);
+            _animationPlayer.Tick(deltaTime);
 
             float followStep = layoutFollowSpeed * deltaTime;
             _currentLayoutPosition = Vector3.MoveTowards(_currentLayoutPosition, _layoutPosition, followStep);
@@ -300,18 +301,20 @@ namespace ContextStage
             ApplyTransform();
         }
 
-        void ApplyVisual(CrowdPreference preference, AudienceEngagementStage stage)
+        void ApplyVisual(
+            CrowdPreference preference,
+            AudienceEngagementStage stage)
         {
             _characterColor = ColorFor(preference);
 
             SpriteAnimationClip clip = AnimationVariantFor(preference, stage);
             if (clip != null && clip.IsValid)
             {
-                _player.Play(clip, restart: true);
+                _animationPlayer.Play(clip, restart: true);
                 return;
             }
 
-            _player.Stop();
+            _animationPlayer.Stop();
             characterRenderer.sprite = StaticSpriteFor(preference);
         }
 
@@ -337,22 +340,26 @@ namespace ContextStage
             }
         }
 
-        /// <summary>같은 관객은 항상 같은 동물 variant 를 쓰도록 id 로 결정한다.</summary>
-        SpriteAnimationClip AnimationVariantFor(CrowdPreference preference, AudienceEngagementStage stage)
+        SpriteAnimationClip AnimationVariantFor(
+            CrowdPreference preference,
+            AudienceEngagementStage stage)
         {
             for (int i = 0; i < animatedVariants.Count; i++)
             {
                 AnimatedVariantGroup group = animatedVariants[i];
-                if (group.preference != preference || group.stage != stage) continue;
+                if (group.preference != preference || group.stage != stage)
+                    continue;
 
                 SpriteAnimationClip[] variants = group.variants;
                 if (variants == null || variants.Length == 0) return null;
-                return variants[Mod(_boundId.Value, variants.Length)];
+                return variants[PositiveModulo(_boundId.Value, variants.Length)];
             }
+
             return null;
         }
 
-        static int Mod(int value, int length) => length <= 0 ? 0 : ((value % length) + length) % length;
+        static int PositiveModulo(int value, int divisor)
+            => divisor <= 0 ? 0 : ((value % divisor) + divisor) % divisor;
 
         void UpdateWarning()
         {

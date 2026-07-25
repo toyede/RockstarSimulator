@@ -27,8 +27,9 @@ Consumers must treat `AudienceSnapshot` as read-only and identify members by
 
 Natural decay is processed centrally by `AudienceRosterSystem`. A member that
 reaches zero is removed before `AudienceDeparted` is published. Card reactions
-are clamped to non-negative values and publish `AudienceCardReacted` before the
-corresponding state/summary events.
+are signed values: positive results raise engagement and negative results lower
+it. `AudienceCardReacted` is published before the corresponding
+state/departure/summary events.
 
 ## Scene installation
 
@@ -57,10 +58,22 @@ checks the data but never writes or replaces authored values.
 
 Performance cards calculate each member independently:
 
-`max(0, preference score + current engagement-stage score)`
+`preference score + current engagement-stage score`
 
 The per-member results update engagement and their sum becomes the authoritative
-card score. Utility cards explicitly opt out of audience reactions.
+card score. Both values may be negative. Utility cards explicitly opt out of
+audience reactions.
+
+Special cards have two independent prefab-authored data sets:
+
+- `AudienceReactionProfile`: general use when dropped anywhere other than a
+  matching special audience, including a non-matching special audience
+- `SpecialCardTargetEffect`: targeted use when dropped on the matching special
+  audience
+
+A successful targeted use does not also apply the general audience profile.
+Target effects operate through `AudienceRosterSystem`; the former Crowd/Hype
+calculation remains disabled.
 
 Each `AudienceMember` owns one reusable world-space reaction popup. It listens
 through the presenter to `AudienceCardReacted`, displays the per-member reaction

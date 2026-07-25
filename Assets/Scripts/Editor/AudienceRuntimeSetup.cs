@@ -183,6 +183,7 @@ namespace ContextStage.EditorTools
                 changed |= SetBehaviourEnabled(debugInput, true);
 
             changed |= DisableLegacySceneSystems(scene);
+            changed |= EnableSpecialAudienceSystems(scene, presenter);
             if (changed) EditorSceneManager.MarkSceneDirty(scene);
             ValidateScene(scene);
             Debug.Log(
@@ -274,6 +275,8 @@ namespace ContextStage.EditorTools
                     failures.Add(
                         "AudienceRosterPresenter member root is not the runtime root.");
                 }
+
+                ValidateSpecialAudienceSystems(scene, presenter, failures);
             }
 
             int enabledLegacyCount = CountEnabledLegacySystems(scene);
@@ -393,6 +396,79 @@ namespace ContextStage.EditorTools
             CountEnabled<StageLightEventBridge>(scene) +
             CountEnabled<CrowdAmbienceSystem>(scene) +
             CountEnabled<CrowdAmbienceDebugInput>(scene);
+
+        static bool EnableSpecialAudienceSystems(
+            Scene scene,
+            AudienceRosterPresenter presenter)
+        {
+            List<SpecialAudienceManager> managers =
+                FindSceneComponents<SpecialAudienceManager>(scene);
+            List<SpecialAudienceDropTarget> targets =
+                FindSceneComponents<SpecialAudienceDropTarget>(scene);
+            List<SpecialAudienceCrowdActor> actors =
+                FindSceneComponents<SpecialAudienceCrowdActor>(scene);
+            if (managers.Count != 1 || targets.Count != 1 || actors.Count != 1)
+            {
+                throw new InvalidOperationException(
+                    "The scene requires exactly one SpecialAudienceManager, " +
+                    "SpecialAudienceDropTarget, and SpecialAudienceCrowdActor.");
+            }
+
+            bool changed = false;
+            changed |= SetSceneObjectActive(
+                scene,
+                "[Crowd]/SpecialAudience",
+                true);
+            changed |= SetSceneObjectActive(
+                scene,
+                "SpecialAudienceCanvas",
+                true);
+            changed |= SetBehaviourEnabled(managers[0], true);
+            changed |= SetBehaviourEnabled(targets[0], true);
+            changed |= SetObjectField(
+                actors[0],
+                "audiencePresenter",
+                presenter,
+                true);
+            return changed;
+        }
+
+        static void ValidateSpecialAudienceSystems(
+            Scene scene,
+            AudienceRosterPresenter presenter,
+            List<string> failures)
+        {
+            List<SpecialAudienceManager> managers =
+                FindSceneComponents<SpecialAudienceManager>(scene);
+            List<SpecialAudienceDropTarget> targets =
+                FindSceneComponents<SpecialAudienceDropTarget>(scene);
+            List<SpecialAudienceCrowdActor> actors =
+                FindSceneComponents<SpecialAudienceCrowdActor>(scene);
+
+            if (managers.Count != 1)
+                failures.Add(
+                    $"Expected one SpecialAudienceManager, found {managers.Count}.");
+            else if (!managers[0].isActiveAndEnabled)
+                failures.Add("SpecialAudienceManager is disabled.");
+
+            if (targets.Count != 1)
+                failures.Add(
+                    $"Expected one SpecialAudienceDropTarget, found {targets.Count}.");
+            else if (!targets[0].isActiveAndEnabled)
+                failures.Add("SpecialAudienceDropTarget is disabled.");
+
+            if (actors.Count != 1)
+            {
+                failures.Add(
+                    $"Expected one SpecialAudienceCrowdActor, found {actors.Count}.");
+            }
+            else if (actors[0].AudiencePresenter != presenter)
+            {
+                failures.Add(
+                    "SpecialAudienceCrowdActor is not bound to " +
+                    "AudienceRosterPresenter.");
+            }
+        }
 
         static int CountEnabled<T>(Scene scene) where T : Behaviour
         {

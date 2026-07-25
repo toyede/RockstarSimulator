@@ -30,6 +30,23 @@ namespace ContextStage
         public Transform MemberRoot => memberRoot;
         public int VisibleCount => _actors.Count;
 
+        public bool TryGetRandomActor(out AudienceMemberActor actor)
+        {
+            actor = null;
+            if (_order.Count == 0) return false;
+
+            int start = Random.Range(0, _order.Count);
+            for (int offset = 0; offset < _order.Count; offset++)
+            {
+                AudienceId id = _order[(start + offset) % _order.Count];
+                if (_actors.TryGetValue(id, out actor) && actor != null)
+                    return true;
+            }
+
+            actor = null;
+            return false;
+        }
+
         void OnEnable()
         {
             EventBus.Subscribe<AudienceJoined>(OnAudienceJoined);
@@ -114,8 +131,6 @@ namespace ContextStage
             _actors.Remove(id);
             _order.Remove(id);
             if (!_deferRelayout) Relayout();
-            if (e.Reason != AudienceDepartureReason.Reset)
-                actor.PlayDeparture();
             AudienceExitStyle exitStyle =
                 e.Reason == AudienceDepartureReason.NearbyConcert
                     ? AudienceExitStyle.NearbyConcert
@@ -125,33 +140,6 @@ namespace ContextStage
                 if (actor != null && !SingletonRuntime.IsQuitting)
                     PoolManager.Despawn(actor);
             });
-        }
-
-        public bool TryGetRandomVisualAnchor(
-            out Vector3 localPosition,
-            out float scale,
-            out int sortingOrder)
-        {
-            localPosition = default;
-            scale = 1f;
-            sortingOrder = baseSortingOrder;
-            if (_order.Count == 0) return false;
-
-            int start = Random.Range(0, _order.Count);
-            for (int offset = 0; offset < _order.Count; offset++)
-            {
-                AudienceId id = _order[(start + offset) % _order.Count];
-                if (!_actors.TryGetValue(id, out AudienceMemberActor actor) ||
-                    actor == null ||
-                    !actor.IsBound)
-                    continue;
-
-                localPosition = actor.LayoutPosition;
-                scale = actor.LayoutScale;
-                sortingOrder = actor.SortingOrder;
-                return true;
-            }
-            return false;
         }
 
         void OnCrisisTargetsChanged(AudienceCrisisTargetsChanged e)
