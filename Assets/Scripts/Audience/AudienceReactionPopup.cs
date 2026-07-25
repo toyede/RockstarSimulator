@@ -35,6 +35,21 @@ namespace ContextStage
         [SerializeField, Min(0.01f)] float peakScale = 1.2f;
         [SerializeField, Range(0f, 1f)] float fadeStart = 0.55f;
 
+        [Header("Fever")]
+        [SerializeField] Color feverColor = new Color(1f, 0.82f, 0.12f, 1f);
+        [SerializeField, Min(1)] int feverPoolCapacity = 5;
+        [SerializeField] FloatingWorldTextStyle feverStyle =
+            new FloatingWorldTextStyle
+            {
+                duration = 1.35f,
+                riseDistance = 0.9f,
+                startScale = 0.85f,
+                peakScale = 1.55f,
+                fadeStart = 0.68f,
+                fontSize = 5.5f,
+                fontStyle = FontStyles.Bold,
+            };
+
         Vector3 _baseLocalPosition;
         Vector3 _baseLocalScale;
         float _elapsed;
@@ -42,6 +57,7 @@ namespace ContextStage
         bool _showing;
         int _lastReactionValue;
         float _lastEngagementDelta;
+        FloatingWorldTextPool _feverPool;
 
         public TextMeshPro ValueText => valueText;
         public AudienceReactionDisplayMode DisplayMode => displayMode;
@@ -64,6 +80,13 @@ namespace ContextStage
                 return;
             }
 
+            _feverPool = new FloatingWorldTextPool(
+                transform,
+                valueText.font,
+                valueText.renderer.sortingLayerName,
+                feverStyle,
+                feverPoolCapacity,
+                "FeverScore");
             ResetVisual();
         }
 
@@ -123,7 +146,23 @@ namespace ContextStage
             if (!enabled || !IsConfigured) return;
             if (!_initialized) CaptureBaseTransform();
 
+            _feverPool?.StopAll();
             ShowText("LEFT THE SHOW", departedColor, sortingOrder);
+        }
+
+        public void ShowFever(int score, int sortingOrder)
+        {
+            if (!enabled || !IsConfigured || score <= 0) return;
+            if (!_initialized) CaptureBaseTransform();
+
+            _lastReactionValue = score;
+            _lastEngagementDelta = 0f;
+            HideNormalVisual();
+            _feverPool?.Play(
+                "+" + score.ToString(CultureInfo.InvariantCulture),
+                feverColor,
+                Vector3.zero,
+                sortingOrder);
         }
 
         public void SetSortingOrder(int sortingOrder)
@@ -135,6 +174,12 @@ namespace ContextStage
         {
             if (!_initialized) CaptureBaseTransform();
 
+            HideNormalVisual();
+            _feverPool?.StopAll();
+        }
+
+        void HideNormalVisual()
+        {
             _elapsed = 0f;
             _showing = false;
             transform.localPosition = _baseLocalPosition;
@@ -202,6 +247,7 @@ namespace ContextStage
             riseDistance = Mathf.Max(0f, riseDistance);
             startScale = Mathf.Max(0.01f, startScale);
             peakScale = Mathf.Max(0.01f, peakScale);
+            feverPoolCapacity = Mathf.Max(1, feverPoolCapacity);
         }
 #endif
     }

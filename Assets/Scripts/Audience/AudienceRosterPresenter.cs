@@ -95,6 +95,7 @@ namespace ContextStage
             EventBus.Subscribe<AudienceJoined>(OnAudienceJoined);
             EventBus.Subscribe<AudienceStateChanged>(OnAudienceStateChanged);
             EventBus.Subscribe<AudienceCardReacted>(OnAudienceCardReacted);
+            EventBus.Subscribe<FeverBonusAwarded>(OnFeverBonusAwarded);
             EventBus.Subscribe<AudienceDeparted>(OnAudienceDeparted);
             EventBus.Subscribe<AudienceCrisisTargetsChanged>(
                 OnCrisisTargetsChanged);
@@ -122,6 +123,7 @@ namespace ContextStage
             EventBus.Unsubscribe<AudienceJoined>(OnAudienceJoined);
             EventBus.Unsubscribe<AudienceStateChanged>(OnAudienceStateChanged);
             EventBus.Unsubscribe<AudienceCardReacted>(OnAudienceCardReacted);
+            EventBus.Unsubscribe<FeverBonusAwarded>(OnFeverBonusAwarded);
             EventBus.Unsubscribe<AudienceDeparted>(OnAudienceDeparted);
             EventBus.Unsubscribe<AudienceCrisisTargetsChanged>(
                 OnCrisisTargetsChanged);
@@ -163,7 +165,27 @@ namespace ContextStage
         {
             if (!_actors.TryGetValue(e.Current.Id, out AudienceMemberActor actor)) return;
             actor.ApplySnapshot(e.Current);
+
+            // CardResolved will show the finalized per-audience Fever award.
+            // Keep raw positive and negative reaction values hidden during Fever.
+            if (FeverSystem.HasInstance && FeverSystem.Instance.IsActive)
+                return;
+
             actor.PlayReaction(e.ReactionValue, e.EngagementDelta);
+        }
+
+        void OnFeverBonusAwarded(FeverBonusAwarded e)
+        {
+            if (e.AudienceCount <= 0 || e.BonusScore <= 0) return;
+
+            int scorePerAudience = e.BonusScore / e.AudienceCount;
+            if (scorePerAudience <= 0) return;
+
+            foreach (AudienceMemberActor actor in _actors.Values)
+            {
+                if (actor != null && actor.IsBound)
+                    actor.PlayFeverBonus(scorePerAudience);
+            }
         }
 
         void OnAudienceDeparted(AudienceDeparted e)
