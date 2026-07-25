@@ -140,7 +140,7 @@ TextureImporter:
         x: 35
         y: 677
         width: 9
-        height: 26
+        height: 25
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -160,9 +160,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 19
-        y: 129
-        width: 547
-        height: 383
+        y: 130
+        width: 545
+        height: 381
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -181,10 +181,10 @@ TextureImporter:
       name: Friends_0002_3
       rect:
         serializedVersion: 2
-        x: 581
+        x: 583
         y: 129
-        width: 328
-        height: 366
+        width: 326
+        height: 364
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -203,10 +203,10 @@ TextureImporter:
       name: Friends_0002_4
       rect:
         serializedVersion: 2
-        x: 912
-        y: 128
-        width: 368
-        height: 431
+        x: 913
+        y: 130
+        width: 367
+        height: 429
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
