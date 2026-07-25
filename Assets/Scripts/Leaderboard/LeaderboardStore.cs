@@ -32,6 +32,13 @@ namespace ContextStage
             return list.entries.AsReadOnly();
         }
 
+        /// <summary>리더보드 기록만 초기화한다 (다른 PlayerPrefs 값은 건드리지 않음).</summary>
+        public static void Clear()
+        {
+            Save.Delete(Key);
+            Save.Flush();
+        }
+
         static ScoreRecordList Load()
         {
             ScoreRecordList list = Save.GetObject<ScoreRecordList>(Key);
