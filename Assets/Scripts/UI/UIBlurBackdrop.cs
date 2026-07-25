@@ -79,6 +79,18 @@ namespace ContextStage
         [SerializeField, Min(1f), Tooltip("캔버스보다 살짝 크게 잡아 가장자리가 비지 않게 한다")]
         float overscan = 1.02f;
 
+        [SerializeField, Tooltip(
+            "팝업 내용보다 확실히 뒤에 그려지도록 자체 정렬 순서를 갖는다. " +
+            "끄면 계층 순서를 따르는데, 게임오버처럼 팝업이 여러 개 동시에 열리면 " +
+            "나중 팝업의 블러가 앞 팝업 내용을 덮어버린다")]
+        bool sortBelowOwnerCanvas = true;
+
+        [SerializeField, Tooltip(
+            "소속 캔버스의 sortingOrder 에 더할 값. 음수라야 팝업 내용 뒤로 간다. " +
+            "현재 씬 기준: ScoreCanvas 30 / HypeCanvas 21 / CardCanvas 20 이므로 " +
+            "-1(=29)이면 팝업 뒤·HUD 앞에 온다")]
+        int sortingOrderOffset = -1;
+
         [SerializeField, Min(0f), Tooltip("배경이 나타나는 시간(초). 0이면 즉시")]
         float fadeInDuration = 0.12f;
 
@@ -88,6 +100,13 @@ namespace ContextStage
         FlipMode flip = FlipMode.Auto;
 
         // ---------------- 상태 ----------------
+
+        /// <summary>
+        /// 지금 화면을 덮고 있는 배경. 게임오버에는 팝업 셋(GameOver / ScoreEntry / Leaderboard)이
+        /// <b>같은 이벤트로 동시에</b> 열리므로, 그대로 두면 화면 캡처와 블러가 세 번 돌고
+        /// 서로를 덮는다. 한 번에 하나만 뜨게 한다.
+        /// </summary>
+        static UIBlurBackdrop s_owner;
 
         Material _material;
         RenderTexture _capture;
@@ -115,11 +134,16 @@ namespace ContextStage
             UIPopup popup = GetComponentInParent<UIPopup>();
             if (popup != null && !popup.IsOpen) return;
 
+            // 이미 다른 배경이 화면을 덮고 있으면 조용히 비켜 준다
+            if (s_owner != null && s_owner != this && s_owner.isActiveAndEnabled) return;
+
+            s_owner = this;
             _routine = StartCoroutine(CaptureAndBlur());
         }
 
         void OnDisable()
         {
+            if (s_owner == this) s_owner = null;
             if (_routine != null) { StopCoroutine(_routine); _routine = null; }
             Hide();
             ReleaseTextures();
@@ -216,7 +240,33 @@ namespace ContextStage
                 ? new Rect(0f, 1f, 1f, -1f)
                 : new Rect(0f, 0f, 1f, 1f);
             FitToCanvas();
+            ApplySorting();
             backdropImage.enabled = true;
+        }
+
+        /// <summary>
+        /// 팝업 내용보다 뒤에 그려지게 한다.
+        ///
+        /// 계층 순서에만 기대면 안 된다 — 게임오버에는 GameOver / ScoreEntry / Leaderboard 가
+        /// <b>같은 이벤트로 동시에</b> 열리므로, 나중에 그려지는 팝업의 전체 화면 배경이
+        /// 먼저 그려진 팝업의 내용을 통째로 덮어버린다.
+        /// 자체 Canvas 로 정렬 순서를 낮춰 두면 계층과 무관하게 항상 맨 뒤에 온다.
+        /// </summary>
+        void ApplySorting()
+        {
+            if (!sortBelowOwnerCanvas) return;
+
+            Canvas rootCanvas = backdropImage.canvas != null
+                ? backdropImage.canvas.rootCanvas
+                : null;
+            if (rootCanvas == null) return;
+
+            var localCanvas = GetComponent<Canvas>();
+            if (localCanvas == null) localCanvas = gameObject.AddComponent<Canvas>();
+
+            localCanvas.overrideSorting = true;
+            localCanvas.sortingLayerID = rootCanvas.sortingLayerID;
+            localCanvas.sortingOrder = rootCanvas.sortingOrder + sortingOrderOffset;
         }
 
         /// <summary>

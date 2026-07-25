@@ -99,6 +99,22 @@ Tools/UI/Setup Blur Backdrop
 | 어둡기 | `RawImage.color` | 셰이더 수정 없이 회색으로 낮추면 어두워진다 |
 | `flip` (자동) | 〃 | 화면이 상하 반전돼 보이면 강제로 바꾼다 |
 
+## 여러 팝업이 동시에 열릴 때
+
+게임오버에는 `GameOverPopup` / `ScoreEntryPopup` / `LeaderboardPopup` 이
+**같은 `GameStateChanged(GameOver)` 이벤트로 동시에** 열린다. 두 가지 처리가 필요했다.
+
+1. **한 번에 하나만** — `static s_owner` 로 먼저 뜬 배경 하나만 화면을 덮는다.
+   안 그러면 화면 캡처와 블러가 세 번 돌고 서로를 덮는다.
+2. **항상 맨 뒤에** — 배경에 자체 `Canvas`(`overrideSorting`)를 붙여
+   소속 캔버스보다 `sortingOrderOffset`(기본 -1) 낮은 순서로 그린다.
+   계층 순서에만 기대면 나중에 그려지는 팝업의 전체 화면 배경이
+   먼저 그려진 팝업 내용을 통째로 덮어버린다.
+
+현재 씬 기준 sortingOrder: `ScoreCanvas` 30 / `SpecialAudienceCanvas` 30 /
+`HypeCanvas` 21 / `CardCanvas` 20 / `TutorialCanvas` 100.
+배경은 29에 오므로 **팝업 내용 뒤 · HUD 앞**이다.
+
 ## 알아둘 것 두 가지
 
 1. **캡처 프레임의 팝업 알파** — 배경 코루틴은 페이드가 시작되기 전에 돌기 시작하므로
