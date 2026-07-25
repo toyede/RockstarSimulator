@@ -132,17 +132,25 @@ Bgm.Volume = 0.8f;      // 채널 볼륨 (자동 저장)
 | `crowd_mistake` | `Audio/OneShot/Crowd_mistake.wav` | 실패 판정 |
 | `guitar_solo` / `guitar_stroke` | `Audio/OneShot/` | 카드 연출 (`guitar_solo` 카드 전용 + 공통 기본음) |
 | `hey_high` / `hey_low` | `Audio/OneShot/` | 관객 함성 |
-| `card_tempo_up` | `Audio/OneShot/Cards/Card_TempoUp.wav` | **[클립 대기 중]** `tempo_up` 카드 전용 |
-| `card_response_call` | `Audio/OneShot/Cards/Card_ResponseCall.wav` | **[클립 대기 중]** `response_call` 카드 전용 |
+| `card_tempo_up` | `Audio/OneShot/Cards/Card_tempo_up.wav` | `tempo_up` 카드 전용 |
+| `card_response_call` | `Audio/OneShot/Cards/Card_ResponseCall.wav` | `response_call` 카드 전용 |
 | `card_hands_up` | `Audio/OneShot/Cards/Card_HandsUp.wav` | **[클립 대기 중]** `hands_up` 카드 전용 |
 | `card_pass_mic` | `Audio/OneShot/Cards/Card_PassMic.wav` | **[클립 대기 중]** `pass_mic` 카드 전용 |
-| `card_open_mosh_pit` | `Audio/OneShot/Cards/Card_OpenMoshPit.wav` | **[클립 대기 중]** `open_mosh_pit` 카드 전용 |
-| `card_draw_two` | `Audio/OneShot/Cards/Card_DrawTwo.wav` | **[클립 대기 중]** `draw_two` 카드 전용 |
-| `card_reroll_hand` | `Audio/OneShot/Cards/Card_RerollHand.wav` | **[클립 대기 중]** `reroll_hand` 카드 전용 |
+| `card_open_mosh_pit` | `Audio/OneShot/Cards/Card_OpenMoshPit.wav` | `open_mosh_pit` 카드 전용 |
+| `card_draw_two` | `Audio/OneShot/Cards/Card_DrawTwo.wav` | `draw_two` 카드 전용 |
+| `card_reroll_hand` | `Audio/OneShot/Cards/Card_RerollHand.wav` | `reroll_hand` 카드 전용 |
 
 원샷은 킷 API 로 재생한다: `Sound.Play("guitar_solo");`
 새 클립을 넣으면 `Tools/Audio/Register Audio Clips To Library` 로 다시 등록한다
 (추가할 ID 는 `Assets/Scripts/Editor/AudioSetupMenu.cs` 의 `DefaultSounds` 표에 한 줄 넣으면 된다).
+
+**⚠️ 파일을 지우고 새로 만들면(대소문자만 바꾸는 것 포함) guid 가 바뀌어 참조가 끊긴다.**
+`Register Audio Clips To Library` 는 이미 등록된 id 의 클립이 통째로 비어 있을 때만(끊어진 참조)
+표의 경로로 자동 복구해준다. 하지만 **기존 파일을 다른 카드 용도로 재활용**(예: `Card_PassMic.wav` →
+`Card_OpenMoshPit.wav`로 이름만 바꿔서 다른 카드 소리로 재사용)한 경우는 guid 는 그대로 유지되고
+클립도 여전히 "유효"하기 때문에 자동으로 감지되지 않는다 — 이 경우 옛 id(`card_pass_mic`)의
+`SoundLibrary` 항목과 `CardSfxPlayer.cardOverrides` 항목을 **직접 지워야** 한다. 안 지우면 두
+카드가 같은 소리를 내는 채로 남는다.
 
 **사운드 담당자용 요청 사항:** 위 "[클립 대기 중]" 7개를 각 카드 분위기에 맞는 원샷 효과음으로
 채워서 정확히 표에 적힌 경로(`Assets/Audio/OneShot/Cards/Card_XXX.wav`)에 넣어주면 된다.

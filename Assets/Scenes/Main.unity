@@ -3896,8 +3896,12 @@ MonoBehaviour:
     sfxId: card_tempo_up
   - cardId: response_call
     sfxId: card_response_call
-  - cardId: pass_mic
-    sfxId: card_pass_mic
+  - cardId: reroll_hand
+    sfxId: card_reroll_hand
+  - cardId: draw_two
+    sfxId: card_draw_two
+  - cardId: open_mosh_pit
+    sfxId: card_open_mosh_pit
   volumeScale: 1
   perfectSfxId: 
   goodSfxId: 
