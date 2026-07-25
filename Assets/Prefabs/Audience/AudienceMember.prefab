@@ -960,6 +960,201 @@ MonoBehaviour:
       loop: 1
       pingPong: 0
   - preference: 1
+    stage: 1
+    variants:
+    - clipName: Singalong_Middle_0
+      frames:
+      - {fileID: 6216299358498369524, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: -7820768456326578798, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: -1416916754505075841, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: 8556276988332969836, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: -2740384141935357292, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: 4403528737409652318, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: -2333620002857038496, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: 4237498058617313846, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: 9162118683621462776, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: 1390421279708967075, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: 2203118915989738148, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Singalong_Middle_1
+      frames:
+      - {fileID: 5718374511597138312, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: 4198927865397314668, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: 1026550626668890629, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: -9062185471997082673, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: 877242796387678001, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: 7791164995961638952, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: -91674872496218422, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: 8958242371418797176, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: 5118300569554745121, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: 5679281457599620153, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: 6003694334915456187, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Singalong_Middle_2
+      frames:
+      - {fileID: 5850513285610255568, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: 471301586275356040, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: -6561003435835762635, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: -8047156284002377525, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: 5016729002056670117, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: 8254854819285551170, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: -6243417719908542783, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: -7677344911657173428, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: 6402325626538027052, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: 3325183830503486458, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: 7294675938530126409, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Singalong_Middle_3
+      frames:
+      - {fileID: 2061144344323129502, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: 3413166758514806255, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: 7855807499352088421, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: -4878217010736535943, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: -3310114926532529054, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: -6976182851339380716, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: 6755859406975507154, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: -5104200056947997010, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: -6614409397038262210, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: -8436207436600512629, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: -1401833354247438592, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Singalong_Middle_4
+      frames:
+      - {fileID: 3413282120511445536, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: -7792583005426145664, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: 5975566593497049354, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: 2177925413876748665, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: -8788516333026229572, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: 7257257016996835346, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: 7032252545937393280, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: -2989846809949354187, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: 1849813291759011386, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: -8774486081885397886, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: 5087412283237281906, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Singalong_Middle_5
+      frames:
+      - {fileID: 8684246016110804952, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: -7916018127726238857, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: -3330131408541877881, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: 4979265810660543385, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: -5043069243285983154, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: 583586771481195501, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: -1329924078186923575, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: 3392409941218597556, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: -688139692339816813, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: 5852573526700546645, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: 7384164117044702805, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Singalong_Middle_6
+      frames:
+      - {fileID: 7256461548196267553, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: -3223090319442177704, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: 1807282529683379655, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: 2876027483223441492, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: -5066826950788471301, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: 6128215902861476079, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: -5228018343986047914, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: 5537277469861118660, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: 7909859656973836298, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: 4705217369835439652, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: 9070840933617583188, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Singalong_Middle_7
+      frames:
+      - {fileID: 8094673132471064522, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: -872415009177535677, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: 1080343327090747228, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: 9055925240182979044, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: -8830974125171114937, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: -6291616483799746090, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: 7531483020661290437, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: 5508515770775680547, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: -165356470140884169, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: -2550236286416427002, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: 2909419855113083110, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Singalong_Middle_8
+      frames:
+      - {fileID: 5130846956481551877, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: 9163046099156640862, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: -5230717476183467323, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: -363963693323523592, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: 6345526010109238832, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: -7188974261784208573, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: -3129893465728876174, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: 6247552659210225012, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: -5583174073165866156, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: -6452449346984002472, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: -262994573535255929, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Singalong_Middle_9
+      frames:
+      - {fileID: -3612185841336792420, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: -4275449824380645673, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: 656016642158164957, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: -3790869542372495888, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: -6266749854686269381, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: 3186825167926844162, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: 3960548019248025409, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: -1278932206104125816, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: -3221553473538775969, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: 4385590883638394311, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: 4764289364345400433, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Singalong_Middle_10
+      frames:
+      - {fileID: 149563489611387492, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: 2734048149480224036, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: 7439765799107125924, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: 4736301583748109227, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: 1669958718544195758, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: -5066135400501664431, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: -9075423175448737790, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: 4579620255020634386, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: -6327037777487514918, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: 5031473409351970776, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: -4636273898562228954, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Singalong_Middle_11
+      frames:
+      - {fileID: -1933187204865070648, guid: 2c35da967e278ff43b756ce7843a9064, type: 3}
+      - {fileID: 2384238318563037210, guid: 6f2549ee5fd2484428d6f4536ee97e53, type: 3}
+      - {fileID: -7554055750328843594, guid: 35875e3104bec1543a4f7fd37374e86b, type: 3}
+      - {fileID: -8723377601874415370, guid: 3644aaf8fa64e0b4491e9ae274d30ddc, type: 3}
+      - {fileID: -4848907393917774191, guid: a9b77daa0a671364c9c837115578b28f, type: 3}
+      - {fileID: 5478542410822199426, guid: bb89635c6ebdc684b9c5852fe56d139d, type: 3}
+      - {fileID: 8349580186073147633, guid: e8174ef45d148174696bc5817313614b, type: 3}
+      - {fileID: 5275576664038453941, guid: 156bd65bff446b44e81a9e2f0d21fbbe, type: 3}
+      - {fileID: -5445135004250500745, guid: 310711577ebc8c245874db35a2ae7261, type: 3}
+      - {fileID: -548405464336428173, guid: 5bdca015a9bc5ce4a88cd7b6feea2824, type: 3}
+      - {fileID: -5052559694721666812, guid: 400df566fbaae9c4fab2a83299fb91a5, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+  - preference: 1
     stage: 2
     variants:
     - clipName: Singalong_Excited_0

@@ -22,6 +22,7 @@ namespace ContextStage.EditorTools
         static readonly (string folder, CrowdPreference preference, AudienceEngagementStage stage, string clipName)[] Sources =
         {
             ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Calm", CrowdPreference.Singalong, AudienceEngagementStage.Calm, "Singalong_Calm"),
+            ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Middle", CrowdPreference.Singalong, AudienceEngagementStage.Middle, "Singalong_Middle"),
             ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Hype", CrowdPreference.Singalong, AudienceEngagementStage.Excited, "Singalong_Excited"),
         };
 
