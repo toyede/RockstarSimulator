@@ -186,6 +186,112 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &1194999581232254498
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2970080556729224127}
+  - component: {fileID: 100084178130320343}
+  - component: {fileID: 791572588075050944}
+  - component: {fileID: 3695269095316547732}
+  m_Layer: 0
+  m_Name: RankRaccoon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2970080556729224127
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194999581232254498}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8396114351605477975}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 1103.5, y: -17}
+  m_SizeDelta: {x: 387.6, y: 343.3}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &100084178130320343
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194999581232254498}
+  m_CullTransparentMesh: 1
+--- !u!114 &791572588075050944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194999581232254498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!114 &3695269095316547732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194999581232254498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba5ba9e8fcd90c5428e3b847775f6174, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.RankRaccoonAnimator
+  targetImage: {fileID: 791572588075050944}
+  clearClip:
+    clipName: Clear
+    frames:
+    - {fileID: -6222744249770458211, guid: b9dfe51465165eb478f43a4248aa4e15, type: 3}
+    - {fileID: -1199923372840186361, guid: b9dfe51465165eb478f43a4248aa4e15, type: 3}
+    fps: 4
+    loop: 1
+    pingPong: 0
+  gameOverClip:
+    clipName: GameOver
+    frames:
+    - {fileID: -2813555488557304217, guid: 6edc99307f72f0c428e6db78a99bb22f, type: 3}
+    - {fileID: -2068278672531384334, guid: 6edc99307f72f0c428e6db78a99bb22f, type: 3}
+    fps: 3
+    loop: 1
+    pingPong: 0
+  useUnscaledTime: 1
 --- !u!1 &1226689903666249925
 GameObject:
   m_ObjectHideFlags: 0
@@ -1139,6 +1245,7 @@ RectTransform:
   - {fileID: 4001643867955144976}
   - {fileID: 5702526506398307174}
   - {fileID: 2099456077572340531}
+  - {fileID: 2970080556729224127}
   m_Father: {fileID: 3640169816863125802}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

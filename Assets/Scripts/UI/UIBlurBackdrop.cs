@@ -70,6 +70,15 @@ namespace ContextStage
         bool pixelatedFilter = true;
 
         [Header("표시")]
+        [SerializeField, Tooltip(
+            "팝업 크기와 무관하게 캔버스 전체를 덮는다. " +
+            "끄면 부모(팝업) RectTransform 만큼만 덮으므로, " +
+            "루트가 작은 패널인 팝업에서는 화면 한가운데만 흐려진다")]
+        bool coverWholeCanvas = true;
+
+        [SerializeField, Min(1f), Tooltip("캔버스보다 살짝 크게 잡아 가장자리가 비지 않게 한다")]
+        float overscan = 1.02f;
+
         [SerializeField, Min(0f), Tooltip("배경이 나타나는 시간(초). 0이면 즉시")]
         float fadeInDuration = 0.12f;
 
@@ -146,9 +155,16 @@ namespace ContextStage
 
             bool captured = TryCapture();
 
-            // UIPopup 의 페이드 코루틴이 다음 프레임에 다시 써 주지만,
-            // animDuration 이 0이면 아무도 안 써 주므로 여기서 되돌려야 한다
-            if (popupGroup != null && restoreAlpha >= 0f) popupGroup.alpha = restoreAlpha;
+            // 알파를 되돌린다. 눌러 두기 전 값은 "닫힌 상태의 0" 일 때가 많으므로
+            // 그대로 복원하면 팝업이 투명하게 남는다 — 열려 있으면 1로 되돌린다.
+            // (페이드가 있는 팝업은 다음 프레임에 UIPopup 이 다시 써 준다)
+            if (popupGroup != null && restoreAlpha >= 0f)
+            {
+                UIPopup owner = GetComponentInParent<UIPopup>();
+                popupGroup.alpha = owner != null && owner.IsOpen
+                    ? Mathf.Max(restoreAlpha, 1f)
+                    : restoreAlpha;
+            }
 
             if (!captured) yield break;
 
@@ -199,7 +215,37 @@ namespace ContextStage
             backdropImage.uvRect = ShouldFlip()
                 ? new Rect(0f, 1f, 1f, -1f)
                 : new Rect(0f, 0f, 1f, 1f);
+            FitToCanvas();
             backdropImage.enabled = true;
+        }
+
+        /// <summary>
+        /// 팝업 RectTransform 이 아니라 <b>캔버스 전체</b>를 덮도록 크기·위치를 다시 잡는다.
+        ///
+        /// 팝업 루트가 화면 전체인 경우도 있고(PausePopup·GameOverPopup),
+        /// 가운데 100×100 짜리 작은 패널인 경우도 있다(ScoreEntryPopup·LeaderboardPopup).
+        /// 부모에 맞춰 늘리면 후자에서 화면 한가운데만 흐려져 "블러가 안 걸린다"로 보인다.
+        /// </summary>
+        void FitToCanvas()
+        {
+            if (!coverWholeCanvas) return;
+
+            Canvas canvas = backdropImage.canvas;
+            if (canvas == null) return;
+
+            var canvasRect = canvas.rootCanvas.transform as RectTransform;
+            if (canvasRect == null) return;
+
+            var rect = (RectTransform)transform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+
+            // 부모 체인에 1이 아닌 스케일이 끼어 있어도 화면상 크기가 맞도록 보정한다
+            float selfScale = Mathf.Abs(rect.lossyScale.x) > 0.0001f ? rect.lossyScale.x : 1f;
+            float ratio = canvasRect.lossyScale.x / selfScale;
+
+            rect.sizeDelta = canvasRect.rect.size * ratio * Mathf.Max(1f, overscan);
+            rect.position = canvasRect.TransformPoint(canvasRect.rect.center);
         }
 
         /// <summary>
