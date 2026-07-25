@@ -14,7 +14,9 @@ namespace ContextStage
     ///       → 교차 반응 → 상태 읽기(지루한 관객 구하기) → 관객 교체 → 30초 최종 미니 공연 → 완료
     ///
     /// 다른 시스템을 제어하는 방법 (전부 기존 공개 API·한 줄 훅):
-    ///   관객 고정      : AudienceRosterSystem.TryAdd/TryRemove/TrySetEngagement + SuppressNaturalArrivals
+    ///   관객 고정      : AudienceRosterSystem.TryAdd/TryRemove/TrySetEngagement
+    ///                    + SuppressNaturalArrivals(유입 정지) + SuppressEngagementDecay(개별 몰입도 감소 정지)
+    ///   손패 고정      : CardSystem.SetHand (성향별 카드 1장씩, 총 3장)
     ///   카드 제한      : CardInput.UseFilter (거부된 카드는 소모 없이 손패로 복귀)
     ///   호응도 정지    : Hype.SetDecayPaused(true)
     ///   특별 관객 정지 : SpecialAudienceManager.StopSystem()
@@ -200,8 +202,11 @@ namespace ContextStage
 
             _presenter = FindFirstObjectByType<AudienceRosterPresenter>();
 
+            roster.SuppressEngagementDecay = true;
+
             CardInput.UseFilter = FilterCard;
             _allowAllCards = false;
+            SetupFixedHand();
 
             overlay?.SetSkipVisible(true);
         }
@@ -211,7 +216,10 @@ namespace ContextStage
             IsRunning = false;
 
             if (AudienceRosterSystem.HasInstance)
+            {
                 AudienceRosterSystem.Instance.SuppressNaturalArrivals = false;
+                AudienceRosterSystem.Instance.SuppressEngagementDecay = false;
+            }
             Hype.SetDecayPaused(false);
             if (_crisis != null) _crisis.enabled = _crisisWasEnabled;
             CardInput.UseFilter = null;
@@ -240,6 +248,35 @@ namespace ContextStage
         // ---------------- 관객 구성 헬퍼 ----------------
 
         readonly List<AudienceId> _spawned = new List<AudienceId>();
+
+        static readonly CrowdPreference[] FixedHandOrder =
+            { CrowdPreference.Mosh, CrowdPreference.Singalong, CrowdPreference.Chill };
+
+        /// <summary>튜토리얼 시작 손패를 성향별 카드 1장씩, 총 3장 고정으로 세팅한다.</summary>
+        void SetupFixedHand()
+        {
+            if (!CardSystem.HasInstance) return;
+            var system = CardSystem.Instance;
+            var config = system.Config;
+            if (config == null) return;
+
+            var cards = new List<CardDefinition>(3);
+            foreach (var pref in FixedHandOrder)
+            {
+                foreach (var entry in config.CardPool)
+                {
+                    if (entry == null || !entry.IsUsable) continue;
+                    if (entry.Prefab.Role == CardRole.Normal && entry.Prefab.TargetPreference == pref)
+                    {
+                        cards.Add(entry.Prefab);
+                        break;
+                    }
+                }
+            }
+
+            if (cards.Count == 3) system.SetHand(cards);
+            else Debug.LogWarning("[Tutorial] 카드 풀에 성향별 Normal 카드가 3종 모두 있어야 합니다.");
+        }
 
         /// <summary>기존 관객을 정리하고 지정 구성으로 채운다. (추가 먼저 → 제거 — 로스터가 비면 게임오버가 뜨므로)</summary>
         void SetRoster(params (CrowdPreference pref, float engagement)[] members)
@@ -361,10 +398,7 @@ namespace ContextStage
         void EnterIntro()
         {
             SetPhase(Phase.Intro);
-            SetRoster(
-                (CrowdPreference.Mosh, middleEngagement),
-                (CrowdPreference.Singalong, middleEngagement),
-                (CrowdPreference.Chill, middleEngagement));
+            SetRoster((CrowdPreference.Mosh, middleEngagement)); // 첫 관객 한 명만 등장
 
             overlay?.SetDim(true);
             overlay?.Spotlight(null);
@@ -391,6 +425,7 @@ namespace ContextStage
             SetPhase(Phase.PrefSingalong);
             _expectedPref = CrowdPreference.Singalong;
             _blockedHint = "이 관객은 함께 부르고 싶어 합니다. 옷차림과 손동작을 다시 확인해보세요.";
+            SetRoster((CrowdPreference.Singalong, middleEngagement)); // Mosh 퇴장, Singalong 등장
             SpotlightPref(CrowdPreference.Singalong);
             overlay?.ShowMessage(
                 "이 관객은 따라 부르고 싶어 합니다.",
@@ -403,6 +438,7 @@ namespace ContextStage
             SetPhase(Phase.PrefChill);
             _expectedPref = CrowdPreference.Chill;
             _blockedHint = "옷차림을 다시 보세요. 차분한 복장의 관객은 여유로운 공연을 좋아합니다.";
+            SetRoster((CrowdPreference.Chill, middleEngagement)); // Singalong 퇴장, Chill 등장
             SpotlightPref(CrowdPreference.Chill);
             overlay?.ShowMessage(
                 "이번에는 힌트가 없습니다.",
@@ -414,6 +450,10 @@ namespace ContextStage
         {
             SetPhase(Phase.CrossUse);
             _allowAllCards = true; // 어떤 공연 카드든 좋다 — 교차 반응을 보는 게 목적
+            SetRoster(
+                (CrowdPreference.Mosh, middleEngagement),
+                (CrowdPreference.Singalong, middleEngagement),
+                (CrowdPreference.Chill, middleEngagement)); // 세 관객 재소집 — 이제 전체 반응 차이를 보여준다
             overlay?.SetDim(false);
             overlay?.Spotlight(null);
             overlay?.ShowMessage(
