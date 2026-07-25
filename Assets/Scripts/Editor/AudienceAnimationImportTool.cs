@@ -47,6 +47,13 @@ namespace ContextStage.EditorTools
 
             var so = new SerializedObject(actor);
             SerializedProperty listProp = so.FindProperty("animatedVariants");
+            if (listProp == null)
+            {
+                Debug.LogError(
+                    "[AudienceAnim] AudienceMemberActor의 animatedVariants 필드를 찾지 못했습니다.");
+                return;
+            }
+
             int totalClips = 0;
 
             foreach (var source in Sources)

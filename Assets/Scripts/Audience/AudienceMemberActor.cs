@@ -1,9 +1,21 @@
 using System;
+using System.Collections.Generic;
 using GameJamKit;
 using UnityEngine;
 
 namespace ContextStage
 {
+    /// <summary>
+    /// One set of species animation variants for an audience preference and engagement stage.
+    /// </summary>
+    [Serializable]
+    public struct AnimatedVariantGroup
+    {
+        public CrowdPreference preference;
+        public AudienceEngagementStage stage;
+        public SpriteAnimationClip[] variants;
+    }
+
     [DisallowMultipleComponent]
     [RequireComponent(typeof(SpriteRenderer))]
     public sealed class AudienceMemberActor : MonoBehaviour, IPoolable
@@ -16,6 +28,14 @@ namespace ContextStage
         [SerializeField] Color chillColor = Color.white;
         [SerializeField] Color singalongColor = Color.white;
         [SerializeField] Color moshColor = Color.white;
+
+        [Header("Character Animation (optional per preference/stage)")]
+        [Tooltip("Configured preference/stage pairs use animation. Missing pairs use the matching static sprite.")]
+        [SerializeField] List<AnimatedVariantGroup> animatedVariants =
+            new List<AnimatedVariantGroup>();
+
+        readonly SpriteAnimationPlayer _animationPlayer =
+            new SpriteAnimationPlayer();
 
         [Header("Departure Warning")]
         [SerializeField] GameObject warningRoot;
@@ -121,6 +141,7 @@ namespace ContextStage
             warningFillRenderer.sprite = SolidSprite;
             warningBackgroundRenderer.color = warningBackgroundColor;
             warningFillRenderer.color = warningFillColor;
+            _animationPlayer.Bind(characterRenderer);
         }
 
         public void OnSpawned()
@@ -135,6 +156,7 @@ namespace ContextStage
             _exitCompleted = null;
             _phase = UnityEngine.Random.value * Mathf.PI * 2f;
             _hasLayout = false;
+            _animationPlayer.Stop();
             if (warningRoot != null) warningRoot.SetActive(false);
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
@@ -149,6 +171,7 @@ namespace ContextStage
             _exitCompleted = null;
             _exiting = false;
             _exitStyle = AudienceExitStyle.Default;
+            _animationPlayer.Stop();
             if (warningRoot != null) warningRoot.SetActive(false);
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
@@ -167,7 +190,9 @@ namespace ContextStage
             _exitStyle = AudienceExitStyle.Default;
             _exitElapsed = 0f;
             _hasLayout = false;
-            ApplySnapshot(snapshot);
+            _snapshot = snapshot;
+            ApplyVisual(snapshot.Preference, snapshot.Stage);
+            UpdateWarning();
         }
 
         public void ApplySnapshot(AudienceSnapshot snapshot)
@@ -175,9 +200,10 @@ namespace ContextStage
             if (!IsBound || snapshot.Id != _boundId) return;
 
             bool preferenceChanged = snapshot.Preference != _snapshot.Preference;
+            bool stageChanged = snapshot.Stage != _snapshot.Stage;
             _snapshot = snapshot;
-            if (preferenceChanged || characterRenderer.sprite == null)
-                ApplyPreference(snapshot.Preference);
+            if (preferenceChanged || stageChanged || characterRenderer.sprite == null)
+                ApplyVisual(snapshot.Preference, snapshot.Stage);
             UpdateWarning();
         }
 
@@ -244,6 +270,7 @@ namespace ContextStage
             if (!IsBound) return;
 
             float deltaTime = Time.deltaTime;
+            _animationPlayer.Tick(deltaTime);
 
             float followStep = layoutFollowSpeed * deltaTime;
             _currentLayoutPosition = Vector3.MoveTowards(_currentLayoutPosition, _layoutPosition, followStep);
@@ -274,26 +301,65 @@ namespace ContextStage
             ApplyTransform();
         }
 
-        void ApplyPreference(CrowdPreference preference)
+        void ApplyVisual(
+            CrowdPreference preference,
+            AudienceEngagementStage stage)
+        {
+            _characterColor = ColorFor(preference);
+
+            SpriteAnimationClip clip = AnimationVariantFor(preference, stage);
+            if (clip != null && clip.IsValid)
+            {
+                _animationPlayer.Play(clip, restart: true);
+                return;
+            }
+
+            _animationPlayer.Stop();
+            characterRenderer.sprite = StaticSpriteFor(preference);
+        }
+
+        Color ColorFor(CrowdPreference preference)
         {
             switch (preference)
             {
-                case CrowdPreference.Chill:
-                    characterRenderer.sprite = chillSprite;
-                    _characterColor = chillColor;
-                    break;
-                case CrowdPreference.Singalong:
-                    characterRenderer.sprite = singalongSprite;
-                    _characterColor = singalongColor;
-                    break;
-                case CrowdPreference.Mosh:
-                    characterRenderer.sprite = moshSprite;
-                    _characterColor = moshColor;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(preference), preference, null);
+                case CrowdPreference.Chill: return chillColor;
+                case CrowdPreference.Singalong: return singalongColor;
+                case CrowdPreference.Mosh: return moshColor;
+                default: throw new ArgumentOutOfRangeException(nameof(preference), preference, null);
             }
         }
+
+        Sprite StaticSpriteFor(CrowdPreference preference)
+        {
+            switch (preference)
+            {
+                case CrowdPreference.Chill: return chillSprite;
+                case CrowdPreference.Singalong: return singalongSprite;
+                case CrowdPreference.Mosh: return moshSprite;
+                default: throw new ArgumentOutOfRangeException(nameof(preference), preference, null);
+            }
+        }
+
+        SpriteAnimationClip AnimationVariantFor(
+            CrowdPreference preference,
+            AudienceEngagementStage stage)
+        {
+            for (int i = 0; i < animatedVariants.Count; i++)
+            {
+                AnimatedVariantGroup group = animatedVariants[i];
+                if (group.preference != preference || group.stage != stage)
+                    continue;
+
+                SpriteAnimationClip[] variants = group.variants;
+                if (variants == null || variants.Length == 0) return null;
+                return variants[PositiveModulo(_boundId.Value, variants.Length)];
+            }
+
+            return null;
+        }
+
+        static int PositiveModulo(int value, int divisor)
+            => divisor <= 0 ? 0 : ((value % divisor) + divisor) % divisor;
 
         void UpdateWarning()
         {

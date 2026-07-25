@@ -192,6 +192,16 @@ namespace ContextStage
                 }
 
                 _hand.RemoveAt(index);
+                int rawScore = gainedScore;
+                ComboResolution combo = ComboSystem.HasInstance
+                    ? ComboSystem.Instance.ResolveCard(
+                        card.Role,
+                        rawScore,
+                        isSpecialHit)
+                    : new ComboResolution(0, 1f, isSpecialHit || rawScore > 0);
+                int finalScore = card.Role == CardRole.Utility
+                    ? 0
+                    : Mathf.RoundToInt(rawScore * combo.Multiplier);
                 HypeJudgement feedback = isSpecialHit
                     ? HypeJudgement.Perfect
                     : ResolveFeedback(
@@ -208,8 +218,8 @@ namespace ContextStage
                     HandIndex = index,
                     Judgement = feedback,
                     Delta = 0f,
-                    BaseScore = gainedScore,
-                    Multiplier = 1f
+                    BaseScore = rawScore,
+                    Multiplier = combo.Multiplier
                 });
 
                 EventBus.Raise(new CardResolved
@@ -223,12 +233,17 @@ namespace ContextStage
                         ? CrowdReactionGrade.Good
                         : CrowdReactionGrade.Weak,
                     Judgement = feedback,
-                    BaseScore = gainedScore,
-                    HypeMultiplier = 1f,
+                    BaseScore = rawScore,
+                    HypeMultiplier = combo.Multiplier,
                     CrowdMultiplier = 1f,
-                    GainedScore = gainedScore,
+                    GainedScore = finalScore,
                     HypeDelta = 0f,
-                    IsSpecialHit = isSpecialHit
+                    IsSpecialHit = isSpecialHit,
+                    RawAudienceScore = gainedScore,
+                    SpecialBonusScore = 0,
+                    RawScore = rawScore,
+                    ComboCount = combo.Combo,
+                    ComboMultiplier = combo.Multiplier
                 });
 
                 ResolveHandEffect(card, handCountBeforeUse);

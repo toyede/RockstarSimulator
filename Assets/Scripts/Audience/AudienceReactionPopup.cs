@@ -151,12 +151,12 @@ namespace ContextStage
             {
                 string score =
                     reactionValue.ToString(CultureInfo.InvariantCulture);
-                return $"{ResolveLabel(reactionValue)} {FormatSigned(score, reactionValue)}";
+                return FormatSigned(score, reactionValue);
             }
 
             string delta =
                 engagementDelta.ToString("0.#", CultureInfo.InvariantCulture);
-            return $"{ResolveLabel(reactionValue)} {FormatSigned(delta, engagementDelta)}";
+            return FormatSigned(delta, engagementDelta);
         }
 
         static string FormatSigned(string value, float numericValue) =>
@@ -170,15 +170,6 @@ namespace ContextStage
             return reactionValue >= strongReactionThreshold
                 ? strongColor
                 : positiveColor;
-        }
-
-        string ResolveLabel(int reactionValue)
-        {
-            if (reactionValue >= strongReactionThreshold) return "LOVE IT!";
-            if (reactionValue > 0) return "INTERESTED";
-            if (reactionValue <= strongNegativeThreshold) return "BORED";
-            if (reactionValue < 0) return "NOT FOR ME";
-            return "NO REACTION";
         }
 
         void ShowText(string text, Color color, int sortingOrder)

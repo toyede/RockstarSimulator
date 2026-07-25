@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using GameJamKit;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -172,16 +173,39 @@ namespace ContextStage.EditorTools
             float hypeBefore = Hype.Current;
             int scoreBefore = gameManager.Score;
             int handBefore = system.HandCount;
-            int expectedScoreGain = ResolveExpectedAudienceScore(
+            int expectedRawScore = ResolveExpectedAudienceScore(
                 firstCard,
                 system.AudienceRoster.Members);
+            int comboBefore = ComboSystem.HasInstance
+                ? ComboSystem.Instance.CurrentCombo
+                : 0;
 
             if (!system.SelectCard(0))
                 throw new InvalidOperationException("[Cards] 첫 카드 사용에 실패했습니다.");
+            int expectedCombo = firstCard.Role == CardRole.Utility
+                ? comboBefore
+                : expectedRawScore > 0
+                    ? comboBefore + 1
+                    : 0;
+            if (ComboSystem.HasInstance &&
+                ComboSystem.Instance.CurrentCombo != expectedCombo)
+            {
+                throw new InvalidOperationException(
+                    $"[Cards] 첫 카드 콤보가 예상과 다릅니다: " +
+                    $"{ComboSystem.Instance.CurrentCombo}/{expectedCombo}");
+            }
+
+            float expectedMultiplier = ComboSystem.HasInstance
+                ? ComboSystem.Instance.CurrentMultiplier
+                : 1f;
+            int expectedScoreGain = firstCard.Role == CardRole.Utility
+                ? 0
+                : Mathf.RoundToInt(expectedRawScore * expectedMultiplier);
             if (gameManager.Score - scoreBefore != expectedScoreGain)
                 throw new InvalidOperationException("[Cards] 관객별 반응값 합계로 점수가 계산되지 않았습니다.");
             if (!Mathf.Approximately(Hype.Current, hypeBefore))
                 throw new InvalidOperationException("[Cards] 관객별 카드 처리 중 열기 값이 임의로 변경됐습니다.");
+            ValidateAudienceReactionPopupText();
 
             int expectedFirstHand = firstCard.Role == CardRole.Utility &&
                                     firstCard.UtilityEffect == UtilityCardEffect.Draw
@@ -294,6 +318,30 @@ namespace ContextStage.EditorTools
                     card.AudienceReaction,
                     members[i]).Value;
             return total;
+        }
+
+        static void ValidateAudienceReactionPopupText()
+        {
+            var actors = Object.FindObjectsByType<AudienceMemberActor>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
+
+            for (int i = 0; i < actors.Length; i++)
+            {
+                var popup = actors[i].ReactionPopup;
+                if (popup == null || !popup.IsShowing) continue;
+
+                if (!float.TryParse(
+                        popup.DisplayedText,
+                        NumberStyles.Float,
+                        CultureInfo.InvariantCulture,
+                        out _))
+                {
+                    throw new InvalidOperationException(
+                        $"[Cards] 관객 머리 위 반응은 숫자만 표시해야 합니다: " +
+                        $"'{popup.DisplayedText}'");
+                }
+            }
         }
 
         static void ValidateHandCentering(CardSystem system)
@@ -860,7 +908,7 @@ namespace ContextStage.EditorTools
             handRect.anchorMin = handRect.anchorMax = new Vector2(0.5f, 0f);
             handRect.pivot = new Vector2(0.5f, 0f);
             handRect.anchoredPosition = new Vector2(0f, 55f);
-            handRect.sizeDelta = new Vector2(800f, 260f);
+            handRect.sizeDelta = new Vector2(0f, 260f);
 
             var layout = EnsureComponent<HorizontalLayoutGroup>(handGo);
             layout.spacing = 20f;
@@ -869,6 +917,10 @@ namespace ContextStage.EditorTools
             layout.childControlHeight = false;
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
+
+            var sizeFitter = EnsureComponent<ContentSizeFitter>(handGo);
+            sizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            sizeFitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
 
             var hintGo = GameObject.Find("CardHint");
             Text hint = hintGo != null ? hintGo.GetComponent<Text>() : null;
