@@ -67,6 +67,6 @@ namespace ContextStage
         }
 
         /// <summary>버튼 OnClick 에 연결.</summary>
-        public void OnClickTitle() => UIManager.Instance.LoadScene("Title");
+        public void OnClickTitle() => TitleReturn.Go();
     }
 }
