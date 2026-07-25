@@ -96,6 +96,33 @@ Special 역할 카드는 3단계 모두 있다: `Card_02_Response`(Chill) / `Car
 주요 인스펙터 값: `moveSpeed`(1.6) / `dwellDuration`(1.8초) / `lateralOffset`(0.45) /
 `scaleMultiplier`(1.15 — 주변보다 살짝 커서 눈에 띈다) / `sortingOrderBonus`(1).
 
+## 4-2. 저격 성공 화면 효과 (요구 타입별)
+
+```
+Tools/Special Audience/Setup Special Hit Effects
+```
+
+| 요구 | 연출 |
+|---|---|
+| Chill | **색수차** — `SpecialHit_Chill_Chromatic.asset` (ChromaticSplit, Circle, 0.45초) |
+| Singalong | **카메라 셰이크** — `CameraShake.ShakeFor(0.35, 0.35)` |
+| Mosh | **링 디스토션** — 내장 폴백 (기존과 동일) |
+
+셋 다 **같은 타이밍**에 터진다. `SpecialAudienceCrowdActor.OnSpecialHit` 한 지점에서
+`specialHitEffects` 표를 찾아 재생하기 때문이다. 예전에는 이 자리에 Mosh 만 하드코딩돼 있었다.
+
+표 한 줄(`SpecialHitScreenEffect`)이 갖는 것:
+
+| 필드 | 뜻 |
+|---|---|
+| `profile` | 재생할 화면 효과. 비우면 화면 효과 없음 |
+| `effectSize` / `strengthMultiplier` / `durationOverride` | 프로필 재생 인자 |
+| `useBuiltinDistortionFallback` | 프로필이 비었을 때 내장 링 디스토션으로 대신할지 (Mosh 전용) |
+| `cameraShake` / `shakeStrength` / `shakeDuration` | 카메라 흔들림. 화면 효과와 **독립**이라 둘 다 켤 수 있다 |
+
+요구 타입이 늘어나도 표에 줄만 추가하면 되고 코드는 그대로다.
+셋업은 **프로필이 이미 연결된 줄을 덮어쓰지 않으므로** 연출 담당이 바꿔 둔 값이 보존된다.
+
 `CrowdSpawner` 또는 배치된 관객이 없으면 fallback 위치에 잘못 표시하지 않고 오류를 남긴 뒤 숨는다.
 `SpecialAudienceDropTarget`도 런타임에 자동 생성하지 않으므로 셋업 검증에서 누락을 잡을 수 있다.
 

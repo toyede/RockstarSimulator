@@ -1,8 +1,47 @@
+using System.Collections.Generic;
 using GameJamKit;
 using UnityEngine;
 
 namespace ContextStage
 {
+    /// <summary>
+    /// 저격 성공 순간 재생할 화면 효과 한 줄. 요구 타입(HeatStage) 하나에 대응한다.
+    ///
+    /// 화면 효과(프로필)와 카메라 셰이크는 <b>서로 독립</b>이라 둘 다 켤 수도, 하나만 켤 수도 있다.
+    /// </summary>
+    [System.Serializable]
+    public struct SpecialHitScreenEffect
+    {
+        [Tooltip("이 요구 타입을 저격했을 때")]
+        public HeatStage stage;
+
+        [Tooltip("재생할 화면 효과 프로필. 비우면 화면 효과 없이 카메라 셰이크만 쓴다")]
+        public LocalScreenEffectProfile profile;
+
+        [Tooltip("효과 영역의 가로·세로 크기(월드 유닛)")]
+        public Vector2 effectSize;
+
+        [Min(0f), Tooltip("프로필 강도 배율")]
+        public float strengthMultiplier;
+
+        [Min(0f), Tooltip("0이면 프로필 시간 사용, 0보다 크면 이 시간으로 덮어쓴다")]
+        public float durationOverride;
+
+        [Tooltip(
+            "프로필이 비어 있을 때 내장 링 디스토션으로 대신할지. " +
+            "프로필이 있으면 무시된다")]
+        public bool useBuiltinDistortionFallback;
+
+        [Tooltip("카메라를 흔들지")]
+        public bool cameraShake;
+
+        [Min(0f), Tooltip("흔들림 세기")]
+        public float shakeStrength;
+
+        [Min(0f), Tooltip("흔들림 지속 시간(초)")]
+        public float shakeDuration;
+    }
+
     /// <summary>
     /// 특별 관객을 <b>무대 아래 일반 관객들 사이</b>에 세우고 돌아다니게 하는 월드 표현.
     ///
@@ -78,18 +117,37 @@ namespace ContextStage
             airTimeRatio = 0.75f, squash = 0.18f,
         };
 
-        [Header("Mosh Special Hit 화면 효과")]
-        [SerializeField, Tooltip("지정하면 이 통합 화면 효과 프로필을 사용한다. 비어 있으면 기본 링 디스토션을 사용한다")]
-        LocalScreenEffectProfile moshSpecialHitEffect;
-
-        [SerializeField, Tooltip("효과 영역의 가로·세로 크기(월드 유닛)")]
-        Vector2 moshSpecialHitEffectSize = new Vector2(10f, 10f);
-
-        [SerializeField, Min(0f), Tooltip("프로필 강도 배율")]
-        float moshSpecialHitStrengthMultiplier = 1f;
-
-        [SerializeField, Min(0f), Tooltip("0이면 프로필 시간 사용, 0보다 크면 이 시간으로 덮어쓴다")]
-        float moshSpecialHitDurationOverride;
+        [Header("Special Hit 화면 효과 (요구 타입별)")]
+        [SerializeField, Tooltip(
+            "저격 성공 순간 재생할 효과. 요구 타입마다 한 줄씩 둔다. " +
+            "타입이 늘어나도 이 표에 추가하면 되고 코드는 그대로다")]
+        List<SpecialHitScreenEffect> specialHitEffects = new List<SpecialHitScreenEffect>
+        {
+            new SpecialHitScreenEffect
+            {
+                stage = HeatStage.Chill,
+                effectSize = new Vector2(9f, 9f),
+                strengthMultiplier = 1f,
+                cameraShake = false,
+            },
+            new SpecialHitScreenEffect
+            {
+                stage = HeatStage.Singalong,
+                effectSize = new Vector2(9f, 9f),
+                strengthMultiplier = 1f,
+                cameraShake = true,
+                shakeStrength = 0.35f,
+                shakeDuration = 0.35f,
+            },
+            new SpecialHitScreenEffect
+            {
+                stage = HeatStage.Mosh,
+                effectSize = new Vector2(10f, 10f),
+                strengthMultiplier = 1f,
+                cameraShake = false,
+                useBuiltinDistortionFallback = true,
+            },
+        };
 
         SpriteRenderer _renderer;
         readonly SpriteAnimationPlayer _player = new SpriteAnimationPlayer();
@@ -209,42 +267,73 @@ namespace ContextStage
             SetVisible(false);
         }
 
+        /// <summary>
+        /// 저격 성공 순간의 화면 효과. 요구 타입에 해당하는 줄 하나만 재생한다.
+        /// 세 타입 모두 <b>같은 타이밍</b>(SpecialHitLanded 수신 시점)에 터진다 —
+        /// 예전에는 Mosh 만 여기서 처리했다.
+        /// </summary>
         void OnSpecialHit(SpecialHitLanded e)
         {
             _activeHitHoldDuration = Mathf.Max(0f, e.HoldDuration);
-            if (!_active || e.RequestType != HeatStage.Mosh) return;
+            if (!_active) return;
+
+            if (!TryGetHitEffect(e.RequestType, out SpecialHitScreenEffect effect)) return;
 
             Vector3 effectPosition = CharacterRenderer != null
                 ? CharacterRenderer.bounds.center
                 : motionRoot.position;
 
-            if (moshSpecialHitEffect != null)
+            PlayScreenEffect(effect, effectPosition);
+
+            if (effect.cameraShake)
+            {
+                // 화면 전체가 흔들리므로 위치는 쓰지 않는다. 짧게 툭 치는 정도가 적당하다
+                CameraShake.ShakeFor(
+                    Mathf.Max(0f, effect.shakeStrength),
+                    Mathf.Max(0.01f, effect.shakeDuration));
+            }
+        }
+
+        bool TryGetHitEffect(HeatStage stage, out SpecialHitScreenEffect effect)
+        {
+            for (int i = 0; i < specialHitEffects.Count; i++)
+            {
+                if (specialHitEffects[i].stage != stage) continue;
+
+                effect = specialHitEffects[i];
+                return true;
+            }
+
+            effect = default;
+            return false;
+        }
+
+        void PlayScreenEffect(SpecialHitScreenEffect effect, Vector3 position)
+        {
+            if (effect.profile != null)
             {
                 ScreenEffects.Play(
-                    moshSpecialHitEffect,
-                    effectPosition,
-                    moshSpecialHitEffectSize,
-                    moshSpecialHitStrengthMultiplier,
-                    moshSpecialHitDurationOverride);
+                    effect.profile,
+                    position,
+                    effect.effectSize,
+                    effect.strengthMultiplier,
+                    effect.durationOverride);
                 return;
             }
 
+            // 프로필이 비어 있을 때: Mosh 처럼 내장 링 디스토션으로 대신할지,
+            // Singalong 처럼 화면 효과 없이 카메라 셰이크만 쓸지 표에서 정한다.
+            if (!effect.useBuiltinDistortionFallback) return;
+
             float radius = Mathf.Max(
                 0.01f,
-                Mathf.Max(moshSpecialHitEffectSize.x, moshSpecialHitEffectSize.y) * 0.5f);
-            float strength = 0.04f * moshSpecialHitStrengthMultiplier;
-            if (moshSpecialHitDurationOverride > 0f)
-            {
-                ScreenEffects.PlayDistortion(
-                    effectPosition,
-                    radius,
-                    strength,
-                    moshSpecialHitDurationOverride);
-            }
+                Mathf.Max(effect.effectSize.x, effect.effectSize.y) * 0.5f);
+            float strength = 0.04f * effect.strengthMultiplier;
+
+            if (effect.durationOverride > 0f)
+                ScreenEffects.PlayDistortion(position, radius, strength, effect.durationOverride);
             else
-            {
-                ScreenEffects.PlayDistortion(effectPosition, radius, strength);
-            }
+                ScreenEffects.PlayDistortion(position, radius, strength);
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
