@@ -42,7 +42,9 @@ namespace ContextStage.EditorTools
                 CardRole role,
                 HeatStage targetStage,
                 UtilityCardEffect utilityEffect,
-                Color color)
+                Color color,
+                SpecialCardTargetEffectType specialTargetEffectType =
+                    SpecialCardTargetEffectType.None)
             {
                 FileName = fileName;
                 Id = id;
@@ -52,6 +54,7 @@ namespace ContextStage.EditorTools
                 TargetStage = targetStage;
                 UtilityEffect = utilityEffect;
                 Color = color;
+                SpecialTargetEffectType = specialTargetEffectType;
             }
 
             public string FileName { get; }
@@ -62,6 +65,7 @@ namespace ContextStage.EditorTools
             public HeatStage TargetStage { get; }
             public UtilityCardEffect UtilityEffect { get; }
             public Color Color { get; }
+            public SpecialCardTargetEffectType SpecialTargetEffectType { get; }
         }
 
         [MenuItem("Tools/Cards/Setup Prefab Card System", false, 0)]
@@ -234,11 +238,13 @@ namespace ContextStage.EditorTools
             ExerciseUtilityCard(system, UtilityCardEffect.Draw);
             ExerciseUtilityCard(system, UtilityCardEffect.Reroll);
             ValidateHandCentering(system);
+            ExerciseTargetedSpecialCard(system);
 
             Debug.Log(
                 $"[Cards] Play Mode 스모크 테스트 완료: 첫 카드={firstCard.DisplayName}, " +
                 $"첫 사용 후 손패={expectedFirstHand}, 드로우·리롤 정상, " +
-                $"3/4/5/7/10장 중앙 정렬, 30회 연속 사용 및 덱 경계 통과 정상.");
+                $"3/4/5/7/10장 중앙 정렬, 저격 Special Hit, " +
+                $"30회 연속 사용 및 덱 경계 통과 정상.");
         }
 
         static void NormalizeHandToMinimum(CardSystem system)
@@ -303,6 +309,70 @@ namespace ContextStage.EditorTools
             }
 
             throw new InvalidOperationException($"[Cards] 200회 안에 {targetEffect} 카드를 찾지 못했습니다.");
+        }
+
+        static void ExerciseTargetedSpecialCard(CardSystem system)
+        {
+            if (!SpecialAudienceManager.HasInstance)
+                throw new InvalidOperationException(
+                    "[Cards] 저격 사용을 검증할 SpecialAudienceManager가 없습니다.");
+
+            for (int attempt = 0; attempt < 200; attempt++)
+            {
+                for (int i = 0; i < system.HandCount; i++)
+                {
+                    CardDefinition card = system.GetCard(i);
+                    if (card == null || card.Role != CardRole.Special) continue;
+
+                    bool resolved = false;
+                    CardResolved resolvedEvent = default;
+                    System.Action<CardResolved> handler = e =>
+                    {
+                        if (e.CardId != card.Id) return;
+                        resolved = true;
+                        resolvedEvent = e;
+                    };
+
+                    EventBus.Subscribe(handler);
+                    try
+                    {
+                        SpecialAudienceManager.Instance.ForceSpawn(card.TargetStage);
+                        if (!system.SelectCard(
+                                i,
+                                new SpecialCardRequest(card.TargetStage)))
+                        {
+                            throw new InvalidOperationException(
+                                $"[Cards] {card.DisplayName} 저격 사용에 실패했습니다.");
+                        }
+                    }
+                    finally
+                    {
+                        EventBus.Unsubscribe(handler);
+                    }
+
+                    if (!resolved || !resolvedEvent.IsSpecialHit)
+                    {
+                        throw new InvalidOperationException(
+                            $"[Cards] {card.DisplayName} 저격 사용이 " +
+                            "Special Hit로 판정되지 않았습니다.");
+                    }
+
+                    if (SpecialAudienceManager.Instance.HasActiveRequest)
+                    {
+                        throw new InvalidOperationException(
+                            "[Cards] 저격 성공 후 특별 관객 요청이 소비되지 않았습니다.");
+                    }
+
+                    return;
+                }
+
+                if (!system.SelectCard(0))
+                    throw new InvalidOperationException(
+                        "[Cards] 저격 카드 탐색 중 카드 사용에 실패했습니다.");
+            }
+
+            throw new InvalidOperationException(
+                "[Cards] 200회 안에 저격 사용을 검증할 특수 카드를 찾지 못했습니다.");
         }
 
         static int ResolveExpectedAudienceScore(
@@ -444,12 +514,14 @@ namespace ContextStage.EditorTools
                     "Card_03_HandsUp", "hands_up", "손 머리 위로!",
                     "함께 따라 할 동작으로 무대를 묶는다.",
                     CardRole.Special, HeatStage.Singalong, UtilityCardEffect.None,
-                    FromHex("#6431EA")),
+                    FromHex("#6431EA"),
+                    SpecialCardTargetEffectType.RandomAudienceArrival),
                 new CardSeed(
                     "Card_04_PassMic", "pass_mic", "마이크 넘기기",
                     "관객에게 노래를 맡겨 열기를 이어간다.",
                     CardRole.Special, HeatStage.Singalong, UtilityCardEffect.None,
-                    FromHex("#8C5CFF")),
+                    FromHex("#8C5CFF"),
+                    SpecialCardTargetEffectType.BoostAllEngagement),
                 new CardSeed(
                     "Card_05_GuitarSolo", "guitar_solo", "기타 솔로",
                     "달아오른 무대에 강렬한 솔로를 터뜨린다.",
@@ -459,7 +531,8 @@ namespace ContextStage.EditorTools
                     "Card_06_MoshPit", "open_mosh_pit", "모쉬핏 열어!",
                     "폭발 직전의 관객을 모쉬핏으로 끌어낸다.",
                     CardRole.Special, HeatStage.Mosh, UtilityCardEffect.None,
-                    FromHex("#B51230")),
+                    FromHex("#B51230"),
+                    SpecialCardTargetEffectType.RecruitPreferenceAndWeakenOthers),
                 new CardSeed(
                     "Card_07_Draw", "draw_two", "드로우",
                     "덱에서 카드 2장을 획득한다.",
@@ -586,36 +659,34 @@ namespace ContextStage.EditorTools
         static void ValidateCardEffects(List<string> errors)
         {
             var config = AssetDatabase.LoadAssetAtPath<HypeConfig>(HypeConfigPath);
-            var chill = LoadCardDefinition("Card_01_TempoUp");
-            var special = LoadCardDefinition("Card_04_PassMic");
-            var mosh = LoadCardDefinition("Card_05_GuitarSolo");
+            var handsUp = LoadCardDefinition("Card_03_HandsUp");
+            var passMic = LoadCardDefinition("Card_04_PassMic");
+            var moshPit = LoadCardDefinition("Card_06_MoshPit");
             var draw = LoadCardDefinition("Card_07_Draw");
             var reroll = LoadCardDefinition("Card_08_Reroll");
-            if (config == null || chill == null || special == null || mosh == null || draw == null || reroll == null)
+            if (config == null ||
+                handsUp == null ||
+                passMic == null ||
+                moshPit == null ||
+                draw == null ||
+                reroll == null)
             {
                 errors.Add("카드 효과 검증에 필요한 에셋이 없습니다.");
                 return;
             }
 
-            var exact = CardEffectResolver.Resolve(chill, 49f, config, SpecialCardRequest.None);
-            if (exact.BaseScore != 100 || !Mathf.Approximately(exact.HeatDelta, 12f))
-                errors.Add("일반 카드 단계 일치 효과가 100점/+12가 아닙니다.");
-
-            var far = CardEffectResolver.Resolve(mosh, 30f, config, SpecialCardRequest.None);
-            if (far.BaseScore != 0 || !Mathf.Approximately(far.HeatDelta, -5f))
-                errors.Add("일반 카드 두 단계 차이 효과가 0점/-5가 아닙니다.");
-
-            var specialHit = CardEffectResolver.Resolve(
-                special,
-                10f,
-                config,
-                new SpecialCardRequest(HeatStage.Singalong));
-            if (!specialHit.IsSpecialHit ||
-                specialHit.BaseScore != 400 ||
-                !Mathf.Approximately(specialHit.HeatDelta, 25f))
-            {
-                errors.Add("특수 히트 효과가 400점/+25가 아닙니다.");
-            }
+            ValidateSpecialTargetEffect(
+                handsUp,
+                SpecialCardTargetEffectType.RandomAudienceArrival,
+                errors);
+            ValidateSpecialTargetEffect(
+                passMic,
+                SpecialCardTargetEffectType.BoostAllEngagement,
+                errors);
+            ValidateSpecialTargetEffect(
+                moshPit,
+                SpecialCardTargetEffectType.RecruitPreferenceAndWeakenOthers,
+                errors);
 
             if (draw.UtilityEffect != UtilityCardEffect.Draw || draw.DrawCount != 2)
                 errors.Add("드로우 카드 효과가 2장 획득이 아닙니다.");
@@ -626,6 +697,26 @@ namespace ContextStage.EditorTools
                 !Mathf.Approximately(config.GetMultiplier(0.80f), 5f))
             {
                 errors.Add("열기 단계 배율이 Chill ×1 / Singalong ×3 / Mosh ×5가 아닙니다.");
+            }
+        }
+
+        static void ValidateSpecialTargetEffect(
+            CardDefinition card,
+            SpecialCardTargetEffectType expectedType,
+            List<string> errors)
+        {
+            SpecialCardTargetEffect effect = card.SpecialTargetEffect;
+            string error = string.Empty;
+            bool isValid =
+                card.Role == CardRole.Special &&
+                effect != null &&
+                effect.EffectType == expectedType &&
+                effect.TryValidate(out error);
+            if (!isValid)
+            {
+                errors.Add(
+                    $"{card.DisplayName}의 저격 효과가 올바르지 않습니다: " +
+                    $"{(string.IsNullOrEmpty(error) ? expectedType.ToString() : error)}");
             }
         }
 
@@ -733,17 +824,10 @@ namespace ContextStage.EditorTools
             serialized.FindProperty("utilityEffect").enumValueIndex = (int)seed.UtilityEffect;
             serialized.FindProperty("artwork").objectReferenceValue = guitar;
             serialized.FindProperty("cardColor").colorValue = seed.Color;
+            serialized.FindProperty("specialTargetEffect")
+                .FindPropertyRelative("effectType")
+                .enumValueIndex = (int)seed.SpecialTargetEffectType;
 
-            bool normal = seed.Role == CardRole.Normal;
-            bool special = seed.Role == CardRole.Special;
-            serialized.FindProperty("exactBaseScore").intValue = normal ? 100 : special ? 150 : 0;
-            serialized.FindProperty("adjacentBaseScore").intValue = normal ? 50 : special ? 60 : 0;
-            serialized.FindProperty("farBaseScore").intValue = 0;
-            serialized.FindProperty("exactHeatDelta").floatValue = normal ? 12f : special ? 8f : 0f;
-            serialized.FindProperty("adjacentHeatDelta").floatValue = normal ? 4f : special ? 2f : 0f;
-            serialized.FindProperty("farHeatDelta").floatValue = normal || special ? -5f : 0f;
-            serialized.FindProperty("specialHitBaseScore").intValue = special ? 400 : 0;
-            serialized.FindProperty("specialHitHeatDelta").floatValue = special ? 25f : 0f;
             serialized.FindProperty("drawCount").intValue = seed.UtilityEffect == UtilityCardEffect.Draw ? 2 : 0;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(card);

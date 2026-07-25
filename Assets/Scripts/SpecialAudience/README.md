@@ -32,32 +32,38 @@ Tools/Special Audience/Setup Special Audience   →   Ctrl+S
 
 등장 간격·요구 시간·연출 유지 시간은 `Assets/Settings/SpecialAudienceConfig.asset`에서 조정한다.
 `autoStart`, 드롭 게이트, 디버그 입력 여부는 장면의 Manager가 소유한다.
-점수와 열기 보상은 Manager에 중복 저장하지 않고 각 `CardDefinition`만이 소유한다.
+일반 사용 값은 `AudienceReactionProfile`, 저격 사용 값은
+`SpecialCardTargetEffect`가 소유한다.
 
 ## 4. 카드 시스템과의 연결 (완료됨)
 
 요구 타입은 **카드 시스템의 `HeatStage`(Chill/Singalong/Mosh)를 그대로 쓴다.**
 같은 의미의 enum 을 두 벌 두지 않기 위해 `SpecialAudienceRequestType` 은 폐기했다.
 
-`CardSystem.SelectCard()` 에서 실제로 이어지는 부분은 두 곳뿐이다.
+`CardSystem.SelectCard()`는 드롭 위치에서 만든 `SpecialCardRequest`를 다음처럼 사용한다.
 
 ```csharp
-// 1) 판정기에 지금 요구 중인 맥락을 넘긴다 (없으면 SpecialCardRequest.None 과 동일)
-var result = CardEffectResolver.Resolve(card, currentHype, config, SpecialAudience.CurrentRequest);
+bool matchesTargetedRequest =
+    card.Role == CardRole.Special &&
+    request.IsActive &&
+    card.TargetStage == request.RequestedStage;
 
-// 2) 특수 히트였다면 요청을 소비시킨다 (보상은 카드 수치로 이미 적용됨)
-if (result.IsSpecialHit)
-    SpecialAudience.ConsumeRequest(card.TargetStage, result.BaseScore, result.HeatDelta);
+if (matchesTargetedRequest &&
+    SpecialAudience.ConsumeRequest(card.TargetStage, 0, 0f))
+{
+    SpecialCardTargetEffectExecutor.TryExecute(card.SpecialTargetEffect, ...);
+    isSpecialHit = true;
+}
 ```
 
-**보상 이중 적용 주의.** 점수·열기는 카드가 자기 수치(`CardDefinition.SpecialHitBaseScore/HeatDelta`)로
-`CardSelected` 경로를 통해 이미 적용한다. 그래서 카드 경로는 매니저 보상을 쓰지 않는
-`ConsumeRequest` 를 호출하고, 이때 `SpecialHitLanded.AlreadyApplied` 가 `true` 로 나간다.
+저격이 성립하지 않으면 특수 카드도 `AudienceReactionProfile`의 일반 사용 효과를 적용한다.
+성립하면 `SpecialCardTargetEffect`만 실행하고 `isSpecialHit`를 통해 콤보·UI·조명·성공 연출을
+알린다. 기존 특수 히트 점수·열기 보상은 사용하지 않으므로 `ConsumeRequest`에는 0을 넘긴다.
 
-| API | 쓰는 곳 | 보상 |
+| API | 쓰는 곳 | 역할 |
 |---|---|---|
-| `SpecialAudience.CurrentRequest` | 카드 판정기에 맥락 전달 | – |
-| `SpecialAudience.ConsumeRequest(stage, score, heat)` | 카드 경로 (보상 이미 적용됨) | 이벤트에 실제 적용값 전달, `AlreadyApplied = true` |
+| `SpecialAudience.ResolveDropRequest(position, radius)` | 카드 드롭 순간 | 유효한 저격 요청 생성 |
+| `SpecialAudience.ConsumeRequest(stage, 0, 0)` | 저격 성공 카드 경로 | 요청 소비 및 성공 이벤트·연출 발생 |
 | `SpecialAudience.TryHit(stage, out reward)` | 구형 호출부 호환 전용 | 요청과 연출만 소비하며 보상은 0. 신규 코드는 `ConsumeRequest` 사용 |
 
 - 맞으면 제한시간 정지 → 연출 → 0.7초 뒤 숨김 → 다음 간격 시작

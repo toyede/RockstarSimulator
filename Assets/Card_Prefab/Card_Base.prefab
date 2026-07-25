@@ -359,14 +359,6 @@ MonoBehaviour:
   targetStage: 0
   targetPreference: 0
   utilityEffect: 0
-  exactBaseScore: 100
-  adjacentBaseScore: 50
-  farBaseScore: 0
-  exactHeatDelta: 12
-  adjacentHeatDelta: 4
-  farHeatDelta: -5
-  specialHitBaseScore: 400
-  specialHitHeatDelta: 25
   audienceReaction:
     appliesToAudience: 0
     chillScore: 0
@@ -376,6 +368,14 @@ MonoBehaviour:
     middleScore: 0
     excitedScore: 0
     engagementMultiplier: 0
+  specialTargetEffect:
+    effectType: 0
+    minimumArrivalCount: 1
+    maximumArrivalCount: 3
+    engagementIncrease: 15
+    recruitedPreference: 2
+    arrivalCapacityRatio: 0.2
+    otherPreferenceEngagement: 1
   drawCount: 2
   artwork: {fileID: 0}
   cardColor: {r: 1, g: 1, b: 1, a: 1}
