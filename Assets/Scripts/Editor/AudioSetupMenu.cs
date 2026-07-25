@@ -91,7 +91,7 @@ namespace ContextStage.EditorTools
                 go = new GameObject("[CrowdAmbience]");
                 Undo.RegisterCreatedObjectUndo(go, "Create CrowdAmbience");
             }
-            var system = go.GetComponent<CrowdAmbienceSystem>() ?? Undo.AddComponent<CrowdAmbienceSystem>(go);
+            var system = EnsureComponent<CrowdAmbienceSystem>(go);
             SetObjectField(system, "config", config);
 
             // 옵션 UI 가 나오기 전까지 키보드로 확인할 수 있는 디버그 입력 ([ ] - = M T)

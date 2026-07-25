@@ -39,8 +39,9 @@ namespace ContextStage.EditorTools
             go.SetActive(true);
             manager.enabled = true;
 
-            var view = Object.FindFirstObjectByType<SpecialAudienceView>(
-                FindObjectsInactive.Include) ?? BuildGreyboxView();
+            // ?? 대신 Unity 의 == 로 판정한다 (fake null 통과 방지)
+            var view = Object.FindFirstObjectByType<SpecialAudienceView>(FindObjectsInactive.Include);
+            if (view == null) view = BuildGreyboxView();
             view.transform.root.gameObject.SetActive(true);
             view.enabled = true;
 
@@ -49,8 +50,8 @@ namespace ContextStage.EditorTools
             AssignSprites(view);
 
             // 무대 위 실물 특별 관객 (군중 사이를 돌아다닌다). UI 뷰와 동시에 쓸 수 있다.
-            var actor = Object.FindFirstObjectByType<SpecialAudienceCrowdActor>(
-                FindObjectsInactive.Include) ?? BuildCrowdActor();
+            var actor = Object.FindFirstObjectByType<SpecialAudienceCrowdActor>(FindObjectsInactive.Include);
+            if (actor == null) actor = BuildCrowdActor();
             actor.gameObject.SetActive(true);
             actor.enabled = true;
             AudienceRosterPresenter presenter =

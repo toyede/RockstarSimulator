@@ -81,15 +81,11 @@ namespace ContextStage.EditorTools
                 spawner = Undo.AddComponent<CrowdSpawner>(host);
             }
 
-            CrowdCompositionManager manager =
-                host.GetComponent<CrowdCompositionManager>() ??
-                Undo.AddComponent<CrowdCompositionManager>(host);
+            CrowdCompositionManager manager = EnsureComponent<CrowdCompositionManager>(host);
 
             if (host.GetComponent<CrowdCompositionDebugView>() == null)
                 Undo.AddComponent<CrowdCompositionDebugView>(host);
-            CrowdShiftDirector shiftDirector =
-                host.GetComponent<CrowdShiftDirector>() ??
-                Undo.AddComponent<CrowdShiftDirector>(host);
+            CrowdShiftDirector shiftDirector = EnsureComponent<CrowdShiftDirector>(host);
 
             var managerObject = new SerializedObject(manager);
             SetObjectReference(managerObject, "config", config);
