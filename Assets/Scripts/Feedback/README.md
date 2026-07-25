@@ -8,6 +8,8 @@
 | 관객 입퇴장 (+1 관객 / -3 관객) | `AudienceFlowTextUI` | `Scripts/Audience` |
 | 특별 관객 말풍선 (Mosh! 등) | `SpecialAudienceSpeechBubble` | `Scripts/SpecialAudience` |
 | 저격 성공 보상 배너 | `SpecialHitRewardBanner` | `Scripts/SpecialAudience` |
+| 피버타임 진입 (배너·사운드·캐릭터 가속) | `FeverPresentation` | `Scripts/Combo` |
+| 피버타임 노란 픽셀 조명 | `FeverSpotlight` | `Scripts/Lighting` |
 
 ## 셋업
 
@@ -117,3 +119,58 @@ Tools/Feedback/Setup All Crowd Feedback   →   Ctrl+S
 ### 확인
 
 `SpecialHitBanner` 인스펙터의 `⋮` → `Debug/Play Sample Banner` 로 카드 없이 연출만 본다.
+
+## 5. 피버타임 연출
+
+```
+Tools/Feedback/Setup Fever Presentation   →   Ctrl+S
+```
+
+`FeverSystem` 을 수정하지 않는다. 이미 발행 중인 `FeverStateChanged(IsActive)` 하나만 구독한다.
+(`StartFever` 는 FeverSystem 내부 메서드이고, 밖으로 나오는 계약은 이 이벤트다)
+
+| 담당 | 하는 일 |
+|---|---|
+| `FeverPresentation` | fevertime 배너 페이드 인·아웃, `fevertime_intro.wav` 재생, 캐릭터 애니메이터 가속 |
+| `FeverSpotlight` | 화면 중앙 상단에서 아래로 깜빡이는 노란 픽셀 조명 |
+
+### 배너는 피버 길이와 무관하다
+
+진입을 알리는 연출이지 피버 내내 화면을 가릴 이유가 없다.
+`fadeIn(0.25) → hold(1.1) → fadeOut(0.5)` = 약 1.85초로 제 길이만큼만 재생한다.
+`Time.unscaledDeltaTime` 을 쓰므로 히트스톱에도 정상 속도로 끝난다.
+
+`fevertime.png` 는 `spriteMode = Multiple` 로 임포트돼 있어 메인 에셋이 Texture2D 다.
+셋업 메뉴가 **임포터를 바꾸지 않고** 하위 스프라이트(`fevertime_0`)를 직접 꺼내 연결한다 —
+아트 담당 자산의 임포트 설정을 말없이 고치지 않기 위해서다.
+
+### 캐릭터 가속은 클립 fps 를 건드리지 않는다
+
+`SpriteSheetAnimator.SpeedMultiplier` 를 새로 두고 Tick 에 넘기는 시간을 곱한다.
+클립의 `fps` 를 직접 2배로 만들면 **원래 값이 씬에 저장돼 피버가 끝나도 안 돌아온다.**
+가속 직전 배율을 기억했다가 그대로 되돌리므로, 다른 시스템이 미리 바꿔 둔 값도 보존된다.
+
+가속 대상은 `acceleratedAnimators` 리스트다. 셋업이 `Friends` 를 넣지만 Raccoon 등을
+추가하고 싶으면 리스트에 넣기만 하면 된다.
+
+### 피버 조명은 무대 조명을 건드리지 않는다
+
+`StageLightController` 의 Light2D 를 빼앗지 않고 **별도 Light2D 를 하나 더** 둔다.
+그래서 피버가 끝나면 무대 색이 원래 단계 그대로 남는다.
+
+무대 조명과 같은 표현을 쓰기 위해 `PixelSpotlight2D` 에 같은 값
+(pixelsPerUnit 100 / bandCount 6 / dither 0.18)을 넣는다.
+`PixelSpotlight2D` 는 `transform.up` 을 조사 방향으로 쓰므로 **z 를 180도 돌려** 아래를 향하게 한다.
+
+깜빡임은 `hardBlink`(기본 켬)이면 딱딱 끊어지고, 끄면 사인파로 부드러워진다.
+`blinksPerSecond`(3.5) / `dutyCycle`(0.5) / `rampDuration`(0.15) 로 조절한다.
+`autoPlaceAtCameraTop` 이 켜져 있으면 시작할 때 카메라 화면 상단 중앙으로 스스로 이동한다.
+
+### 확인
+
+Play 중 인스펙터 `⋮` 메뉴:
+
+| 컴포넌트 | 메뉴 |
+|---|---|
+| `FeverPresentation` | `Debug/Play Fever Presentation` (배너+사운드+가속) |
+| `FeverSpotlight` | `Debug/Toggle Fever Spotlight` / `Debug/Place At Camera Top` |
