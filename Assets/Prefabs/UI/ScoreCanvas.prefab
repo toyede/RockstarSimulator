@@ -1180,6 +1180,9 @@ MonoBehaviour:
   myPointText: {fileID: 9130050562114915791}
   pointText: {fileID: 366608384066516368}
   rankImage: {fileID: 1122143787436360095}
+  resultImage: {fileID: 868008222546220240}
+  clearSprite: {fileID: 21300000, guid: 6b7c33b7472b3d24faaaafeb8055aadf, type: 3}
+  failSprite: {fileID: 21300000, guid: 036a925b9676066439f81cc0f621184f, type: 3}
   rankTiers:
   - label: F
     minRatio: 0
