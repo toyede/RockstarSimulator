@@ -11,7 +11,8 @@ namespace ContextStage
     /// 핵심 문장: "옷은 무엇을 좋아하는지, 움직임은 지금 얼마나 신났는지 알려줍니다."
     ///
     /// 진행: Intro → 성향 3연습(Mosh 정답 공개 → Singalong 절반 힌트 → Chill 자율) → 호버 안내
-    ///       → 교차 반응 → 상태 읽기(지루한 관객 구하기) → 관객 교체 → 30초 최종 미니 공연 → 완료
+    ///       → 교차 반응 → 상태 읽기(지루한 관객 구하기) → 관객 교체 → 피버타임 체험
+    ///       → 30초 최종 미니 공연 → 완료
     ///
     /// 다른 시스템을 제어하는 방법 (전부 기존 공개 API·한 줄 훅):
     ///   관객 고정      : AudienceRosterSystem.TryAdd/TryRemove/TrySetEngagement
@@ -22,6 +23,7 @@ namespace ContextStage
     ///   특별 관객 정지 : SpecialAudienceManager.StopSystem()
     ///   위기 정지      : NearbyConcertCrisisDirector.enabled = false
     ///   호버 안내      : AudiencePreferenceHoverController.RevealedActor (읽기 전용 폴링)
+    ///   피버 체험      : FeverSystem.ForceStart() (강제 발동, IsActive 폴링으로 유지)
     /// 끝나면(스킵 포함) 전부 원래대로 복구하고 새 공연을 시작한다.
     ///
     /// 완료 여부는 Save("tutorial_done") 에 저장되어 다음 실행부터는 자동으로 뜨지 않는다.
@@ -40,6 +42,7 @@ namespace ContextStage
             CrossUse, CrossExplain,
             Excitement,
             CrowdChange,
+            FeverIntro, FeverExplain,
             FinalIntro, FinalRun, FinalFail,
             Complete
         }
@@ -152,6 +155,12 @@ namespace ContextStage
                             "확인했다면 계속하세요. (클릭해서 계속)",
                             true);
                     }
+                    break;
+
+                case Phase.FeverIntro:
+                    // 플레이어가 반응하기 전에 FeverDuration 이 지나 꺼지면 즉시 다시 켠다
+                    if (FeverSystem.HasInstance && !FeverSystem.Instance.IsActive)
+                        FeverSystem.Instance.ForceStart();
                     break;
 
                 case Phase.FinalRun:
@@ -376,7 +385,8 @@ namespace ContextStage
                 case Phase.Intro:        EnterPrefMosh(); break;
                 case Phase.HoverHint:    EnterCrossUse(); break;
                 case Phase.CrossExplain: EnterExcitement(); break;
-                case Phase.CrowdChange:  EnterFinalIntro(); break;
+                case Phase.CrowdChange:  EnterFeverIntro(); break;
+                case Phase.FeverExplain: EnterFinalIntro(); break;
                 case Phase.FinalIntro:   EnterFinalRun(); break;
                 case Phase.FinalFail:    EnterFinalIntro(); break;
                 case Phase.Complete:     EndTutorial(markDone: true, restartRun: true); break;
@@ -394,6 +404,7 @@ namespace ContextStage
                 case Phase.PrefChill:     EnterHoverHint(); break;
                 case Phase.CrossUse:      EnterCrossExplain(e.GainedScore); break;
                 case Phase.Excitement:    EnterCrowdChange(); break;
+                case Phase.FeverIntro:    EnterFeverExplain(e.GainedScore); break;
                 case Phase.FinalRun:      _finalScore += e.GainedScore; break;
             }
         }
@@ -540,6 +551,33 @@ namespace ContextStage
                 "새로운 관객이 들어왔습니다!",
                 "관객이 바뀌면 좋은 카드도 바뀝니다. 새 관객의 옷차림과 움직임을 확인해 보세요.",
                 false);
+        }
+
+        void EnterFeverIntro()
+        {
+            SetPhase(Phase.FeverIntro);
+            _allowAllCards = true;
+            overlay?.SetDim(false);
+            overlay?.Spotlight(null);
+
+            int interval = FeverSystem.HasInstance && FeverSystem.Instance.Config != null
+                ? FeverSystem.Instance.Config.FeverComboInterval
+                : 5;
+            overlay?.ShowMessage(
+                $"콤보를 {interval}번 연속 성공시키면 피버타임이 시작됩니다.",
+                "지금 미리 체험해보겠습니다 — 아무 카드나 사용해 피버 점수를 확인해보세요.",
+                false);
+
+            if (FeverSystem.HasInstance) FeverSystem.Instance.ForceStart();
+        }
+
+        void EnterFeverExplain(int gainedScore)
+        {
+            SetPhase(Phase.FeverExplain);
+            overlay?.ShowMessage(
+                "피버타임 중에는 콤보 배율 대신 관객 수 기반 보너스 점수가 적용됩니다.",
+                $"방금 카드의 총 점수: {gainedScore:+0;-0;0}. (클릭해서 계속)",
+                true);
         }
 
         void EnterFinalIntro()
