@@ -76,7 +76,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -114,7 +114,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -181,12 +181,12 @@ TextureImporter:
       name: Mosh_hype_0005_0
       rect:
         serializedVersion: 2
-        x: 20
-        y: 677
-        width: 17
-        height: 20
+        x: 0
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -203,12 +203,12 @@ TextureImporter:
       name: Mosh_hype_0005_1
       rect:
         serializedVersion: 2
-        x: 36
-        y: 677
-        width: 7
-        height: 26
+        x: 213
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -225,12 +225,12 @@ TextureImporter:
       name: Mosh_hype_0005_2
       rect:
         serializedVersion: 2
-        x: 2
-        y: 431
-        width: 194
-        height: 207
+        x: 426
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -247,12 +247,12 @@ TextureImporter:
       name: Mosh_hype_0005_3
       rect:
         serializedVersion: 2
-        x: 215
-        y: 432
-        width: 188
-        height: 213
+        x: 639
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -269,12 +269,12 @@ TextureImporter:
       name: Mosh_hype_0005_4
       rect:
         serializedVersion: 2
-        x: 421
-        y: 432
-        width: 204
-        height: 216
+        x: 852
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -291,12 +291,12 @@ TextureImporter:
       name: Mosh_hype_0005_5
       rect:
         serializedVersion: 2
-        x: 664
-        y: 431
-        width: 161
-        height: 216
+        x: 1065
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -313,12 +313,12 @@ TextureImporter:
       name: Mosh_hype_0005_6
       rect:
         serializedVersion: 2
-        x: 849
-        y: 432
-        width: 198
-        height: 209
+        x: 0
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -335,12 +335,12 @@ TextureImporter:
       name: Mosh_hype_0005_7
       rect:
         serializedVersion: 2
-        x: 1079
-        y: 432
-        width: 178
-        height: 213
+        x: 213
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -357,12 +357,12 @@ TextureImporter:
       name: Mosh_hype_0005_8
       rect:
         serializedVersion: 2
-        x: 6
-        y: 71
-        width: 190
-        height: 219
+        x: 426
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -379,12 +379,12 @@ TextureImporter:
       name: Mosh_hype_0005_9
       rect:
         serializedVersion: 2
-        x: 224
-        y: 70
-        width: 176
-        height: 215
+        x: 639
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -401,12 +401,12 @@ TextureImporter:
       name: Mosh_hype_0005_10
       rect:
         serializedVersion: 2
-        x: 430
-        y: 70
-        width: 182
-        height: 213
+        x: 852
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -423,12 +423,12 @@ TextureImporter:
       name: Mosh_hype_0005_11
       rect:
         serializedVersion: 2
-        x: 663
-        y: 71
-        width: 142
-        height: 220
+        x: 1065
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -441,55 +441,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: Mosh_hype_0005_12
-      rect:
-        serializedVersion: 2
-        x: 871
-        y: 71
-        width: 170
-        height: 218
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2be75f76f7b4222f0800000000000000
-      internalID: -999153156745757006
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Mosh_hype_0005_13
-      rect:
-        serializedVersion: 2
-        x: 1068
-        y: 69
-        width: 209
-        height: 218
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 787e757b358953d10800000000000000
-      internalID: 2104755886191273863
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 9ebe7fd380c306046af19b20ba085ddb
     internalID: 0
     vertices: []
     indices: 
@@ -497,14 +453,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":6.0,"y":2.0},"gridSpriteSize":{"x":213.0,"y":360.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Mosh_hype_0005_0: -1251965073176002403
       Mosh_hype_0005_1: -1783464040617754632
       Mosh_hype_0005_10: -1926022931605192896
       Mosh_hype_0005_11: -6007448621403105039
-      Mosh_hype_0005_12: -999153156745757006
-      Mosh_hype_0005_13: 2104755886191273863
       Mosh_hype_0005_2: 4688849962477283660
       Mosh_hype_0005_3: 3752718656724132626
       Mosh_hype_0005_4: 1955567568913852086

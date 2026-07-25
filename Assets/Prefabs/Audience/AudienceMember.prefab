@@ -824,7 +824,7 @@ MonoBehaviour:
   characterRenderer: {fileID: 5969635406370495418}
   chillSprite: {fileID: 21300000, guid: 84678859d7e91dc49bd759e17f8bcea3, type: 3}
   singalongSprite: {fileID: 21300000, guid: aec44e25d3fd66447829ef16faffcdbf, type: 3}
-  moshSprite: {fileID: 7888285402856387962, guid: 4d14472e95a0b934081081e5bb3e5a46, type: 3}
+  moshSprite: {fileID: 217757854790610025, guid: cfafc4f224101ea4a879f1518fc7303c, type: 3}
   chillColor: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 1}
   singalongColor: {r: 0.39215687, g: 0.19215687, b: 0.91764706, a: 1}
   moshColor: {r: 1, g: 1, b: 1, a: 1}
@@ -2080,6 +2080,177 @@ MonoBehaviour:
       fps: 12
       loop: 1
       pingPong: 0
+  - preference: 0
+    stage: 2
+    variants:
+    - clipName: Chill_Excited_0
+      frames:
+      - {fileID: -2559149062271156692, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: -592648010345447631, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: -7262188466506062600, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: 6788707596200242121, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: -4713275540099755886, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: -5894982981222568275, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: -4225744379324525482, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: 6384267189345525655, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: 2585241307572618425, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Chill_Excited_1
+      frames:
+      - {fileID: 7651963884467841184, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: -3239843061333340598, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: 8033394806404095055, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: -4243185524474100834, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: 546576799176942714, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: -496774123043242152, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: 6210459059534120924, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: -1903234446246202100, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: -1544953762621544245, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Chill_Excited_2
+      frames:
+      - {fileID: -6543353700427620774, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: -8863787830029622894, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: 4942026421116193988, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: 611881554653099459, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: -1639274324840352357, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: -636676571430001461, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: -9044664742844808420, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: 5671351227005124423, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: -4051160187569291523, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Chill_Excited_3
+      frames:
+      - {fileID: 6991749734028575685, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: -2134544536803193052, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: -3689510812035962366, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: 6302676560335007016, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: -1560438332647043930, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: -2925042506964647936, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: 3851086601459128608, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: 466055396315268211, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: 1321539906634702560, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Chill_Excited_4
+      frames:
+      - {fileID: -7769082952407186624, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: 2959051512313556743, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: -5434033072002480199, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: 6816297101545727344, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: 8563879031468113303, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: -4506390818044516820, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: -4135648712482264560, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: 2841055374675735732, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: -3320443697749988365, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Chill_Excited_5
+      frames:
+      - {fileID: -5972544138737962819, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: 6451700747763081481, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: -6663518011824953718, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: -5011562826930955722, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: 673194238935625085, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: -5844683886017729731, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: 3416197369043162864, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: 1253156573977976647, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: -763428470346040124, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Chill_Excited_6
+      frames:
+      - {fileID: 3576039417960889037, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: 8575351631592370505, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: -7181015315064668439, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: 5712335728499741797, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: 2350978571650226965, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: 8144799804104416683, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: -1903075031114524208, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: -4093814742349316306, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: -792563599295239209, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Chill_Excited_7
+      frames:
+      - {fileID: -5041140930911514300, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: 1555751723001296071, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: -5560960449289983077, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: 2496094500064733172, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: 2752394559665616592, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: 1046992293834931304, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: -6502548800649446668, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: 3372394534136909086, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: 885417401949823893, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Chill_Excited_8
+      frames:
+      - {fileID: -195803460293460141, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: 2577456842011929071, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: 8722939414960219202, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: -1601338608872977268, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: 1830206305926935000, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: 8357548773157061846, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: -6157204662992632041, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: 1715476871245732066, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: 7125033286477112498, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Chill_Excited_9
+      frames:
+      - {fileID: 9136154963011297779, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: 3228145811633413451, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: 3044780415011310416, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: -5063915761154080482, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: 3302563792443649990, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: 4078870155194291117, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: -3766779135220984682, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: -7584860159358153508, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: 4176631871366592888, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Chill_Excited_10
+      frames:
+      - {fileID: -1118014978978674885, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: -7845271805191976972, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: 3136788115258949689, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: -1794767345737476641, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: -4138831168812847656, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: 2764264788476422400, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: -1704858981806990013, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: 3959432374149652683, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: -6168182369971330921, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Chill_Excited_11
+      frames:
+      - {fileID: 4574503082150308407, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+      - {fileID: 2312009316051844041, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+      - {fileID: -3798071601511432312, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+      - {fileID: 6884914987781290248, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+      - {fileID: 6780576065520979774, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+      - {fileID: 8577410891951426802, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+      - {fileID: -4732519742620129112, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+      - {fileID: -6290008952997391100, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+      - {fileID: -220279770363800437, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
   - preference: 2
     stage: 0
     variants:
@@ -2260,6 +2431,420 @@ MonoBehaviour:
       - {fileID: 324469735285300801, guid: ddc289f7831629a4fbdd3e2027edd7c7, type: 3}
       - {fileID: -7831254103336193717, guid: 5e8d48a95ee0ff8489a1a990cf392f90, type: 3}
       - {fileID: 874052074959997719, guid: 946d6f37ae3574c4d8811fcb51e7ccdf, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+  - preference: 2
+    stage: 1
+    variants:
+    - clipName: Mosh_Middle_0
+      frames:
+      - {fileID: 520171743485023022, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: 3979770269547419291, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: -8638261549553281908, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: 8351124235296116903, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: -2105432426337253787, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: -2389593361823534978, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: -4424940373628613206, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: -2288939254212930453, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: -1850392157155062301, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: 9047123027565452453, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: 6221613649094838593, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: 1672340433656928193, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Middle_1
+      frames:
+      - {fileID: -3877062711221201042, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: 7242753567738705845, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: -7810736844455381587, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: 2937378617683141129, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: 6561978142839984015, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: 3587171709161211689, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: 7447833937482352242, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: 8807082358448840699, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: 4410796415139247213, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: -4703564188575646912, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: -1432551982490313119, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: 8786696518439921548, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Middle_2
+      frames:
+      - {fileID: -5412451480530892536, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: -2634363695330870088, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: -7912046914722272357, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: 1456799531128012547, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: -2737807904470541000, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: -43980635515908059, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: -7877358093767706235, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: 244547255455047124, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: -7381685439430381464, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: -5958917882557718515, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: 4039154512138381218, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: 6569641526111043596, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Middle_3
+      frames:
+      - {fileID: 3527039856583134054, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: 3635621891884567420, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: 5520756822859988453, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: -6973647270147694307, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: 5978176140899889941, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: -4635102397071974072, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: 3638633224424199518, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: -1413451546657950303, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: -5925019599983713236, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: 4611026825232171622, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: 8711133007388398361, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: -3744132251846167108, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Middle_4
+      frames:
+      - {fileID: 7419925003485532417, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: 2204509605227278644, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: 4775834377959119416, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: -5129002408969704604, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: -8612028222697907787, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: -2197398794457387253, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: -498821796158004119, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: 4133066564236567101, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: 1678253867829992651, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: -1166492570565388466, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: -3064543190454021856, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: -420958994049388003, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Middle_5
+      frames:
+      - {fileID: -477863493517522251, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: 8864713792429112679, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: 7310661942089303228, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: 2857289292639512223, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: 8184021541642127662, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: -4251413057989686292, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: 6466766935472625934, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: -6457020148036916596, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: -4340528928237965705, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: -1377551792178438326, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: 536733234715922754, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: -8555837942205499479, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Middle_6
+      frames:
+      - {fileID: -2669096113267166004, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: -1000952366865265371, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: -445127515850182142, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: -1668175055626963111, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: -4336908214630310307, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: 3638230447743760519, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: -7235005026145643388, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: -1906828152854312333, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: 6113272048698617111, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: -9117037808973797234, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: 8521166743609801112, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: 952328232158349695, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Middle_7
+      frames:
+      - {fileID: -7580151883972438040, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: -2018887868205052256, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: -4032251516207587870, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: 8562491540653307849, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: -4538811177310542397, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: -1376850405734233386, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: 1306094176771567981, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: 7359700507333081164, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: 5234788996558585440, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: -6619626271115097492, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: 5489923415674993695, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: -614837660779121729, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Middle_8
+      frames:
+      - {fileID: 4752363587751259424, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: 5500846040374966621, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: -8259865794248521535, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: -4867537135940031323, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: 1796772798575883997, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: 362031023917617294, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: 8619203022088238524, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: -4193728875786912236, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: 2988526912707140006, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: 7337338059719762112, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: 751926883289055316, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: 2626804403405925956, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Middle_9
+      frames:
+      - {fileID: 5945671217344791488, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: -8129092991983476285, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: 897459632401075936, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: -2387929111391875529, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: 3826567803734516993, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: -3105948522989373985, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: -8949744393398780756, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: 2447206671559056881, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: -2641615269876039799, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: -96106576415666366, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: -677270245508784421, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: -1520580748890972623, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Middle_10
+      frames:
+      - {fileID: 6422887363384069777, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: 1561346446025852492, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: 704810312797146168, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: 178572745373398477, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: -361972625264235391, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: -6113509529765592673, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: -3088979599199313539, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: 4024124234351342074, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: -7837455712574194088, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: -5657353354759185614, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: -8455797045254634325, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: -4205758106191767137, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Middle_11
+      frames:
+      - {fileID: -3571134974810782514, guid: 6f1f8fa43856a544281ae172820a8f1a, type: 3}
+      - {fileID: -6324606121858886505, guid: 4173a406cecf2de488498114d1e02aa7, type: 3}
+      - {fileID: -2588197388045027254, guid: b7331cc5a553f15448768c9e2e3c64ab, type: 3}
+      - {fileID: 3285603222923836525, guid: e3656e3b6bf224944a6fdb0be49f6ce1, type: 3}
+      - {fileID: 5282876396704926527, guid: e18a5abce168eb3438f1e3a940a30d52, type: 3}
+      - {fileID: -8353469283637722384, guid: aaee5b5f6c98e984c930f34a9aecfeff, type: 3}
+      - {fileID: 4630044178691024035, guid: 6181142b045509141a3c9a03376629b8, type: 3}
+      - {fileID: 6870851546407537910, guid: d9acc71b5643bb446b62f012c6445f35, type: 3}
+      - {fileID: 6266324561565684282, guid: de4df5c9a8913ec49adcb3db76ed9327, type: 3}
+      - {fileID: -5061295645426184183, guid: a52c715ce5619f84ba55b607c8736674, type: 3}
+      - {fileID: 479478604082393956, guid: f6c91b60ab634f146950fefa50e79bae, type: 3}
+      - {fileID: 2601257130365932523, guid: bd2b04b0fac2afe4081482a073bc9d10, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+  - preference: 2
+    stage: 2
+    variants:
+    - clipName: Mosh_Excited_0
+      frames:
+      - {fileID: 7016998140106430988, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: 5196117915167660874, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: -3663710839600093121, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: 8907536875264602151, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: 6973824586576884475, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: -1251965073176002403, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: 2444309594743785119, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: 696332730458504267, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: 4448361038061484230, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: -3547330360566959255, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: 6693022549855575790, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: 8240318480586758538, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Excited_1
+      frames:
+      - {fileID: 4834821901401051654, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: 6434245864146302539, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: 2079568694829072301, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: 5823820487614090708, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: 6934701676543369138, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: -1783464040617754632, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: 3901158097646991289, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: -6847821472977118940, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: 4068084441541187402, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: -4771701658328454844, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: -3546812205357291331, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: 1431606949839570644, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Excited_2
+      frames:
+      - {fileID: 6764595489425742163, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: 3730185445795085046, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: 4569007489016638569, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: 398212703753244913, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: -5148128859711329961, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: 4688849962477283660, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: -1852038193338060037, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: -1249486615751005482, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: -8455541081577197010, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: 7846330304918701155, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: -5043443039108875940, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: -2331058626918322990, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Excited_3
+      frames:
+      - {fileID: 5838278561606686373, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: 7658488617076997902, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: 609933124986461231, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: -4789634134601184009, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: -5120629963661961591, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: 3752718656724132626, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: -9220335544442362284, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: -7337990489615808647, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: 8330727627244013070, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: 240156089459770554, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: 3155725524804647974, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: 3822843598657881791, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Excited_4
+      frames:
+      - {fileID: -7209749428671963795, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: 5295614520953486662, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: 1258236391309686340, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: -1180202172986777198, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: 7828705076050855568, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: 1955567568913852086, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: 5584107570101936079, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: -2961205021340891550, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: 3527315217989438968, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: -9138582462111546664, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: -4939137846658678465, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: -5657507848786241886, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Excited_5
+      frames:
+      - {fileID: 75140049560681530, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: -5207681711364024449, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: -5406392612904704354, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: 880019280463600764, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: -5640221972653305567, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: -1798036797573016439, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: 1165164622816703918, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: 6035219164083814748, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: 4333675713583880994, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: 3546522507996400105, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: 2338676018065152678, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: 41889951410515301, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Excited_6
+      frames:
+      - {fileID: 6411857763552644659, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: 4278503773921978028, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: -3046974904652258787, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: 6422077109381408707, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: 152383665193037934, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: 7572787860645130174, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: -2461420787241419002, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: 3941485521928222206, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: 9079995369169871273, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: -8783091067817247478, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: -212113137742917250, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: 1442500242445596613, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Excited_7
+      frames:
+      - {fileID: -2683449773929696376, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: -3944636742859542048, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: 2276115319922150386, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: 8196516416101300073, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: 7131481375013064996, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: 6021946433484344293, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: 2339344627322183545, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: -4587049354983208083, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: 6709580106989237668, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: -3185910876479709299, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: -6402044826285504644, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: 6166716686929753555, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Excited_8
+      frames:
+      - {fileID: -3640113438599298929, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: 4797063115492807624, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: 7674393728598735383, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: -6634054947926399997, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: -540038983038432246, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: -7069442082324708575, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: -285665350453595796, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: 8345891700998431908, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: -789425763757079226, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: -4480425945880049159, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: -2996872440221050834, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: 4761736402657836451, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Excited_9
+      frames:
+      - {fileID: -5568121849039270149, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: 7100296394204128867, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: 2290255144901744629, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: 2010338132993215908, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: 552856493257833927, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: 3507546538133375421, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: -2597323417438181316, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: 7056593715143443650, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: -8477028906143965231, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: -4018349456851952854, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: -1957535296937417826, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: 3777893679510156671, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Excited_10
+      frames:
+      - {fileID: 7605259303680847567, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: -4859313196030427361, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: 4817707349841813409, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: -7984605449712810679, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: 6102366879495173621, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: -1926022931605192896, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: 4291161482775592637, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: 704708613614095418, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: 8655949240638111920, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: 5013847408048157438, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: 8507688277981335994, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: 6743558561104136473, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
+      fps: 12
+      loop: 1
+      pingPong: 0
+    - clipName: Mosh_Excited_11
+      frames:
+      - {fileID: -1280550507065958991, guid: 319a48826607dc14aa02842fc161cdf7, type: 3}
+      - {fileID: -8369882984453171092, guid: f1deb617d1e20094fa76d187c59e0463, type: 3}
+      - {fileID: 3572825774125444491, guid: 43d50de17d3c1c5479f4f3abe08724e6, type: 3}
+      - {fileID: 4578464868649245026, guid: 18a1669abcc57cb4bbbf1de151165e82, type: 3}
+      - {fileID: -933465933, guid: 2120ab945f72c1647857178d14114107, type: 3}
+      - {fileID: -6007448621403105039, guid: a609820add6b5804aa428d3a96d48de2, type: 3}
+      - {fileID: -137677486232876463, guid: 59fcea84306280143b5dd63120268f85, type: 3}
+      - {fileID: 6266224142227182071, guid: a2f42474efbeef8479126667f328d55b, type: 3}
+      - {fileID: 8026691632340043997, guid: 9acf2e584c0cf0947951551b26733209, type: 3}
+      - {fileID: 8312799729511806127, guid: 29e096473e3691c4bbb67b5bae539a8a, type: 3}
+      - {fileID: 3038503626172449490, guid: 4342de7835e1dfd42ad696616bdd3af2, type: 3}
+      - {fileID: -6309158921984684627, guid: c7a8206b9b1a1a24b83248d784877def, type: 3}
       fps: 12
       loop: 1
       pingPong: 0
