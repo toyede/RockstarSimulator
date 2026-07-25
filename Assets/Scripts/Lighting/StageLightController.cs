@@ -53,6 +53,25 @@ namespace ContextStage
         [SerializeField, Tooltip("무대 오른쪽 조명")]
         Light2D rightStageLight;
 
+        [Header("전체 밝기")]
+        [SerializeField, Range(0f, 4f), Tooltip(
+            "모든 조명 강도에 곱해지는 배율. 화면이 너무 어두우면 이 값만 올리면 된다. " +
+            "단계별 프리셋 비율은 그대로 유지된다.")]
+        float masterIntensity = 1f;
+
+        [SerializeField, Tooltip(
+            "체크하면 이 컴포넌트가 Light2D 를 매 프레임 덮어쓰지 않는다. " +
+            "Light2D 인스펙터에서 색·강도를 직접 만져보며 값을 찾을 때 켠다. " +
+            "(끄면 다시 프리셋대로 자동 제어)")]
+        bool manualLightOverride = false;
+
+        [SerializeField, Range(0f, 1f), Tooltip(
+            "Global Light 에 단계 색을 섞는 정도. Global 은 화면 전체를 균일하게 비추므로 " +
+            "1 이면 모든 스프라이트가 시안/보라로 물든다. " +
+            "0 = 흰 조명(스프라이트 원래 색 유지), 0.3 정도면 분위기만 살짝 얹힌다. " +
+            "단계 색은 좌우 무대 조명이 담당하게 두는 편이 좋다.")]
+        float globalTintStrength = 0.3f;
+
         [Header("픽셀 라이트")]
         [SerializeField, Tooltip("좌우 Point Light에 저해상도 Point 필터 쿠키를 적용한다")]
         bool usePixelLightStyle = true;
@@ -80,10 +99,12 @@ namespace ContextStage
         float spotlightDitherStrength = 0.18f;
 
         [SerializeField, Range(0f, 2f), Tooltip("픽셀 조명 패스의 최종 강도")]
-        float pixelSpotlightIntensity = 0.06f;
+        float pixelSpotlightIntensity = 0.6f;
 
-        [SerializeField, Range(0f, 1f), Tooltip("그림자를 위해 남겨둘 기존 Light2D 조명의 비율")]
-        float smoothLightContribution = 0.15f;
+        [SerializeField, Range(0f, 1f), Tooltip(
+            "실제 Light2D 가 담당할 밝기 비율. 픽셀 셰이더를 켜면 이 값만큼만 남기므로 " +
+            "너무 낮으면 화면이 캄캄해진다. 그림자만 살리려면 0.3, 밝기까지 맡기려면 1 에 가깝게.")]
+        float smoothLightContribution = 0.85f;
 
         [Header("스포트라이트 움직임")]
         [SerializeField, Tooltip("좌우 조명이 각자의 기준 방향을 중심으로 무대를 훑는다")]
@@ -447,6 +468,10 @@ namespace ContextStage
         {
             EnsurePresets();
 
+            // 수동 조절 모드: Light2D 를 건드리지 않는다.
+            // (평소에는 매 프레임 덮어쓰기 때문에 인스펙터로 Light2D 를 만져도 즉시 되돌려진다)
+            if (manualLightOverride) return;
+
             if (globalLight == null && leftStageLight == null && rightStageLight == null)
             {
                 WarnMissingLightsOnce();
@@ -455,21 +480,26 @@ namespace ContextStage
 
             float blend = Mathf.Clamp01(_blend);
             Color stageColor = Color.Lerp(_from.color, _to.color, blend);
-            float globalIntensity = Mathf.Lerp(_from.globalIntensity, _to.globalIntensity, blend);
-            float baseIntensity = Mathf.Lerp(_from.stageBaseIntensity, _to.stageBaseIntensity, blend);
+            float master = Mathf.Max(0f, masterIntensity);
+            float globalIntensity = Mathf.Lerp(_from.globalIntensity, _to.globalIntensity, blend) * master;
+            float baseIntensity = Mathf.Lerp(_from.stageBaseIntensity, _to.stageBaseIntensity, blend) * master;
             float pulseSpeed = Mathf.Lerp(_from.pulseSpeed, _to.pulseSpeed, blend);
             float pulseAmplitude = Mathf.Lerp(_from.pulseAmplitude, _to.pulseAmplitude, blend);
 
             // --- Global: 단계 값 + (플래시 중이면) 덮어쓰기. 펄스는 넣지 않는다(UI 가독성) ---
             if (globalLight != null)
             {
-                Color color = stageColor;
+                // Global 은 화면 전체를 균일하게 비추므로 단계 색을 100% 넣으면
+                // 관객·배경 스프라이트가 통째로 시안/보라로 물든다.
+                // 흰색과 섞어서 원래 색을 살리고, 색은 좌우 무대 조명이 담당한다.
+                Color color = Color.Lerp(Color.white, stageColor, Mathf.Clamp01(globalTintStrength));
                 float intensity = globalIntensity;
 
                 if (_flashing)
                 {
                     float k = FlashCurve(_flashElapsed);
-                    color = Color.Lerp(stageColor, _flashColor, k);
+                    // 지금 보이는 색에서 플래시 색으로 (stageColor 로 되돌리지 않는다)
+                    color = Color.Lerp(color, _flashColor, k);
                     intensity = Mathf.Lerp(globalIntensity, flashPeakIntensity, k);
                 }
 

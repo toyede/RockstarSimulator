@@ -2455,6 +2455,9 @@ MonoBehaviour:
   globalLight: {fileID: 1815104787}
   leftStageLight: {fileID: 2111985209}
   rightStageLight: {fileID: 212168675}
+  masterIntensity: 2.45
+  manualLightOverride: 0
+  globalTintStrength: 0.3
   usePixelLightStyle: 1
   pixelLightCookie: {fileID: 0}
   pixelLightFalloff: 0.95
@@ -2471,22 +2474,22 @@ MonoBehaviour:
   spotlightOuterAngleRange: {x: 36, y: 50}
   spotlightInnerAngleRatio: 0.55
   chill:
-    color: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 0.39215687}
+    color: {r: 0.19, g: 0.87, b: 0.92, a: 0.39215687}
     globalIntensity: 0.2
     stageBaseIntensity: 0.75
     pulseSpeed: 0.6
     pulseAmplitude: 0.04
   singalong:
-    color: {r: 0.39215687, g: 0.19215687, b: 0.91764706, a: 0.39215687}
+    color: {r: 0.39, g: 0.19, b: 0.92, a: 0.39215687}
     globalIntensity: 0.2
     stageBaseIntensity: 1
-    pulseSpeed: 1.5
+    pulseSpeed: 1.46
     pulseAmplitude: 0.1
   mosh:
-    color: {r: 0.9411765, g: 0.12156863, b: 0.12156863, a: 0.39215687}
+    color: {r: 0.6980392, g: 0.1333333, b: 0.1333333, a: 1}
     globalIntensity: 0.2
     stageBaseIntensity: 1.25
-    pulseSpeed: 3
+    pulseSpeed: 4.18
     pulseAmplitude: 0.18
   transitionDuration: 0.35
   rightPulsePhaseOffset: 1.5
@@ -6103,7 +6106,7 @@ MonoBehaviour:
   m_BlendStyleIndex: 0
   m_FalloffIntensity: 0.5
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 0.78
+  m_Intensity: 1.5
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
   m_ApplyToSortingLayers: 00000000
