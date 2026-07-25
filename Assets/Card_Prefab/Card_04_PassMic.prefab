@@ -169,6 +169,18 @@ PrefabInstance:
       propertyPath: audienceReaction.engagementMultiplier
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5178014537110562856, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: 9907906d092ce9948ba06b3f3ac3808b, type: 3}
+    - target: {fileID: 6897208685787233744, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: 9907906d092ce9948ba06b3f3ac3808b, type: 3}
+    - target: {fileID: 7193453055990750024, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: 9907906d092ce9948ba06b3f3ac3808b, type: 3}
     - target: {fileID: 8602934466595160544, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: m_Name
       value: Card_04_PassMic

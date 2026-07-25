@@ -2282,6 +2282,10 @@ MonoBehaviour:
     clipName: GuitarSolo
   startDelay: 0
   interruptPolicy: 0
+  _animator: {fileID: 0}
+  _pendingClip: 
+  _pendingAt: 0
+  _performingClip: 
 --- !u!114 &1125991668
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2413,7 +2417,7 @@ SpriteRenderer:
   m_Size: {x: 3.7567568, y: 5.009009}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &1156873153
 GameObject:
@@ -3569,15 +3573,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3869540982171116743, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3869540982171116743, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3869540982171116743, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: -17
       objectReference: {fileID: 0}
     - target: {fileID: 6171345376973202204, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -4917,7 +4921,7 @@ SpriteRenderer:
   m_Size: {x: 17.777779, y: 10}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &2031363168
 GameObject:
