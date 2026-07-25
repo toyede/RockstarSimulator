@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d3c49ed251b4264bbbd4f25bce8c672, type: 3}
   m_Name: PerformanceTimerConfig
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.PerformanceTimerConfig
-  duration: 120
-  targetScore: 5000
+  duration: 5
+  targetScore: 1
