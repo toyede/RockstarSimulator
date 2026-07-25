@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: PerformanceTimerConfig
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.PerformanceTimerConfig
   duration: 160
-  targetScore: 1
+  targetScore: 5000
