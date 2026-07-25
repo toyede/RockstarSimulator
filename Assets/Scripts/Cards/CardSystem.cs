@@ -213,9 +213,14 @@ namespace ContextStage
                         rawScore,
                         isSpecialHit)
                     : new ComboResolution(0, 1f, isSpecialHit || rawScore > 0);
-                int finalScore = card.Role == CardRole.Utility
+                int comboScore = card.Role == CardRole.Utility
                     ? 0
                     : Mathf.RoundToInt(rawScore * combo.Multiplier);
+                int feverAudienceCount = audienceRoster.Members.Count;
+                int feverBonusScore = FeverSystem.HasInstance
+                    ? FeverSystem.Instance.CalculateCardBonus(feverAudienceCount)
+                    : 0;
+                int finalScore = comboScore + feverBonusScore;
                 HypeJudgement feedback = isSpecialHit
                     ? HypeJudgement.Perfect
                     : ResolveFeedback(
@@ -257,7 +262,9 @@ namespace ContextStage
                     SpecialBonusScore = specialBonusScore,
                     RawScore = rawScore,
                     ComboCount = combo.Combo,
-                    ComboMultiplier = combo.Multiplier
+                    ComboMultiplier = combo.Multiplier,
+                    FeverAudienceCount = feverAudienceCount,
+                    FeverBonusScore = feverBonusScore
                 });
 
                 ResolveHandEffect(card, handCountBeforeUse);

@@ -164,6 +164,8 @@ namespace GameJamKit
         public int RawScore;
         public int ComboCount;
         public float ComboMultiplier;
+        public int FeverAudienceCount;
+        public int FeverBonusScore;
     }
 
     // ------------------------------------------------------------------

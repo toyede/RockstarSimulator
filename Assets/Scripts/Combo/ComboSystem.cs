@@ -23,10 +23,7 @@ namespace ContextStage
     [DisallowMultipleComponent]
     public sealed class ComboSystem : MonoSingleton<ComboSystem>
     {
-        [Header("Score Multipliers")]
-        [SerializeField, Min(1f)] float twoComboMultiplier = 1.2f;
-        [SerializeField, Min(1f)] float fourComboMultiplier = 1.5f;
-        [SerializeField, Min(1f)] float sixComboMultiplier = 2f;
+        [SerializeField] ComboFeverConfig config;
 
         int _currentCombo;
 
@@ -34,6 +31,16 @@ namespace ContextStage
 
         public int CurrentCombo => _currentCombo;
         public float CurrentMultiplier => ResolveMultiplier(_currentCombo);
+
+        protected override void OnAwake()
+        {
+            if (config == null)
+            {
+                Debug.LogError(
+                    "[ComboSystem] A ComboFeverConfig reference is required.",
+                    this);
+            }
+        }
 
         void OnEnable() =>
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
@@ -56,14 +63,31 @@ namespace ContextStage
 
             int previous = _currentCombo;
             bool succeeded = isSpecialHit || rawScore > 0;
-            _currentCombo = succeeded ? previous + 1 : 0;
+            bool failed = !isSpecialHit && rawScore < 0;
+
+            if (FeverSystem.HasInstance && FeverSystem.Instance.IsActive)
+            {
+                return new ComboResolution(
+                    _currentCombo,
+                    CurrentMultiplier,
+                    succeeded);
+            }
+
+            if (succeeded)
+                _currentCombo = previous + 1;
+            else if (failed)
+                _currentCombo = 0;
+
             float multiplier = ResolveMultiplier(_currentCombo);
 
-            EventBus.Raise(new ComboChanged(
-                previous,
-                _currentCombo,
-                multiplier,
-                !succeeded && previous > 0));
+            if (_currentCombo != previous)
+            {
+                EventBus.Raise(new ComboChanged(
+                    previous,
+                    _currentCombo,
+                    multiplier,
+                    failed && previous > 0));
+            }
 
             return new ComboResolution(
                 _currentCombo,
@@ -83,12 +107,7 @@ namespace ContextStage
         }
 
         float ResolveMultiplier(int combo)
-        {
-            if (combo >= 6) return Mathf.Max(1f, sixComboMultiplier);
-            if (combo >= 4) return Mathf.Max(1f, fourComboMultiplier);
-            if (combo >= 2) return Mathf.Max(1f, twoComboMultiplier);
-            return 1f;
-        }
+            => config != null ? config.ResolveMultiplier(combo) : 1f;
 
         void OnGameStateChanged(GameStateChanged e)
         {
@@ -97,17 +116,5 @@ namespace ContextStage
                 ResetCombo();
         }
 
-#if UNITY_EDITOR
-        void OnValidate()
-        {
-            twoComboMultiplier = Mathf.Max(1f, twoComboMultiplier);
-            fourComboMultiplier = Mathf.Max(
-                twoComboMultiplier,
-                fourComboMultiplier);
-            sixComboMultiplier = Mathf.Max(
-                fourComboMultiplier,
-                sixComboMultiplier);
-        }
-#endif
     }
 }

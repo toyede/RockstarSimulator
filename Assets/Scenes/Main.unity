@@ -412,7 +412,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 48
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -3461,6 +3461,7 @@ MonoBehaviour:
   zeroColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   negativeColor: {r: 1, g: 0.28, b: 0.22, a: 1}
   specialColor: {r: 0.35, g: 1, b: 0.85, a: 1}
+  feverColor: {r: 0.25, g: 1, b: 0.95, a: 1}
 --- !u!114 &1065387686
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4587,6 +4588,7 @@ MonoBehaviour:
   lostMessageDuration: 0.7
   normalColor: {r: 1, g: 0.88, b: 0.25, a: 1}
   lostColor: {r: 1, g: 0.25, b: 0.2, a: 1}
+  feverColor: {r: 0.25, g: 1, b: 0.95, a: 1}
 --- !u!114 &1514083080
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5501,6 +5503,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1764839960}
   - component: {fileID: 1764839959}
+  - component: {fileID: 1764839961}
   m_Layer: 0
   m_Name: '[Combo]'
   m_TagString: Untagged
@@ -5520,9 +5523,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a4055d5337867c429d20ef0cb4a7039, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.ComboSystem
-  twoComboMultiplier: 1.2
-  fourComboMultiplier: 1.5
-  sixComboMultiplier: 2
+  config: {fileID: 11400000, guid: 84d715220e53f6440a757b31f18c6269, type: 2}
 --- !u!4 &1764839960
 Transform:
   m_ObjectHideFlags: 0
@@ -5538,6 +5539,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1764839961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1764839958}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f1864ad6bdcb6b4e80541f18255b04a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.FeverSystem
+  config: {fileID: 11400000, guid: 84d715220e53f6440a757b31f18c6269, type: 2}
 --- !u!1001 &1813335618
 PrefabInstance:
   m_ObjectHideFlags: 0
