@@ -24,7 +24,6 @@ namespace ContextStage
         readonly List<AudienceId> _order = new List<AudienceId>(10);
 
         bool _started;
-        bool _deferRelayout;
 
         public AudienceMemberActor MemberPrefab => memberPrefab;
         public int VisibleCount => _actors.Count;
@@ -35,12 +34,6 @@ namespace ContextStage
             EventBus.Subscribe<AudienceStateChanged>(OnAudienceStateChanged);
             EventBus.Subscribe<AudienceCardReacted>(OnAudienceCardReacted);
             EventBus.Subscribe<AudienceDeparted>(OnAudienceDeparted);
-            EventBus.Subscribe<AudienceCrisisTargetsChanged>(
-                OnCrisisTargetsChanged);
-            EventBus.Subscribe<AudienceCrisisDepartureStarted>(
-                OnCrisisDepartureStarted);
-            EventBus.Subscribe<AudienceCrisisDepartureEnded>(
-                OnCrisisDepartureEnded);
         }
 
         void Start()
@@ -62,14 +55,7 @@ namespace ContextStage
             EventBus.Unsubscribe<AudienceStateChanged>(OnAudienceStateChanged);
             EventBus.Unsubscribe<AudienceCardReacted>(OnAudienceCardReacted);
             EventBus.Unsubscribe<AudienceDeparted>(OnAudienceDeparted);
-            EventBus.Unsubscribe<AudienceCrisisTargetsChanged>(
-                OnCrisisTargetsChanged);
-            EventBus.Unsubscribe<AudienceCrisisDepartureStarted>(
-                OnCrisisDepartureStarted);
-            EventBus.Unsubscribe<AudienceCrisisDepartureEnded>(
-                OnCrisisDepartureEnded);
             ReleaseAllImmediate();
-            _deferRelayout = false;
             _started = false;
         }
 
@@ -112,46 +98,12 @@ namespace ContextStage
 
             _actors.Remove(id);
             _order.Remove(id);
-            if (!_deferRelayout) Relayout();
-            AudienceExitStyle exitStyle =
-                e.Reason == AudienceDepartureReason.NearbyConcert
-                    ? AudienceExitStyle.NearbyConcert
-                    : AudienceExitStyle.Default;
-            actor.PlayExit(exitStyle, () =>
+            Relayout();
+            actor.PlayExit(() =>
             {
                 if (actor != null && !SingletonRuntime.IsQuitting)
                     PoolManager.Despawn(actor);
             });
-        }
-
-        void OnCrisisTargetsChanged(AudienceCrisisTargetsChanged e)
-        {
-            foreach (AudienceMemberActor actor in _actors.Values)
-            {
-                if (actor != null) actor.SetCrisisThreatened(false);
-            }
-            if (!e.Active || e.Targets == null) return;
-
-            for (int i = 0; i < e.Targets.Length; i++)
-            {
-                if (_actors.TryGetValue(
-                        e.Targets[i],
-                        out AudienceMemberActor actor))
-                    actor.SetCrisisThreatened(true);
-            }
-        }
-
-        void OnCrisisDepartureStarted(
-            AudienceCrisisDepartureStarted e)
-        {
-            _deferRelayout = true;
-        }
-
-        void OnCrisisDepartureEnded(
-            AudienceCrisisDepartureEnded e)
-        {
-            _deferRelayout = false;
-            Relayout();
         }
 
         void SpawnActor(AudienceSnapshot audience)

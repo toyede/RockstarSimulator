@@ -48,14 +48,7 @@ namespace ContextStage
         EngagementDepleted,
         SmallTalkReplacement,
         RuntimeRemoval,
-        Reset,
-        NearbyConcert
-    }
-
-    public enum AudienceExitStyle
-    {
-        Default,
-        NearbyConcert
+        Reset
     }
 
     public readonly struct AudienceSnapshot
