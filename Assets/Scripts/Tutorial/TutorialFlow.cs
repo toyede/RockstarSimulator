@@ -10,7 +10,7 @@ namespace ContextStage
     ///
     /// 핵심 문장: "옷은 무엇을 좋아하는지, 움직임은 지금 얼마나 신났는지 알려줍니다."
     ///
-    /// 진행: Intro → 성향 3연습(Mosh 정답 공개 → Singalong 절반 힌트 → Chill 자율)
+    /// 진행: Intro → 성향 3연습(Mosh 정답 공개 → Singalong 절반 힌트 → Chill 자율) → 호버 안내
     ///       → 교차 반응 → 상태 읽기(지루한 관객 구하기) → 관객 교체 → 30초 최종 미니 공연 → 완료
     ///
     /// 다른 시스템을 제어하는 방법 (전부 기존 공개 API·한 줄 훅):
@@ -21,6 +21,7 @@ namespace ContextStage
     ///   호응도 정지    : Hype.SetDecayPaused(true)
     ///   특별 관객 정지 : SpecialAudienceManager.StopSystem()
     ///   위기 정지      : NearbyConcertCrisisDirector.enabled = false
+    ///   호버 안내      : AudiencePreferenceHoverController.RevealedActor (읽기 전용 폴링)
     /// 끝나면(스킵 포함) 전부 원래대로 복구하고 새 공연을 시작한다.
     ///
     /// 완료 여부는 Save("tutorial_done") 에 저장되어 다음 실행부터는 자동으로 뜨지 않는다.
@@ -35,6 +36,7 @@ namespace ContextStage
             Idle,
             Intro,
             PrefMosh, PrefSingalong, PrefChill,
+            HoverHint,
             CrossUse, CrossExplain,
             Excitement,
             CrowdChange,
@@ -73,6 +75,7 @@ namespace ContextStage
         CrowdPreference _expectedPref;
         string _blockedHint = "";
         bool _allowAllCards;
+        bool _hoverTaught;
 
         // 최종 미니 공연 집계
         int _finalScore;
@@ -81,6 +84,7 @@ namespace ContextStage
         // 복구용
         NearbyConcertCrisisDirector _crisis;
         AudienceRosterPresenter _presenter;
+        AudiencePreferenceHoverController _hoverController;
         bool _crisisWasEnabled;
 
         void Awake()
@@ -137,6 +141,17 @@ namespace ContextStage
                     if (_phaseTimer >= 2f && overlay != null)
                         overlay.ShowMessage("새로운 관객이 들어왔습니다!",
                             "관객이 바뀌면 좋은 카드도 바뀝니다. (클릭해서 계속)", true);
+                    break;
+
+                case Phase.HoverHint:
+                    if (!_hoverTaught && _hoverController != null && _hoverController.RevealedActor != null)
+                    {
+                        _hoverTaught = true;
+                        overlay?.ShowMessage(
+                            "이렇게 테두리 색으로 성향을 바로 확인할 수 있습니다.",
+                            "확인했다면 계속하세요. (클릭해서 계속)",
+                            true);
+                    }
                     break;
 
                 case Phase.FinalRun:
@@ -201,6 +216,7 @@ namespace ContextStage
             if (_crisis != null) _crisis.enabled = false;
 
             _presenter = FindFirstObjectByType<AudienceRosterPresenter>();
+            _hoverController = FindFirstObjectByType<AudiencePreferenceHoverController>();
 
             roster.SuppressEngagementDecay = true;
 
@@ -358,6 +374,7 @@ namespace ContextStage
             switch (_phase)
             {
                 case Phase.Intro:        EnterPrefMosh(); break;
+                case Phase.HoverHint:    EnterCrossUse(); break;
                 case Phase.CrossExplain: EnterExcitement(); break;
                 case Phase.CrowdChange:  EnterFinalIntro(); break;
                 case Phase.FinalIntro:   EnterFinalRun(); break;
@@ -374,7 +391,7 @@ namespace ContextStage
             {
                 case Phase.PrefMosh:      EnterPrefSingalong(); break;
                 case Phase.PrefSingalong: EnterPrefChill(); break;
-                case Phase.PrefChill:     EnterCrossUse(); break;
+                case Phase.PrefChill:     EnterHoverHint(); break;
                 case Phase.CrossUse:      EnterCrossExplain(e.GainedScore); break;
                 case Phase.Excitement:    EnterCrowdChange(); break;
                 case Phase.FinalRun:      _finalScore += e.GainedScore; break;
@@ -443,6 +460,16 @@ namespace ContextStage
             overlay?.ShowMessage(
                 "이번에는 힌트가 없습니다.",
                 "옷차림만 보고 직접 판단해 보세요.",
+                false);
+        }
+
+        void EnterHoverHint()
+        {
+            SetPhase(Phase.HoverHint);
+            _hoverTaught = false;
+            overlay?.ShowMessage(
+                "확실하지 않을 때는 관객 위에 마우스를 잠시 올려보세요.",
+                "테두리 색으로 성향을 바로 확인할 수 있습니다.",
                 false);
         }
 

@@ -23,6 +23,7 @@ Tools/Tutorial/Setup Tutorial   →   Ctrl+S  (Main.unity 에서!)
 | PrefMosh | Mosh 관객 스포트라이트, **정답 공개** | 맞는 카드 사용 |
 | PrefSingalong | Mosh 퇴장 → Singalong 관객 등장, **절반 힌트** | 맞는 카드 사용 |
 | PrefChill | Singalong 퇴장 → Chill 관객 등장, **힌트 없음** — 직접 판단 | 맞는 카드 사용 |
+| HoverHint | 같은 Chill 관객 유지, 호버 시 테두리로 성향 확인하는 법 안내 | 실제로 호버해 테두리 확인 → 클릭 |
 | CrossUse→Explain | 세 관객(Mosh/Singalong/Chill) 재소집 → 아무 공연 카드 사용 → 실제 총반응 수치로 교차 반응 설명 | 사용 → 클릭 |
 | Excitement | Chill 관객을 지루 상태로 만들고 구하게 함 | Chill 카드 사용 |
 | CrowdChange | 흥분한 Singalong 관객 입장, **2초 관찰 강제** | 클릭 |
@@ -35,6 +36,8 @@ Tools/Tutorial/Setup Tutorial   →   Ctrl+S  (Main.unity 에서!)
 - 틀린 카드는 **소모되지 않고 손패로 돌아오며** 힌트 문구가 뜬다 (CardInput.UseFilter 훅)
 - 손패에 정답 카드가 없으면 소프트락 방지를 위해 전부 허용된다
 - 스포트라이트 글로우 색은 대상 관객의 성향(Chill 청록/Singalong 보라/Mosh 빨강)에 맞춰 바뀐다
+- PrefChill 직후, 실제로 관객 위에 마우스를 올려 테두리 색으로 성향을 확인하는 법을 안내한다
+  (개별 판단 연습을 먼저 끝낸 뒤 보조 도구로 소개, `AudiencePreferenceHoverController.RevealedActor` 폴링)
 - 튜토리얼 중: 자연 유입 정지 · 관객 개별 몰입도 자연 감소 정지 · 전역 Hype 감소 정지 ·
   특별 관객 정지 · Crisis 정지 → 끝나면 전부 복구
 - 끝나면 로스터/콤보/점수/호응도 리셋 후 **깨끗한 본 공연** 시작
@@ -64,6 +67,7 @@ Tools/Tutorial/Setup Tutorial   →   Ctrl+S  (Main.unity 에서!)
 | `AudienceRosterSystem.cs` | `SuppressEngagementDecay` — false 면 평소와 동일 (관객 개별 몰입도 자연 감소) |
 | `AudienceRosterPresenter.cs` | `TryGetActor(id)` 읽기 전용 조회 |
 | `CardSystem.cs` | `SetHand(cards)` — 손패를 지정 카드로 강제 교체, 덱은 건드리지 않음 |
+| `AudiencePreferenceHoverController.cs` | `RevealedActor` — 현재 호버로 테두리가 표시된 관객 (읽기 전용 폴링) |
 
 ※ 프리젠터의 구버전 API 참조 2건(`PlayDeparture`/`LayoutPosition`)도 이번에 수정 — 컴파일 복구.
 
