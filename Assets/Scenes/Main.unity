@@ -3889,7 +3889,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CardSfxPlayer
   defaultSfxId: guitar_stroke
-  cardOverrides: []
+  cardOverrides:
+  - cardId: guitar_solo
+    sfxId: guitar_solo
+  - cardId: tempo_up
+    sfxId: card_tempo_up
+  - cardId: response_call
+    sfxId: card_response_call
+  - cardId: pass_mic
+    sfxId: card_pass_mic
   volumeScale: 1
   perfectSfxId: 
   goodSfxId: 

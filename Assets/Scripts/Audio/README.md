@@ -84,17 +84,27 @@ Bgm.Volume = 0.8f;      // 채널 볼륨 (자동 저장)
 
 ## 4-2. 카드 효과음 (`CardSfxPlayer`)
 
-카드를 쓰면 `guitar_stroke` 가 재생된다. **카드 코드를 건드리지 않고 `CardSelected` 이벤트만 구독**하므로
+카드를 쓰면 기본적으로 `guitar_stroke` 가 재생된다. **카드 코드를 건드리지 않고 `CardSelected` 이벤트만 구독**하므로
 카드 담당이 로직을 바꿔도 사운드 쪽은 영향을 받지 않는다.
 
 | 인스펙터 | 기본값 | 설명 |
 |---|---|---|
-| `defaultSfxId` | `guitar_stroke` | 모든 카드 공통 소리 |
-| `cardOverrides` | 비어 있음 | 특정 `cardId` 만 다른 소리 (예: 기타 솔로 카드 → `guitar_solo`) |
+| `defaultSfxId` | `guitar_stroke` | 모든 카드 공통 소리 (override 가 없거나 클립이 아직 없는 카드의 폴백) |
+| `cardOverrides` | 카드별 자동 배선 | 특정 `cardId` 만 다른 소리 (아래 참고) |
 | `volumeScale` | 1 | 카드 효과음 볼륨 배율 |
 | 판정별 4칸 | 비어 있음 | Perfect/Good/Miss/RiskMiss 에 소리를 얹고 싶을 때 (`hey_high`, `crowd_mistake` …) |
 
-빈 칸은 조용히 넘어가므로 지금은 스트로크 한 방만 난다.
+**카드별 소리는 `Assets/Scripts/Editor/AudioSetupMenu.cs` 의 `CardSfxMap` 표(카드 `id` → SoundLibrary
+`sfxId`)가 단일 소스다.** `Tools/Audio/Setup Crowd Ambience` (또는 단독으로
+`Tools/Audio/Assign Card Sfx Overrides`) 를 실행하면, `CardSfxMap` 에 있는 카드 중 **SoundLibrary에
+실제 클립이 등록된 것만** `cardOverrides` 에 자동으로 채워진다. 클립이 아직 없는 카드는 조용히
+건너뛰고 `defaultSfxId` 로 계속 재생된다 — 없는 sfxId 를 억지로 넣으면 카드를 낼 때마다 경고 로그가
+쌓이기 때문에 일부러 이렇게 만들었다. 이미 인스펙터에서 수동으로 넣어둔 `cardId` 는 절대 덮어쓰지 않는다.
+
+지금은 `guitar_solo` 카드 하나만 전용 클립(`Guitar_Solo.wav`)이 있어 실제로 다른 소리가 나고,
+나머지 7장은 아래 "7. 등록된 사운드 ID" 표의 placeholder 경로에 파일이 채워지는 대로
+같은 메뉴 재실행 두 번(`Register Audio Clips To Library` → `Setup Crowd Ambience` 또는
+`Assign Card Sfx Overrides`)만으로 자동 연결된다. 코드 수정은 필요 없다.
 
 ## 5. 볼륨 UI
 
@@ -120,9 +130,21 @@ Bgm.Volume = 0.8f;      // 채널 볼륨 (자동 저장)
 | `big_rock` | `Audio/BGM/Big Rock.mp3` | 무대 BGM (루프, 볼륨 0.5) |
 | `crowd_low` / `crowd_middle` / `crowd_high` | `Audio/BGM/` | 관객 앰비언스 (루프) |
 | `crowd_mistake` | `Audio/OneShot/Crowd_mistake.wav` | 실패 판정 |
-| `guitar_solo` / `guitar_stroke` | `Audio/OneShot/` | 카드 연출 |
+| `guitar_solo` / `guitar_stroke` | `Audio/OneShot/` | 카드 연출 (`guitar_solo` 카드 전용 + 공통 기본음) |
 | `hey_high` / `hey_low` | `Audio/OneShot/` | 관객 함성 |
+| `card_tempo_up` | `Audio/OneShot/Cards/Card_TempoUp.wav` | **[클립 대기 중]** `tempo_up` 카드 전용 |
+| `card_response_call` | `Audio/OneShot/Cards/Card_ResponseCall.wav` | **[클립 대기 중]** `response_call` 카드 전용 |
+| `card_hands_up` | `Audio/OneShot/Cards/Card_HandsUp.wav` | **[클립 대기 중]** `hands_up` 카드 전용 |
+| `card_pass_mic` | `Audio/OneShot/Cards/Card_PassMic.wav` | **[클립 대기 중]** `pass_mic` 카드 전용 |
+| `card_open_mosh_pit` | `Audio/OneShot/Cards/Card_OpenMoshPit.wav` | **[클립 대기 중]** `open_mosh_pit` 카드 전용 |
+| `card_draw_two` | `Audio/OneShot/Cards/Card_DrawTwo.wav` | **[클립 대기 중]** `draw_two` 카드 전용 |
+| `card_reroll_hand` | `Audio/OneShot/Cards/Card_RerollHand.wav` | **[클립 대기 중]** `reroll_hand` 카드 전용 |
 
 원샷은 킷 API 로 재생한다: `Sound.Play("guitar_solo");`
 새 클립을 넣으면 `Tools/Audio/Register Audio Clips To Library` 로 다시 등록한다
 (추가할 ID 는 `Assets/Scripts/Editor/AudioSetupMenu.cs` 의 `DefaultSounds` 표에 한 줄 넣으면 된다).
+
+**사운드 담당자용 요청 사항:** 위 "[클립 대기 중]" 7개를 각 카드 분위기에 맞는 원샷 효과음으로
+채워서 정확히 표에 적힌 경로(`Assets/Audio/OneShot/Cards/Card_XXX.wav`)에 넣어주면 된다.
+파일만 넣고 `Tools/Audio/Register Audio Clips To Library` → `Tools/Audio/Setup Crowd Ambience`
+순서로 두 번 실행하면 카드 효과음까지 자동으로 연결된다 (코드 수정 불필요).
