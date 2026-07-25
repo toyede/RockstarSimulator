@@ -61,7 +61,6 @@ namespace ContextStage
 
         [Header("유틸리티")]
         [SerializeField, Min(0)] int drawCount = 2;
-        [SerializeField, Min(1)] int rerollDrawCount = 3;
 
         [Header("외형")]
         [SerializeField] Sprite artwork;
@@ -85,7 +84,6 @@ namespace ContextStage
         public float SpecialHitHeatDelta => specialHitHeatDelta;
         public AudienceReactionProfile AudienceReaction => audienceReaction;
         public int DrawCount => Mathf.Max(0, drawCount);
-        public int RerollDrawCount => Mathf.Max(1, rerollDrawCount);
         public Sprite Artwork => artwork;
         public Color CardColor => cardColor;
 

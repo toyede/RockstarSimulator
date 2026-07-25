@@ -106,6 +106,7 @@ namespace ContextStage
             try
             {
                 var card = _hand[index];
+                int handCountBeforeUse = _hand.Count;
                 AudienceReactionProfile profile = card.AudienceReaction;
                 if (profile == null)
                 {
@@ -199,7 +200,7 @@ namespace ContextStage
                     IsSpecialHit = false
                 });
 
-                ResolveHandEffect(card);
+                ResolveHandEffect(card, handCountBeforeUse);
                 RaiseHandChanged();
                 return true;
             }
@@ -234,7 +235,7 @@ namespace ContextStage
             return drawn;
         }
 
-        void ResolveHandEffect(CardDefinition card)
+        void ResolveHandEffect(CardDefinition card, int handCountBeforeUse)
         {
             if (card.Role != CardRole.Utility)
             {
@@ -249,7 +250,7 @@ namespace ContextStage
                     break;
                 case UtilityCardEffect.Reroll:
                     _hand.Clear();
-                    DrawCards(card.RerollDrawCount);
+                    DrawCards(handCountBeforeUse);
                     break;
                 default:
                     RefillToMinimumHand();

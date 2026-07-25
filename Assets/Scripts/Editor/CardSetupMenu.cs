@@ -179,7 +179,7 @@ namespace ContextStage.EditorTools
                 ? Mathf.Min(system.MaximumHandSize, handBefore - 1 + firstCard.DrawCount)
                 : firstCard.Role == CardRole.Utility &&
                   firstCard.UtilityEffect == UtilityCardEffect.Reroll
-                    ? firstCard.RerollDrawCount
+                    ? handBefore
                     : system.MinimumHandSize;
             if (system.HandCount != expectedFirstHand)
                 throw new InvalidOperationException(
@@ -247,6 +247,9 @@ namespace ContextStage.EditorTools
 
                 if (targetIndex >= 0)
                 {
+                    if (targetEffect == UtilityCardEffect.Reroll)
+                        system.AddCards(system.MaximumHandSize - system.HandCount);
+
                     int before = system.HandCount;
                     var card = system.GetCard(targetIndex);
                     if (!system.SelectCard(targetIndex))
@@ -254,7 +257,7 @@ namespace ContextStage.EditorTools
 
                     int expected = targetEffect == UtilityCardEffect.Draw
                         ? Mathf.Min(system.MaximumHandSize, before - 1 + card.DrawCount)
-                        : card.RerollDrawCount;
+                        : before;
                     if (system.HandCount != expected)
                         throw new InvalidOperationException(
                             $"[Cards] {targetEffect} 후 손패가 예상과 다릅니다: {system.HandCount}/{expected}");
@@ -328,7 +331,7 @@ namespace ContextStage.EditorTools
                     FromHex("#F2C94C")),
                 new CardSeed(
                     "Card_08_Reroll", "reroll_hand", "리롤",
-                    "현재 패를 모두 없애고 카드 3장을 뽑는다.",
+                    "현재 패를 모두 버리고 같은 수만큼 새로 뽑는다.",
                     CardRole.Utility, HeatStage.Chill, UtilityCardEffect.Reroll,
                     FromHex("#F2994A"))
             };
@@ -481,8 +484,8 @@ namespace ContextStage.EditorTools
 
             if (draw.UtilityEffect != UtilityCardEffect.Draw || draw.DrawCount != 2)
                 errors.Add("드로우 카드 효과가 2장 획득이 아닙니다.");
-            if (reroll.UtilityEffect != UtilityCardEffect.Reroll || reroll.RerollDrawCount != 3)
-                errors.Add("리롤 카드 효과가 전체 제거 후 3장 획득이 아닙니다.");
+            if (reroll.UtilityEffect != UtilityCardEffect.Reroll)
+                errors.Add("리롤 카드의 유틸리티 효과 설정이 올바르지 않습니다.");
             if (!Mathf.Approximately(config.GetMultiplier(0.49f), 1f) ||
                 !Mathf.Approximately(config.GetMultiplier(0.50f), 3f) ||
                 !Mathf.Approximately(config.GetMultiplier(0.80f), 5f))
@@ -607,7 +610,6 @@ namespace ContextStage.EditorTools
             serialized.FindProperty("specialHitBaseScore").intValue = special ? 400 : 0;
             serialized.FindProperty("specialHitHeatDelta").floatValue = special ? 25f : 0f;
             serialized.FindProperty("drawCount").intValue = seed.UtilityEffect == UtilityCardEffect.Draw ? 2 : 0;
-            serialized.FindProperty("rerollDrawCount").intValue = 3;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(card);
         }
