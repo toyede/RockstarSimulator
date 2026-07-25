@@ -2824,6 +2824,7 @@ MonoBehaviour:
     peakScale: 1.3
     fadeStart: 0.55
     fontSize: 3.4
+    fontStyle: 0
 --- !u!4 &865710563
 Transform:
   m_ObjectHideFlags: 0
@@ -4925,21 +4926,9 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 165538480}
     - target: {fileID: 1737632950551179077, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 1613860735}
-    - target: {fileID: 1737632950551179077, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 165538480}
-    - target: {fileID: 1737632950551179077, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnClickTitle
-      objectReference: {fileID: 0}
-    - target: {fileID: 1737632950551179077, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: ContextStage.GameOverPopup, Assembly-CSharp
-      objectReference: {fileID: 0}
     - target: {fileID: 2135933040274056952, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_Name
       value: GameOverCanvas
@@ -5024,35 +5013,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8524016742088205972, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_Color.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8524016742088205972, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_Color.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8524016742088205972, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_Color.r
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 7114327695624180809, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
---- !u!114 &1613860735 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3406294723818511092, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-  m_PrefabInstance: {fileID: 1613860734}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06129afcf96751f4698658c2f9cba636, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.GameOverPopup
 --- !u!1 &1635609044
 GameObject:
   m_ObjectHideFlags: 0
