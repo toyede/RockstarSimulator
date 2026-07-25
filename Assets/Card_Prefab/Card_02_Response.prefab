@@ -126,15 +126,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.calmScore
-      value: 3
+      value: -20
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.moshScore
-      value: -2
+      value: -30
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.chillScore
-      value: 5
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.middleScore
@@ -142,11 +142,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.excitedScore
-      value: -3
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.singalongScore
-      value: 1
+      value: -10
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.appliesToAudience
