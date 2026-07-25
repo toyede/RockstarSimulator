@@ -22,7 +22,7 @@ namespace ContextStage
     /// </summary>
     public class HypeSystem : MonoSingleton<HypeSystem>
     {
-        [SerializeField, Tooltip("밸런스 수치 에셋. 비워두면 기본값으로 임시 생성됨 (경고 출력)")]
+        [SerializeField, Tooltip("필수 밸런스 수치 에셋")]
         HypeConfig config;
 
         float _current;              // 현재 열기
@@ -34,6 +34,7 @@ namespace ContextStage
         public float Current => _current;
         public float Normalized => config == null ? 0f : Mathf.Clamp01(_current / config.maxHype);
         public HypeConfig Config => config;
+        public bool IsConfigured => config != null;
 
         /// <summary>현재 열기에 해당하는 점수 배율 (×1~×5). 콘픽이 없으면 1.</summary>
         public float CurrentMultiplier => config == null ? 1f : config.GetMultiplier(Normalized);
@@ -50,13 +51,15 @@ namespace ContextStage
 
         protected override void OnAwake()
         {
-            // 콘픽 미지정 안전장치: 에디터 메뉴(Tools/Hype)로 셋업하면 자동 지정된다
             if (config == null)
             {
-                Debug.LogWarning("[HypeSystem] HypeConfig 가 지정되지 않아 기본값으로 임시 생성합니다. " +
-                                 "Tools/Hype/Setup Hype Scene 을 실행하세요.");
-                config = ScriptableObject.CreateInstance<HypeConfig>();
+                Debug.LogError(
+                    "[HypeSystem] HypeConfig is required. Run Tools/Hype/Setup Hype Scene.",
+                    this);
+                enabled = false;
+                return;
             }
+
             ResetHype();
         }
 
@@ -73,6 +76,7 @@ namespace ContextStage
         /// <summary>호응도를 시작값으로 되돌린다. (공연 시작 시 자동 호출)</summary>
         public void ResetHype()
         {
+            if (config == null) return;
             _decayPausedManually = false;
             float prev = _current;
             _current = Mathf.Clamp(config.startHype, 0f, config.maxHype);
@@ -81,6 +85,7 @@ namespace ContextStage
 
         void Update()
         {
+            if (config == null) return;
             // 플레이 중이 아니면(대기·일시정지·게임오버) 감소하지 않는다
             var gm = GameManager.Instance;
             if (gm == null || !gm.IsPlaying) return;
@@ -99,6 +104,7 @@ namespace ContextStage
         /// </summary>
         public void ApplyJudgement(HypeJudgement judgement)
         {
+            if (config == null) return;
             ApplyDelta(config.GetDelta(judgement), judgement);
         }
 
@@ -108,6 +114,7 @@ namespace ContextStage
         /// </summary>
         public void ApplyDelta(float delta, HypeJudgement judgement)
         {
+            if (config == null) return;
             var gm = GameManager.Instance;
             if (gm == null || !gm.IsPlaying) return;
             if (Mathf.Approximately(delta, 0f)) return;

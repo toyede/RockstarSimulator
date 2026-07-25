@@ -27,6 +27,7 @@ namespace GameJamKit
         CanvasGroup _group;
         Transform _content;
         Coroutine _routine;
+        bool _ownsPause;
 
         public bool IsOpen { get; private set; }
         public bool ClosableByEscape => closableByEscape;
@@ -48,6 +49,7 @@ namespace GameJamKit
 
         protected virtual void OnDestroy()
         {
+            ReleasePauseOwnership();
             if (UIManager.HasInstance) UIManager.Instance.Unregister(this);
         }
 
@@ -60,7 +62,11 @@ namespace GameJamKit
 
             gameObject.SetActive(true);
             if (!string.IsNullOrEmpty(openSoundId)) Sound.Play(openSoundId);
-            if (pauseGameWhileOpen && GameManager.HasInstance) GameManager.Instance.Pause();
+            if (pauseGameWhileOpen && GameManager.HasInstance)
+            {
+                GameManager.Instance.AcquirePause(this);
+                _ownsPause = true;
+            }
 
             UIManager.Instance.PushOpen(this);
             OnOpen();
@@ -74,7 +80,7 @@ namespace GameJamKit
             IsOpen = false;
 
             if (!string.IsNullOrEmpty(closeSoundId)) Sound.Play(closeSoundId);
-            if (pauseGameWhileOpen && GameManager.HasInstance) GameManager.Instance.Resume();
+            ReleasePauseOwnership();
 
             UIManager.Instance.PopOpen(this);
             OnClose();
@@ -94,16 +100,25 @@ namespace GameJamKit
 
         public void CloseImmediate()
         {
+            bool wasOpen = IsOpen;
             IsOpen = false;
+            if (wasOpen) ReleasePauseOwnership();
             if (_routine != null) { StopCoroutine(_routine); _routine = null; }
             ApplyAlpha(0f);
-            UIManager.Instance.PopOpen(this);
+            if (UIManager.HasInstance) UIManager.Instance.PopOpen(this);
             gameObject.SetActive(false);
         }
 
         /// <summary>파생 클래스에서 열릴 때 데이터 갱신 등을 처리.</summary>
         protected virtual void OnOpen() { }
         protected virtual void OnClose() { }
+
+        void ReleasePauseOwnership()
+        {
+            if (!_ownsPause) return;
+            _ownsPause = false;
+            if (GameManager.HasInstance) GameManager.Instance.ReleasePause(this);
+        }
 
         // ---------------- 애니메이션 ----------------
 

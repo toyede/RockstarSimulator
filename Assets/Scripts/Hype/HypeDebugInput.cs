@@ -21,11 +21,14 @@ namespace ContextStage
     /// </summary>
     public class HypeDebugInput : MonoBehaviour
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         [SerializeField, Tooltip("화면 좌상단에 조작법/상태 안내를 표시할지")]
         bool showOnScreenHelp = true;
+#endif
 
         void Update()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             var gm = GameManager.Instance;
             if (gm == null) return;
 
@@ -65,6 +68,7 @@ namespace ContextStage
             }
 
 #endif
+#endif
         }
 
         static bool IsUiInputFocused()
@@ -76,6 +80,7 @@ namespace ContextStage
         // 그레이박스 단계 임시 안내. 정식 UI 가 생기면 showOnScreenHelp 를 끈다.
         void OnGUI()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (!showOnScreenHelp || !GameManager.HasInstance) return;
 
             string msg;
@@ -97,6 +102,7 @@ namespace ContextStage
 
             var style = new GUIStyle(GUI.skin.label) { fontSize = 20 };
             GUI.Label(new Rect(20f, 20f, 900f, 40f), msg, style);
+#endif
         }
     }
 }

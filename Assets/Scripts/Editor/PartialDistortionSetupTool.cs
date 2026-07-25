@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static ContextStage.EditorTools.EditorSetupUtility;
 
 namespace ContextStage.EditorTools
 {
@@ -133,13 +134,5 @@ namespace ContextStage.EditorTools
             AssetDatabase.SaveAssets();
         }
 
-        static void EnsureFolder(string path)
-        {
-            if (string.IsNullOrEmpty(path) || AssetDatabase.IsValidFolder(path)) return;
-
-            string parent = Path.GetDirectoryName(path)?.Replace('\\', '/');
-            EnsureFolder(parent);
-            AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
-        }
     }
 }

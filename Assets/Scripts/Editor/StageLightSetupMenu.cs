@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using static ContextStage.EditorTools.EditorSetupUtility;
 
 namespace ContextStage.EditorTools
 {
@@ -226,28 +227,5 @@ namespace ContextStage.EditorTools
             return AssetDatabase.LoadAssetAtPath<Sprite>(PixelCookiePath);
         }
 
-        static void EnsureFolder(string path)
-        {
-            if (string.IsNullOrEmpty(path) || AssetDatabase.IsValidFolder(path)) return;
-
-            string parent = Path.GetDirectoryName(path)?.Replace('\\', '/');
-            EnsureFolder(parent);
-            AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
-        }
-
-        static void SetObjectField(Object target, string fieldName, Object value)
-        {
-            if (target == null) return;
-
-            var so = new SerializedObject(target);
-            var prop = so.FindProperty(fieldName);
-            if (prop == null)
-            {
-                Debug.LogWarning($"[StageLight] {target.GetType().Name} 에서 '{fieldName}' 필드를 찾지 못했습니다.");
-                return;
-            }
-            prop.objectReferenceValue = value;
-            so.ApplyModifiedPropertiesWithoutUndo();
-        }
     }
 }

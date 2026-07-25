@@ -27,6 +27,7 @@ namespace ContextStage
         /// <summary>마지막으로 조명에 반영한 단계. 매 프레임 같은 값을 다시 넣지 않기 위한 캐시.</summary>
         HeatStage _lastStage = HeatStage.Chill;
         bool _hasStage;
+        bool _warnedMissingConfig;
 
         void Awake()
         {
@@ -51,7 +52,11 @@ namespace ContextStage
 
         // ---------------- 열기 ----------------
 
-        void OnHypeChanged(HypeChanged e) => ApplyStage(ResolveStage(e.Value), instant: false);
+        void OnHypeChanged(HypeChanged e)
+        {
+            if (TryResolveStage(e.Value, out HeatStage stage))
+                ApplyStage(stage, instant: false);
+        }
 
         void OnGameStateChanged(GameStateChanged e)
         {
@@ -60,7 +65,23 @@ namespace ContextStage
                 SyncStage(instant: e.Current == GameState.Ready);
         }
 
-        void SyncStage(bool instant) => ApplyStage(ResolveStage(Hype.Current), instant);
+        void SyncStage(bool instant)
+        {
+            if (!HypeSystem.HasInstance)
+            {
+                WarnMissingConfig();
+                return;
+            }
+
+            HypeSystem hype = HypeSystem.Instance;
+            if (hype.Config == null)
+            {
+                WarnMissingConfig();
+                return;
+            }
+
+            ApplyStage(hype.Config.ResolveStage(hype.Current), instant);
+        }
 
         void ApplyStage(HeatStage stage, bool instant)
         {
@@ -76,15 +97,28 @@ namespace ContextStage
         /// 열기 수치 → 단계. 카드 판정과 <b>같은 함수</b>(HypeConfig.ResolveStage)를 쓰므로
         /// 조명이 보여주는 단계와 카드가 판정하는 단계가 어긋날 수 없다.
         /// </summary>
-        static HeatStage ResolveStage(float rawHype)
+        bool TryResolveStage(float rawHype, out HeatStage stage)
         {
             var config = HypeSystem.HasInstance ? HypeSystem.Instance.Config : null;
-            if (config != null) return config.ResolveStage(rawHype);
+            if (config != null)
+            {
+                stage = config.ResolveStage(rawHype);
+                return true;
+            }
 
-            // 콘픽이 없을 때의 안전한 기본값 (CardEffectResolver 의 폴백과 동일한 경계)
-            if (rawHype >= 80f) return HeatStage.Mosh;
-            if (rawHype >= 50f) return HeatStage.Singalong;
-            return HeatStage.Chill;
+            WarnMissingConfig();
+            stage = default;
+            return false;
+        }
+
+        void WarnMissingConfig()
+        {
+            if (_warnedMissingConfig) return;
+
+            _warnedMissingConfig = true;
+            Debug.LogError(
+                "[StageLightEventBridge] A configured HypeSystem is required.",
+                this);
         }
 
         // ---------------- 특별 관객 ----------------

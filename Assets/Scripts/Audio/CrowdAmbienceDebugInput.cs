@@ -18,15 +18,18 @@ namespace ContextStage
     /// </summary>
     public class CrowdAmbienceDebugInput : MonoBehaviour
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         [SerializeField, Tooltip("화면 우상단에 현재 티어/볼륨을 표시할지")]
         bool showOnScreenInfo = true;
 
         [SerializeField, Range(0.01f, 0.5f)] float volumeStep = 0.1f;
+#endif
 
         int _forcedCycle = -1; // -1 = 자동(호응도 추종)
 
         void Update()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
 #if ENABLE_INPUT_SYSTEM
             var kb = Keyboard.current;
             if (kb == null) return;
@@ -44,6 +47,7 @@ namespace ContextStage
             if (Input.GetKeyDown(KeyCode.Equals))       ShiftMasterVolume(+volumeStep);
             if (Input.GetKeyDown(KeyCode.M))            ToggleMute();
             if (Input.GetKeyDown(KeyCode.T))            CycleForcedTier();
+#endif
 #endif
         }
 
@@ -75,6 +79,7 @@ namespace ContextStage
 
         void OnGUI()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (!showOnScreenInfo || !CrowdAmbienceSystem.HasInstance) return;
 
             var system = CrowdAmbienceSystem.Instance;
@@ -87,6 +92,7 @@ namespace ContextStage
 
             var style = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.UpperRight };
             GUI.Label(new Rect(Screen.width - 440f, 20f, 420f, 90f), msg, style);
+#endif
         }
     }
 }

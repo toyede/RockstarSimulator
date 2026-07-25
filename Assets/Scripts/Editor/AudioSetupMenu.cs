@@ -3,6 +3,7 @@ using GameJamKit;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using static ContextStage.EditorTools.EditorSetupUtility;
 
 namespace ContextStage.EditorTools
 {
@@ -156,30 +157,5 @@ namespace ContextStage.EditorTools
             return asset;
         }
 
-        // ---------------- 공용 헬퍼 ----------------
-
-        static void EnsureFolder(string path)
-        {
-            if (string.IsNullOrEmpty(path) || AssetDatabase.IsValidFolder(path)) return;
-
-            var parent = Path.GetDirectoryName(path).Replace('\\', '/');
-            var leaf = Path.GetFileName(path);
-            EnsureFolder(parent);
-            AssetDatabase.CreateFolder(parent, leaf);
-        }
-
-        /// <summary>private [SerializeField] 필드를 에디터에서 지정한다. (인스펙터 수동 연결과 동일한 효과)</summary>
-        static void SetObjectField(Object target, string fieldName, Object value)
-        {
-            var so = new SerializedObject(target);
-            var prop = so.FindProperty(fieldName);
-            if (prop == null)
-            {
-                Debug.LogWarning($"[Audio] {target.GetType().Name} 에서 '{fieldName}' 필드를 찾지 못했습니다.");
-                return;
-            }
-            prop.objectReferenceValue = value;
-            so.ApplyModifiedPropertiesWithoutUndo();
-        }
     }
 }

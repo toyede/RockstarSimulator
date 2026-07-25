@@ -90,9 +90,16 @@ namespace ContextStage
         public float PreviewHeatDelta(float currentHype, HypeConfig config)
             => CardEffectResolver.Resolve(this, currentHype, config, SpecialCardRequest.None).HeatDelta;
 
-        public CrowdReactionGrade PreviewCrowdReaction(CrowdCompositionSnapshot composition)
+        public CrowdReactionGrade PreviewCrowdReaction(
+            CrowdCompositionSnapshot composition,
+            CrowdCompositionConfig compositionConfig)
             => Role == CardRole.Utility
                 ? CrowdReactionGrade.Good
-                : CrowdReactionEvaluator.Evaluate(composition, targetPreference);
+                : compositionConfig == null
+                    ? CrowdReactionGrade.Weak
+                    : CrowdReactionEvaluator.Evaluate(
+                        composition,
+                        targetPreference,
+                        compositionConfig.GoodReactionThreshold);
     }
 }

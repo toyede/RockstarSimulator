@@ -5,10 +5,13 @@ namespace ContextStage
 {
     /// <summary>Temporary, zero-art debug HUD for prototype validation.</summary>
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(CrowdCompositionManager))]
     public sealed class CrowdCompositionDebugView : MonoBehaviour
     {
         [SerializeField] CrowdCompositionManager manager;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         [SerializeField] bool showDebugPanel = true;
+#endif
         [SerializeField] Vector2 position = new Vector2(12f, 12f);
 
         GUIStyle _box;
@@ -20,11 +23,21 @@ namespace ContextStage
         void Awake()
         {
             if (manager == null) manager = GetComponent<CrowdCompositionManager>();
-            if (manager == null) manager = FindFirstObjectByType<CrowdCompositionManager>();
         }
 
-        void OnEnable() => EventBus.Subscribe<CrowdShiftStarted>(OnCrowdShiftStarted);
-        void OnDisable() => EventBus.Unsubscribe<CrowdShiftStarted>(OnCrowdShiftStarted);
+        void OnEnable()
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            EventBus.Subscribe<CrowdShiftStarted>(OnCrowdShiftStarted);
+#endif
+        }
+
+        void OnDisable()
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            EventBus.Unsubscribe<CrowdShiftStarted>(OnCrowdShiftStarted);
+#endif
+        }
 
         void OnCrowdShiftStarted(CrowdShiftStarted e)
         {
@@ -34,6 +47,7 @@ namespace ContextStage
 
         void OnGUI()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (!showDebugPanel || manager == null) return;
             EnsureStyles();
 
@@ -60,6 +74,7 @@ namespace ContextStage
                 Rect bannerRect = new Rect(Screen.width * 0.5f - 230f, 28f, 460f, 74f);
                 GUI.Box(bannerRect, _bannerText, _banner);
             }
+#endif
         }
 
         void DrawCount(CrowdPreference preference)

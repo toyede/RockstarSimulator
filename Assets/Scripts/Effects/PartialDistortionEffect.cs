@@ -12,7 +12,7 @@ namespace ContextStage
     public sealed class PartialDistortionEffect : MonoBehaviour
     {
         [Header("프리셋")]
-        [SerializeField] DistortionProfile profile;
+        [SerializeField] LocalScreenEffectProfile profile;
         [SerializeField] Material sourceMaterial;
 
         [Header("영역")]

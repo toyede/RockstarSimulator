@@ -27,6 +27,8 @@ namespace ContextStage
         float delayedSpeed = 0.6f;
 
         [Header("구간별 명도 (그레이스케일. 아트 확정 후 교체 가능)")]
+        [SerializeField, Min(0f), Tooltip("Chill 단계 안에서 위기 색을 사용할 상한")]
+        float crisisUpperBound = 21f;
         [SerializeField, Tooltip("1~20 위기")] Color crisisColor = new Color(0.35f, 0.35f, 0.35f);
         [SerializeField, Tooltip("21~49 냉담")] Color coldColor = new Color(0.55f, 0.55f, 0.55f);
         [SerializeField, Tooltip("50~79 열광")] Color hotColor = new Color(0.78f, 0.78f, 0.78f);
@@ -76,10 +78,12 @@ namespace ContextStage
         /// <summary>호응도 구간 → 바 명도. 숫자를 안 봐도 밝기만으로 위험을 느끼게 한다.</summary>
         Color ZoneColor(float value)
         {
-            if (value < 21f) return crisisColor;  // 위기: 어둡게
-            if (value < 50f) return coldColor;    // 냉담
-            if (value < 80f) return hotColor;     // 열광
-            return peakColor;                     // 폭발 직전: 흰색
+            if (value < crisisUpperBound) return crisisColor;
+
+            HypeConfig config = HypeSystem.HasInstance ? HypeSystem.Instance.Config : null;
+            if (config == null) return coldColor;
+
+            return config.ResolveStage(value).Select(coldColor, hotColor, peakColor);
         }
     }
 }

@@ -81,14 +81,12 @@ namespace ContextStage
 
         void Start()
         {
-            if (compositionManager == null)
-                compositionManager = FindFirstObjectByType<CrowdCompositionManager>();
-            if (compositionManager == null)
-                compositionManager = gameObject.AddComponent<CrowdCompositionManager>();
-            if (GetComponent<CrowdCompositionDebugView>() == null)
-                gameObject.AddComponent<CrowdCompositionDebugView>();
-            if (GetComponent<CrowdShiftDirector>() == null)
-                gameObject.AddComponent<CrowdShiftDirector>();
+            if (!ValidateDependencies())
+            {
+                enabled = false;
+                return;
+            }
+
             if (spawnOnStart && _members.Count == 0) Spawn();
         }
 
@@ -165,31 +163,14 @@ namespace ContextStage
             CrowdPreference preference)
         {
             CrowdMemberView prefab = PrefabFor(preference);
-            GameObject go;
-            CrowdMemberView view;
-            CrowdPreferencePlaceholderView placeholder = null;
-
-            if (prefab != null)
+            if (prefab == null)
             {
-                view = Instantiate(prefab, transform);
-                go = view.gameObject;
-            }
-            else
-            {
-                go = new GameObject();
-                go.AddComponent<SpriteRenderer>();
-                view = go.AddComponent<CrowdMemberView>();
-
-                // The existing low/middle/high sheets are actual Mosh artwork.
-                // Chill and Singalong keep placeholders until their art arrives.
-                bool useExistingMoshSprites = preference == CrowdPreference.Mosh;
-                view.ConfigureIdentity(
-                    preference,
-                    preservePrefabArtwork: !useExistingMoshSprites);
-                if (!useExistingMoshSprites)
-                    placeholder = go.AddComponent<CrowdPreferencePlaceholderView>();
+                Debug.LogError($"[CrowdSpawner] Missing prefab for {preference}.", this);
+                return null;
             }
 
+            CrowdMemberView view = Instantiate(prefab, transform);
+            GameObject go = view.gameObject;
             go.name = $"CrowdMember_{index:00}_{preference}";
             go.transform.SetParent(transform, false);
             go.transform.localPosition = localPosition;
@@ -197,8 +178,6 @@ namespace ContextStage
             var sr = go.GetComponent<SpriteRenderer>();
             sr.sortingLayerName = sortingLayer;
             view.Setup(index, scale, sortingOrder, preference);
-            if (placeholder != null)
-                placeholder.Configure(preference);
             return view;
         }
 
@@ -414,5 +393,44 @@ namespace ContextStage
             }
             _members.Clear();
         }
+
+        bool ValidateDependencies()
+        {
+            if (compositionManager == null || !compositionManager.IsConfigured)
+            {
+                Debug.LogError(
+                    "[CrowdSpawner] A configured CrowdCompositionManager reference is required.",
+                    this);
+                return false;
+            }
+
+            int slotCount = Mathf.Max(1, rows) * Mathf.Max(1, membersPerRow);
+            if (slotCount != compositionManager.ExpectedCrowdSize)
+            {
+                Debug.LogError(
+                    $"[CrowdSpawner] Layout has {slotCount} slots but composition expects " +
+                    $"{compositionManager.ExpectedCrowdSize}.",
+                    this);
+                return false;
+            }
+
+            if (chillPrefab == null || singalongPrefab == null || moshPrefab == null)
+            {
+                Debug.LogError(
+                    "[CrowdSpawner] Chill, Singalong, and Mosh prefabs must all be assigned.",
+                    this);
+                return false;
+            }
+
+            return true;
+        }
+
+#if UNITY_EDITOR
+        void OnValidate()
+        {
+            rows = Mathf.Max(1, rows);
+            membersPerRow = Mathf.Max(1, membersPerRow);
+        }
+#endif
     }
 }

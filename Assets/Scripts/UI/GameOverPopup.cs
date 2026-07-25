@@ -3,7 +3,7 @@ using GameJamKit;
 namespace ContextStage
 {
     /// <summary>
-    /// 게임오버(호응도 0) 시 화면 중앙에 뜨는 팝업. 킷 UIPopup 상속.
+    /// GameManager가 GameOver 상태가 되면 화면 중앙에 뜨는 팝업. 킷 UIPopup 상속.
     ///
     /// 동작: GameStateChanged 이벤트를 구독하다가 GameOver 상태가 되면 스스로 Open().
     /// 재시작은 HypeDebugInput 의 R 키(GameManager.RestartScene) 가 처리하고,
@@ -32,7 +32,7 @@ namespace ContextStage
 
         void OnGameStateChanged(GameStateChanged e)
         {
-            // 호응도 0 → HypeSystem 이 GameManager.GameOver() 호출 → 여기로 통지가 온다
+            // 게임 규칙 또는 디버그 흐름이 GameOver 상태로 전환하면 여기로 통지가 온다.
             if (e.Current == GameState.GameOver) Open();
         }
 

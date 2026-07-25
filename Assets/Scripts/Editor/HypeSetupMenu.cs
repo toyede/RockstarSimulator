@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
+using static ContextStage.EditorTools.EditorSetupUtility;
 
 namespace ContextStage.EditorTools
 {
@@ -228,18 +229,5 @@ namespace ContextStage.EditorTools
             return comp != null ? comp : Undo.AddComponent<T>(go);
         }
 
-        /// <summary>private [SerializeField] 필드를 에디터에서 지정한다. (인스펙터 수동 연결과 동일한 효과)</summary>
-        static void SetObjectField(Object target, string fieldName, Object value)
-        {
-            var so = new SerializedObject(target);
-            var prop = so.FindProperty(fieldName);
-            if (prop == null)
-            {
-                Debug.LogWarning($"[Hype] {target.GetType().Name} 에서 '{fieldName}' 필드를 찾지 못했습니다.");
-                return;
-            }
-            prop.objectReferenceValue = value;
-            so.ApplyModifiedPropertiesWithoutUndo();
-        }
     }
 }

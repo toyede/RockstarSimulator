@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
+using static ContextStage.EditorTools.EditorSetupUtility;
 using Object = UnityEngine.Object;
 
 namespace ContextStage.EditorTools
@@ -782,31 +783,6 @@ namespace ContextStage.EditorTools
         {
             var component = go.GetComponent<T>();
             return component != null ? component : Undo.AddComponent<T>(go);
-        }
-
-        static void SetObjectField(Object target, string fieldName, Object value)
-        {
-            var serialized = new SerializedObject(target);
-            var property = serialized.FindProperty(fieldName);
-            if (property == null)
-            {
-                Debug.LogWarning($"[Cards] {target.GetType().Name}에서 '{fieldName}' 필드를 찾지 못했습니다.");
-                return;
-            }
-
-            property.objectReferenceValue = value;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(target);
-        }
-
-        static void EnsureFolder(string path)
-        {
-            if (AssetDatabase.IsValidFolder(path)) return;
-
-            string parent = System.IO.Path.GetDirectoryName(path)?.Replace('\\', '/');
-            string leaf = System.IO.Path.GetFileName(path);
-            if (!string.IsNullOrEmpty(parent) && !AssetDatabase.IsValidFolder(parent)) EnsureFolder(parent);
-            AssetDatabase.CreateFolder(parent, leaf);
         }
 
         static Color FromHex(string hex)

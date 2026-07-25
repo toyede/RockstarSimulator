@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GameJamKit
@@ -10,6 +11,14 @@ namespace GameJamKit
     /// </summary>
     public static class TimerUtils
     {
+        sealed class RoutineToken
+        {
+            public Coroutine Coroutine;
+        }
+
+        static readonly Dictionary<Coroutine, MonoBehaviour> s_hosts = new Dictionary<Coroutine, MonoBehaviour>();
+        static readonly List<Coroutine> s_cleanupBuffer = new List<Coroutine>();
+
         static MonoBehaviour Host(MonoBehaviour mb)
         {
             if (mb != null && mb.isActiveAndEnabled && mb.gameObject.activeInHierarchy) return mb;
@@ -20,28 +29,28 @@ namespace GameJamKit
         public static Coroutine DelayCall(this MonoBehaviour mb, float delay, Action action, bool unscaledTime = false)
         {
             var host = Host(mb);
-            return host == null ? null : host.StartCoroutine(DelayRoutine(delay, action, unscaledTime));
+            return StartTracked(host, DelayRoutine(delay, action, unscaledTime));
         }
 
         /// <summary>frames 프레임 뒤에 action 실행. (레이아웃/물리 갱신 대기용)</summary>
         public static Coroutine DelayFrames(this MonoBehaviour mb, int frames, Action action)
         {
             var host = Host(mb);
-            return host == null ? null : host.StartCoroutine(FrameRoutine(frames, action));
+            return StartTracked(host, FrameRoutine(frames, action));
         }
 
         /// <summary>interval 마다 반복 실행. count 가 -1 이면 무한.</summary>
         public static Coroutine Repeat(this MonoBehaviour mb, float interval, Action action, int count = -1, bool immediate = false)
         {
             var host = Host(mb);
-            return host == null ? null : host.StartCoroutine(RepeatRoutine(interval, action, count, immediate));
+            return StartTracked(host, RepeatRoutine(interval, action, count, immediate));
         }
 
         /// <summary>condition 이 true 가 되면 action 실행.</summary>
         public static Coroutine WaitUntilThen(this MonoBehaviour mb, Func<bool> condition, Action action)
         {
             var host = Host(mb);
-            return host == null ? null : host.StartCoroutine(WaitRoutine(condition, action));
+            return StartTracked(host, WaitRoutine(condition, action));
         }
 
         /// <summary>from → to 로 duration 동안 보간하며 onUpdate 호출. 간단한 트윈 대용.</summary>
@@ -49,24 +58,73 @@ namespace GameJamKit
             Action<float> onUpdate, Action onComplete = null, bool unscaledTime = false)
         {
             var host = Host(mb);
-            return host == null ? null : host.StartCoroutine(TweenRoutine(from, to, duration, onUpdate, onComplete, unscaledTime));
+            return StartTracked(host, TweenRoutine(from, to, duration, onUpdate, onComplete, unscaledTime));
         }
 
         /// <summary>코루틴 안전 취소 후 null 대입. this.Cancel(ref _myRoutine);</summary>
         public static void Cancel(this MonoBehaviour mb, ref Coroutine routine)
         {
             if (routine == null) return;
-            if (mb != null) mb.StopCoroutine(routine);
+            if (s_hosts.TryGetValue(routine, out MonoBehaviour host))
+            {
+                if (host != null) host.StopCoroutine(routine);
+                s_hosts.Remove(routine);
+            }
+            else if (mb != null)
+            {
+                mb.StopCoroutine(routine);
+            }
             routine = null;
         }
 
         // ---- 정적 버전: MonoBehaviour 없이 호출 ----
         public static Coroutine Delay(float delay, Action action, bool unscaledTime = false)
-            => TimerRunner.Instance.StartCoroutine(DelayRoutine(delay, action, unscaledTime));
+            => StartTracked(TimerRunner.Instance, DelayRoutine(delay, action, unscaledTime));
 
-        public static void StopAll() { if (TimerRunner.HasInstance) TimerRunner.Instance.StopAllCoroutines(); }
+        public static void StopAll()
+        {
+            if (!TimerRunner.HasInstance) return;
+
+            MonoBehaviour runner = TimerRunner.Instance;
+            runner.StopAllCoroutines();
+            s_cleanupBuffer.Clear();
+            foreach (var pair in s_hosts)
+                if (pair.Value == runner) s_cleanupBuffer.Add(pair.Key);
+            for (int i = 0; i < s_cleanupBuffer.Count; i++) s_hosts.Remove(s_cleanupBuffer[i]);
+            s_cleanupBuffer.Clear();
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetOnPlay()
+        {
+            s_hosts.Clear();
+            s_cleanupBuffer.Clear();
+        }
 
         // ---- 루틴 구현 ----
+        static Coroutine StartTracked(MonoBehaviour host, IEnumerator routine)
+        {
+            if (host == null || routine == null) return null;
+
+            var token = new RoutineToken();
+            Coroutine coroutine = host.StartCoroutine(TrackedRoutine(token, routine));
+            token.Coroutine = coroutine;
+            s_hosts[coroutine] = host;
+            return coroutine;
+        }
+
+        static IEnumerator TrackedRoutine(RoutineToken token, IEnumerator routine)
+        {
+            try
+            {
+                yield return routine;
+            }
+            finally
+            {
+                if (token.Coroutine != null) s_hosts.Remove(token.Coroutine);
+            }
+        }
+
         static IEnumerator DelayRoutine(float delay, Action action, bool unscaled)
         {
             if (delay > 0f)

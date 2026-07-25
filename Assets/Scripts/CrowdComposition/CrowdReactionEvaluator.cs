@@ -5,15 +5,15 @@ namespace ContextStage
     /// <summary>Pure, scene-independent preference evaluation.</summary>
     public static class CrowdReactionEvaluator
     {
-        public const float GoodThreshold = 0.10f;
         const float RatioEpsilon = 0.0001f;
 
         public static CrowdReactionGrade Evaluate(
             CrowdCompositionSnapshot composition,
-            CrowdPreference targetPreference)
+            CrowdPreference targetPreference,
+            float goodThreshold)
         {
             if (composition.TotalCount <= 0)
-                return CrowdReactionGrade.Good;
+                return CrowdReactionGrade.Weak;
 
             float highest = Mathf.Max(
                 composition.GetRatio(CrowdPreference.Chill),
@@ -27,7 +27,7 @@ namespace ContextStage
             if (difference <= RatioEpsilon)
                 return CrowdReactionGrade.Great;
 
-            return difference <= GoodThreshold + RatioEpsilon
+            return difference <= Mathf.Clamp01(goodThreshold) + RatioEpsilon
                 ? CrowdReactionGrade.Good
                 : CrowdReactionGrade.Weak;
         }

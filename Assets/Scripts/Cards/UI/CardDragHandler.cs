@@ -50,7 +50,6 @@ namespace ContextStage
         int _dragPointerId = int.MinValue;
         Vector2 _pointerOffset;
         bool _bound;
-        bool _hovered;
         bool _dragging;
         readonly Vector3[] _worldCorners = new Vector3[4];
 
@@ -129,14 +128,12 @@ namespace ContextStage
         {
             if (!_bound || _dragging) return;
 
-            _hovered = true;
             SetSorting(HoverSortingOrder);
             AnimateScale(hoverScale);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            _hovered = false;
             if (_dragging) return;
 
             SetSorting(0);
@@ -195,7 +192,6 @@ namespace ContextStage
                     ? SpecialAudience.ResolveDropRequest(eventData.position, DropRadiusPixels)
                     : SpecialCardRequest.None;
 
-            _hovered = false;
             _dragging = false;
             if (Current == this) Current = null;
             _dragPointerId = int.MinValue;
@@ -241,7 +237,6 @@ namespace ContextStage
             if (_canvasGroup != null) _canvasGroup.blocksRaycasts = true;
             SetSorting(0);
 
-            _hovered = false;
             _dragging = false;
             if (Current == this) Current = null;
             _dragPointerId = int.MinValue;
@@ -318,11 +313,10 @@ namespace ContextStage
         {
             if (_handArea == null) return false;
 
-            var corners = new Vector3[4];
-            _handArea.GetWorldCorners(corners);
+            _handArea.GetWorldCorners(_worldCorners);
             float handTop = RectTransformUtility.WorldToScreenPoint(
                 eventData.pressEventCamera,
-                corners[1]).y;
+                _worldCorners[1]).y;
             return eventData.position.y > handTop;
         }
 

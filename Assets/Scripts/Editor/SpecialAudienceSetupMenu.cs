@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
+using static ContextStage.EditorTools.EditorSetupUtility;
 
 namespace ContextStage.EditorTools
 {
@@ -20,6 +21,8 @@ namespace ContextStage.EditorTools
     /// </summary>
     public static class SpecialAudienceSetupMenu
     {
+        const string ConfigPath = "Assets/Settings/SpecialAudienceConfig.asset";
+
         [MenuItem("Tools/Special Audience/Setup Special Audience", false, 0)]
         public static void SetupScene()
         {
@@ -33,6 +36,7 @@ namespace ContextStage.EditorTools
             var manager = go.GetComponent<SpecialAudienceManager>() ?? Undo.AddComponent<SpecialAudienceManager>(go);
             var view = Object.FindFirstObjectByType<SpecialAudienceView>() ?? BuildGreyboxView();
 
+            SetObjectField(manager, "config", GetOrCreateConfig());
             SetObjectField(manager, "view", view);
             AssignSprites(view);
 
@@ -43,6 +47,19 @@ namespace ContextStage.EditorTools
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             Selection.activeGameObject = go;
             Debug.Log("[SpecialAudience] 셋업 완료. Play 후 P 키로 즉시 등장을 확인하세요. (씬을 Ctrl+S 로 저장할 것)");
+        }
+
+        static SpecialAudienceConfig GetOrCreateConfig()
+        {
+            SpecialAudienceConfig config =
+                AssetDatabase.LoadAssetAtPath<SpecialAudienceConfig>(ConfigPath);
+            if (config != null) return config;
+
+            EnsureFolder("Assets/Settings");
+            config = ScriptableObject.CreateInstance<SpecialAudienceConfig>();
+            AssetDatabase.CreateAsset(config, ConfigPath);
+            AssetDatabase.SaveAssets();
+            return config;
         }
 
         // ---------------- 스프라이트 연결 ----------------
@@ -303,17 +320,5 @@ namespace ContextStage.EditorTools
             rect.sizeDelta = new Vector2(0f, height);
         }
 
-        static void SetObjectField(Object target, string fieldName, Object value)
-        {
-            var so = new SerializedObject(target);
-            var prop = so.FindProperty(fieldName);
-            if (prop == null)
-            {
-                Debug.LogWarning($"[SpecialAudience] {target.GetType().Name} 에서 '{fieldName}' 필드를 찾지 못했습니다.");
-                return;
-            }
-            prop.objectReferenceValue = value;
-            so.ApplyModifiedPropertiesWithoutUndo();
-        }
     }
 }

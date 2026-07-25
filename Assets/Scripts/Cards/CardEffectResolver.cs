@@ -124,9 +124,16 @@ namespace ContextStage
                     false);
             }
 
-            HeatStage currentStage = config != null
-                ? config.ResolveStage(currentHype)
-                : ResolveDefaultStage(currentHype);
+            if (config == null)
+            {
+                return new CardEffectResult(
+                    HypeJudgement.Miss,
+                    card.FarBaseScore,
+                    card.FarHeatDelta,
+                    false);
+            }
+
+            HeatStage currentStage = config.ResolveStage(currentHype);
             int distance = Math.Abs((int)currentStage - (int)card.TargetStage);
 
             switch (distance)
@@ -152,11 +159,5 @@ namespace ContextStage
             }
         }
 
-        static HeatStage ResolveDefaultStage(float currentHype)
-        {
-            if (currentHype >= 80f) return HeatStage.Mosh;
-            if (currentHype >= 50f) return HeatStage.Singalong;
-            return HeatStage.Chill;
-        }
     }
 }

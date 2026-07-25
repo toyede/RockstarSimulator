@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using static ContextStage.EditorTools.EditorSetupUtility;
 
 namespace ContextStage.EditorTools
 {
@@ -56,7 +57,7 @@ namespace ContextStage.EditorTools
             highlight.SetActive(false);
             highlight.AddComponent<SpriteRenderer>();
             var outline = highlight.AddComponent<SpecialAudienceOutline>();
-            SetField(outline, "outlineShader", AssetDatabase.LoadAssetAtPath<Shader>(OutlineShaderPath));
+            SetObjectField(outline, "outlineShader", AssetDatabase.LoadAssetAtPath<Shader>(OutlineShaderPath));
 
             var hitArea = new GameObject("HitArea");
             hitArea.transform.SetParent(root.transform, false);
@@ -70,13 +71,13 @@ namespace ContextStage.EditorTools
             var actor = character.AddComponent<SpecialAudienceCrowdActor>();
             // 위치는 루트가 옮겨져야 HitArea 가 함께 따라오고,
             // 점프 스쿼시는 시각 오브젝트에만 걸려야 Collider 가 흔들리지 않는다
-            SetField(actor, "motionRoot", root.transform);
-            SetField(actor, "visualRoot", visualRoot.transform);
+            SetObjectField(actor, "motionRoot", root.transform);
+            SetObjectField(actor, "visualRoot", visualRoot.transform);
 
             var dropTarget = root.AddComponent<SpecialAudienceDropTarget>();
-            SetField(dropTarget, "hitCollider", box);
-            SetField(dropTarget, "hoverScaleTarget", visualRoot.transform);
-            SetField(dropTarget, "highlight", highlight);
+            SetObjectField(dropTarget, "hitCollider", box);
+            SetObjectField(dropTarget, "hoverScaleTarget", visualRoot.transform);
+            SetObjectField(dropTarget, "highlight", highlight);
             // followTarget 은 비워둔다 — 액터가 루트를 직접 옮기므로 따라다닐 필요가 없다
 
             AssignActorSprites(actor);
@@ -112,10 +113,10 @@ namespace ContextStage.EditorTools
             if (dropTarget == null)
             {
                 dropTarget = root.AddComponent<SpecialAudienceDropTarget>();
-                SetField(dropTarget, "hitCollider", box);
+                SetObjectField(dropTarget, "hitCollider", box);
 
                 var existingActor = root.GetComponentInChildren<SpecialAudienceCrowdActor>(true);
-                if (existingActor != null) SetField(dropTarget, "followTarget", existingActor.transform);
+                if (existingActor != null) SetObjectField(dropTarget, "followTarget", existingActor.transform);
                 changed = true;
             }
 
@@ -135,7 +136,7 @@ namespace ContextStage.EditorTools
                 highlightObject.SetActive(false);
                 highlightObject.AddComponent<SpriteRenderer>();
                 var outline = highlightObject.AddComponent<SpecialAudienceOutline>();
-                SetField(outline, "outlineShader", AssetDatabase.LoadAssetAtPath<Shader>(OutlineShaderPath));
+                SetObjectField(outline, "outlineShader", AssetDatabase.LoadAssetAtPath<Shader>(OutlineShaderPath));
                 highlight = highlightObject.transform;
                 changed = true;
             }
@@ -260,28 +261,5 @@ namespace ContextStage.EditorTools
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        static void SetField(Object target, string fieldName, Object value)
-        {
-            if (target == null) return;
-
-            var so = new SerializedObject(target);
-            var prop = so.FindProperty(fieldName);
-            if (prop == null)
-            {
-                Debug.LogWarning($"[SpecialAudience] {target.GetType().Name} 에서 '{fieldName}' 를 찾지 못했습니다.");
-                return;
-            }
-            prop.objectReferenceValue = value;
-            so.ApplyModifiedPropertiesWithoutUndo();
-        }
-
-        static void EnsureFolder(string path)
-        {
-            if (string.IsNullOrEmpty(path) || AssetDatabase.IsValidFolder(path)) return;
-
-            var parent = Path.GetDirectoryName(path).Replace('\\', '/');
-            EnsureFolder(parent);
-            AssetDatabase.CreateFolder(parent, Path.GetFileName(path));
-        }
     }
 }

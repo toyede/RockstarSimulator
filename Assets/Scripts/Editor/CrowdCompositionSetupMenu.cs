@@ -3,6 +3,7 @@ using ContextStage;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using static ContextStage.EditorTools.EditorSetupUtility;
 
 namespace ContextStage.EditorTools
 {
@@ -10,6 +11,7 @@ namespace ContextStage.EditorTools
     {
         const string PrototypeFolder = "Assets/Prefabs/Audience/Prototype";
         const string GeneratedFolder = "Assets/Sprites/Crowd/Prototype";
+        const string ConfigPath = "Assets/Settings/CrowdCompositionConfig.asset";
 
         const string ChillSpritePath = GeneratedFolder + "/placeholder_chill_circle.png";
         const string SingalongSpritePath = GeneratedFolder + "/placeholder_singalong_square.png";
@@ -32,6 +34,7 @@ namespace ContextStage.EditorTools
         {
             EnsureFolder(PrototypeFolder);
             EnsureFolder(GeneratedFolder);
+            CrowdCompositionConfig config = GetOrCreateConfig();
 
             Sprite chillSprite = GetOrCreateSprite(ChillSpritePath, PlaceholderShape.Circle);
             Sprite singalongSprite = GetOrCreateSprite(SingalongSpritePath, PlaceholderShape.Square);
@@ -84,8 +87,17 @@ namespace ContextStage.EditorTools
 
             if (host.GetComponent<CrowdCompositionDebugView>() == null)
                 Undo.AddComponent<CrowdCompositionDebugView>(host);
-            if (host.GetComponent<CrowdShiftDirector>() == null)
+            CrowdShiftDirector shiftDirector =
+                host.GetComponent<CrowdShiftDirector>() ??
                 Undo.AddComponent<CrowdShiftDirector>(host);
+
+            var managerObject = new SerializedObject(manager);
+            SetObjectReference(managerObject, "config", config);
+            managerObject.ApplyModifiedPropertiesWithoutUndo();
+
+            var shiftObject = new SerializedObject(shiftDirector);
+            SetObjectReference(shiftObject, "manager", manager);
+            shiftObject.ApplyModifiedPropertiesWithoutUndo();
 
             var spawnerObject = new SerializedObject(spawner);
             SetObjectReference(spawnerObject, "compositionManager", manager);
@@ -94,8 +106,33 @@ namespace ContextStage.EditorTools
             SetObjectReference(spawnerObject, "moshPrefab", moshPrefab.GetComponent<CrowdMemberView>());
             spawnerObject.ApplyModifiedPropertiesWithoutUndo();
 
+            CardSystem cardSystem = Object.FindFirstObjectByType<CardSystem>();
+            if (cardSystem != null)
+            {
+                var cardObject = new SerializedObject(cardSystem);
+                SetObjectReference(cardObject, "crowdComposition", manager);
+                cardObject.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(cardSystem);
+            }
+
+            SpecialAudienceCrowdActor[] specialActors =
+                Object.FindObjectsByType<SpecialAudienceCrowdActor>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None);
+            for (int i = 0; i < specialActors.Length; i++)
+            {
+                SpecialAudienceCrowdActor specialActor = specialActors[i];
+                var actorObject = new SerializedObject(specialActor);
+                SetObjectReference(actorObject, "crowdSpawner", spawner);
+                actorObject.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(specialActor);
+            }
+
+            EnsureSpecialAudienceDropTarget(specialActors);
+
             EditorUtility.SetDirty(spawner);
             EditorUtility.SetDirty(manager);
+            EditorUtility.SetDirty(shiftDirector);
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             AssetDatabase.SaveAssets();
 
@@ -105,6 +142,54 @@ namespace ContextStage.EditorTools
                 "F1 Balanced / F2 Formal / F3 Britpop / F4 Hardcore. " +
                 "Replace each placeholder prefab's root SpriteRenderer sprite and remove its Label child " +
                 "when final audience art arrives.");
+        }
+
+        static CrowdCompositionConfig GetOrCreateConfig()
+        {
+            CrowdCompositionConfig config =
+                AssetDatabase.LoadAssetAtPath<CrowdCompositionConfig>(ConfigPath);
+            if (config != null) return config;
+
+            EnsureFolder(Path.GetDirectoryName(ConfigPath)?.Replace('\\', '/'));
+            config = ScriptableObject.CreateInstance<CrowdCompositionConfig>();
+            AssetDatabase.CreateAsset(config, ConfigPath);
+            return config;
+        }
+
+        static void EnsureSpecialAudienceDropTarget(SpecialAudienceCrowdActor[] actors)
+        {
+            SpecialAudienceDropTarget existing =
+                Object.FindFirstObjectByType<SpecialAudienceDropTarget>(FindObjectsInactive.Include);
+            if (existing != null || actors == null || actors.Length == 0) return;
+
+            SpecialAudienceCrowdActor actor = null;
+            for (int i = 0; i < actors.Length; i++)
+            {
+                if (actors[i] != null && actors[i].gameObject.activeInHierarchy)
+                {
+                    actor = actors[i];
+                    break;
+                }
+            }
+            if (actor == null) return;
+
+            var targetObject = new GameObject("SpecialAudienceHitArea");
+            Undo.RegisterCreatedObjectUndo(targetObject, "Create Special Audience Hit Area");
+            targetObject.transform.SetParent(actor.transform.parent, false);
+            targetObject.transform.position = actor.transform.position;
+
+            var collider = Undo.AddComponent<BoxCollider2D>(targetObject);
+            collider.isTrigger = true;
+            collider.size = new Vector2(2.6f, 3.4f);
+            collider.offset = new Vector2(0f, 0.4f);
+
+            var target = Undo.AddComponent<SpecialAudienceDropTarget>(targetObject);
+            var targetSerialized = new SerializedObject(target);
+            SetObjectReference(targetSerialized, "hitCollider", collider);
+            SetObjectReference(targetSerialized, "followTarget", actor.transform);
+            SetObjectReference(targetSerialized, "hoverScaleTarget", actor.transform);
+            targetSerialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(target);
         }
 
         static GameObject GetOrCreatePrefab(
@@ -251,28 +336,5 @@ namespace ContextStage.EditorTools
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
 
-        static void SetObjectReference(SerializedObject serializedObject, string propertyName, Object value)
-        {
-            SerializedProperty property = serializedObject.FindProperty(propertyName);
-            if (property == null)
-            {
-                Debug.LogError(
-                    $"[CrowdComposition] Missing serialized property '{propertyName}' " +
-                    $"on {serializedObject.targetObject.GetType().Name}.");
-                return;
-            }
-
-            property.objectReferenceValue = value;
-        }
-
-        static void EnsureFolder(string path)
-        {
-            if (AssetDatabase.IsValidFolder(path)) return;
-
-            string parent = Path.GetDirectoryName(path)?.Replace('\\', '/');
-            string leaf = Path.GetFileName(path);
-            if (!string.IsNullOrEmpty(parent)) EnsureFolder(parent);
-            AssetDatabase.CreateFolder(parent, leaf);
-        }
     }
 }

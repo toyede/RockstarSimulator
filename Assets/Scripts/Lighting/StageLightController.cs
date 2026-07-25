@@ -148,9 +148,11 @@ namespace ContextStage
         [SerializeField, Tooltip("색을 지정하지 않고 플래시할 때 쓰는 색")]
         Color defaultFlashColor = Color.white;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         [Header("디버그")]
         [SerializeField, Tooltip("7/8/9 로 단계 변경, 0 으로 플래시 (에디터·개발 빌드 전용)")]
         bool enableDebugKeys = false;
+#endif
 
         // ---------------- 상태 ----------------
 
@@ -372,12 +374,7 @@ namespace ContextStage
         {
             if (!animateSpotlights || !_spotlightPoseCaptured) return;
 
-            float stageSpeedMultiplier = _stage switch
-            {
-                HeatStage.Mosh => 1.65f,
-                HeatStage.Singalong => 1f,
-                _ => 0.6f,
-            };
+            float stageSpeedMultiplier = _stage.Select(0.6f, 1f, 1.65f);
             float time = Time.time * spotlightSweepSpeed * stageSpeedMultiplier * Mathf.PI * 2f;
 
             float leftWave =
@@ -523,14 +520,7 @@ namespace ContextStage
         }
 
         StageLightPreset PresetFor(HeatStage stage)
-        {
-            switch (stage)
-            {
-                case HeatStage.Singalong: return singalong;
-                case HeatStage.Mosh:      return mosh;
-                default:                  return chill;
-            }
-        }
+            => stage.Select(chill, singalong, mosh);
 
         /// <summary>전환 도중 새 단계가 들어왔을 때 "지금 보이는 값"을 출발점으로 만든다.</summary>
         static StageLightPreset Lerp(StageLightPreset a, StageLightPreset b, float t) => new StageLightPreset

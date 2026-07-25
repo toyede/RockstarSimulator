@@ -26,20 +26,17 @@ namespace GameJamKit
         void OnEnable()
         {
             if (target == null) return;
-            target.OnDamaged += HandleChanged;
-            target.OnHealed += HandleHealed;
+            target.OnHealthChanged += HandleChanged;
             Refresh(true);
         }
 
         void OnDisable()
         {
             if (target == null) return;
-            target.OnDamaged -= HandleChanged;
-            target.OnHealed -= HandleHealed;
+            target.OnHealthChanged -= HandleChanged;
         }
 
-        void HandleChanged(DamageInfo _) => Refresh(false);
-        void HandleHealed(float _) => Refresh(false);
+        void HandleChanged(float _) => Refresh(false);
 
         void Refresh(bool immediate)
         {
@@ -54,10 +51,6 @@ namespace GameJamKit
         void Update()
         {
             if (target == null) return;
-
-            // Health 를 거치지 않는 직접 수정에도 대응하도록 매 프레임 동기화
-            if (fillImage != null && !Mathf.Approximately(fillImage.fillAmount, target.Normalized))
-                Refresh(false);
 
             if (delayedImage == null) return;
             _delayed = Mathf.MoveTowards(_delayed, target.Normalized, delayedSpeed * Time.deltaTime);

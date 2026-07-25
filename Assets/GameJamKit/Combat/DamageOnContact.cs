@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GameJamKit
@@ -21,15 +22,12 @@ namespace GameJamKit
         [SerializeField, Tooltip("맞힐 때 카메라 흔들림 세기")] float shake = 0f;
         [SerializeField, Tooltip("맞힐 때 히트스톱 시간(초). 0 이면 없음")] float hitStop = 0f;
 
-        float _nextHitTime;
+        readonly Dictionary<IDamageable, float> _nextHitTimes = new Dictionary<IDamageable, float>();
 
         public float Damage { get => damage; set => damage = value; }
 
         void OnTriggerEnter2D(Collider2D other) => TryHit(other, other.ClosestPoint(transform.position));
-        void OnTriggerStay2D(Collider2D other)
-        {
-            if (repeatInterval > 0f) TryHit(other, other.ClosestPoint(transform.position));
-        }
+        void OnTriggerStay2D(Collider2D other) => TryHit(other, other.ClosestPoint(transform.position));
         void OnCollisionEnter2D(Collision2D collision)
         {
             Vector2 point = collision.contactCount > 0 ? collision.GetContact(0).point : (Vector2)transform.position;
@@ -40,10 +38,10 @@ namespace GameJamKit
         {
             if (other == null) return;
             if ((targetLayers.value & (1 << other.gameObject.layer)) == 0) return;
-            if (Time.time < _nextHitTime) return;
 
             var target = other.GetComponentInParent<IDamageable>();
             if (target == null || target.IsDead) return;
+            if (_nextHitTimes.TryGetValue(target, out float nextHitTime) && Time.time <= nextHitTime) return;
 
             target.TakeDamage(new DamageInfo
             {
@@ -52,7 +50,7 @@ namespace GameJamKit
                 Direction = ((Vector2)(other.transform.position - transform.position)).normalized
             });
 
-            _nextHitTime = Time.time + repeatInterval;
+            _nextHitTimes[target] = Time.time + Mathf.Max(0f, repeatInterval);
 
             if (hitEffect != null) PoolManager.Spawn(hitEffect, point, Quaternion.identity);
             if (!string.IsNullOrEmpty(hitSoundId)) Sound.Play(hitSoundId);
@@ -61,5 +59,7 @@ namespace GameJamKit
 
             if (despawnAfterHit) PoolManager.Despawn(gameObject);
         }
+
+        void OnDisable() => _nextHitTimes.Clear();
     }
 }

@@ -81,20 +81,6 @@ namespace GameJamKit
     }
 
     /// <summary>
-    /// 호응도 100 도달(앙코르) 시 발행.
-    /// 카드 담당: 이 이벤트를 구독해서 카드 1장 추가 드로우를 구현하면 된다.
-    /// 연출 담당: 게이지 점멸·관객 함성도 여기에 붙인다.
-    /// 발행 직후 호응도는 70으로 내려가고 잠시 감소가 멈춘다. (HypeSystem 이 처리)
-    /// </summary>
-    public struct EncoreTriggered { }
-
-    /// <summary>
-    /// 호응도 0 도달(공연 실패) 시 발행. 직후 GameManager.GameOver() 가 호출된다.
-    /// 연출 담당: 조명 소등·야유 등 실패 연출을 여기에 붙인다.
-    /// </summary>
-    public struct HypeDepleted { }
-
-    /// <summary>
     /// 관객 앰비언스 단계(low/middle/high...)가 바뀔 때 CrowdAmbienceSystem 이 발행.
     /// 연출 담당: 조명 색·관객 애니메이션 속도를 사운드와 같은 타이밍에 바꾸고 싶을 때 구독한다.
     /// </summary>
@@ -195,6 +181,7 @@ namespace GameJamKit
     {
         public ContextStage.HeatStage RequestType;
         public ContextStage.SpecialHitReward Reward;
+        public float HoldDuration;
 
         /// <summary>
         /// true 면 카드 판정 경로가 이미 점수·열기를 적용했으므로 <b>다시 적용하면 안 된다.</b>

@@ -26,7 +26,8 @@ HypeSystem ──HypeChanged──▶ CrowdMoodDirector ──ICrowdMoodReactor�
 
 - 상태 판정은 사운드(`CrowdAmbienceConfig`)와 **같은 `HypeTierUtil`** 을 쓴다
   → 경계값만 맞춰두면 소리와 그림이 정확히 같은 순간에 바뀐다
-- 관객은 프리팹 없이 `CrowdSpawner` 가 런타임에 생성한다 (씬 병합 충돌 없음)
+- 관객은 `CrowdSpawner`에 명시적으로 연결된 Chill/Singalong/Mosh 프리팹을 풀처럼 재배치한다.
+  누락된 프리팹을 런타임 임시 도형으로 가리지 않으므로 셋업 오류를 즉시 발견할 수 있다.
 - 반응자는 등록 즉시 현재 상태를 받으므로, 늦게 생성돼도 상태가 어긋나지 않는다
 
 ## 3. 움직임 (애니메이터 없음)

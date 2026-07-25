@@ -131,6 +131,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: SpecialAudience
       objectReference: {fileID: 0}
+    - target: {fileID: 6057820703140275577, guid: a0b92e8a8311729439eca58741263cff, type: 3}
+      propertyPath: crowdSpawner
+      value: 
+      objectReference: {fileID: 938531266}
     - target: {fileID: 8691809137825887656, guid: a0b92e8a8311729439eca58741263cff, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1524,6 +1528,21 @@ MonoBehaviour:
   globalLight: {fileID: 1763502555}
   leftStageLight: {fileID: 484012752}
   rightStageLight: {fileID: 170833530}
+  usePixelLightStyle: 1
+  pixelLightCookie: {fileID: 0}
+  pixelLightFalloff: 0.95
+  pixelShadowSoftness: 0.05
+  usePixelSpotlightShader: 1
+  spotlightPixelsPerUnit: 100
+  spotlightBandCount: 6
+  spotlightDitherStrength: 0.18
+  pixelSpotlightIntensity: 0.06
+  smoothLightContribution: 0.15
+  animateSpotlights: 1
+  spotlightSweepDegrees: 15
+  spotlightSweepSpeed: 0.22
+  spotlightOuterAngleRange: {x: 36, y: 50}
+  spotlightInnerAngleRatio: 0.55
   chill:
     color: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 1}
     globalIntensity: 0.55
@@ -1706,6 +1725,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CardSystem
   config: {fileID: 11400000, guid: 87cc67db836168d4daef0bab52eeb4b8, type: 2}
+  crowdComposition: {fileID: 938531270}
 --- !u!4 &831138398
 Transform:
   m_ObjectHideFlags: 0
@@ -1734,6 +1754,7 @@ GameObject:
   - component: {fileID: 938531266}
   - component: {fileID: 938531270}
   - component: {fileID: 938531269}
+  - component: {fileID: 938531271}
   m_Layer: 0
   m_Name: '[Crowd]'
   m_TagString: Untagged
@@ -1768,6 +1789,12 @@ MonoBehaviour:
   chillPrefab: {fileID: 5891243429165091210, guid: 0b0b89f7ded894d47bfce32be578e2ee, type: 3}
   singalongPrefab: {fileID: 8242818790128268861, guid: f8909efea2943634c93ff168daee5621, type: 3}
   moshPrefab: {fileID: 7969007770598057871, guid: 3b8810c02a01f4c42979a57769c455f9, type: 3}
+  animateCompositionChanges: 1
+  exitDuration: 0.4
+  enterDuration: 0.55
+  memberStagger: 0.04
+  horizontalTravel: 1.5
+  verticalTravel: 1.1
 --- !u!114 &938531267
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1807,7 +1834,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 37f8d205f46199d4b8dff3bc6fe798d7, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CrowdCompositionDebugView
   manager: {fileID: 0}
   showDebugPanel: 1
@@ -1822,37 +1849,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6fbc5b251ec836742a5030d383494d0c, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CrowdCompositionManager
-  expectedCrowdSize: 21
-  initialPresetId: balanced
-  presets:
-  - id: balanced
-    displayName: Balanced
-    composition:
-      chillCount: 7
-      singalongCount: 7
-      moshCount: 7
-  - id: formal
-    displayName: Formal Night
-    composition:
-      chillCount: 13
-      singalongCount: 5
-      moshCount: 3
-  - id: britpop
-    displayName: Britpop Wave
-    composition:
-      chillCount: 4
-      singalongCount: 13
-      moshCount: 4
-  - id: hardcore
-    displayName: Hardcore Surge
-    composition:
-      chillCount: 3
-      singalongCount: 5
-      moshCount: 13
+  config: {fileID: 11400000, guid: 39de0d7d62720b54b85ff9acffaaab1b, type: 2}
   enableDebugInput: 1
   enableDebugLogs: 1
+--- !u!114 &938531271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 938531265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a9d6b37ef384da3a5c238db725f410e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CrowdShiftDirector
+  manager: {fileID: 938531270}
 --- !u!1 &996349273
 GameObject:
   m_ObjectHideFlags: 0
@@ -2871,6 +2885,7 @@ MonoBehaviour:
   valueText: {fileID: 1156873155}
   multiplierText: {fileID: 2056720768}
   delayedSpeed: 0.6
+  crisisUpperBound: 21
   crisisColor: {r: 0.35, g: 0.35, b: 0.35, a: 1}
   coldColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
   hotColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
@@ -3127,13 +3142,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81b453e9369e0574db7254262b7e55bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.SpecialAudienceManager
-  firstSpawnDelay: 10
-  spawnInterval: 15
-  requestDuration: 7
+  config: {fileID: 11400000, guid: 6d1e59793e859944b9ffb628912832c7, type: 2}
   autoStart: 1
-  specialHitBaseScore: 400
-  specialHitBonusHeat: 25
-  specialHitHoldDuration: 0.7
   view: {fileID: 1855429158}
   debugSpawnKey: 112
   enableDebugKey: 1

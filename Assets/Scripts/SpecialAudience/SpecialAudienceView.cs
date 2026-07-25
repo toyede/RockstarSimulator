@@ -138,15 +138,7 @@ namespace ContextStage
 
         /// <summary>요구 타입 → 클립. 비어 있으면 null (그때는 오브젝트 방식만 동작).</summary>
         SpriteAnimationClip ResolveClip(HeatStage requestType)
-        {
-            switch (requestType)
-            {
-                case HeatStage.Chill:     return chillClip;
-                case HeatStage.Singalong: return singalongClip;
-                case HeatStage.Mosh:      return moshClip;
-                default:                                   return null;
-            }
-        }
+            => requestType.Select(chillClip, singalongClip, moshClip);
 
         void SetRootActive(bool active)
         {

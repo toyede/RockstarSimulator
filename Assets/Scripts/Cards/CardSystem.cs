@@ -11,10 +11,10 @@ namespace ContextStage
     public sealed class CardSystem : MonoSingleton<CardSystem>
     {
         [SerializeField] CardDeckConfig config;
+        [SerializeField] CrowdCompositionManager crowdComposition;
 
         readonly List<CardDefinition> _hand = new List<CardDefinition>();
         PreparedDeck<CardDefinition> _deck;
-        CrowdCompositionManager _crowdComposition;
 
         bool _selecting;
         bool _warnedInvalidPool;
@@ -32,7 +32,12 @@ namespace ContextStage
 
         protected override void OnAwake()
         {
-            _crowdComposition = FindFirstObjectByType<CrowdCompositionManager>();
+            if (crowdComposition == null || !crowdComposition.IsConfigured)
+            {
+                Debug.LogError(
+                    "[CardSystem] A configured CrowdCompositionManager reference is required.",
+                    this);
+            }
             StartRun();
         }
 
@@ -94,17 +99,22 @@ namespace ContextStage
             try
             {
                 var card = _hand[index];
+                if (card.Role == CardRole.Normal &&
+                    (crowdComposition == null || !crowdComposition.IsConfigured))
+                {
+                    Debug.LogError(
+                        "[CardSystem] Cannot resolve a normal card without crowd composition.",
+                        this);
+                    return false;
+                }
+
                 _hand.RemoveAt(index);
 
                 float currentHype = Hype.Current;
-                // 특별 관객이 요구 중이면 그 맥락을 판정기에 넘긴다. 없으면 None과 동일하게 동작한다.
-                if (_crowdComposition == null)
-                    _crowdComposition = FindFirstObjectByType<CrowdCompositionManager>();
-
                 CrowdReactionGrade crowdReaction =
-                    card.Role == CardRole.Utility || _crowdComposition == null
+                    card.Role != CardRole.Normal
                         ? CrowdReactionGrade.Good
-                        : _crowdComposition.EvaluateReaction(card.TargetPreference);
+                        : crowdComposition.EvaluateReaction(card.TargetPreference);
 
                 var result = card.Role == CardRole.Normal
                     ? CardEffectResolver.ResolveForCrowd(card, crowdReaction)

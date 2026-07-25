@@ -65,17 +65,24 @@ namespace ContextStage
     {
         [SerializeField] string id;
         [SerializeField] string displayName;
+        [SerializeField] string eventName;
         [SerializeField] CrowdCompositionSnapshot composition;
 
-        public CrowdCompositionPreset(string id, string displayName, CrowdCompositionSnapshot composition)
+        public CrowdCompositionPreset(
+            string id,
+            string displayName,
+            string eventName,
+            CrowdCompositionSnapshot composition)
         {
             this.id = id;
             this.displayName = displayName;
+            this.eventName = eventName;
             this.composition = composition;
         }
 
         public string Id => id;
         public string DisplayName => displayName;
+        public string EventName => eventName;
         public CrowdCompositionSnapshot Composition => composition;
     }
 }

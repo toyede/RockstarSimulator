@@ -32,7 +32,7 @@ namespace ContextStage
     [DisallowMultipleComponent]
     public class CrowdMoodDirector : MonoSingleton<CrowdMoodDirector>
     {
-        [SerializeField, Tooltip("상태·움직임 밸런스 에셋. 비워두면 기본값으로 임시 생성됨 (경고 출력)")]
+        [SerializeField, Tooltip("필수 상태·움직임 밸런스 에셋")]
         CrowdMoodConfig config;
 
         readonly List<ICrowdMoodReactor> _reactors = new List<ICrowdMoodReactor>();
@@ -53,10 +53,13 @@ namespace ContextStage
         {
             if (config == null)
             {
-                Debug.LogWarning("[CrowdMood] CrowdMoodConfig 가 지정되지 않아 기본값으로 임시 생성합니다. " +
-                                 "Tools/Crowd/Setup Crowd Scene 을 실행하세요.");
-                config = ScriptableObject.CreateInstance<CrowdMoodConfig>();
+                Debug.LogError(
+                    "[CrowdMood] CrowdMoodConfig is required. Run Tools/Crowd/Setup Crowd Scene.",
+                    this);
+                enabled = false;
+                return;
             }
+
             _currentIndex = config.ResolveTierIndex(Hype.Normalized);
         }
 

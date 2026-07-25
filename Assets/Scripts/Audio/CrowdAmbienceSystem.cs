@@ -24,7 +24,7 @@ namespace ContextStage
     {
         public const string VolumeSaveKey = "vol_ambience";
 
-        [SerializeField, Tooltip("티어·볼륨 밸런스 에셋. 비워두면 기본값으로 임시 생성됨 (경고 출력)")]
+        [SerializeField, Tooltip("필수 티어·볼륨 밸런스 에셋")]
         CrowdAmbienceConfig config;
 
         [SerializeField, Tooltip("공연 시작 이벤트를 기다리지 않고 씬 시작과 동시에 재생")]
@@ -72,9 +72,12 @@ namespace ContextStage
         {
             if (config == null)
             {
-                Debug.LogWarning("[CrowdAmbience] CrowdAmbienceConfig 가 지정되지 않아 기본값으로 임시 생성합니다. " +
-                                 "Tools/Audio/Setup Crowd Ambience 를 실행하세요.");
-                config = ScriptableObject.CreateInstance<CrowdAmbienceConfig>();
+                Debug.LogError(
+                    "[CrowdAmbience] CrowdAmbienceConfig is required. " +
+                    "Run Tools/Audio/Setup Crowd Ambience.",
+                    this);
+                enabled = false;
+                return;
             }
 
             _ambienceVolume = Save.GetFloat(VolumeSaveKey, config.defaultAmbienceVolume);

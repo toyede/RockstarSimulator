@@ -27,6 +27,7 @@ namespace GameJamKit
 
         readonly List<GameObject> _alive = new List<GameObject>();
         Coroutine _routine;
+        int _runGeneration;
 
         public int CurrentWaveIndex { get; private set; } = -1;
         public int AliveCount => _alive.Count;
@@ -45,6 +46,7 @@ namespace GameJamKit
         void OnDisable()
         {
             if (autoStartOnPlaying) EventBus.Unsubscribe<GameStateChanged>(HandleStateChanged);
+            StopWaves();
         }
 
         void HandleStateChanged(GameStateChanged e)
@@ -63,11 +65,13 @@ namespace GameJamKit
                 return;
             }
             StopWaves();
-            _routine = StartCoroutine(RunAllWaves());
+            int generation = _runGeneration;
+            _routine = StartCoroutine(RunAllWaves(generation));
         }
 
         public void StopWaves()
         {
+            _runGeneration++;
             if (_routine != null) StopCoroutine(_routine);
             _routine = null;
         }
@@ -84,13 +88,15 @@ namespace GameJamKit
 
         // ---------------- 진행 ----------------
 
-        IEnumerator RunAllWaves()
+        IEnumerator RunAllWaves(int generation)
         {
             yield return new WaitForSeconds(firstWaveDelay);
+            if (generation != _runGeneration) yield break;
 
             int index = 0;
             while (true)
             {
+                if (generation != _runGeneration) yield break;
                 var wave = waveData.Get(index);
                 if (wave == null) break;
 
@@ -98,7 +104,8 @@ namespace GameJamKit
                 OnWaveStarted?.Invoke(index);
                 EventBus.Raise(new WaveStarted { Index = index, Name = wave.name });
 
-                yield return StartCoroutine(RunWave(wave));
+                yield return StartCoroutine(RunWave(wave, generation));
+                if (generation != _runGeneration) yield break;
 
                 if (wave.waitUntilCleared)
                     yield return new WaitUntil(() => { PruneDead(); return _alive.Count == 0; });
@@ -121,7 +128,7 @@ namespace GameJamKit
             OnAllWavesCleared?.Invoke();
         }
 
-        IEnumerator RunWave(Wave wave)
+        IEnumerator RunWave(Wave wave, int generation)
         {
             int running = 0;
 
@@ -131,18 +138,20 @@ namespace GameJamKit
                 if (entry == null || entry.prefab == null) continue;
 
                 running++;
-                StartCoroutine(SpawnGroup(entry, () => running--));
+                StartCoroutine(SpawnGroup(entry, generation, () => running--));
             }
 
-            yield return new WaitUntil(() => running <= 0);
+            yield return new WaitUntil(() => generation != _runGeneration || running <= 0);
         }
 
-        IEnumerator SpawnGroup(SpawnEntry entry, Action onComplete)
+        IEnumerator SpawnGroup(SpawnEntry entry, int generation, Action onComplete)
         {
             if (entry.startDelay > 0f) yield return new WaitForSeconds(entry.startDelay);
+            if (generation != _runGeneration) yield break;
 
             for (int i = 0; i < entry.count; i++)
             {
+                if (generation != _runGeneration) yield break;
                 SpawnOne(entry.prefab);
                 if (entry.interval > 0f && i < entry.count - 1) yield return new WaitForSeconds(entry.interval);
             }

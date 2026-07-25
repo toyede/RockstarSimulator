@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using GameJamKit;
 using UnityEngine;
@@ -12,23 +11,14 @@ namespace ContextStage
     [DisallowMultipleComponent]
     public sealed class CrowdCompositionManager : MonoBehaviour
     {
-        // CrowdSpawner currently creates 3 rows x 7 members.
-        public const int DefaultCrowdSize = 21;
-
         [Header("Composition")]
-        [SerializeField, Min(1)] int expectedCrowdSize = DefaultCrowdSize;
-        [SerializeField] string initialPresetId = "balanced";
-        [SerializeField] List<CrowdCompositionPreset> presets = new List<CrowdCompositionPreset>
-        {
-            new CrowdCompositionPreset("balanced", "Balanced", new CrowdCompositionSnapshot(7, 7, 7)),
-            new CrowdCompositionPreset("formal", "Formal Night", new CrowdCompositionSnapshot(13, 5, 3)),
-            new CrowdCompositionPreset("britpop", "Britpop Wave", new CrowdCompositionSnapshot(4, 13, 4)),
-            new CrowdCompositionPreset("hardcore", "Hardcore Surge", new CrowdCompositionSnapshot(3, 5, 13)),
-        };
+        [SerializeField] CrowdCompositionConfig config;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         [Header("Prototype Debug")]
         [SerializeField] bool enableDebugInput = true;
         [SerializeField] bool enableDebugLogs = true;
+#endif
 
         CrowdCompositionSnapshot _current;
         string _currentPresetId;
@@ -38,46 +28,72 @@ namespace ContextStage
         public CrowdCompositionSnapshot Current => _current;
         public string CurrentPresetId => _currentPresetId;
         public string CurrentPresetDisplayName => _currentPresetDisplayName;
-        public int ExpectedCrowdSize => expectedCrowdSize;
+        public CrowdCompositionConfig Config => config;
+        public int ExpectedCrowdSize => config != null ? config.ExpectedCrowdSize : 0;
+        public bool IsConfigured => config != null;
 
-        void Awake() => EnsureInitialized();
+        void Awake()
+        {
+            if (!EnsureInitialized()) enabled = false;
+        }
 
         void OnEnable()
         {
+            if (!EnsureInitialized()) return;
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
-            EnsureInitialized();
         }
 
         void OnDisable() => EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
 
         void Update()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (!enableDebugInput) return;
 
 #if ENABLE_INPUT_SYSTEM
             var keyboard = Keyboard.current;
             if (keyboard == null) return;
-            if (keyboard.f1Key.wasPressedThisFrame) TryApplyPreset("balanced", "DebugKey");
-            else if (keyboard.f2Key.wasPressedThisFrame) TryApplyPreset("formal", "DebugKey");
-            else if (keyboard.f3Key.wasPressedThisFrame) TryApplyPreset("britpop", "DebugKey");
-            else if (keyboard.f4Key.wasPressedThisFrame) TryApplyPreset("hardcore", "DebugKey");
+            if (keyboard.f1Key.wasPressedThisFrame) ApplyDebugPreset(0);
+            else if (keyboard.f2Key.wasPressedThisFrame) ApplyDebugPreset(1);
+            else if (keyboard.f3Key.wasPressedThisFrame) ApplyDebugPreset(2);
+            else if (keyboard.f4Key.wasPressedThisFrame) ApplyDebugPreset(3);
 #else
-            if (Input.GetKeyDown(KeyCode.F1)) TryApplyPreset("balanced", "DebugKey");
-            else if (Input.GetKeyDown(KeyCode.F2)) TryApplyPreset("formal", "DebugKey");
-            else if (Input.GetKeyDown(KeyCode.F3)) TryApplyPreset("britpop", "DebugKey");
-            else if (Input.GetKeyDown(KeyCode.F4)) TryApplyPreset("hardcore", "DebugKey");
+            if (Input.GetKeyDown(KeyCode.F1)) ApplyDebugPreset(0);
+            else if (Input.GetKeyDown(KeyCode.F2)) ApplyDebugPreset(1);
+            else if (Input.GetKeyDown(KeyCode.F3)) ApplyDebugPreset(2);
+            else if (Input.GetKeyDown(KeyCode.F4)) ApplyDebugPreset(3);
+#endif
 #endif
         }
 
         public int GetCount(CrowdPreference preference) => _current.GetCount(preference);
         public float GetRatio(CrowdPreference preference) => _current.GetRatio(preference);
-        public CrowdReactionGrade EvaluateReaction(CrowdPreference preference) =>
-            CrowdReactionEvaluator.Evaluate(_current, preference);
+        public CrowdReactionGrade EvaluateReaction(CrowdPreference preference)
+        {
+            if (config == null) return CrowdReactionGrade.Weak;
+            return CrowdReactionEvaluator.Evaluate(
+                _current,
+                preference,
+                config.GoodReactionThreshold);
+        }
+
+        public bool TryGetPreset(string presetId, out CrowdCompositionPreset preset)
+        {
+            if (config != null) return config.TryGetPreset(presetId, out preset);
+            preset = default;
+            return false;
+        }
+
+        public void FillShiftPresetIds(List<string> destination)
+        {
+            if (config == null) destination?.Clear();
+            else config.FillShiftPresetIds(destination);
+        }
 
         public bool TryApplyPreset(string presetId, string source = "Runtime")
         {
-            EnsureInitialized();
-            if (!TryFindPreset(presetId, out CrowdCompositionPreset preset))
+            if (!EnsureInitialized()) return false;
+            if (!config.TryGetPreset(presetId, out CrowdCompositionPreset preset))
             {
                 Debug.LogWarning($"[CrowdComposition] Unknown preset '{presetId}'.", this);
                 return false;
@@ -92,11 +108,14 @@ namespace ContextStage
 
         public bool TryApplyComposition(CrowdCompositionSnapshot composition, string source = "Runtime")
         {
-            EnsureInitialized();
+            if (!EnsureInitialized()) return false;
             return Apply(composition, string.Empty, "Custom", source);
         }
 
-        public void ResetToInitialPreset() => TryApplyPreset(initialPresetId, "Reset");
+        public void ResetToInitialPreset()
+        {
+            if (config != null) TryApplyPreset(config.InitialPresetId, "Reset");
+        }
 
         bool Apply(
             CrowdCompositionSnapshot composition,
@@ -104,12 +123,12 @@ namespace ContextStage
             string displayName,
             string source)
         {
-            if (!composition.IsValid(expectedCrowdSize))
+            if (!composition.IsValid(config.ExpectedCrowdSize))
             {
                 Debug.LogWarning(
                     $"[CrowdComposition] Rejected {composition.ChillCount}/" +
                     $"{composition.SingalongCount}/{composition.MoshCount}; " +
-                    $"counts must total {expectedCrowdSize}.",
+                    $"counts must total {config.ExpectedCrowdSize}.",
                     this);
                 return false;
             }
@@ -134,6 +153,7 @@ namespace ContextStage
                 Source = source ?? string.Empty
             });
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (enableDebugLogs)
             {
                 Debug.Log(
@@ -141,26 +161,33 @@ namespace ContextStage
                     $"{_current.ChillCount}/{_current.SingalongCount}/{_current.MoshCount}",
                     this);
             }
+#endif
 
             return true;
         }
 
-        void EnsureInitialized()
+        bool EnsureInitialized()
         {
-            if (_initialized) return;
-
-            if (TryFindPreset(initialPresetId, out CrowdCompositionPreset initial) &&
-                initial.Composition.IsValid(expectedCrowdSize))
+            if (_initialized) return true;
+            if (config == null)
+            {
+                Debug.LogError(
+                    "[CrowdComposition] CrowdCompositionConfig is required. " +
+                    "Run Tools/Crowd/Setup Crowd Composition Prototype.",
+                    this);
+                return false;
+            }
+            if (config.TryGetPreset(config.InitialPresetId, out CrowdCompositionPreset initial) &&
+                initial.Composition.IsValid(config.ExpectedCrowdSize))
             {
                 Apply(initial.Composition, initial.Id, initial.DisplayName, "Initialization");
-                return;
+                return true;
             }
 
-            _current = new CrowdCompositionSnapshot(7, 7, 7);
-            _currentPresetId = "balanced";
-            _currentPresetDisplayName = "Balanced";
-            _initialized = true;
-            Debug.LogWarning("[CrowdComposition] Invalid initial preset; using 7/7/7 fallback.", this);
+            Debug.LogError(
+                $"[CrowdComposition] Initial preset '{config.InitialPresetId}' is missing or invalid.",
+                this);
+            return false;
         }
 
         void OnGameStateChanged(GameStateChanged e)
@@ -169,47 +196,21 @@ namespace ContextStage
                 ResetToInitialPreset();
         }
 
-        bool TryFindPreset(string id, out CrowdCompositionPreset preset)
+        void ApplyDebugPreset(int index)
         {
-            if (presets != null)
-            {
-                for (int i = 0; i < presets.Count; i++)
-                {
-                    if (string.Equals(presets[i].Id, id, StringComparison.OrdinalIgnoreCase))
-                    {
-                        preset = presets[i];
-                        return true;
-                    }
-                }
-            }
-
-            preset = default;
-            return false;
+            if (config == null || index < 0 || index >= config.Presets.Count) return;
+            TryApplyPreset(config.Presets[index].Id, "DebugKey");
         }
 
 #if UNITY_EDITOR
         void OnValidate()
         {
-            expectedCrowdSize = Mathf.Max(1, expectedCrowdSize);
-            var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (presets == null) return;
-
-            for (int i = 0; i < presets.Count; i++)
-            {
-                if (string.IsNullOrWhiteSpace(presets[i].Id) || !ids.Add(presets[i].Id))
-                    Debug.LogWarning($"[CrowdComposition] Empty or duplicate preset id at {i}.", this);
-                if (!presets[i].Composition.IsValid(expectedCrowdSize))
-                    Debug.LogWarning(
-                        $"[CrowdComposition] Preset '{presets[i].Id}' must total {expectedCrowdSize}.",
-                        this);
-            }
+            if (config == null)
+                Debug.LogWarning("[CrowdComposition] CrowdCompositionConfig is not assigned.", this);
         }
 #endif
 
-        [ContextMenu("Debug/Apply Balanced")] void DebugBalanced() => TryApplyPreset("balanced", "Inspector");
-        [ContextMenu("Debug/Apply Formal Night")] void DebugFormal() => TryApplyPreset("formal", "Inspector");
-        [ContextMenu("Debug/Apply Britpop Wave")] void DebugBritpop() => TryApplyPreset("britpop", "Inspector");
-        [ContextMenu("Debug/Apply Hardcore Surge")] void DebugHardcore() => TryApplyPreset("hardcore", "Inspector");
+        [ContextMenu("Debug/Apply Initial Preset")] void DebugInitial() => ResetToInitialPreset();
 
         [ContextMenu("Debug/Run Reaction Evaluator Self Test")]
         void DebugSelfTest()
@@ -225,9 +226,9 @@ namespace ContextStage
         {
             Debug.Log(
                 $"[CrowdComposition Test] {c.ChillCount}/{c.SingalongCount}/{c.MoshCount}: " +
-                $"{CrowdReactionEvaluator.Evaluate(c, CrowdPreference.Chill)}/" +
-                $"{CrowdReactionEvaluator.Evaluate(c, CrowdPreference.Singalong)}/" +
-                $"{CrowdReactionEvaluator.Evaluate(c, CrowdPreference.Mosh)}");
+                $"{CrowdReactionEvaluator.Evaluate(c, CrowdPreference.Chill, 0.10f)}/" +
+                $"{CrowdReactionEvaluator.Evaluate(c, CrowdPreference.Singalong, 0.10f)}/" +
+                $"{CrowdReactionEvaluator.Evaluate(c, CrowdPreference.Mosh, 0.10f)}");
         }
     }
 }

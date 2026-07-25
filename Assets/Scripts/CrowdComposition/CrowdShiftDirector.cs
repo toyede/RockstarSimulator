@@ -9,15 +9,12 @@ namespace ContextStage
     /// The spawner owns all visual transition work.
     /// </summary>
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(CrowdCompositionManager))]
     public sealed class CrowdShiftDirector : MonoBehaviour
     {
         [SerializeField] CrowdCompositionManager manager;
-        [SerializeField] bool autoShift = true;
-        [SerializeField] float firstShiftTime = 25f;
-        [SerializeField] float secondShiftTime = 55f;
-        [SerializeField] int randomSeed = 4861;
 
-        readonly string[] _presetIds = { "formal", "britpop", "hardcore" };
+        readonly List<string> _presetIds = new List<string>();
         readonly List<string> _shuffleBag = new List<string>();
         System.Random _random;
         float _performanceTime;
@@ -27,7 +24,6 @@ namespace ContextStage
         void Awake()
         {
             if (manager == null) manager = GetComponent<CrowdCompositionManager>();
-            if (manager == null) manager = FindFirstObjectByType<CrowdCompositionManager>();
             ResetSchedule();
         }
 
@@ -50,10 +46,11 @@ namespace ContextStage
                 _nextShiftIndex = 0;
             }
 
-            if (!autoShift || manager == null || _nextShiftIndex >= 2) return;
+            CrowdCompositionConfig config = manager != null ? manager.Config : null;
+            if (config == null || !config.AutoShift || _nextShiftIndex >= config.ShiftCount) return;
 
             _performanceTime += Time.deltaTime;
-            float triggerTime = _nextShiftIndex == 0 ? firstShiftTime : secondShiftTime;
+            float triggerTime = config.GetShiftTime(_nextShiftIndex);
             if (_performanceTime < triggerTime) return;
 
             ApplyNextShift();
@@ -69,12 +66,17 @@ namespace ContextStage
         void ApplyNextShift()
         {
             string presetId = DrawPreset();
-            CrowdCompositionSnapshot target = PreviewPreset(presetId);
+            if (string.IsNullOrEmpty(presetId) ||
+                !manager.TryGetPreset(presetId, out CrowdCompositionPreset preset))
+                return;
+
             EventBus.Raise(new CrowdShiftStarted
             {
-                EventName = DisplayName(presetId),
+                EventName = string.IsNullOrWhiteSpace(preset.EventName)
+                    ? preset.DisplayName
+                    : preset.EventName,
                 TargetPresetId = presetId,
-                Target = target
+                Target = preset.Composition
             });
             manager.TryApplyPreset(presetId, "CrowdShift");
         }
@@ -82,6 +84,7 @@ namespace ContextStage
         string DrawPreset()
         {
             if (_shuffleBag.Count == 0) RefillBag();
+            if (_shuffleBag.Count == 0) return string.Empty;
 
             int selectedIndex = _shuffleBag.Count - 1;
             if (_shuffleBag[selectedIndex] == manager.CurrentPresetId && _shuffleBag.Count > 1)
@@ -95,6 +98,8 @@ namespace ContextStage
         void RefillBag()
         {
             _shuffleBag.Clear();
+            _presetIds.Clear();
+            if (manager != null) manager.FillShiftPresetIds(_presetIds);
             _shuffleBag.AddRange(_presetIds);
             for (int i = _shuffleBag.Count - 1; i > 0; i--)
             {
@@ -110,30 +115,11 @@ namespace ContextStage
             _performanceTime = 0f;
             _nextShiftIndex = 0;
             _wasPlaying = false;
-            _random = new System.Random(randomSeed);
+            int seed = manager != null && manager.Config != null
+                ? manager.Config.ShiftRandomSeed
+                : 0;
+            _random = new System.Random(seed);
             RefillBag();
-        }
-
-        static string DisplayName(string presetId)
-        {
-            switch (presetId)
-            {
-                case "formal": return "FORMAL FANS ARRIVE";
-                case "britpop": return "BRITPOP KIDS RUSH IN";
-                case "hardcore": return "HARDCORE FANS SURGE";
-                default: return "CROWD SHIFT";
-            }
-        }
-
-        static CrowdCompositionSnapshot PreviewPreset(string presetId)
-        {
-            switch (presetId)
-            {
-                case "formal": return new CrowdCompositionSnapshot(13, 5, 3);
-                case "britpop": return new CrowdCompositionSnapshot(4, 13, 4);
-                case "hardcore": return new CrowdCompositionSnapshot(3, 5, 13);
-                default: return new CrowdCompositionSnapshot(7, 7, 7);
-            }
         }
     }
 }
