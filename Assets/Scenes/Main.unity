@@ -4603,6 +4603,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 366608384066516368, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 71
+      objectReference: {fileID: 0}
     - target: {fileID: 1628124209102341082, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
@@ -4611,6 +4615,18 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 165538480}
+    - target: {fileID: 2099456077572340531, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 362.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2099456077572340531, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 362
+      objectReference: {fileID: 0}
+    - target: {fileID: 2099456077572340531, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -128
+      objectReference: {fileID: 0}
     - target: {fileID: 2135933040274056952, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_Name
       value: GameOverCanvas
@@ -4694,6 +4710,26 @@ PrefabInstance:
     - target: {fileID: 3640169816863125802, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5702526506398307174, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 359.24
+      objectReference: {fileID: 0}
+    - target: {fileID: 5702526506398307174, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 145.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5702526506398307174, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 302
+      objectReference: {fileID: 0}
+    - target: {fileID: 5702526506398307174, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -43
+      objectReference: {fileID: 0}
+    - target: {fileID: 9130050562114915791, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 123
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
