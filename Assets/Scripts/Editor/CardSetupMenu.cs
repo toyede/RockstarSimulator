@@ -119,6 +119,7 @@ namespace ContextStage.EditorTools
             }
 
             ValidatePreparedDeck(errors);
+            if (deck != null) ValidateGeneratedDeckComposition(deck, errors);
             ValidateCardEffects(errors);
 
             var handUi = Object.FindFirstObjectByType<CardHandUI>();
@@ -361,6 +362,86 @@ namespace ContextStage.EditorTools
                 prepared.CurrentRemaining != 8)
             {
                 errors.Add("현재 덱 1장 + 대기 덱 2장 경계 드로우 검증에 실패했습니다.");
+            }
+        }
+
+        static void ValidateGeneratedDeckComposition(
+            CardDeckConfig config,
+            List<string> errors)
+        {
+            if (!CardDeckBatchBuilder.TryBuild(
+                    config,
+                    out var cards,
+                    out string buildError,
+                    () => 0f))
+            {
+                errors.Add($"Generated deck composition failed: {buildError}");
+                return;
+            }
+
+            var requiredCards = new HashSet<CardDefinition>();
+            for (int i = 0; i < config.CardPool.Count; i++)
+            {
+                CardPoolEntry entry = config.CardPool[i];
+                if (entry != null && entry.IsUsable)
+                    requiredCards.Add(entry.Prefab);
+            }
+
+            if (cards.Count != config.GeneratedDeckSize)
+            {
+                errors.Add(
+                    $"Generated deck has {cards.Count} cards instead of " +
+                    $"{config.GeneratedDeckSize}.");
+                return;
+            }
+
+            var counts = new Dictionary<CardDefinition, int>();
+            for (int i = 0; i < cards.Count; i++)
+            {
+                CardDefinition card = cards[i];
+                counts.TryGetValue(card, out int count);
+                counts[card] = count + 1;
+            }
+
+            foreach (CardDefinition requiredCard in requiredCards)
+            {
+                if (!counts.ContainsKey(requiredCard))
+                    errors.Add($"Generated deck is missing required card '{requiredCard.Id}'.");
+            }
+
+            int bonusCopies = 0;
+            bool repeatedBonusCard = false;
+            foreach (KeyValuePair<CardDefinition, int> pair in counts)
+            {
+                int copiesBeyondRequired = Mathf.Max(0, pair.Value - 1);
+                bonusCopies += copiesBeyondRequired;
+                if (copiesBeyondRequired == 0) continue;
+
+                if (pair.Key.Role != CardRole.Normal &&
+                    pair.Key.Role != CardRole.Utility)
+                {
+                    errors.Add(
+                        $"Generated deck duplicated ineligible special card '{pair.Key.Id}'.");
+                }
+
+                if (copiesBeyondRequired >= 2)
+                    repeatedBonusCard = true;
+            }
+
+            int expectedBonusCopies =
+                config.GeneratedDeckSize - requiredCards.Count;
+            if (bonusCopies != expectedBonusCopies)
+            {
+                errors.Add(
+                    $"Generated deck has {bonusCopies} bonus copies instead of " +
+                    $"{expectedBonusCopies}.");
+            }
+
+            if (expectedBonusCopies >= 2 && !repeatedBonusCard)
+            {
+                errors.Add(
+                    "Generated deck does not allow the same normal/utility card " +
+                    "to fill both bonus slots.");
             }
         }
 
