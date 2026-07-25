@@ -33,6 +33,26 @@ namespace ContextStage
         [SerializeField, Tooltip("목표 점수 미달성(실패) 시 표시할 문구")]
         string failText = "GAME OVER";
 
+        [SerializeField, Tooltip("내가 달성한 점수를 표시할 텍스트")]
+        Text myPointText;
+
+        [SerializeField, Tooltip("클리어 조건(목표) 점수를 표시할 텍스트")]
+        Text pointText;
+
+        [SerializeField, Tooltip("달성 비율에 따른 랭크 이미지")]
+        Image rankImage;
+
+        [SerializeField, Tooltip("랭크 구간 (minRatio 오름차순). ScoreRankUI와 동일한 판정 로직(GetRankIndex)을 쓴다")]
+        ScoreRankUI.RankTier[] rankTiers =
+        {
+            new ScoreRankUI.RankTier { label = "F", minRatio = 0f },
+            new ScoreRankUI.RankTier { label = "D", minRatio = 1.00f },
+            new ScoreRankUI.RankTier { label = "C", minRatio = 1.10f },
+            new ScoreRankUI.RankTier { label = "B", minRatio = 1.25f },
+            new ScoreRankUI.RankTier { label = "A", minRatio = 1.50f },
+            new ScoreRankUI.RankTier { label = "S", minRatio = 2.00f },
+        };
+
         protected override void Awake()
         {
             base.Awake(); // 킷 규칙: UIPopup.Awake 를 반드시 호출해야 UIManager 에 등록된다
@@ -57,6 +77,22 @@ namespace ContextStage
         protected override void OnOpen()
         {
             if (resultText != null) resultText.text = PerformanceTimer.Failed ? failText : clearText;
+
+            // 게임오버 시점의 최종 점수와 클리어 목표 점수를 반영한다
+            int score = GameManager.HasInstance ? GameManager.Instance.Score : 0;
+            int target = PerformanceTimer.TargetScore;
+
+            if (myPointText != null) myPointText.text = score.ToString();
+            if (pointText != null) pointText.text = $"/ {target}"; // 기존 prefab 텍스트 포맷("/ 5000") 유지
+
+            if (rankImage != null && rankTiers.Length > 0)
+            {
+                float ratio = target > 0 ? (float)score / target : 0f;
+                int index = ScoreRankUI.GetRankIndex(ratio, rankTiers);
+                Sprite icon = rankTiers[index].icon;
+                rankImage.sprite = icon;
+                rankImage.enabled = icon != null;
+            }
         }
 
         /// <summary>[선택] 재시작 버튼을 만들면 OnClick 에 이 함수를 연결한다.</summary>
