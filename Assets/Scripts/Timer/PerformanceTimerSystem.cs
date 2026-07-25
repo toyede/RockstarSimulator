@@ -8,10 +8,10 @@ namespace ContextStage
     ///
     /// - 공연 시작(Ready → Playing) 시 0부터 시작해 매 프레임 누적
     /// - Playing 상태일 때만 흐른다 (대기·일시정지·게임오버 중엔 정지)
-    /// - 제한시간에 도달하면 딱 한 번 EvaluateStageEnd() 를 호출한다.
-    ///   성공/실패 모두 GameManager.GameOver() 로 공연을 종료시키며,
-    ///   목표 점수(PerformanceTimerConfig.targetScore) 미달성 시에만 Failed 플래그를 세운다.
-    ///   ScoreEntryPopup 이 이 플래그를 보고 실패한 판은 점수 저장을 막는다.
+    /// - 제한시간에 도달하면 딱 한 번 EvaluateStageEnd() 를 호출해 GameManager.GameOver() 로 공연을 종료시킨다.
+    ///   (관객 이탈 등 다른 원인으로 GameOver 가 될 수도 있다 — 그래서 Failed 는 특정 트리거에서만
+    ///    세팅되는 플래그가 아니라, 매번 "현재 점수 &lt; 목표 점수" 로 계산되는 파생값이다.
+    ///    어떤 경로로 GameOver 가 됐든 항상 올바른 성공/실패 판정을 준다.)
     ///
     /// [다른 담당자용 API]
     ///   PerformanceTimer.Elapsed / Duration / Normalized / TargetScore / Failed
@@ -31,8 +31,8 @@ namespace ContextStage
         public float Normalized => Duration <= 0f ? 0f : Mathf.Clamp01(_elapsed / Duration);
         public int TargetScore => config == null ? 0 : config.targetScore;
 
-        /// <summary>제한시간 초과 + 목표 미달성으로 끝났는지. ScoreEntryPopup 의 저장 게이팅에 쓰인다.</summary>
-        public bool Failed { get; private set; }
+        /// <summary>현재 점수가 목표 점수 미달인지. 특정 트리거가 아니라 항상 실시간으로 계산된다.</summary>
+        public bool Failed => GameManager.HasInstance && GameManager.Instance.Score < TargetScore;
 
         void OnEnable() => EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
         void OnDisable() => EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
@@ -49,7 +49,6 @@ namespace ContextStage
         {
             _elapsed = 0f;
             _ended = false;
-            Failed = false;
             RaiseChanged();
         }
 
@@ -73,13 +72,12 @@ namespace ContextStage
             RaiseChanged();
         }
 
-        /// <summary>제한시간이 다 찼을 때 성공/실패를 판정한다. 성공/실패 모두 공연을 종료시킨다.</summary>
+        /// <summary>제한시간이 다 찼을 때 공연을 종료시킨다. 성공/실패 판정은 Failed 가 알아서 계산한다.</summary>
         void EvaluateStageEnd()
         {
             var gm = GameManager.Instance;
             if (gm == null) return;
 
-            Failed = gm.Score < TargetScore;
             gm.GameOver(); // 시간 초과는 성공/실패 모두 공연 종료
         }
 
@@ -115,7 +113,7 @@ namespace ContextStage
         /// <summary>목표 점수. 씬에 시스템이 없으면 0(목표 표시 안 함으로 취급됨).</summary>
         public static int TargetScore => PerformanceTimerSystem.HasInstance ? PerformanceTimerSystem.Instance.TargetScore : 0;
 
-        /// <summary>제한시간 초과 + 목표 미달성으로 끝났는지. 씬에 시스템이 없으면 false.</summary>
+        /// <summary>현재 점수가 목표 점수 미달인지(실시간 계산). 씬에 시스템이 없으면 false.</summary>
         public static bool Failed => PerformanceTimerSystem.HasInstance && PerformanceTimerSystem.Instance.Failed;
     }
 }

@@ -1,6 +1,5 @@
 using GameJamKit;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace ContextStage
 {
@@ -11,7 +10,7 @@ namespace ContextStage
     /// 못한 판이라도 기존 리더보드는 "조회"할 수 있어야 하기 때문이다.
     ///
     /// 씬 배치: listContent 는 ScrollRect 의 Content(Vertical Layout Group 권장),
-    /// rowPrefab 은 Text 컴포넌트 하나만 있는 간단한 행 프리팹.
+    /// rowPrefab 은 LeaderboardRowView 가 붙어 있는 행 프리팹(순위/닉네임/점수 Text 3개).
     /// "타이틀로" 버튼은 OnClickTitle 을 OnClick 에 연결.
     /// </summary>
     public class LeaderboardPopup : UIPopup
@@ -61,8 +60,8 @@ namespace ContextStage
             for (int i = 0; i < count; i++)
             {
                 var row = Instantiate(rowPrefab, listContent);
-                var text = row.GetComponentInChildren<Text>();
-                if (text != null) text.text = $"{i + 1}. {records[i].playerName} - {records[i].score}";
+                var rowView = row.GetComponent<LeaderboardRowView>();
+                if (rowView != null) rowView.SetData(i + 1, records[i].playerName, records[i].score);
             }
         }
 

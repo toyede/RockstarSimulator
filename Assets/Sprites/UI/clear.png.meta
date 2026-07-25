@@ -1,19 +1,22 @@
 fileFormatVersion: 2
-guid: ffbf0a3ddd6cb7543bc4fd3170ecc35b
+guid: 6b7c33b7472b3d24faaaafeb8055aadf
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5009293899458642114
-    second: layer_0
+      213: -5905358785927170718
+    second: clear_0
   - first:
-      213: 4002669334264223533
-    second: layer_1
+      213: -1951696380875582694
+    second: clear_1
   - first:
-      213: 8531786474154138339
-    second: layer_2
+      213: 5086069302426462005
+    second: clear_2
   - first:
-      213: 7288290183118407415
-    second: layer_3
+      213: 4004350427619923938
+    second: clear_3
+  - first:
+      213: 3689506613362651060
+    second: clear_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -84,7 +87,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -109,89 +112,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: layer_0
+      name: clear_0
       rect:
         serializedVersion: 2
-        x: 67
-        y: 199
-        width: 476
-        height: 384
+        x: 0
+        y: 0
+        width: 434
+        height: 97
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e3f7c332db96b7ab0800000000000000
-      internalID: -5009293899458642114
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: layer_1
-      rect:
-        serializedVersion: 2
-        x: 543
-        y: 110
-        width: 426
-        height: 642
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d271b2e6d865c8730800000000000000
-      internalID: 4002669334264223533
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: layer_2
-      rect:
-        serializedVersion: 2
-        x: 972
-        y: 179
-        width: 243
-        height: 368
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3ea907b489ef66670800000000000000
-      internalID: 8531786474154138339
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: layer_3
-      rect:
-        serializedVersion: 2
-        x: 1211
-        y: 189
-        width: 342
-        height: 437
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7f64db87e45352560800000000000000
-      internalID: 7288290183118407415
+      spriteID: 265349dd873fb0ea0800000000000000
+      internalID: -5905358785927170718
       vertices: []
       indices: 
       edges: []
@@ -208,12 +145,11 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":434.0,"y":97.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      layer_0: -5009293899458642114
-      layer_1: 4002669334264223533
-      layer_2: 8531786474154138339
-      layer_3: 7288290183118407415
+      clear_0: -5905358785927170718
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
