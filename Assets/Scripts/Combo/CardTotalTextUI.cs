@@ -34,6 +34,7 @@ namespace ContextStage
         [SerializeField] Color zeroColor = new Color(0.7f, 0.7f, 0.7f, 1f);
         [SerializeField] Color negativeColor = new Color(1f, 0.28f, 0.22f, 1f);
         [SerializeField] Color specialColor = new Color(0.35f, 1f, 0.85f, 1f);
+        [SerializeField] Color feverColor = new Color(0.25f, 1f, 0.95f, 1f);
 
         float _visibleUntil;    // 이 시각까지는 alpha 1 유지
         float _hiddenAt;        // 이 시각이면 완전히 사라짐
@@ -86,6 +87,11 @@ namespace ContextStage
         {
             // 평가 문구(LOVE IT!/SPECIAL! 등)는 위 CardReactionTextUI 가 담당한다.
             // 이 줄은 숫자 점수만 보여준다.
+            if (e.FeverBonusScore > 0)
+            {
+                return $"+{e.GainedScore:N0} SCORE  " +
+                    $"FEVER +{e.FeverBonusScore:N0}";
+            }
             if (e.GainedScore > 0) return $"+{e.GainedScore:N0} SCORE";
             if (e.GainedScore < 0) return $"{e.GainedScore:N0} SCORE";
             return "NO SCORE";
@@ -93,6 +99,7 @@ namespace ContextStage
 
         Color ResolveColor(CardResolved e)
         {
+            if (e.FeverBonusScore > 0) return feverColor;
             if (e.IsSpecialHit) return specialColor;
             if (e.GainedScore > 0) return positiveColor;
             if (e.GainedScore < 0) return negativeColor;

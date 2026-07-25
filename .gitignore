@@ -73,3 +73,7 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Roslyn 컴파일 검증 산출물 (Tools/make_rsp.py 가 생성)
+Tools/verify-*.rsp
+Tools/verify-*.dll

@@ -93,6 +93,58 @@ namespace ContextStage.EditorTools
                 "(씬을 Ctrl+S 로 저장할 것)");
         }
 
+        /// <summary>
+        /// 화면이 너무 어두울 때 쓰는 복구 메뉴.
+        ///
+        /// 씬에 이미 저장된 값은 코드의 기본값을 덮으므로, 기본값만 올려도 기존 씬은 그대로 캄캄하다.
+        /// 이 메뉴가 씬의 컨트롤러 값을 직접 밝은 쪽으로 되돌린다.
+        /// </summary>
+        [MenuItem("Tools/Lighting/Fix Dark Stage Lighting", false, 2)]
+        public static void FixDarkStageLighting()
+        {
+            var root = GameObject.Find("StageLighting");
+            var controller = root != null ? root.GetComponent<StageLightController>() : null;
+            if (controller == null)
+            {
+                Debug.LogWarning(
+                    "[StageLight] StageLighting/StageLightController 가 없습니다. " +
+                    "먼저 Tools/Lighting/Setup Stage Lighting 을 실행하세요.");
+                return;
+            }
+
+            Undo.RecordObject(controller, "Fix Dark Stage Lighting");
+            var serialized = new SerializedObject(controller);
+
+            SetFloat(serialized, "masterIntensity", 1f);
+            SetFloat(serialized, "smoothLightContribution", 0.85f);
+            SetFloat(serialized, "pixelSpotlightIntensity", 0.6f);
+            SetFloat(serialized, "globalTintStrength", 0.3f);
+            SetBool(serialized, "manualLightOverride", false);
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(controller);
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            Selection.activeGameObject = controller.gameObject;
+
+            Debug.Log(
+                "[StageLight] 밝기를 복구했습니다 — smoothLightContribution 0.85 / " +
+                "pixelSpotlightIntensity 0.6 / masterIntensity 1 / globalTintStrength 0.3. " +
+                "더 밝게 하려면 masterIntensity 만 올리세요. (씬을 Ctrl+S 로 저장할 것)");
+        }
+
+        static void SetFloat(SerializedObject serialized, string field, float value)
+        {
+            var prop = serialized.FindProperty(field);
+            if (prop != null) prop.floatValue = value;
+            else Debug.LogWarning($"[StageLight] '{field}' 필드를 찾지 못했습니다.");
+        }
+
+        static void SetBool(SerializedObject serialized, string field, bool value)
+        {
+            var prop = serialized.FindProperty(field);
+            if (prop != null) prop.boolValue = value;
+        }
+
         [MenuItem("Tools/Lighting/Create Pixel Stage Light Cookie Asset", false, 20)]
         public static void CreatePixelStageLightCookieAsset()
         {

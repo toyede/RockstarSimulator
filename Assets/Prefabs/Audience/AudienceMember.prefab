@@ -825,8 +825,8 @@ MonoBehaviour:
   chillSprite: {fileID: 21300000, guid: 84678859d7e91dc49bd759e17f8bcea3, type: 3}
   singalongSprite: {fileID: 21300000, guid: aec44e25d3fd66447829ef16faffcdbf, type: 3}
   moshSprite: {fileID: 217757854790610025, guid: cfafc4f224101ea4a879f1518fc7303c, type: 3}
-  chillColor: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 1}
-  singalongColor: {r: 0.39215687, g: 0.19215687, b: 0.91764706, a: 1}
+  chillColor: {r: 1, g: 1, b: 1, a: 1}
+  singalongColor: {r: 1, g: 1, b: 1, a: 1}
   moshColor: {r: 1, g: 1, b: 1, a: 1}
   animatedVariants:
   - preference: 1
@@ -2868,6 +2868,38 @@ MonoBehaviour:
   layoutFollowSpeed: 4
   reactionPulseDuration: 0.22
   reactionPulseScale: 0.18
-  calmBobHeight: 0.025
-  middleBobHeight: 0.07
-  excitedBobHeight: 0.16
+  calmMotion:
+    bobHeight: 0.03
+    bobSpeed: 0.8
+    swayAngle: 2
+    swaySpeed: 0.6
+    jumpHeight: 0
+    jumpsPerSecond: 0
+    airTimeRatio: 0.7
+    squash: 0.12
+    speedVariance: 0.25
+    spriteCycleFps: 0
+  middleMotion:
+    bobHeight: 0.08
+    bobSpeed: 1.6
+    swayAngle: 6
+    swaySpeed: 1.3
+    jumpHeight: 0
+    jumpsPerSecond: 0
+    airTimeRatio: 0.7
+    squash: 0.12
+    speedVariance: 0.2
+    spriteCycleFps: 0
+  excitedMotion:
+    bobHeight: 0.04
+    bobSpeed: 2
+    swayAngle: 8
+    swaySpeed: 2.2
+    jumpHeight: 0.45
+    jumpsPerSecond: 1.8
+    airTimeRatio: 0.7
+    squash: 0.15
+    speedVariance: 0.15
+    spriteCycleFps: 0
+  motionBlendDuration: 0.6
+  allowHorizontalFlip: 1

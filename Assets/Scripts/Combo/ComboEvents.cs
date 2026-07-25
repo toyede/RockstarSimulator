@@ -19,4 +19,38 @@ namespace ContextStage
         public float Multiplier { get; }
         public bool WasLost { get; }
     }
+
+    public readonly struct FeverStateChanged
+    {
+        public FeverStateChanged(
+            bool isActive,
+            int triggerCombo,
+            float duration)
+        {
+            IsActive = isActive;
+            TriggerCombo = triggerCombo;
+            Duration = duration;
+        }
+
+        public bool IsActive { get; }
+        public int TriggerCombo { get; }
+        public float Duration { get; }
+    }
+
+    public readonly struct FeverBonusAwarded
+    {
+        public FeverBonusAwarded(
+            string cardId,
+            int audienceCount,
+            int bonusScore)
+        {
+            CardId = cardId;
+            AudienceCount = audienceCount;
+            BonusScore = bonusScore;
+        }
+
+        public string CardId { get; }
+        public int AudienceCount { get; }
+        public int BonusScore { get; }
+    }
 }

@@ -190,7 +190,9 @@ namespace ContextStage.EditorTools
                 ? comboBefore
                 : expectedRawScore > 0
                     ? comboBefore + 1
-                    : 0;
+                    : expectedRawScore < 0
+                        ? 0
+                        : comboBefore;
             if (ComboSystem.HasInstance &&
                 ComboSystem.Instance.CurrentCombo != expectedCombo)
             {
