@@ -172,7 +172,6 @@ GameObject:
   - component: {fileID: 2390534422206908551}
   - component: {fileID: 7183483517582410539}
   - component: {fileID: 6171757666705632869}
-  - component: {fileID: 6264381516126088815}
   m_Layer: 5
   m_Name: Card_Base
   m_TagString: Untagged
@@ -382,37 +381,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CardDragHandler
   hoverScale: 1.12
   hoverDuration: 0.12
---- !u!114 &6264381516126088815
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8602934466595160544}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bd729c160ef30a4eb499134c734d4e5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CardDissolveEffect
-  dissolveTargets:
-  - {fileID: 4133523582202247847}
-  - {fileID: 4280488235003424141}
-  sourceMaterial: {fileID: 0}
-  textCanvasGroup: {fileID: 0}
-  fadeGraphics:
-  - {fileID: 0}
-  - {fileID: 6897208685787233744}
-  - {fileID: 0}
-  textFadeStart: 0.6
-  scalePunchDuration: 0.05
-  scaleMultiplier: 1.05
-  scaleTarget: {fileID: 0}
-  dissolveDuration: 0.35
-  startDissolve: 0
-  endDissolve: 1
-  edgeWidth: 0.08
-  edgeColor: {r: 0.9411765, g: 0.12156863, b: 0.12156863, a: 1}
-  pixelBlockCount: 24
-  noiseScale: 1
-  direction: 0.5
-  randomizeSeed: 1

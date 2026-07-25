@@ -36,6 +36,11 @@ namespace ContextStage
 
         protected override void OnAwake()
         {
+            // 씬/프리팹을 다시 생성하지 않아도 기존 CardSystem에 연출이 붙는다.
+            // 런타임에 한 번만 만들고 모든 카드 사용에서 재사용한다.
+            if (GetComponent<CardImpactVFX>() == null)
+                gameObject.AddComponent<CardImpactVFX>();
+
             if (audienceRoster == null)
             {
                 Debug.LogError(
@@ -212,6 +217,15 @@ namespace ContextStage
                 {
                     return false;
                 }
+
+                // 수치 계산은 끝났지만 점수·콤보 이벤트는 아직 발행하지 않은 시점이다.
+                // 중앙 임팩트를 먼저 보여주고, 관객/HUD 쪽은 각자 짧게 지연해
+                // "카드 → 관객 반응 → 결과" 순서만 연출 계층에서 만든다.
+                EventBus.Raise(new CardPresentationStarted(
+                    card.Id,
+                    card.Role,
+                    card.TargetStage,
+                    card.CardColor));
 
                 _hand.RemoveAt(index);
                 int rawScore = gainedScore + specialBonusScore;

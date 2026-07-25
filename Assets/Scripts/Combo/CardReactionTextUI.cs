@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using GameJamKit;
 using TMPro;
 using UnityEngine;
@@ -55,11 +56,13 @@ namespace ContextStage
         [Header("Presentation")]
         [SerializeField, Min(0.1f)] float holdDuration = 0.8f;
         [SerializeField, Min(0.01f)] float fadeDuration = 0.35f;
+        [SerializeField, Min(0f)] float presentationDelay = 0.085f;
 
         float _visibleUntil;
         float _hiddenAt;
         Color _baseColor = Color.white;
         bool _animating;
+        Coroutine _presentationRoutine;
 
         void OnEnable()
         {
@@ -67,9 +70,28 @@ namespace ContextStage
             SetAlpha(0f); // 시작은 숨김 (카드를 낼 때만 나타난다)
         }
 
-        void OnDisable() => EventBus.Unsubscribe<CardResolved>(OnCardResolved);
+        void OnDisable()
+        {
+            EventBus.Unsubscribe<CardResolved>(OnCardResolved);
+            _presentationRoutine = null;
+        }
 
         void OnCardResolved(CardResolved e)
+        {
+            if (_presentationRoutine != null)
+                StopCoroutine(_presentationRoutine);
+            _presentationRoutine = StartCoroutine(ShowAfterDelay(e));
+        }
+
+        IEnumerator ShowAfterDelay(CardResolved result)
+        {
+            if (presentationDelay > 0f)
+                yield return new WaitForSecondsRealtime(presentationDelay);
+            _presentationRoutine = null;
+            ShowResolved(result);
+        }
+
+        void ShowResolved(CardResolved e)
         {
             if (e.FeverBonusScore > 0)
             {
@@ -167,6 +189,7 @@ namespace ContextStage
         {
             holdDuration = Mathf.Max(0.1f, holdDuration);
             fadeDuration = Mathf.Max(0.01f, fadeDuration);
+            presentationDelay = Mathf.Max(0f, presentationDelay);
         }
 #endif
     }

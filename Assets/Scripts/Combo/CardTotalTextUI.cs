@@ -1,3 +1,4 @@
+using System.Collections;
 using GameJamKit;
 using TMPro;
 using UnityEngine;
@@ -28,6 +29,9 @@ namespace ContextStage
 
         [SerializeField, Min(0.01f), Tooltip("페이드아웃에 걸리는 시간(초)")]
         float fadeDuration = 0.35f;
+        [SerializeField, Min(0f), Tooltip(
+            "관객 반응 폭발 뒤 결과 숫자를 보여주기 위한 실시간 지연")]
+        float presentationDelay = 0.085f;
 
         [Header("Colors")]
         [SerializeField] Color positiveColor = new Color(1f, 0.88f, 0.25f, 1f);
@@ -40,6 +44,7 @@ namespace ContextStage
         float _hiddenAt;        // 이 시각이면 완전히 사라짐
         Color _baseColor = Color.white;
         bool _animating;
+        Coroutine _presentationRoutine;
 
         void OnEnable()
         {
@@ -47,9 +52,28 @@ namespace ContextStage
             SetAlpha(0f); // 시작은 숨김 (카드를 낼 때만 나타난다)
         }
 
-        void OnDisable() => EventBus.Unsubscribe<CardResolved>(OnCardResolved);
+        void OnDisable()
+        {
+            EventBus.Unsubscribe<CardResolved>(OnCardResolved);
+            _presentationRoutine = null;
+        }
 
         void OnCardResolved(CardResolved e)
+        {
+            if (_presentationRoutine != null)
+                StopCoroutine(_presentationRoutine);
+            _presentationRoutine = StartCoroutine(ShowAfterDelay(e));
+        }
+
+        IEnumerator ShowAfterDelay(CardResolved result)
+        {
+            if (presentationDelay > 0f)
+                yield return new WaitForSecondsRealtime(presentationDelay);
+            _presentationRoutine = null;
+            ShowResolved(result);
+        }
+
+        void ShowResolved(CardResolved e)
         {
             // Utility 카드는 점수 개념이 없으므로 결과 텍스트를 띄우지 않는다 (콤보도 유지되는 카드다)
             if (e.Role == CardRole.Utility && e.GainedScore == 0)
@@ -133,6 +157,7 @@ namespace ContextStage
         {
             holdDuration = Mathf.Max(0.1f, holdDuration);
             fadeDuration = Mathf.Max(0.01f, fadeDuration);
+            presentationDelay = Mathf.Max(0f, presentationDelay);
         }
 #endif
     }

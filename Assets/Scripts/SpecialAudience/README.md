@@ -174,3 +174,16 @@ manager.OnSpecialHit             += (type, reward) => ...;
 - 셔플 백은 리스트 하나를 재사용한다 (등장마다 새 할당 없음).
 - Animator 트리거는 `StringToHash` 로 캐싱, 문자열 비교 없음.
 - 로그는 `UNITY_EDITOR || DEVELOPMENT_BUILD` 에서만 컴파일된다.
+
+## 8. 성향 픽셀 VFX
+
+`SpecialAudiencePersonalityVFX`는 특별 관객 액터가 등장할 때 한 번 준비하고,
+등장 중 같은 파티클 시스템과 스프라이트 렌더러를 계속 재사용한다.
+
+- Chill(나무늘보): 머리 양옆에서 떨어지는 청록 픽셀 땀방울
+- Singalong(앵무새): 위로 떠오르는 보라·노랑 픽셀 음표
+- Mosh(검은 소): 머리 주변에서 조여드는 굵은 붉은 픽셀 분노 주름과 파편
+
+평상시에는 낮은 빈도로 특징을 보여주고, `SpecialHitLanded`에서는 카드 중앙
+임팩트보다 0.05초 늦게 강한 버전을 재생한다. 이 색은 특별 관객의 정체성
+표현이며, 일반 관객의 성공/실패 반응색과는 별도 경로다.

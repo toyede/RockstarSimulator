@@ -58,6 +58,18 @@ ScreenEffects.PlayScreen(
 - 프로필을 연결하면 통합 셰이더의 다른 효과로도 교체할 수 있다.
 - 크기, 강도 배율, 시간 덮어쓰기는 특별 관객 프리팹의 해당 섹션에서 조절한다.
 
+## Card Impact
+
+`CardPresentationStarted`를 기준으로 다음 표시 순서를 만든다.
+
+`카드색 UI 픽셀 트레일 → 무대 중앙 임팩트 → 0.05초 뒤 관객 반응 → 점수/콤보`
+
+- `CardPixelTrail`은 Screen Space Canvas 안에서 네모 픽셀 메시를 그리며 카드 풀 수명 동안 재사용한다.
+- `CardImpactVFX`는 흰 플래시, 8~12개 방사 픽셀, 0.3→1.5 픽셀 링을 재사용한다.
+- 임팩트 색은 Chill=청록, Singalong=보라, Mosh=주황·빨강, Utility=흰색·노랑 계열이다.
+- 씬의 Bloom 값을 덮어쓰지 않고 현재 강도에 0.35를 짧게 더한 뒤 원래 값으로 복구한다.
+- 모든 타이밍은 unscaled delta를 사용하며 `Time.timeScale` Hit Stop은 사용하지 않는다.
+
 ## 렌더러 전제
 
 - URP 2D Renderer의 Camera Sorting Layer Texture가 켜져 있어야 한다.
