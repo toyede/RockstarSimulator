@@ -508,14 +508,14 @@ namespace ContextStage.EditorTools
                 new CardSeed(
                     "Card_02_Response", "response_call", "호응 유도",
                     "관객의 첫 반응을 이끌어낸다.",
-                    CardRole.Normal, HeatStage.Chill, UtilityCardEffect.None,
-                    FromHex("#16A9B3")),
+                    CardRole.Special, HeatStage.Chill, UtilityCardEffect.None,
+                    FromHex("#16A9B3"),
+                    SpecialCardTargetEffectType.RandomAudienceArrival),
                 new CardSeed(
                     "Card_03_HandsUp", "hands_up", "손 머리 위로!",
                     "함께 따라 할 동작으로 무대를 묶는다.",
-                    CardRole.Special, HeatStage.Singalong, UtilityCardEffect.None,
-                    FromHex("#6431EA"),
-                    SpecialCardTargetEffectType.RandomAudienceArrival),
+                    CardRole.Normal, HeatStage.Singalong, UtilityCardEffect.None,
+                    FromHex("#6431EA")),
                 new CardSeed(
                     "Card_04_PassMic", "pass_mic", "마이크 넘기기",
                     "관객에게 노래를 맡겨 열기를 이어간다.",
@@ -659,13 +659,13 @@ namespace ContextStage.EditorTools
         static void ValidateCardEffects(List<string> errors)
         {
             var config = AssetDatabase.LoadAssetAtPath<HypeConfig>(HypeConfigPath);
-            var handsUp = LoadCardDefinition("Card_03_HandsUp");
+            var response = LoadCardDefinition("Card_02_Response");
             var passMic = LoadCardDefinition("Card_04_PassMic");
             var moshPit = LoadCardDefinition("Card_06_MoshPit");
             var draw = LoadCardDefinition("Card_07_Draw");
             var reroll = LoadCardDefinition("Card_08_Reroll");
             if (config == null ||
-                handsUp == null ||
+                response == null ||
                 passMic == null ||
                 moshPit == null ||
                 draw == null ||
@@ -676,7 +676,7 @@ namespace ContextStage.EditorTools
             }
 
             ValidateSpecialTargetEffect(
-                handsUp,
+                response,
                 SpecialCardTargetEffectType.RandomAudienceArrival,
                 errors);
             ValidateSpecialTargetEffect(
