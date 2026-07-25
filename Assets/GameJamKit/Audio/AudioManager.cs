@@ -84,6 +84,9 @@ namespace GameJamKit
 
         // ---------------- SFX ----------------
 
+        /// <summary>Button.OnClick() 같은 UnityEvent 인스펙터에 바로 연결하기 위한 1-파라미터 오버로드.</summary>
+        public void PlaySfx(string id) => PlaySfx(id, 1f);
+
         public void PlaySfx(string id, float volumeScale = 1f)
         {
             var entry = Resolve(id);
