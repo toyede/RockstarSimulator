@@ -44,9 +44,9 @@ namespace ContextStage.EditorTools
             demo.transform.position = new Vector3(0f, 1.2f, 0f);
             demo.transform.rotation = Quaternion.identity;
 
-            var meshFilter = demo.GetComponent<MeshFilter>() ?? demo.AddComponent<MeshFilter>();
-            var meshRenderer = demo.GetComponent<MeshRenderer>() ?? demo.AddComponent<MeshRenderer>();
-            var effect = demo.GetComponent<PartialDistortionEffect>() ?? demo.AddComponent<PartialDistortionEffect>();
+            var meshFilter = EnsureComponent<MeshFilter>(demo);
+            var meshRenderer = EnsureComponent<MeshRenderer>(demo);
+            var effect = EnsureComponent<PartialDistortionEffect>(demo);
             meshRenderer.sharedMaterial = material;
             meshRenderer.sortingLayerName = "Effects";
             meshRenderer.sortingOrder = 0;

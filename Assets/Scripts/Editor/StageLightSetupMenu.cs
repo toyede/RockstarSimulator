@@ -52,7 +52,7 @@ namespace ContextStage.EditorTools
             var right = GetOrCreateStageLight(root.transform, "Right Stage Light 2D", new Vector3(4.5f, 3.5f, 0f), 20f);
 
             // 3) 컨트롤러 + 브리지
-            var controller = root.GetComponent<StageLightController>() ?? Undo.AddComponent<StageLightController>(root);
+            var controller = EnsureComponent<StageLightController>(root);
             if (root.GetComponent<StageLightEventBridge>() == null) Undo.AddComponent<StageLightEventBridge>(root);
 
             SetObjectField(controller, "globalLight", global);
