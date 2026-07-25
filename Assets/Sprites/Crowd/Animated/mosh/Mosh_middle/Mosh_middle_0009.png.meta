@@ -73,7 +73,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -111,7 +111,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -178,12 +178,12 @@ TextureImporter:
       name: Mosh_middle_0009_0
       rect:
         serializedVersion: 2
-        x: 21
-        y: 678
-        width: 21
-        height: 23
+        x: 0
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -200,12 +200,12 @@ TextureImporter:
       name: Mosh_middle_0009_1
       rect:
         serializedVersion: 2
-        x: 0
-        y: 432
-        width: 191
-        height: 208
+        x: 213
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -222,12 +222,12 @@ TextureImporter:
       name: Mosh_middle_0009_2
       rect:
         serializedVersion: 2
-        x: 232
-        y: 433
-        width: 161
-        height: 220
+        x: 426
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -244,12 +244,12 @@ TextureImporter:
       name: Mosh_middle_0009_3
       rect:
         serializedVersion: 2
-        x: 437
-        y: 432
-        width: 174
-        height: 217
+        x: 639
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -266,12 +266,12 @@ TextureImporter:
       name: Mosh_middle_0009_4
       rect:
         serializedVersion: 2
-        x: 649
-        y: 432
-        width: 163
-        height: 205
+        x: 852
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -288,12 +288,12 @@ TextureImporter:
       name: Mosh_middle_0009_5
       rect:
         serializedVersion: 2
-        x: 848
-        y: 431
-        width: 185
-        height: 206
+        x: 1065
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -310,12 +310,12 @@ TextureImporter:
       name: Mosh_middle_0009_6
       rect:
         serializedVersion: 2
-        x: 1082
-        y: 433
-        width: 155
-        height: 218
+        x: 0
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -332,12 +332,12 @@ TextureImporter:
       name: Mosh_middle_0009_7
       rect:
         serializedVersion: 2
-        x: 11
-        y: 71
-        width: 178
-        height: 229
+        x: 213
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -354,12 +354,12 @@ TextureImporter:
       name: Mosh_middle_0009_8
       rect:
         serializedVersion: 2
-        x: 223
-        y: 71
-        width: 178
-        height: 218
+        x: 426
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -376,12 +376,12 @@ TextureImporter:
       name: Mosh_middle_0009_9
       rect:
         serializedVersion: 2
-        x: 436
-        y: 71
-        width: 168
-        height: 211
+        x: 639
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -398,12 +398,12 @@ TextureImporter:
       name: Mosh_middle_0009_10
       rect:
         serializedVersion: 2
-        x: 630
-        y: 71
-        width: 164
-        height: 194
+        x: 852
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -420,12 +420,12 @@ TextureImporter:
       name: Mosh_middle_0009_11
       rect:
         serializedVersion: 2
-        x: 877
-        y: 71
-        width: 159
-        height: 221
+        x: 1065
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -438,33 +438,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: Mosh_middle_0009_12
-      rect:
-        serializedVersion: 2
-        x: 1084
-        y: 70
-        width: 188
-        height: 226
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0ef50e9c547749800800000000000000
-      internalID: 618250190479974368
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: c50920931395820409636e83cc83b7bb
     internalID: 0
     vertices: []
     indices: 
@@ -472,13 +450,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":6.0,"y":2.0},"gridSpriteSize":{"x":213.0,"y":360.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Mosh_middle_0009_0: 9047123027565452453
       Mosh_middle_0009_1: -4703564188575646912
       Mosh_middle_0009_10: -5657353354759185614
       Mosh_middle_0009_11: -5061295645426184183
-      Mosh_middle_0009_12: 618250190479974368
       Mosh_middle_0009_2: -5958917882557718515
       Mosh_middle_0009_3: 4611026825232171622
       Mosh_middle_0009_4: -1166492570565388466

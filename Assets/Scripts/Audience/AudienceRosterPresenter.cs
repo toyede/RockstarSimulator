@@ -181,10 +181,19 @@ namespace ContextStage
                     : AudienceExitStyle.Default;
             actor.PlayExit(exitStyle, () =>
             {
-                if (actor != null && !SingletonRuntime.IsQuitting)
+                if (actor != null && !IsTearingDown)
                     PoolManager.Despawn(actor);
             });
         }
+
+        /// <summary>
+        /// 씬이 언로드되는 중인가. 이때 Despawn 을 부르면 파괴 중인 부모에 리페어런트를 시도해
+        /// "Cannot set the parent ... while deactivating" 경고가 쏟아진다.
+        /// </summary>
+        bool IsTearingDown =>
+            SingletonRuntime.IsQuitting ||
+            !PoolManager.HasInstance ||
+            !gameObject.scene.isLoaded;
 
         public bool TryGetRandomVisualAnchor(
             out Vector3 localPosition,
@@ -293,10 +302,9 @@ namespace ContextStage
             foreach (AudienceMemberActor actor in _actors.Values)
             {
                 if (actor == null) continue;
-                if (!SingletonRuntime.IsQuitting && PoolManager.HasInstance)
+                // 씬 언로드 중에는 Unity 가 알아서 정리한다 (리페어런트 시도 시 경고가 쏟아짐)
+                if (!IsTearingDown)
                     PoolManager.Despawn(actor);
-                else
-                    Destroy(actor.gameObject);
             }
             _actors.Clear();
             _order.Clear();

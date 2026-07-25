@@ -26,7 +26,10 @@ namespace ContextStage.EditorTools
             ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Hype", CrowdPreference.Singalong, AudienceEngagementStage.Excited, "Singalong_Excited"),
             ("Assets/Sprites/Crowd/Animated/chill/chill_calm", CrowdPreference.Chill, AudienceEngagementStage.Calm, "Chill_Calm"),
             ("Assets/Sprites/Crowd/Animated/chill/chill_mid", CrowdPreference.Chill, AudienceEngagementStage.Middle, "Chill_Middle"),
+            ("Assets/Sprites/Crowd/Animated/chill/Chill_Hype", CrowdPreference.Chill, AudienceEngagementStage.Excited, "Chill_Excited"),
             ("Assets/Sprites/Crowd/Animated/mosh/mosh_calm", CrowdPreference.Mosh, AudienceEngagementStage.Calm, "Mosh_Calm"),
+            ("Assets/Sprites/Crowd/Animated/mosh/Mosh_middle", CrowdPreference.Mosh, AudienceEngagementStage.Middle, "Mosh_Middle"),
+            ("Assets/Sprites/Crowd/Animated/mosh/Mosh_hype", CrowdPreference.Mosh, AudienceEngagementStage.Excited, "Mosh_Excited"),
         };
 
         [MenuItem("Tools/Audience/Import Animated Species Sheets")]

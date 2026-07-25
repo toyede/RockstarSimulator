@@ -13,8 +13,11 @@ namespace ContextStage.EditorTools
     ///   1. GameJamKit 매니저([Managers]) 생성  ← 킷 메뉴 재사용
     ///   2. Assets/Settings/HypeConfig.asset, PerformanceTimerConfig.asset 생성 (기획 수치가 기본값)
     ///   3. [HypeSystem]/[ScoreSystem]/[PerformanceTimerSystem] 오브젝트 + 디버그 입력 배치
-    ///   4. HypeCanvas 에 게이지 바 + 점수 UI + 공연 시간 바 배치
+    ///   4. HypeCanvas 에 게이지 바 + 점수 UI 배치
     /// 까지 끝난다. 이미 있는 것은 건드리지 않으므로 여러 번 실행해도 안전하다.
+    ///
+    /// 공연 시간 슬라이더 UI(PerformanceTimerUI)는 아트 배치가 필요해 이 메뉴가 자동 생성하지 않는다.
+    /// 씬에 수동으로 배치하고 slider/valueText 필드를 인스펙터에서 직접 연결할 것.
     /// </summary>
     public static class HypeSetupMenu
     {
@@ -61,11 +64,11 @@ namespace ContextStage.EditorTools
             var timerSystem = EnsureComponent<PerformanceTimerSystem>(timerGo);
             SetObjectField(timerSystem, "config", timerConfig);
 
-            // 4) 캔버스 + 게이지 UI + 점수 UI + 공연 시간 바 (각각 독립적으로 이미 있으면 건너뜀)
+            // 4) 캔버스 + 게이지 UI + 점수 UI (각각 독립적으로 이미 있으면 건너뜀)
+            // 공연 시간 슬라이더 UI 는 여기서 만들지 않는다 — 씬에 수동 배치 후 PerformanceTimerUI 필드를 직접 연결할 것.
             var canvasGo = GetOrCreateCanvas();
             BuildGaugeUI(canvasGo.transform);
             BuildScoreUI(canvasGo.transform, timerConfig.targetScore);
-            BuildTimerUI(canvasGo.transform, timerConfig.duration);
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             Selection.activeGameObject = sysGo;
@@ -183,40 +186,6 @@ namespace ContextStage.EditorTools
             var ui = scoreGo.gameObject.AddComponent<ScoreUI>();
             SetObjectField(ui, "scoreText", scoreGo);
             // targetScore 는 더 이상 ScoreUI 가 소유하지 않는다 — PerformanceTimerConfig 에서 읽는다.
-        }
-
-        // ---------------- 공연 시간 UI ----------------
-
-        static void BuildTimerUI(Transform canvas, float duration)
-        {
-            if (Object.FindFirstObjectByType<PerformanceTimerUI>() != null) return; // 이미 배치됨
-
-            // 게이지 루트: 화면 좌측 중앙의 버티컬 바 (열기 게이지와 대칭, 아래에서 위로 차오른다)
-            var timerGo = CreateUIObject("PerformanceTimerGauge", canvas);
-            var timerRect = timerGo.GetComponent<RectTransform>();
-            timerRect.anchorMin = timerRect.anchorMax = new Vector2(0f, 0.5f); // 좌측 중앙 고정
-            timerRect.pivot = new Vector2(0f, 0.5f);
-            timerRect.anchoredPosition = new Vector2(40f, 0f);
-            timerRect.sizeDelta = new Vector2(48f, 420f);
-
-            var bg = CreateStretchedImage("BG", timerGo.transform, new Color(0.12f, 0.12f, 0.12f), 0f);
-            bg.raycastTarget = false;
-
-            var fill = CreateStretchedImage("Fill", timerGo.transform, Color.white, 4f);
-            SetupFilled(fill);
-            fill.fillAmount = 0f; // 시간은 0부터 시작해 다 찰 때까지 진행 (호응도의 0.3 시작과 다름)
-
-            var title = CreateText("TitleText", timerGo.transform, "시간", TextAnchor.MiddleCenter);
-            PlaceVerticalText(title, above: true);
-
-            int minutes = Mathf.FloorToInt(duration / 60f);
-            int seconds = Mathf.FloorToInt(duration % 60f);
-            var value = CreateText("ValueText", timerGo.transform, $"{minutes}:{seconds:00}", TextAnchor.MiddleCenter);
-            PlaceVerticalText(value, above: false);
-
-            var ui = timerGo.AddComponent<PerformanceTimerUI>();
-            SetObjectField(ui, "fillImage", fill);
-            SetObjectField(ui, "valueText", value);
         }
 
         // ---------------- UI 생성 헬퍼 ----------------
