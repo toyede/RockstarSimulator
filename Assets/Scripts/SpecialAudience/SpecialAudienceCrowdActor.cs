@@ -359,7 +359,8 @@ namespace ContextStage
             if (!_celebrating && Time.time >= _repathAt) PickNewSpot(immediate: false);
 
             float dx = _anchor.x - _feet.x;
-            if (Mathf.Abs(dx) > 0.01f) _facing = Mathf.Sign(dx); // 진행 방향을 본다
+            // 이동 애니메이션 원화가 왼쪽을 보고 있어 부호를 반대로 적용한다.
+            if (Mathf.Abs(dx) > 0.01f) _facing = -Mathf.Sign(dx); // 진행 방향을 본다
 
             if (!_celebrating)
                 _feet = Vector3.MoveTowards(_feet, _anchor, moveSpeed * Time.deltaTime);
