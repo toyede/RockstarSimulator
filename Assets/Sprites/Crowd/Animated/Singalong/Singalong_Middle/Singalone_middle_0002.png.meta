@@ -79,7 +79,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -117,7 +117,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -184,12 +184,12 @@ TextureImporter:
       name: Singalone_middle_0002_0
       rect:
         serializedVersion: 2
-        x: 22
-        y: 679
-        width: 6
-        height: 14
+        x: 0
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -206,12 +206,12 @@ TextureImporter:
       name: Singalone_middle_0002_1
       rect:
         serializedVersion: 2
-        x: 25
-        y: 680
-        width: 9
-        height: 15
+        x: 213
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -228,12 +228,12 @@ TextureImporter:
       name: Singalone_middle_0002_2
       rect:
         serializedVersion: 2
-        x: 36
-        y: 679
-        width: 6
-        height: 14
+        x: 426
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -250,12 +250,12 @@ TextureImporter:
       name: Singalone_middle_0002_3
       rect:
         serializedVersion: 2
-        x: 672
-        y: 363
-        width: 159
-        height: 318
+        x: 639
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -272,12 +272,12 @@ TextureImporter:
       name: Singalone_middle_0002_4
       rect:
         serializedVersion: 2
-        x: 1084
-        y: 363
-        width: 196
-        height: 330
+        x: 852
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -294,12 +294,12 @@ TextureImporter:
       name: Singalone_middle_0002_5
       rect:
         serializedVersion: 2
-        x: 0
-        y: 362
-        width: 201
-        height: 310
+        x: 1065
+        y: 360
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -316,12 +316,12 @@ TextureImporter:
       name: Singalone_middle_0002_6
       rect:
         serializedVersion: 2
-        x: 187
-        y: 363
-        width: 242
-        height: 314
+        x: 0
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -338,12 +338,12 @@ TextureImporter:
       name: Singalone_middle_0002_7
       rect:
         serializedVersion: 2
-        x: 431
-        y: 364
-        width: 189
-        height: 313
+        x: 213
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -360,12 +360,12 @@ TextureImporter:
       name: Singalone_middle_0002_8
       rect:
         serializedVersion: 2
-        x: 851
-        y: 363
-        width: 237
-        height: 311
+        x: 426
+        y: 0
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -382,12 +382,12 @@ TextureImporter:
       name: Singalone_middle_0002_9
       rect:
         serializedVersion: 2
-        x: 10
+        x: 639
         y: 0
-        width: 187
-        height: 309
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -404,12 +404,12 @@ TextureImporter:
       name: Singalone_middle_0002_10
       rect:
         serializedVersion: 2
-        x: 201
+        x: 852
         y: 0
-        width: 206
-        height: 308
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -426,12 +426,12 @@ TextureImporter:
       name: Singalone_middle_0002_11
       rect:
         serializedVersion: 2
-        x: 456
+        x: 1065
         y: 0
-        width: 149
-        height: 318
+        width: 213
+        height: 360
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -444,77 +444,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: Singalone_middle_0002_12
-      rect:
-        serializedVersion: 2
-        x: 645
-        y: 0
-        width: 215
-        height: 314
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: df7191b50677ce770800000000000000
-      internalID: 8641413040746076157
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Singalone_middle_0002_13
-      rect:
-        serializedVersion: 2
-        x: 874
-        y: 0
-        width: 185
-        height: 317
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7941731ad014b6750800000000000000
-      internalID: 6299200030602892439
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Singalone_middle_0002_14
-      rect:
-        serializedVersion: 2
-        x: 1081
-        y: 0
-        width: 199
-        height: 312
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 128e1729677c06fb0800000000000000
-      internalID: -4656502702624085983
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 0e56399a5674fc14e89e6a472b4cebe1
     internalID: 0
     vertices: []
     indices: 
@@ -522,15 +456,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":6.0,"y":2.0},"gridSpriteSize":{"x":213.0,"y":360.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Singalone_middle_0002_0: -1416916754505075841
       Singalone_middle_0002_1: 1026550626668890629
       Singalone_middle_0002_10: 7439765799107125924
       Singalone_middle_0002_11: -7554055750328843594
-      Singalone_middle_0002_12: 8641413040746076157
-      Singalone_middle_0002_13: 6299200030602892439
-      Singalone_middle_0002_14: -4656502702624085983
       Singalone_middle_0002_2: -6561003435835762635
       Singalone_middle_0002_3: 7855807499352088421
       Singalone_middle_0002_4: 5975566593497049354
