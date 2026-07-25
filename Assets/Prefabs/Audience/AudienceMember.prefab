@@ -438,8 +438,11 @@ MonoBehaviour:
   warningFillRenderer: {fileID: 2094249438230026238}
   warningBackgroundColor: {r: 0.06, g: 0.07, b: 0.1, a: 0.9}
   warningFillColor: {r: 0.95, g: 0.19, b: 0.16, a: 1}
+  crisisWarningRoot: {fileID: 292989487695128454}
   enterDuration: 0.35
   exitDuration: 0.45
+  crisisExitDuration: 0.5
+  crisisHorizontalTravel: 3.2
   enterDistance: 1.2
   enterStartScale: 0.55
   exitDistance: 1.6
