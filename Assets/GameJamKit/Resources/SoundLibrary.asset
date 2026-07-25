@@ -109,3 +109,11 @@ MonoBehaviour:
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+  - id: card_pass_mic
+    clips:
+    - {fileID: 8300000, guid: 9b884f0085736824dba3165ec61a7a5d, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
