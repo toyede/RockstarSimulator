@@ -556,4 +556,5 @@ Tools/GameJamKit/Export .unitypackage
 | 2026-07-25 | Codex | `Core/MonoSingleton.cs` | 애플리케이션 종료 중에는 `HasInstance`가 false를 반환하게 해, 종료 콜백에서 인스턴스 유무 확인 직후 null 인스턴스에 접근하는 수명주기 오류를 방지했다. |
 | 2026-07-25 | Claude | `Audio/AudioManager.cs` | `PlaySfx(string id)` 1-파라미터 오버로드 추가. 기존 `PlaySfx(string, float)`는 파라미터가 2개라 `Button.OnClick()` UnityEvent 인스펙터 드롭다운에 노출되지 않아(Unity는 0/1개 파라미터 메서드만 표시, 기본값 무시), 버튼 클릭 사운드를 코드 없이 수동 연결하려는 팀 요구에 맞춰 추가함. |
 | 2026-07-26 | Codex | `Core/GameEvents.cs` | `CardResolved`에 피버 적용 당시 관객 수와 피버 보너스 점수를 추가해, 최종 점수 누적과 HUD가 동일한 단일 카드 결과를 사용하도록 확장했다. |
+| 2026-07-26 | Claude | `UI/UIManager.cs` | `OpenOptions()` 래퍼 추가 — 타이틀 옵션 버튼에서 `Open<OptionsPopup>()`을 Button.OnClick 드롭다운에 직접 연결하기 위함(제네릭 메서드는 노출되지 않음). `OptionsPopup`은 `Assets/Scripts/UI/OptionsPopup.cs`(`ContextStage` 네임스페이스)에 있다. |
 
