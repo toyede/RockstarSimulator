@@ -27,10 +27,13 @@ namespace ContextStage
         [Header("Boost All Engagement")]
         [SerializeField, Min(0f)] float engagementIncrease = 15f;
 
-        [Header("Recruit Preference And Weaken Others")]
+        [Header("Recruit Preference And Cap Audience Engagement")]
         [SerializeField] CrowdPreference recruitedPreference = CrowdPreference.Mosh;
         [SerializeField, Range(0f, 1f)] float arrivalCapacityRatio = 0.2f;
-        [SerializeField, Min(0f)] float otherPreferenceEngagement = 1f;
+        [SerializeField, Min(0f), Tooltip(
+            "After recruiting, audience members above this engagement are capped at this value. " +
+            "Audience members already below the cap keep their current engagement.")]
+        float otherPreferenceEngagement = 1f;
 
         public SpecialCardTargetEffectType EffectType => effectType;
         public int TargetScoreBonus => Mathf.Max(0, targetScoreBonus);
@@ -201,22 +204,6 @@ namespace ContextStage
             AudienceRosterSystem roster,
             List<AudienceId> audienceBuffer)
         {
-            CaptureAudienceIds(
-                roster,
-                audienceBuffer,
-                effect.RecruitedPreference);
-
-            int affectedCount = 0;
-            for (int i = 0; i < audienceBuffer.Count; i++)
-            {
-                if (roster.TrySetEngagement(
-                        audienceBuffer[i],
-                        effect.OtherPreferenceEngagement,
-                        AudienceChangeReason.SpecialCardTarget,
-                        out _))
-                    affectedCount++;
-            }
-
             int desiredCount = Mathf.CeilToInt(
                 roster.Capacity * effect.ArrivalCapacityRatio);
             int joinedCount = 0;
@@ -230,9 +217,40 @@ namespace ContextStage
                 joinedCount++;
             }
 
+            CaptureAudienceIdsAboveEngagement(
+                roster,
+                audienceBuffer,
+                effect.OtherPreferenceEngagement);
+
+            int affectedCount = 0;
+            for (int i = 0; i < audienceBuffer.Count; i++)
+            {
+                if (roster.TrySetEngagement(
+                        audienceBuffer[i],
+                        effect.OtherPreferenceEngagement,
+                        AudienceChangeReason.SpecialCardTarget,
+                        out _))
+                    affectedCount++;
+            }
+
             return new SpecialCardTargetEffectResult(
                 affectedCount + joinedCount,
                 joinedCount);
+        }
+
+        static void CaptureAudienceIdsAboveEngagement(
+            AudienceRosterSystem roster,
+            List<AudienceId> audienceBuffer,
+            float engagementCap)
+        {
+            audienceBuffer.Clear();
+            IReadOnlyList<AudienceSnapshot> members = roster.Members;
+            for (int i = 0; i < members.Count; i++)
+            {
+                if (members[i].Engagement <= engagementCap)
+                    continue;
+                audienceBuffer.Add(members[i].Id);
+            }
         }
 
         static void CaptureAudienceIds(

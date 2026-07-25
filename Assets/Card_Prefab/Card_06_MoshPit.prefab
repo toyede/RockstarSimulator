@@ -177,6 +177,10 @@ PrefabInstance:
       propertyPath: specialTargetEffect.engagementIncrease
       value: 30
       objectReference: {fileID: 0}
+    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
+      propertyPath: specialTargetEffect.otherPreferenceEngagement
+      value: 30
+      objectReference: {fileID: 0}
     - target: {fileID: 4133523582202247847, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: m_Color.b
       value: 1

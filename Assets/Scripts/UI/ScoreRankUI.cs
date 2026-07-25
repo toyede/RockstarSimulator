@@ -122,10 +122,7 @@ namespace ContextStage
             if (instant && gaugeFill != null) gaugeFill.fillAmount = _targetFill;
 
             // 랭크 — 조건을 만족하는 가장 높은 구간
-            int index = 0;
-            for (int i = 0; i < rankTiers.Length; i++)
-                if (ratio >= rankTiers[i].minRatio && rankTiers[i].minRatio >= rankTiers[index].minRatio)
-                    index = i;
+            int index = GetRankIndex(ratio, rankTiers);
 
             if (index == _rankIndex) return; // 같은 랭크면 스프라이트를 다시 꽂지 않는다
             _rankIndex = index;
@@ -134,6 +131,16 @@ namespace ContextStage
             Sprite icon = rankTiers[index].icon;
             rankImage.sprite = icon;
             rankImage.enabled = icon != null;
+        }
+
+        /// <summary>비율을 만족하는 가장 높은 랭크 구간의 인덱스를 고른다. 다른 UI(게임오버 팝업 등)에서도 재사용한다.</summary>
+        public static int GetRankIndex(float ratio, RankTier[] tiers)
+        {
+            int index = 0;
+            for (int i = 0; i < tiers.Length; i++)
+                if (ratio >= tiers[i].minRatio && tiers[i].minRatio >= tiers[index].minRatio)
+                    index = i;
+            return index;
         }
     }
 }
