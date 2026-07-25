@@ -81,7 +81,10 @@ namespace ContextStage
             }
 
             // 2) 신규 관객의 확률적 유입 (기획서 §4.2)
-            if (!_gameOverRequested &&
+            // SuppressNaturalArrivals: 튜토리얼이 관객 구성을 고정하는 동안만 true.
+            // (수동 TryAdd/TryRemove 는 계속 동작한다)
+            if (!SuppressNaturalArrivals &&
+                !_gameOverRequested &&
                 _model.TryTickArrival(Time.deltaTime, Time.time, out AudienceSnapshot arrived))
             {
                 EventBus.Raise(new AudienceJoined(arrived, AudienceJoinReason.NaturalArrival));
@@ -90,6 +93,9 @@ namespace ContextStage
 
             if (rosterChanged) RaiseSummary();
         }
+
+        /// <summary>[튜토리얼 전용] true 인 동안 자연 유입을 멈춘다. 평소에는 false.</summary>
+        public bool SuppressNaturalArrivals { get; set; }
 
         public bool ResetRoster()
         {

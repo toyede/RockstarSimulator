@@ -30,6 +30,10 @@ namespace ContextStage
         public Transform MemberRoot => memberRoot;
         public int VisibleCount => _actors.Count;
 
+        /// <summary>[튜토리얼용 조회] 특정 관객의 화면 액터를 돌려준다. 없으면 false.</summary>
+        public bool TryGetActor(AudienceId id, out AudienceMemberActor actor)
+            => _actors.TryGetValue(id, out actor) && actor != null;
+
         public bool TryGetRandomActor(out AudienceMemberActor actor)
         {
             actor = null;
@@ -131,8 +135,7 @@ namespace ContextStage
             _actors.Remove(id);
             _order.Remove(id);
             if (!_deferRelayout) Relayout();
-            if (e.Reason != AudienceDepartureReason.Reset)
-                actor.PlayDeparture();
+            // 이탈 텍스트(PlayDeparture)는 단일 결과 UI 원칙으로 제거됨 — 퇴장 애니메이션(PlayExit)만 남긴다
             AudienceExitStyle exitStyle =
                 e.Reason == AudienceDepartureReason.NearbyConcert
                     ? AudienceExitStyle.NearbyConcert
@@ -163,7 +166,7 @@ namespace ContextStage
                     !actor.IsBound)
                     continue;
 
-                localPosition = actor.LayoutPosition;
+                localPosition = actor.LayoutLocalPosition;
                 scale = actor.LayoutScale;
                 sortingOrder = actor.SortingOrder;
                 return true;
