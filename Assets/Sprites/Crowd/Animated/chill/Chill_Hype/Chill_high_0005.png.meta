@@ -1,0 +1,793 @@
+fileFormatVersion: 2
+guid: 817115ce654e98b4381b797b6a756dcc
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5894982981222568275
+    second: Chill_high_0005_0
+  - first:
+      213: -496774123043242152
+    second: Chill_high_0005_1
+  - first:
+      213: -636676571430001461
+    second: Chill_high_0005_2
+  - first:
+      213: -2925042506964647936
+    second: Chill_high_0005_3
+  - first:
+      213: -4506390818044516820
+    second: Chill_high_0005_4
+  - first:
+      213: -5844683886017729731
+    second: Chill_high_0005_5
+  - first:
+      213: 8144799804104416683
+    second: Chill_high_0005_6
+  - first:
+      213: 1046992293834931304
+    second: Chill_high_0005_7
+  - first:
+      213: 8357548773157061846
+    second: Chill_high_0005_8
+  - first:
+      213: 4078870155194291117
+    second: Chill_high_0005_9
+  - first:
+      213: 2764264788476422400
+    second: Chill_high_0005_10
+  - first:
+      213: 8577410891951426802
+    second: Chill_high_0005_11
+  - first:
+      213: -5074410420052824651
+    second: Chill_high_0005_12
+  - first:
+      213: -4637144853665287968
+    second: Chill_high_0005_13
+  - first:
+      213: -6373202942722156948
+    second: Chill_high_0005_14
+  - first:
+      213: -1360623517323169925
+    second: Chill_high_0005_15
+  - first:
+      213: 3119557370353341572
+    second: Chill_high_0005_16
+  - first:
+      213: 2444132359554939600
+    second: Chill_high_0005_17
+  - first:
+      213: 6500071208710951499
+    second: Chill_high_0005_18
+  - first:
+      213: 6789564112353247444
+    second: Chill_high_0005_19
+  - first:
+      213: 6369553703568793155
+    second: Chill_high_0005_20
+  - first:
+      213: 6345535667614933107
+    second: Chill_high_0005_21
+  - first:
+      213: -8245175894963389878
+    second: Chill_high_0005_22
+  - first:
+      213: 5566245174415738472
+    second: Chill_high_0005_23
+  - first:
+      213: 6026730928933107778
+    second: Chill_high_0005_24
+  - first:
+      213: 4440686295826891239
+    second: Chill_high_0005_25
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Chill_high_0005_0
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 677
+        width: 18
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dae61472630d03ea0800000000000000
+      internalID: -5894982981222568275
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_1
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 676
+        width: 10
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85fb66e219a1b19f0800000000000000
+      internalID: -496774123043242152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_2
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 404
+        width: 172
+        height: 161
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc4e91318021a27f0800000000000000
+      internalID: -636676571430001461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_3
+      rect:
+        serializedVersion: 2
+        x: 264
+        y: 404
+        width: 128
+        height: 132
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 000447366592867d0800000000000000
+      internalID: -2925042506964647936
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_4
+      rect:
+        serializedVersion: 2
+        x: 471
+        y: 403
+        width: 138
+        height: 158
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c26ef574d651671c0800000000000000
+      internalID: -4506390818044516820
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_5
+      rect:
+        serializedVersion: 2
+        x: 671
+        y: 407
+        width: 146
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3ba67dd8f283eea0800000000000000
+      internalID: -5844683886017729731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_6
+      rect:
+        serializedVersion: 2
+        x: 881
+        y: 406
+        width: 133
+        height: 155
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bad9052d444280170800000000000000
+      internalID: 8144799804104416683
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_7
+      rect:
+        serializedVersion: 2
+        x: 1068
+        y: 403
+        width: 159
+        height: 142
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86c3a9ca1f9a78e00800000000000000
+      internalID: 1046992293834931304
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_8
+      rect:
+        serializedVersion: 2
+        x: 89
+        y: 374
+        width: 57
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d44709345afbf370800000000000000
+      internalID: 8357548773157061846
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_9
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 374
+        width: 58
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: da35c4d9bce0b9830800000000000000
+      internalID: 4078870155194291117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_10
+      rect:
+        serializedVersion: 2
+        x: 511
+        y: 373
+        width: 58
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 009e14eed24ac5620800000000000000
+      internalID: 2764264788476422400
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_11
+      rect:
+        serializedVersion: 2
+        x: 711
+        y: 374
+        width: 57
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2fcc45bd2c5190770800000000000000
+      internalID: 8577410891951426802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_12
+      rect:
+        serializedVersion: 2
+        x: 913
+        y: 373
+        width: 57
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bde53cbb921499b0800000000000000
+      internalID: -5074410420052824651
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_13
+      rect:
+        serializedVersion: 2
+        x: 1114
+        y: 374
+        width: 57
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e0ff31035d85afb0800000000000000
+      internalID: -4637144853665287968
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_14
+      rect:
+        serializedVersion: 2
+        x: 58
+        y: 143
+        width: 128
+        height: 157
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c665295b0b5dd87a0800000000000000
+      internalID: -6373202942722156948
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_15
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 143
+        width: 143
+        height: 155
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7fe8e0be181e1de0800000000000000
+      internalID: -1360623517323169925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_16
+      rect:
+        serializedVersion: 2
+        x: 483
+        y: 146
+        width: 114
+        height: 159
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 484dc5476e4ea4b20800000000000000
+      internalID: 3119557370353341572
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_17
+      rect:
+        serializedVersion: 2
+        x: 665
+        y: 141
+        width: 160
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0da3f437e6d4be120800000000000000
+      internalID: 2444132359554939600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_18
+      rect:
+        serializedVersion: 2
+        x: 869
+        y: 145
+        width: 157
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b42d5f15354e43a50800000000000000
+      internalID: 6500071208710951499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_19
+      rect:
+        serializedVersion: 2
+        x: 1094
+        y: 143
+        width: 106
+        height: 175
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d04e886690693e50800000000000000
+      internalID: 6789564112353247444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_20
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 117
+        width: 57
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 34eddf69853356850800000000000000
+      internalID: 6369553703568793155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_21
+      rect:
+        serializedVersion: 2
+        x: 293
+        y: 119
+        width: 60
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37062c1d11fdf0850800000000000000
+      internalID: 6345535667614933107
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_22
+      rect:
+        serializedVersion: 2
+        x: 516
+        y: 119
+        width: 51
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4af7165530439d80800000000000000
+      internalID: -8245175894963389878
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_23
+      rect:
+        serializedVersion: 2
+        x: 711
+        y: 119
+        width: 58
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86648c1be764f3d40800000000000000
+      internalID: 5566245174415738472
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_24
+      rect:
+        serializedVersion: 2
+        x: 911
+        y: 119
+        width: 61
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 248faef49df33a350800000000000000
+      internalID: 6026730928933107778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0005_25
+      rect:
+        serializedVersion: 2
+        x: 1115
+        y: 119
+        width: 55
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e105b588ac70ad30800000000000000
+      internalID: 4440686295826891239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Chill_high_0005_0: -5894982981222568275
+      Chill_high_0005_1: -496774123043242152
+      Chill_high_0005_10: 2764264788476422400
+      Chill_high_0005_11: 8577410891951426802
+      Chill_high_0005_12: -5074410420052824651
+      Chill_high_0005_13: -4637144853665287968
+      Chill_high_0005_14: -6373202942722156948
+      Chill_high_0005_15: -1360623517323169925
+      Chill_high_0005_16: 3119557370353341572
+      Chill_high_0005_17: 2444132359554939600
+      Chill_high_0005_18: 6500071208710951499
+      Chill_high_0005_19: 6789564112353247444
+      Chill_high_0005_2: -636676571430001461
+      Chill_high_0005_20: 6369553703568793155
+      Chill_high_0005_21: 6345535667614933107
+      Chill_high_0005_22: -8245175894963389878
+      Chill_high_0005_23: 5566245174415738472
+      Chill_high_0005_24: 6026730928933107778
+      Chill_high_0005_25: 4440686295826891239
+      Chill_high_0005_3: -2925042506964647936
+      Chill_high_0005_4: -4506390818044516820
+      Chill_high_0005_5: -5844683886017729731
+      Chill_high_0005_6: 8144799804104416683
+      Chill_high_0005_7: 1046992293834931304
+      Chill_high_0005_8: 8357548773157061846
+      Chill_high_0005_9: 4078870155194291117
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

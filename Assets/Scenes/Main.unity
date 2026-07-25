@@ -3260,58 +3260,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 315416836447010789, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 315416836447010789, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 315416836447010789, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2135933040274056952, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_Name
       value: ScoreCanvas
       objectReference: {fileID: 0}
     - target: {fileID: 3358576253806457394, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3358576253806457394, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3358576253806457394, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 165538480}
-    - target: {fileID: 3358576253806457394, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3358576253806457394, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: PlaySfx
-      objectReference: {fileID: 0}
-    - target: {fileID: 3358576253806457394, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
-      value: GameJamKit.AudioManager, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 3358576253806457394, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_StringArgument
-      value: ui_click_wooden
-      objectReference: {fileID: 0}
-    - target: {fileID: 3358576253806457394, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: UnityEngine.Object, UnityEngine
-      objectReference: {fileID: 0}
-    - target: {fileID: 3372959141556826978, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_Value
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 3640169816863125802, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -3392,25 +3348,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3869540982171116743, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3869540982171116743, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3869540982171116743, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6171345376973202204, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -0.000035019515
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 7722084899893958518, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}

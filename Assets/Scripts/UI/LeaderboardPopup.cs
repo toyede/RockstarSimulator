@@ -47,6 +47,9 @@ namespace ContextStage
         /// (ScoreEntryPopup.OnClickSave) 갱신하려면 Open() 만으로는 부족하므로 직접 호출한다
         /// — Open()은 이미 열려 있으면 아무 것도 하지 않아 OnOpen이 다시 불리지 않는다.
         /// </summary>
+        /// <summary>스크롤 없이 한 화면에 그대로 보여줄 표시 개수.</summary>
+        const int DisplayCount = 10;
+
         public void Refresh()
         {
             if (listContent == null || rowPrefab == null) return;
@@ -54,7 +57,8 @@ namespace ContextStage
             foreach (Transform child in listContent) Destroy(child.gameObject);
 
             var records = LeaderboardStore.GetAll();
-            for (int i = 0; i < records.Count; i++)
+            int count = Mathf.Min(DisplayCount, records.Count);
+            for (int i = 0; i < count; i++)
             {
                 var row = Instantiate(rowPrefab, listContent);
                 var text = row.GetComponentInChildren<Text>();
