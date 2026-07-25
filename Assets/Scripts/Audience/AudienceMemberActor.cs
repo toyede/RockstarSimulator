@@ -17,6 +17,15 @@ namespace ContextStage
         [SerializeField] Color singalongColor = Color.white;
         [SerializeField] Color moshColor = Color.white;
 
+        [Header("Character Animation (optional per stage)")]
+        [Tooltip("Singalong + Calm 단계에서 재생할 동물별 애니메이션. 비워두면 singalongSprite 정지 이미지를 쓴다.\n" +
+                 "Tools/Audience/Import Animated Species Sheet 로 채운다.")]
+        [SerializeField] SpriteAnimationClip[] singalongCalmVariants;
+        [Tooltip("Singalong + Excited 단계에서 재생할 동물별 애니메이션. 비워두면 singalongSprite 정지 이미지를 쓴다.")]
+        [SerializeField] SpriteAnimationClip[] singalongExcitedVariants;
+
+        readonly SpriteAnimationPlayer _player = new SpriteAnimationPlayer();
+
         [Header("Departure Warning")]
         [SerializeField] GameObject warningRoot;
         [SerializeField] Transform warningFill;
@@ -117,6 +126,7 @@ namespace ContextStage
             warningFillRenderer.sprite = SolidSprite;
             warningBackgroundRenderer.color = warningBackgroundColor;
             warningFillRenderer.color = warningFillColor;
+            _player.Bind(characterRenderer);
         }
 
         public void OnSpawned()
@@ -171,9 +181,10 @@ namespace ContextStage
             if (!IsBound || snapshot.Id != _boundId) return;
 
             bool preferenceChanged = snapshot.Preference != _snapshot.Preference;
+            bool stageChanged = snapshot.Stage != _snapshot.Stage;
             _snapshot = snapshot;
-            if (preferenceChanged || characterRenderer.sprite == null)
-                ApplyPreference(snapshot.Preference);
+            if (preferenceChanged || stageChanged || characterRenderer.sprite == null)
+                ApplyVisual(snapshot.Preference, snapshot.Stage);
             UpdateWarning();
         }
 
@@ -240,6 +251,7 @@ namespace ContextStage
             if (!IsBound) return;
 
             float deltaTime = Time.deltaTime;
+            _player.Tick(deltaTime);
 
             float followStep = layoutFollowSpeed * deltaTime;
             _currentLayoutPosition = Vector3.MoveTowards(_currentLayoutPosition, _layoutPosition, followStep);
@@ -270,26 +282,59 @@ namespace ContextStage
             ApplyTransform();
         }
 
-        void ApplyPreference(CrowdPreference preference)
+        void ApplyVisual(CrowdPreference preference, AudienceEngagementStage stage)
+        {
+            _characterColor = ColorFor(preference);
+
+            SpriteAnimationClip clip = AnimationVariantFor(preference, stage);
+            if (clip != null && clip.IsValid)
+            {
+                _player.Play(clip, restart: true);
+                return;
+            }
+
+            _player.Stop();
+            characterRenderer.sprite = StaticSpriteFor(preference);
+        }
+
+        Color ColorFor(CrowdPreference preference)
         {
             switch (preference)
             {
-                case CrowdPreference.Chill:
-                    characterRenderer.sprite = chillSprite;
-                    _characterColor = chillColor;
-                    break;
-                case CrowdPreference.Singalong:
-                    characterRenderer.sprite = singalongSprite;
-                    _characterColor = singalongColor;
-                    break;
-                case CrowdPreference.Mosh:
-                    characterRenderer.sprite = moshSprite;
-                    _characterColor = moshColor;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(preference), preference, null);
+                case CrowdPreference.Chill: return chillColor;
+                case CrowdPreference.Singalong: return singalongColor;
+                case CrowdPreference.Mosh: return moshColor;
+                default: throw new ArgumentOutOfRangeException(nameof(preference), preference, null);
             }
         }
+
+        Sprite StaticSpriteFor(CrowdPreference preference)
+        {
+            switch (preference)
+            {
+                case CrowdPreference.Chill: return chillSprite;
+                case CrowdPreference.Singalong: return singalongSprite;
+                case CrowdPreference.Mosh: return moshSprite;
+                default: throw new ArgumentOutOfRangeException(nameof(preference), preference, null);
+            }
+        }
+
+        /// <summary>같은 관객은 항상 같은 동물 variant 를 쓰도록 id 로 결정한다.</summary>
+        SpriteAnimationClip AnimationVariantFor(CrowdPreference preference, AudienceEngagementStage stage)
+        {
+            SpriteAnimationClip[] variants = preference == CrowdPreference.Singalong
+                ? stage == AudienceEngagementStage.Calm
+                    ? singalongCalmVariants
+                    : stage == AudienceEngagementStage.Excited
+                        ? singalongExcitedVariants
+                        : null
+                : null;
+
+            if (variants == null || variants.Length == 0) return null;
+            return variants[Mod(_boundId.Value, variants.Length)];
+        }
+
+        static int Mod(int value, int length) => length <= 0 ? 0 : ((value % length) + length) % length;
 
         void UpdateWarning()
         {
