@@ -19,10 +19,11 @@ namespace ContextStage
         [Header("Determinism")]
         [SerializeField] int randomSeed = 4861;
 
-        [Header("Future Natural Arrival")]
-        [SerializeField, Min(0f), Tooltip("0 disables arrival checks until the flow system is implemented.")]
-        float arrivalCheckInterval;
-        [SerializeField, Range(0f, 1f)] float arrivalChance;
+        [Header("Natural Arrival")]
+        [SerializeField, Min(0f), Tooltip("유입 판정 주기(초). 0이면 신규 유입을 끈다.")]
+        float arrivalCheckInterval = 5f;
+        [SerializeField, Range(0f, 1f), Tooltip("판정 1회당 신규 관객 유입 확률.")]
+        float arrivalChance = 0.3f;
 
         public int InitialAudienceCount => initialAudienceCount;
         public int MaximumAudienceCount => maximumAudienceCount;

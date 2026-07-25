@@ -15,7 +15,11 @@ namespace ContextStage
         readonly List<AudienceSnapshot> _members;
 
         System.Random _random;
+        // 유입 판정 전용 난수. _random과 공유하면 판정 횟수만큼 성향·초기 몰입도
+        // 추첨 시퀀스가 밀려 시드 재현성이 깨지므로 별도로 둔다.
+        System.Random _arrivalRandom;
         int _nextId;
+        float _arrivalTimer;
 
         public AudienceRosterModel(
             AudienceEngagementRules engagementRules,
@@ -38,6 +42,8 @@ namespace ContextStage
         public bool IsFull => Count >= Capacity;
         public AudienceEngagementRules EngagementRules => _engagementRules;
         public AudienceFlowRules FlowRules => _flowRules;
+        public float SecondsUntilArrivalCheck =>
+            Mathf.Max(0f, _flowRules.ArrivalCheckInterval - _arrivalTimer);
 
         public void Reset(
             float joinedAt,
@@ -193,6 +199,31 @@ namespace ContextStage
             return changes.Count > 0 || departed.Count > 0;
         }
 
+        /// <summary>
+        /// 일정 주기마다 신규 관객 유입 여부를 확률로 판정한다. (기획서 §4.2)
+        /// </summary>
+        public bool TryTickArrival(float deltaTime, float joinedAt, out AudienceSnapshot audience)
+        {
+            audience = default;
+
+            // 0이면 유입 기능 자체를 끈 것으로 취급한다.
+            if (_flowRules.ArrivalCheckInterval <= 0f || _flowRules.ArrivalChance <= 0f)
+                return false;
+
+            // 만석이면 타이머를 쌓지 않는다. 자리가 나는 순간부터 최대 1주기만 기다리면 된다.
+            if (IsFull) return false;
+
+            _arrivalTimer += Mathf.Max(0f, deltaTime);
+            if (_arrivalTimer < _flowRules.ArrivalCheckInterval) return false;
+
+            // 프레임 드랍으로 여러 주기가 몰려도 이번 프레임엔 한 번만 판정한다.
+            _arrivalTimer -= _flowRules.ArrivalCheckInterval;
+
+            if (_arrivalRandom.NextDouble() >= _flowRules.ArrivalChance) return false;
+
+            return TryAddRandom(joinedAt, out audience);
+        }
+
         public AudienceSummary CreateSummary()
         {
             if (_members.Count == 0) return default;
@@ -265,7 +296,9 @@ namespace ContextStage
         void ResetRandom()
         {
             _random = new System.Random(_flowRules.RandomSeed);
+            _arrivalRandom = new System.Random(_flowRules.RandomSeed + 1);
             _nextId = 1;
+            _arrivalTimer = 0f;
         }
     }
 }

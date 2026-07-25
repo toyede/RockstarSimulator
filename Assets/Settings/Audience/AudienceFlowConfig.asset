@@ -18,5 +18,5 @@ MonoBehaviour:
   singalongWeight: 1
   moshWeight: 1
   randomSeed: 4861
-  arrivalCheckInterval: 0
-  arrivalChance: 0
+  arrivalCheckInterval: 5
+  arrivalChance: 0.3

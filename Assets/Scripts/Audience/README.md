@@ -11,23 +11,36 @@ preference, engagement, and engagement stage.
 - `AudienceMemberActor`: per-member sprite, stage motion, warning bar, and transitions
 - `AudienceReactionResolver`: pure preference + engagement-stage card calculation
 - `AudienceEngagementConfig`: engagement range, stage boundaries, decay, reaction multiplier
-- `AudienceFlowConfig`: initial/max count, preference weights, deterministic seed
+- `AudienceFlowConfig`: initial/max count, preference weights, deterministic seed,
+  natural-arrival check interval and chance
 
 Consumers must treat `AudienceSnapshot` as read-only and identify members by
 `AudienceId`, not by list or visual slot index.
 
 ## Events
 
-- `AudienceJoined`
+- `AudienceJoined` — `Reason` is `Initialization` (roster reset), `NaturalArrival`
+  (probabilistic inflow), or `RuntimeCommand` (debug/manual add)
 - `AudienceStateChanged`
-- `AudienceDeparted`
+- `AudienceDeparted` — `Reason` is `EngagementDepleted`, `RuntimeRemoval`
+  (debug/manual remove), or `Reset`
 - `AudienceCardReacted`
 - `AudienceSummaryChanged`
 
-Natural decay is processed centrally by `AudienceRosterSystem`. A member that
-reaches zero is removed before `AudienceDeparted` is published. Card reactions
-are clamped to non-negative values and publish `AudienceCardReacted` before the
+Natural decay, natural arrival, and the empty-roster game-over check are all
+processed once per frame by `AudienceRosterSystem.Update()`, in that order:
+decay/departure first, then game-over evaluation, then the arrival check. This
+guarantees that if the last member departs and the roster becomes empty, game
+over is requested before any new arrival can be evaluated in the same frame —
+an arrival never revives an already-ended performance. A member that reaches
+zero is removed before `AudienceDeparted` is published. Card reactions are
+clamped to non-negative values and publish `AudienceCardReacted` before the
 corresponding state/summary events.
+
+Natural arrival is disabled when `AudienceFlowConfig.arrivalCheckInterval` or
+`arrivalChance` is `0`. While the roster is full, the arrival timer does not
+accumulate, so at most one check interval elapses after a slot opens before the
+next arrival is possible.
 
 ## Main scene authority
 

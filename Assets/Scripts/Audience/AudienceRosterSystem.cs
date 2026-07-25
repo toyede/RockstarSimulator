@@ -30,6 +30,8 @@ namespace ContextStage
         public bool IsConfigured => _model != null;
         public AudienceSummary Summary =>
             _model != null ? _model.CreateSummary() : default;
+        public float SecondsUntilArrivalCheck =>
+            _model != null ? _model.SecondsUntilArrivalCheck : 0f;
 
         protected override void OnAwake()
         {
@@ -52,25 +54,40 @@ namespace ContextStage
                 !GameManager.Instance.IsPlaying)
                 return;
 
-            if (!_model.ApplyNaturalDecay(Time.deltaTime, _changes, _removed))
-                return;
+            bool rosterChanged = false;
 
-            for (int i = 0; i < _changes.Count; i++)
+            // 1) 몰입도 자연 감소 → 상태 변화·이탈 이벤트
+            if (_model.ApplyNaturalDecay(Time.deltaTime, _changes, _removed))
             {
-                EventBus.Raise(new AudienceStateChanged(
-                    _changes[i],
-                    AudienceChangeReason.NaturalDecay));
+                for (int i = 0; i < _changes.Count; i++)
+                {
+                    EventBus.Raise(new AudienceStateChanged(
+                        _changes[i],
+                        AudienceChangeReason.NaturalDecay));
+                }
+
+                for (int i = 0; i < _removed.Count; i++)
+                {
+                    EventBus.Raise(new AudienceDeparted(
+                        _removed[i],
+                        AudienceDepartureReason.EngagementDepleted));
+                }
+
+                rosterChanged = true;
+
+                // 마지막 관객이 이탈한 프레임에는 유입보다 게임오버를 먼저 확정한다.
+                RequestGameOverIfEmpty();
             }
 
-            for (int i = 0; i < _removed.Count; i++)
+            // 2) 신규 관객의 확률적 유입 (기획서 §4.2)
+            if (!_gameOverRequested &&
+                _model.TryTickArrival(Time.deltaTime, Time.time, out AudienceSnapshot arrived))
             {
-                EventBus.Raise(new AudienceDeparted(
-                    _removed[i],
-                    AudienceDepartureReason.EngagementDepleted));
+                EventBus.Raise(new AudienceJoined(arrived, AudienceJoinReason.NaturalArrival));
+                rosterChanged = true;
             }
 
-            RaiseSummary();
-            RequestGameOverIfEmpty();
+            if (rosterChanged) RaiseSummary();
         }
 
         public bool ResetRoster()
