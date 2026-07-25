@@ -125,22 +125,6 @@ PrefabInstance:
       value: "\uD638\uC751 \uC720\uB3C4"
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
-      propertyPath: exactBaseScore
-      value: 150
-      objectReference: {fileID: 0}
-    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
-      propertyPath: exactHeatDelta
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
-      propertyPath: adjacentBaseScore
-      value: 60
-      objectReference: {fileID: 0}
-    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
-      propertyPath: adjacentHeatDelta
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.calmScore
       value: 3
       objectReference: {fileID: 0}
@@ -175,15 +159,15 @@ PrefabInstance:
     - target: {fileID: 5178014537110562856, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: m_FontData.m_Font
       value: 
-      objectReference: {fileID: 12800000, guid: 4c070b2a07917cc4a9c93c6c6b4391e8, type: 3}
+      objectReference: {fileID: 12800000, guid: 9907906d092ce9948ba06b3f3ac3808b, type: 3}
     - target: {fileID: 6897208685787233744, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: m_FontData.m_Font
       value: 
-      objectReference: {fileID: 12800000, guid: 4c070b2a07917cc4a9c93c6c6b4391e8, type: 3}
+      objectReference: {fileID: 12800000, guid: 9907906d092ce9948ba06b3f3ac3808b, type: 3}
     - target: {fileID: 7193453055990750024, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: m_FontData.m_Font
       value: 
-      objectReference: {fileID: 12800000, guid: 4c070b2a07917cc4a9c93c6c6b4391e8, type: 3}
+      objectReference: {fileID: 12800000, guid: 9907906d092ce9948ba06b3f3ac3808b, type: 3}
     - target: {fileID: 8602934466595160544, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: m_Name
       value: Card_02_Response

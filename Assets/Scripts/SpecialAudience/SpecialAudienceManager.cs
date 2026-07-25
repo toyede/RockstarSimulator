@@ -300,7 +300,7 @@ namespace ContextStage
         /// <summary>
         /// 구형 호출부 호환용. 요청은 소비하지만 보상 데이터는 반환하지 않는다.
         /// </summary>
-        [Obsolete("Use ConsumeRequest so CardDefinition remains the single reward source.")]
+        [Obsolete("Use ConsumeRequest for card-driven special hits.")]
         public bool TrySpecialHit(HeatStage playedType, out SpecialHitReward reward)
         {
             reward = default;
@@ -308,11 +308,9 @@ namespace ContextStage
         }
 
         /// <summary>
-        /// [카드 판정 경로용] 카드가 자기 수치(CardDefinition 의 SpecialHitBaseScore/HeatDelta)로
-        /// 이미 보상을 적용한 뒤, 요청을 소비만 시킬 때 쓴다.
-        ///
-        /// 보상 수치의 단일 원천은 CardDefinition이다.
-        /// 이벤트에는 <b>실제로 적용된</b> 값이 실려 나간다.
+        /// [카드 판정 경로용] 타입이 일치하는 현재 요청을 소비하고 성공 이벤트와 연출을 발생시킨다.
+        /// 현재 카드 시스템은 별도 점수·열기 보상을 사용하지 않으므로 두 수치에 0을 넘긴다.
+        /// 수치 인자는 구형 이벤트 계약과의 호환을 위해 유지한다.
         /// </summary>
         public bool ConsumeRequest(HeatStage playedType, int appliedBaseScore, float appliedHeatDelta)
         {
@@ -633,12 +631,12 @@ namespace ContextStage
             SpecialAudienceManager.HasInstance ? SpecialAudienceManager.Instance.RemainingTime : 0f;
 
         /// <summary>
-        /// [카드 판정용] 지금 살아 있는 요청을 CardEffectResolver 가 쓰는 형태로 넘겨준다.
+        /// [카드 판정용] 지금 살아 있는 요청을 카드 시스템이 비교할 수 있는 형태로 넘겨준다.
         ///
         /// <b>드롭 위치 게이트가 여기 들어 있다.</b> requireDropOnTarget 이 켜져 있으면
         /// 포인터가 특별 관객의 히트 영역 안일 때만 요청을 돌려준다.
         /// 덕분에 카드 코드는 그대로 두고도 "특별 관객 위에 놓아야 성공"이 성립한다.
-        /// (영역 밖이면 None → 카드는 평소대로 일반 판정을 받는다)
+        /// (영역 밖이면 None → 카드는 관객별 일반 사용 효과를 적용한다)
         /// </summary>
         public static SpecialCardRequest CurrentRequest
         {
@@ -668,8 +666,7 @@ namespace ContextStage
             SpecialAudienceManager.HasInstance ? SpecialAudienceManager.Instance.CurrentDropTarget : null;
 
         /// <summary>
-        /// [카드 판정용] 카드가 자기 수치로 보상을 이미 적용한 뒤 요청을 소비시킨다.
-        /// 매니저 보상은 쓰지 않으므로 이중 적용이 생기지 않는다.
+        /// [카드 판정용] 타입이 일치하는 현재 요청을 소비하고 성공 이벤트와 연출을 발생시킨다.
         /// </summary>
         public static bool ConsumeRequest(HeatStage playedType, int appliedBaseScore, float appliedHeatDelta)
             => SpecialAudienceManager.HasInstance &&

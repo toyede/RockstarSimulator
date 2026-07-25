@@ -44,7 +44,7 @@ namespace ContextStage.EditorTools
                 Undo.RegisterCreatedObjectUndo(go, "Create Crowd");
             }
 
-            var director = go.GetComponent<CrowdMoodDirector>() ?? Undo.AddComponent<CrowdMoodDirector>(go);
+            var director = EnsureComponent<CrowdMoodDirector>(go);
             SetObjectField(director, "config", config);
 
             if (go.GetComponent<CrowdSpawner>() == null) Undo.AddComponent<CrowdSpawner>(go);

@@ -45,6 +45,15 @@ namespace ContextStage
             StartRun();
         }
 
+        void Start()
+        {
+            if (GameManager.HasInstance &&
+                GameManager.Instance.State == GameState.Ready)
+            {
+                GameManager.Instance.StartGame();
+            }
+        }
+
         void OnEnable() => EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
         void OnDisable() => EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
 

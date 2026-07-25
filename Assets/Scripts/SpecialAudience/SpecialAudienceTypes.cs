@@ -14,8 +14,8 @@ namespace ContextStage
     }
 
     /// <summary>
-    /// Special Hit 성공 보상. 특별 관객 시스템은 이 값을 <b>직접 적용하지 않는다.</b>
-    /// 점수·열기 담당이 OnSpecialHit 이벤트(또는 EventBus 의 SpecialHitLanded)를 받아 적용한다.
+    /// 구형 Special Hit 이벤트 계약에 남아 있는 보상 정보.
+    /// 현재 카드 시스템은 저격 효과를 SpecialCardTargetEffect로 적용하므로 이 값에는 0을 전달한다.
     /// </summary>
     public readonly struct SpecialHitReward
     {
