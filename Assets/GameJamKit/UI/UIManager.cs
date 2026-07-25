@@ -106,6 +106,8 @@ namespace GameJamKit
         public void StartGame() => GameManager.Instance.StartGame();
         public void TogglePause() => GameManager.Instance.TogglePause();
         public void RestartGame() => GameManager.Instance.RestartScene();
+        // Open<T>() 은 제네릭이라 Button.OnClick 인스펙터 드롭다운에 노출되지 않아 전용 래퍼 추가.
+        public void OpenOptions() => Open<ContextStage.OptionsPopup>();
 
         void Update()
         {
