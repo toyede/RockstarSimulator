@@ -8,7 +8,7 @@ This file applies to the entire repository.
 - Engine: Unity 6000.3.20f1
 - Render pipeline: Unity 6 URP 2D
 - Input: Unity Input System
-- Main scene: `Assets/Scenes/SampleScene.unity`
+- Main scene: `Assets/Scenes/Main.unity`
 - Project namespace: `ContextStage`
 - Shared framework namespace: `GameJamKit`
 - Unity integration: official `unity` CLI with `com.unity.pipeline`
@@ -22,11 +22,11 @@ This file applies to the entire repository.
 - `Assets/Scripts/Cards/`: card data, hand, input, and UI
 - `Assets/Scripts/Editor/`: project-specific setup tools
 - `Assets/Settings/`: gameplay configuration assets
-- `Assets/Scenes/SampleScene.unity`: current playable scene
+- `Assets/Scenes/Main.unity`: current playable scene
 
 ## Current Scene Structure
 
-`SampleScene` currently contains:
+`Main` currently contains:
 
 - `[Managers]`: GameManager, AudioManager, PoolManager, UIManager, CameraShake
 - `[HypeSystem]`: HypeSystem and HypeDebugInput
@@ -37,8 +37,9 @@ This file applies to the entire repository.
 The hype and card systems use the GameManager state machine and EventBus.
 Cards are selected by the number shown in the current hand.
 
-`SoundLibrary.asset` and `ColorPalette.asset` are not currently present.
-Do not assume that audio IDs are configured only because audio files exist.
+`Assets/GameJamKit/Resources/SoundLibrary.asset` is present. `ColorPalette.asset`
+is not currently present. Do not assume that every audio ID is configured only
+because audio files exist.
 
 ## Design Documentation Policy
 

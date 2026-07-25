@@ -1,3 +1,4 @@
+using GameJamKit;
 using UnityEngine;
 
 namespace ContextStage
@@ -23,8 +24,19 @@ namespace ContextStage
         [SerializeField, Tooltip("기본 크기 (스프라이트가 커서 보통 1보다 작다). 상태별 배율이 여기에 곱해진다")]
         float baseScale = 1f;
 
+        [Header("Audience Preference")]
+        [SerializeField] CrowdPreference preference = CrowdPreference.Mosh;
+
+        [SerializeField, Tooltip(
+            "Off for preference prefabs: keeps the prefab artwork while still applying hype motion. " +
+            "On preserves the legacy low/middle/high sprite swapping.")]
+        bool useMoodSprites = true;
+
         SpriteRenderer _renderer;
+        TextMesh[] _labels;
         Vector3 _basePosition;
+        Vector3 _transitionOffset;
+        float _transitionAlpha = 1f;
 
         // 상태 블렌드: from → to 로 _blend(0~1) 만큼 섞어서 평가한다
         CrowdMotionProfile _from, _to;
@@ -49,12 +61,50 @@ namespace ContextStage
 
         /// <summary>이 관객이 속한 줄의 정렬 순서.</summary>
         public int SortingOrder => _renderer != null ? _renderer.sortingOrder : 0;
+        public CrowdPreference Preference => preference;
+
+        public void SetTransitionState(Vector3 localOffset, float alpha)
+        {
+            _transitionOffset = localOffset;
+            _transitionAlpha = Mathf.Clamp01(alpha);
+            ApplyTransitionAlpha();
+        }
+
+        public void ClearTransitionState()
+        {
+            _transitionOffset = Vector3.zero;
+            _transitionAlpha = 1f;
+            ApplyTransitionAlpha();
+        }
+
+        void ApplyTransitionAlpha()
+        {
+            if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            Color color = _renderer.color;
+            color.a = _transitionAlpha;
+            _renderer.color = color;
+
+            if (_labels == null) _labels = GetComponentsInChildren<TextMesh>(true);
+            for (int i = 0; i < _labels.Length; i++)
+            {
+                Color labelColor = _labels[i].color;
+                labelColor.a = _transitionAlpha;
+                _labels[i].color = labelColor;
+            }
+        }
+
+        public void ConfigureIdentity(CrowdPreference audiencePreference, bool preservePrefabArtwork)
+        {
+            preference = audiencePreference;
+            useMoodSprites = !preservePrefabArtwork;
+        }
 
         void Awake() => Initialize();
 
         void Initialize()
         {
             if (_renderer == null) _renderer = GetComponent<SpriteRenderer>();
+            if (_labels == null) _labels = GetComponentsInChildren<TextMesh>(true);
             _player.Bind(_renderer);
             _basePosition = transform.localPosition;
 
@@ -68,7 +118,12 @@ namespace ContextStage
 
         void OnDisable()
         {
-            if (CrowdMoodDirector.HasInstance) CrowdMoodDirector.Instance.Unregister(this);
+            // During play-mode exit or scene teardown, HasInstance can still be true while
+            // Instance intentionally returns null because SingletonRuntime is quitting.
+            if (SingletonRuntime.IsQuitting || !CrowdMoodDirector.HasInstance) return;
+
+            CrowdMoodDirector director = CrowdMoodDirector.Instance;
+            if (director != null) director.Unregister(this);
         }
 
         /// <summary>
@@ -77,8 +132,14 @@ namespace ContextStage
         /// </summary>
         public void Setup(int seed, float scale, int sortingOrder)
         {
+            Setup(seed, scale, sortingOrder, preference);
+        }
+
+        public void Setup(int seed, float scale, int sortingOrder, CrowdPreference audiencePreference)
+        {
             variantSeed = seed;
             baseScale = scale;
+            preference = audiencePreference;
             Initialize();
             _renderer.sortingOrder = sortingOrder;
 
@@ -119,6 +180,14 @@ namespace ContextStage
 
         void ApplySprite(CrowdMoodTier tier, int index)
         {
+            // Preference prefabs carry their own artwork and identity color.
+            // Hype still controls scale and motion, but must not replace either.
+            if (!useMoodSprites)
+            {
+                _player.Stop();
+                return;
+            }
+
             _renderer.color = tier.tint;
 
             // (1) 애니메이션 클립이 있으면 그걸 재생한다 (관객마다 다른 variant 를 배정받는다)
@@ -186,7 +255,8 @@ namespace ContextStage
 
             // --- 적용 ---
             float scale = baseScale * Blend(TierScale(_fromTier), TierScale(_toTier));
-            transform.localPosition = _basePosition + new Vector3(0f, height, 0f);
+            transform.localPosition =
+                _basePosition + _transitionOffset + new Vector3(0f, height, 0f);
             transform.localRotation = Quaternion.Euler(0f, 0f, sway * _flip);
             transform.localScale = new Vector3(
                 _flip * scale * (1f + squashAmount * 0.5f),   // 눌리면 옆으로 퍼진다
@@ -202,6 +272,7 @@ namespace ContextStage
         /// </summary>
         void UpdateSpriteCycle(float t)
         {
+            if (!useMoodSprites) return;
             if (_player.IsPlaying) return; // 정식 클립이 재생 중이면 손대지 않는다
 
             float fps = _to.spriteCycleFps;

@@ -33,37 +33,116 @@ namespace GameJamKit
 
     public static class EventBus<T>
     {
-        static Action<T> s_handlers;
+        enum PendingOperationType
+        {
+            Subscribe,
+            Unsubscribe,
+            Clear
+        }
+
+        struct PendingOperation
+        {
+            public PendingOperationType Type;
+            public Action<T> Handler;
+        }
+
+        static readonly List<Action<T>> s_handlers = new List<Action<T>>();
+        static readonly List<PendingOperation> s_pendingOperations = new List<PendingOperation>();
+        static int s_raiseDepth;
 
         static EventBus() => EventBus.RegisterClearer(Clear);
 
         public static void Subscribe(Action<T> handler)
         {
             if (handler == null) return;
-            s_handlers -= handler; // 중복 구독 방지
-            s_handlers += handler;
+            if (s_raiseDepth > 0)
+            {
+                s_pendingOperations.Add(new PendingOperation
+                {
+                    Type = PendingOperationType.Subscribe,
+                    Handler = handler
+                });
+                return;
+            }
+
+            SubscribeImmediate(handler);
         }
 
         public static void Unsubscribe(Action<T> handler)
         {
             if (handler == null) return;
-            s_handlers -= handler;
+            if (s_raiseDepth > 0)
+            {
+                s_pendingOperations.Add(new PendingOperation
+                {
+                    Type = PendingOperationType.Unsubscribe,
+                    Handler = handler
+                });
+                return;
+            }
+
+            s_handlers.Remove(handler);
         }
 
         public static void Raise(T evt)
         {
-            var handlers = s_handlers;
-            if (handlers == null) return;
+            if (s_handlers.Count == 0) return;
 
-            // 핸들러 하나가 예외를 던져도 나머지는 계속 실행되도록 개별 호출
-            var list = handlers.GetInvocationList();
-            for (int i = 0; i < list.Length; i++)
+            s_raiseDepth++;
+            try
             {
-                try { ((Action<T>)list[i]).Invoke(evt); }
-                catch (Exception e) { Debug.LogException(e); }
+                int count = s_handlers.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    try { s_handlers[i].Invoke(evt); }
+                    catch (Exception e) { Debug.LogException(e); }
+                }
+            }
+            finally
+            {
+                s_raiseDepth--;
+                if (s_raiseDepth == 0) ApplyPendingOperations();
             }
         }
 
-        public static void Clear() => s_handlers = null;
+        public static void Clear()
+        {
+            if (s_raiseDepth > 0)
+            {
+                s_pendingOperations.Add(new PendingOperation { Type = PendingOperationType.Clear });
+                return;
+            }
+
+            s_handlers.Clear();
+            s_pendingOperations.Clear();
+        }
+
+        static void SubscribeImmediate(Action<T> handler)
+        {
+            s_handlers.Remove(handler); // 중복 구독 방지 + 마지막 구독 순서 유지
+            s_handlers.Add(handler);
+        }
+
+        static void ApplyPendingOperations()
+        {
+            for (int i = 0; i < s_pendingOperations.Count; i++)
+            {
+                PendingOperation operation = s_pendingOperations[i];
+                switch (operation.Type)
+                {
+                    case PendingOperationType.Subscribe:
+                        SubscribeImmediate(operation.Handler);
+                        break;
+                    case PendingOperationType.Unsubscribe:
+                        s_handlers.Remove(operation.Handler);
+                        break;
+                    case PendingOperationType.Clear:
+                        s_handlers.Clear();
+                        break;
+                }
+            }
+
+            s_pendingOperations.Clear();
+        }
     }
 }

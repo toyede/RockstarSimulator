@@ -20,7 +20,7 @@ namespace ContextStage
         [System.Serializable]
         public class CardSfxOverride
         {
-            [Tooltip("CardData 의 id")] public string cardId;
+            [Tooltip("CardDefinition의 id")] public string cardId;
             [Tooltip("이 카드일 때 대신 재생할 SoundLibrary ID")] public string sfxId;
         }
 

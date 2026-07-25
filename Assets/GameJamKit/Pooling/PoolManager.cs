@@ -15,6 +15,7 @@ namespace GameJamKit
     {
         readonly Dictionary<GameObject, ObjectPool> _pools = new Dictionary<GameObject, ObjectPool>();
         readonly Dictionary<GameObject, ObjectPool> _owner = new Dictionary<GameObject, ObjectPool>();
+        readonly Dictionary<GameObject, uint> _leaseVersions = new Dictionary<GameObject, uint>();
 
         [SerializeField, Tooltip("풀 하나가 보관할 최대 유휴 인스턴스 수")]
         int maxIdlePerPool = 512;
@@ -32,6 +33,7 @@ namespace GameJamKit
             if (!_pools.TryGetValue(prefab, out var pool))
             {
                 pool = new ObjectPool(prefab, _root, 0, maxIdlePerPool);
+                pool.InstanceDiscarded += ForgetInstance;
                 _pools.Add(prefab, pool);
             }
             return pool;
@@ -55,6 +57,7 @@ namespace GameJamKit
             var pool = mgr.GetOrCreatePool(prefab);
             var instance = pool.Spawn(position, rotation, parent);
             mgr._owner[instance] = pool;
+            mgr.AdvanceLease(instance);
             return instance;
         }
 
@@ -73,6 +76,7 @@ namespace GameJamKit
 
             if (HasInstance && Instance._owner.TryGetValue(instance, out var pool))
             {
+                Instance.AdvanceLease(instance);
                 pool.Despawn(instance);
                 return;
             }
@@ -83,6 +87,19 @@ namespace GameJamKit
         {
             if (instance == null) return;
             if (delay <= 0f) { Despawn(instance); return; }
+
+            if (HasInstance &&
+                Instance._owner.ContainsKey(instance) &&
+                Instance._leaseVersions.TryGetValue(instance, out uint lease))
+            {
+                TimerUtils.Delay(delay, () =>
+                {
+                    if (!HasInstance || instance == null) return;
+                    Instance.DespawnIfLeaseMatches(instance, lease);
+                });
+                return;
+            }
+
             TimerUtils.Delay(delay, () => Despawn(instance));
         }
 
@@ -114,6 +131,28 @@ namespace GameJamKit
             foreach (var pool in Instance._pools.Values) pool.Clear();
             Instance._pools.Clear();
             Instance._owner.Clear();
+            Instance._leaseVersions.Clear();
+        }
+
+        void AdvanceLease(GameObject instance)
+        {
+            _leaseVersions.TryGetValue(instance, out uint current);
+            current++;
+            if (current == 0) current = 1;
+            _leaseVersions[instance] = current;
+        }
+
+        void DespawnIfLeaseMatches(GameObject instance, uint lease)
+        {
+            if (!_leaseVersions.TryGetValue(instance, out uint current) || current != lease) return;
+            Despawn(instance);
+        }
+
+        void ForgetInstance(GameObject instance)
+        {
+            if (ReferenceEquals(instance, null)) return;
+            _owner.Remove(instance);
+            _leaseVersions.Remove(instance);
         }
     }
 }

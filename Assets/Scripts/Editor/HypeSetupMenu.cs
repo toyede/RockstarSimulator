@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
+using static ContextStage.EditorTools.EditorSetupUtility;
 
 namespace ContextStage.EditorTools
 {
@@ -10,14 +11,15 @@ namespace ContextStage.EditorTools
     ///
     /// Tools/Hype/Setup Hype Scene 한 번이면:
     ///   1. GameJamKit 매니저([Managers]) 생성  ← 킷 메뉴 재사용
-    ///   2. Assets/Settings/HypeConfig.asset 생성 (기획 수치가 기본값)
-    ///   3. [HypeSystem] 오브젝트 + 디버그 입력 배치
-    ///   4. HypeCanvas 에 게이지 바 + 숫자 UI 배치
+    ///   2. Assets/Settings/HypeConfig.asset, PerformanceTimerConfig.asset 생성 (기획 수치가 기본값)
+    ///   3. [HypeSystem]/[ScoreSystem]/[PerformanceTimerSystem] 오브젝트 + 디버그 입력 배치
+    ///   4. HypeCanvas 에 게이지 바 + 점수 UI + 공연 시간 바 배치
     /// 까지 끝난다. 이미 있는 것은 건드리지 않으므로 여러 번 실행해도 안전하다.
     /// </summary>
     public static class HypeSetupMenu
     {
         const string ConfigPath = "Assets/Settings/HypeConfig.asset";
+        const string TimerConfigPath = "Assets/Settings/PerformanceTimerConfig.asset";
 
         [MenuItem("Tools/Hype/Setup Hype Scene", false, 0)]
         public static void SetupScene()
@@ -27,6 +29,7 @@ namespace ContextStage.EditorTools
 
             // 2) 콘픽 에셋
             var config = GetOrCreateConfig();
+            var timerConfig = GetOrCreateTimerConfig();
 
             // 3) HypeSystem + 디버그 입력
             var sysGo = GameObject.Find("[HypeSystem]");
@@ -48,8 +51,21 @@ namespace ContextStage.EditorTools
             }
             EnsureComponent<PerformanceScoreSystem>(scoreGo);
 
-            // 4) 게이지 UI + 점수 UI
-            BuildGaugeUI();
+            // 3-2) 공연 시간 시스템 (제한시간 도달 시 목표 점수 미달성이면 게임오버)
+            var timerGo = GameObject.Find("[PerformanceTimerSystem]");
+            if (timerGo == null)
+            {
+                timerGo = new GameObject("[PerformanceTimerSystem]");
+                Undo.RegisterCreatedObjectUndo(timerGo, "Create PerformanceTimerSystem");
+            }
+            var timerSystem = EnsureComponent<PerformanceTimerSystem>(timerGo);
+            SetObjectField(timerSystem, "config", timerConfig);
+
+            // 4) 캔버스 + 게이지 UI + 점수 UI + 공연 시간 바 (각각 독립적으로 이미 있으면 건너뜀)
+            var canvasGo = GetOrCreateCanvas();
+            BuildGaugeUI(canvasGo.transform);
+            BuildScoreUI(canvasGo.transform, timerConfig.targetScore);
+            BuildTimerUI(canvasGo.transform, timerConfig.duration);
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             Selection.activeGameObject = sysGo;
@@ -70,13 +86,23 @@ namespace ContextStage.EditorTools
             return asset;
         }
 
-        // ---------------- 게이지 UI ----------------
-
-        static void BuildGaugeUI()
+        static PerformanceTimerConfig GetOrCreateTimerConfig()
         {
-            if (Object.FindFirstObjectByType<HypeGaugeUI>() != null) return; // 이미 배치됨
+            var existing = AssetDatabase.LoadAssetAtPath<PerformanceTimerConfig>(TimerConfigPath);
+            if (existing != null) return existing; // 이미 있으면 수치를 덮어쓰지 않는다 (튜닝 보호)
 
-            // 캔버스 (Screen Space Overlay, 1920x1080 기준 스케일)
+            var asset = ScriptableObject.CreateInstance<PerformanceTimerConfig>(); // 필드 기본값 = 임시 수치(2분/5000점)
+            AssetDatabase.CreateAsset(asset, TimerConfigPath);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[Hype] {TimerConfigPath} 생성 완료.");
+            return asset;
+        }
+
+        // ---------------- 캔버스 ----------------
+
+        /// <summary>Screen Space Overlay, 1920x1080 기준 스케일. 없으면 생성, 있으면 그대로 반환.</summary>
+        static GameObject GetOrCreateCanvas()
+        {
             var canvasGo = GameObject.Find("HypeCanvas");
             if (canvasGo == null)
             {
@@ -90,9 +116,17 @@ namespace ContextStage.EditorTools
                 scaler.matchWidthOrHeight = 0.5f;
                 canvasGo.AddComponent<GraphicRaycaster>();
             }
+            return canvasGo;
+        }
+
+        // ---------------- 게이지 UI ----------------
+
+        static void BuildGaugeUI(Transform canvas)
+        {
+            if (Object.FindFirstObjectByType<HypeGaugeUI>() != null) return; // 이미 배치됨
 
             // 게이지 루트: 화면 우측 중앙의 버티컬 바 (아래에서 위로 차오른다)
-            var gaugeGo = CreateUIObject("HypeGauge", canvasGo.transform);
+            var gaugeGo = CreateUIObject("HypeGauge", canvas);
             var gaugeRect = gaugeGo.GetComponent<RectTransform>();
             gaugeRect.anchorMin = gaugeRect.anchorMax = new Vector2(1f, 0.5f); // 우측 중앙 고정
             gaugeRect.pivot = new Vector2(1f, 0.5f);
@@ -129,18 +163,15 @@ namespace ContextStage.EditorTools
             SetObjectField(ui, "delayedImage", delayed);
             SetObjectField(ui, "valueText", value);
             SetObjectField(ui, "multiplierText", mult);
-
-            // 점수 표시 UI (같은 캔버스 상단)
-            BuildScoreUI(canvasGo.transform);
         }
 
         // ---------------- 점수 UI ----------------
 
-        static void BuildScoreUI(Transform canvas)
+        static void BuildScoreUI(Transform canvas, int targetScore)
         {
             if (Object.FindFirstObjectByType<ScoreUI>() != null) return; // 이미 배치됨
 
-            var scoreGo = CreateText("ScoreText", canvas, "SCORE 0", TextAnchor.UpperLeft);
+            var scoreGo = CreateText("ScoreText", canvas, $"SCORE 0 / {targetScore}", TextAnchor.UpperLeft);
             var rect = scoreGo.GetComponent<RectTransform>();
             rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f); // 좌측 상단
             rect.pivot = new Vector2(0f, 1f);
@@ -151,6 +182,41 @@ namespace ContextStage.EditorTools
 
             var ui = scoreGo.gameObject.AddComponent<ScoreUI>();
             SetObjectField(ui, "scoreText", scoreGo);
+            // targetScore 는 더 이상 ScoreUI 가 소유하지 않는다 — PerformanceTimerConfig 에서 읽는다.
+        }
+
+        // ---------------- 공연 시간 UI ----------------
+
+        static void BuildTimerUI(Transform canvas, float duration)
+        {
+            if (Object.FindFirstObjectByType<PerformanceTimerUI>() != null) return; // 이미 배치됨
+
+            // 게이지 루트: 화면 좌측 중앙의 버티컬 바 (열기 게이지와 대칭, 아래에서 위로 차오른다)
+            var timerGo = CreateUIObject("PerformanceTimerGauge", canvas);
+            var timerRect = timerGo.GetComponent<RectTransform>();
+            timerRect.anchorMin = timerRect.anchorMax = new Vector2(0f, 0.5f); // 좌측 중앙 고정
+            timerRect.pivot = new Vector2(0f, 0.5f);
+            timerRect.anchoredPosition = new Vector2(40f, 0f);
+            timerRect.sizeDelta = new Vector2(48f, 420f);
+
+            var bg = CreateStretchedImage("BG", timerGo.transform, new Color(0.12f, 0.12f, 0.12f), 0f);
+            bg.raycastTarget = false;
+
+            var fill = CreateStretchedImage("Fill", timerGo.transform, Color.white, 4f);
+            SetupFilled(fill);
+            fill.fillAmount = 0f; // 시간은 0부터 시작해 다 찰 때까지 진행 (호응도의 0.3 시작과 다름)
+
+            var title = CreateText("TitleText", timerGo.transform, "시간", TextAnchor.MiddleCenter);
+            PlaceVerticalText(title, above: true);
+
+            int minutes = Mathf.FloorToInt(duration / 60f);
+            int seconds = Mathf.FloorToInt(duration % 60f);
+            var value = CreateText("ValueText", timerGo.transform, $"{minutes}:{seconds:00}", TextAnchor.MiddleCenter);
+            PlaceVerticalText(value, above: false);
+
+            var ui = timerGo.AddComponent<PerformanceTimerUI>();
+            SetObjectField(ui, "fillImage", fill);
+            SetObjectField(ui, "valueText", value);
         }
 
         // ---------------- UI 생성 헬퍼 ----------------
@@ -228,18 +294,5 @@ namespace ContextStage.EditorTools
             return comp != null ? comp : Undo.AddComponent<T>(go);
         }
 
-        /// <summary>private [SerializeField] 필드를 에디터에서 지정한다. (인스펙터 수동 연결과 동일한 효과)</summary>
-        static void SetObjectField(Object target, string fieldName, Object value)
-        {
-            var so = new SerializedObject(target);
-            var prop = so.FindProperty(fieldName);
-            if (prop == null)
-            {
-                Debug.LogWarning($"[Hype] {target.GetType().Name} 에서 '{fieldName}' 필드를 찾지 못했습니다.");
-                return;
-            }
-            prop.objectReferenceValue = value;
-            so.ApplyModifiedPropertiesWithoutUndo();
-        }
     }
 }

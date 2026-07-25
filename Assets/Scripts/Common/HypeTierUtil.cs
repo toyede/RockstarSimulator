@@ -29,7 +29,7 @@ namespace ContextStage
         {
             if (tiers == null || tiers.Count == 0) return -1;
 
-            int result = 0;
+            int result = -1;
             for (int i = 0; i < tiers.Count; i++)
             {
                 var tier = tiers[i];

@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using GameJamKit;
 using UnityEngine;
 
 namespace ContextStage
@@ -43,12 +45,48 @@ namespace ContextStage
         [SerializeField, Tooltip("Play 시작과 동시에 배치할지")]
         bool spawnOnStart = true;
 
+        [Header("Audience Preference Prefabs")]
+        [SerializeField] CrowdCompositionManager compositionManager;
+        [SerializeField] CrowdMemberView chillPrefab;
+        [SerializeField] CrowdMemberView singalongPrefab;
+        [SerializeField] CrowdMemberView moshPrefab;
+
+        [Header("Crowd Shift Transition")]
+        [SerializeField] bool animateCompositionChanges = true;
+        [SerializeField, Min(0.05f)] float exitDuration = 0.4f;
+        [SerializeField, Min(0.05f)] float enterDuration = 0.55f;
+        [SerializeField, Min(0f)] float memberStagger = 0.04f;
+        [SerializeField, Min(0f)] float horizontalTravel = 1.5f;
+        [SerializeField, Min(0f)] float verticalTravel = 1.1f;
+
         readonly List<CrowdMemberView> _members = new List<CrowdMemberView>();
+        readonly List<CrowdPreference> _preferenceOrder = new List<CrowdPreference>();
+        Coroutine _transitionRoutine;
+        CrowdCompositionSnapshot _queuedComposition;
+        bool _hasQueuedComposition;
 
         public IReadOnlyList<CrowdMemberView> Members => _members;
 
+        void OnEnable() => EventBus.Subscribe<CrowdCompositionChanged>(OnCompositionChanged);
+
+        void OnDisable()
+        {
+            EventBus.Unsubscribe<CrowdCompositionChanged>(OnCompositionChanged);
+            StopAllCoroutines();
+            _transitionRoutine = null;
+            _hasQueuedComposition = false;
+            for (int i = 0; i < _members.Count; i++)
+                if (_members[i] != null) _members[i].ClearTransitionState();
+        }
+
         void Start()
         {
+            if (!ValidateDependencies())
+            {
+                enabled = false;
+                return;
+            }
+
             if (spawnOnStart && _members.Count == 0) Spawn();
         }
 
@@ -58,6 +96,7 @@ namespace ContextStage
             Clear();
 
             var rng = new System.Random(seed);
+            BuildPreferenceOrder(rng);
             int index = 0;
 
             for (int row = 0; row < rows; row++)
@@ -79,28 +118,273 @@ namespace ContextStage
                     x += ((float)rng.NextDouble() * 2f - 1f) * positionJitter;
                     y += ((float)rng.NextDouble() * 2f - 1f) * positionJitter * 0.4f;
 
-                    _members.Add(CreateMember(index++, new Vector3(x, y, 0f), scale, sortingOrder));
+                    CrowdPreference preference = index < _preferenceOrder.Count
+                        ? _preferenceOrder[index]
+                        : CrowdPreference.Mosh;
+                    _members.Add(CreateMember(
+                        index++,
+                        new Vector3(x, y, 0f),
+                        scale,
+                        sortingOrder,
+                        preference));
                 }
             }
         }
 
-        CrowdMemberView CreateMember(int index, Vector3 localPosition, float scale, int sortingOrder)
+        void BuildPreferenceOrder(System.Random rng)
         {
-            var go = new GameObject($"CrowdMember_{index:00}");
+            _preferenceOrder.Clear();
+            if (compositionManager == null) return;
+
+            AddPreference(CrowdPreference.Chill, compositionManager.GetCount(CrowdPreference.Chill));
+            AddPreference(CrowdPreference.Singalong, compositionManager.GetCount(CrowdPreference.Singalong));
+            AddPreference(CrowdPreference.Mosh, compositionManager.GetCount(CrowdPreference.Mosh));
+
+            for (int i = _preferenceOrder.Count - 1; i > 0; i--)
+            {
+                int swapIndex = rng.Next(i + 1);
+                CrowdPreference temp = _preferenceOrder[i];
+                _preferenceOrder[i] = _preferenceOrder[swapIndex];
+                _preferenceOrder[swapIndex] = temp;
+            }
+        }
+
+        void AddPreference(CrowdPreference preference, int count)
+        {
+            for (int i = 0; i < count; i++)
+                _preferenceOrder.Add(preference);
+        }
+
+        CrowdMemberView CreateMember(
+            int index,
+            Vector3 localPosition,
+            float scale,
+            int sortingOrder,
+            CrowdPreference preference)
+        {
+            CrowdMemberView prefab = PrefabFor(preference);
+            if (prefab == null)
+            {
+                Debug.LogError($"[CrowdSpawner] Missing prefab for {preference}.", this);
+                return null;
+            }
+
+            CrowdMemberView view = Instantiate(prefab, transform);
+            GameObject go = view.gameObject;
+            go.name = $"CrowdMember_{index:00}_{preference}";
             go.transform.SetParent(transform, false);
             go.transform.localPosition = localPosition;
 
-            var sr = go.AddComponent<SpriteRenderer>();
+            var sr = go.GetComponent<SpriteRenderer>();
             sr.sortingLayerName = sortingLayer;
-
-            var view = go.AddComponent<CrowdMemberView>();
-            view.Setup(index, scale, sortingOrder); // 시드·크기·정렬을 넣고 현재 상태를 즉시 적용시킨다
+            view.Setup(index, scale, sortingOrder, preference);
             return view;
+        }
+
+        CrowdMemberView PrefabFor(CrowdPreference preference)
+        {
+            switch (preference)
+            {
+                case CrowdPreference.Chill: return chillPrefab;
+                case CrowdPreference.Singalong: return singalongPrefab;
+                case CrowdPreference.Mosh: return moshPrefab;
+                default: return null;
+            }
+        }
+
+        void OnCompositionChanged(CrowdCompositionChanged e)
+        {
+            if (!isActiveAndEnabled || _members.Count == 0) return;
+            if (!Application.isPlaying || !animateCompositionChanges)
+            {
+                Spawn();
+                return;
+            }
+
+            if (_transitionRoutine != null)
+            {
+                _queuedComposition = e.Current;
+                _hasQueuedComposition = true;
+                return;
+            }
+
+            _transitionRoutine = StartCoroutine(TransitionComposition(e.Current));
+        }
+
+        IEnumerator TransitionComposition(CrowdCompositionSnapshot target)
+        {
+            List<Replacement> replacements = BuildReplacements(target);
+            if (replacements.Count == 0)
+            {
+                FinishTransition();
+                yield break;
+            }
+
+            for (int i = 0; i < replacements.Count; i++)
+            {
+                StartCoroutine(AnimateExit(
+                    replacements[i].OldMember,
+                    replacements[i].Index,
+                    i * memberStagger));
+            }
+
+            yield return new WaitForSeconds(exitDuration + memberStagger * (replacements.Count - 1));
+
+            for (int i = 0; i < replacements.Count; i++)
+            {
+                Replacement replacement = replacements[i];
+                CrowdMemberView member = CreateMember(
+                    replacement.Index,
+                    replacement.Home,
+                    replacement.Scale,
+                    replacement.SortingOrder,
+                    replacement.NewPreference);
+
+                Vector3 startOffset = TravelOffset(replacement.Home, replacement.Index);
+                member.SetTransitionState(startOffset, 0f);
+                _members[replacement.Index] = member;
+                StartCoroutine(AnimateEnter(member, replacement.Index, i * memberStagger));
+            }
+
+            yield return new WaitForSeconds(enterDuration + memberStagger * (replacements.Count - 1));
+            FinishTransition();
+        }
+
+        List<Replacement> BuildReplacements(CrowdCompositionSnapshot target)
+        {
+            int[] current =
+            {
+                CountMembers(CrowdPreference.Chill),
+                CountMembers(CrowdPreference.Singalong),
+                CountMembers(CrowdPreference.Mosh)
+            };
+            int[] desired =
+            {
+                target.ChillCount,
+                target.SingalongCount,
+                target.MoshCount
+            };
+
+            var incoming = new List<CrowdPreference>();
+            for (int p = 0; p < desired.Length; p++)
+            {
+                int deficit = desired[p] - current[p];
+                for (int i = 0; i < deficit; i++)
+                    incoming.Add((CrowdPreference)p);
+            }
+
+            var outgoingIndices = new List<int>();
+            for (int i = _members.Count - 1; i >= 0; i--)
+            {
+                CrowdMemberView member = _members[i];
+                if (member == null) continue;
+                int p = (int)member.Preference;
+                if (p < 0 || p >= current.Length || current[p] <= desired[p]) continue;
+                outgoingIndices.Add(i);
+                current[p]--;
+            }
+
+            int replacementCount = Mathf.Min(outgoingIndices.Count, incoming.Count);
+            var replacements = new List<Replacement>(replacementCount);
+            for (int i = 0; i < replacementCount; i++)
+            {
+                int index = outgoingIndices[i];
+                CrowdMemberView oldMember = _members[index];
+                replacements.Add(new Replacement
+                {
+                    Index = index,
+                    Home = oldMember.HomeLocalPosition,
+                    Scale = oldMember.BaseScale,
+                    SortingOrder = oldMember.SortingOrder,
+                    NewPreference = incoming[i],
+                    OldMember = oldMember
+                });
+            }
+
+            return replacements;
+        }
+
+        int CountMembers(CrowdPreference preference)
+        {
+            int count = 0;
+            for (int i = 0; i < _members.Count; i++)
+                if (_members[i] != null && _members[i].Preference == preference) count++;
+            return count;
+        }
+
+        IEnumerator AnimateExit(CrowdMemberView member, int slotIndex, float delay)
+        {
+            if (delay > 0f) yield return new WaitForSeconds(delay);
+            if (member == null) yield break;
+
+            Vector3 targetOffset = TravelOffset(member.HomeLocalPosition, slotIndex);
+            float elapsed = 0f;
+            while (elapsed < exitDuration && member != null)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / exitDuration));
+                member.SetTransitionState(Vector3.LerpUnclamped(Vector3.zero, targetOffset, t), 1f - t);
+                yield return null;
+            }
+
+            if (member != null) Destroy(member.gameObject);
+        }
+
+        IEnumerator AnimateEnter(CrowdMemberView member, int slotIndex, float delay)
+        {
+            if (delay > 0f) yield return new WaitForSeconds(delay);
+            if (member == null) yield break;
+
+            Vector3 startOffset = TravelOffset(member.HomeLocalPosition, slotIndex);
+            float elapsed = 0f;
+            while (elapsed < enterDuration && member != null)
+            {
+                elapsed += Time.deltaTime;
+                float normalized = Mathf.Clamp01(elapsed / enterDuration);
+                float positionT = 1f - Mathf.Pow(1f - normalized, 3f);
+                member.SetTransitionState(
+                    Vector3.LerpUnclamped(startOffset, Vector3.zero, positionT),
+                    Mathf.SmoothStep(0f, 1f, normalized));
+                yield return null;
+            }
+
+            if (member != null) member.ClearTransitionState();
+        }
+
+        Vector3 TravelOffset(Vector3 home, int fallback)
+        {
+            float direction = Mathf.Abs(home.x) > 0.05f
+                ? Mathf.Sign(home.x)
+                : (fallback & 1) == 0 ? -1f : 1f;
+            return new Vector3(direction * horizontalTravel, -verticalTravel, 0f);
+        }
+
+        void FinishTransition()
+        {
+            _transitionRoutine = null;
+            if (!_hasQueuedComposition || !isActiveAndEnabled) return;
+
+            CrowdCompositionSnapshot queued = _queuedComposition;
+            _hasQueuedComposition = false;
+            _transitionRoutine = StartCoroutine(TransitionComposition(queued));
+        }
+
+        struct Replacement
+        {
+            public int Index;
+            public Vector3 Home;
+            public float Scale;
+            public int SortingOrder;
+            public CrowdPreference NewPreference;
+            public CrowdMemberView OldMember;
         }
 
         /// <summary>배치된 관객을 모두 제거한다.</summary>
         public void Clear()
         {
+            StopAllCoroutines();
+            _transitionRoutine = null;
+            _hasQueuedComposition = false;
             for (int i = 0; i < _members.Count; i++)
             {
                 if (_members[i] == null) continue;
@@ -109,5 +393,44 @@ namespace ContextStage
             }
             _members.Clear();
         }
+
+        bool ValidateDependencies()
+        {
+            if (compositionManager == null || !compositionManager.IsConfigured)
+            {
+                Debug.LogError(
+                    "[CrowdSpawner] A configured CrowdCompositionManager reference is required.",
+                    this);
+                return false;
+            }
+
+            int slotCount = Mathf.Max(1, rows) * Mathf.Max(1, membersPerRow);
+            if (slotCount != compositionManager.ExpectedCrowdSize)
+            {
+                Debug.LogError(
+                    $"[CrowdSpawner] Layout has {slotCount} slots but composition expects " +
+                    $"{compositionManager.ExpectedCrowdSize}.",
+                    this);
+                return false;
+            }
+
+            if (chillPrefab == null || singalongPrefab == null || moshPrefab == null)
+            {
+                Debug.LogError(
+                    "[CrowdSpawner] Chill, Singalong, and Mosh prefabs must all be assigned.",
+                    this);
+                return false;
+            }
+
+            return true;
+        }
+
+#if UNITY_EDITOR
+        void OnValidate()
+        {
+            rows = Mathf.Max(1, rows);
+            membersPerRow = Mathf.Max(1, membersPerRow);
+        }
+#endif
     }
 }

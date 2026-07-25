@@ -50,12 +50,14 @@ namespace GameJamKit
 
         float _current;
         float _invincibleUntil;
+        int _lifetimeVersion;
 
         /// <summary>코드에서 구독하는 이벤트.</summary>
         public event Action<DamageInfo> OnDamaged;
         public event Action<float> OnHealed;
         public event Action<DamageInfo> OnDeath;
         public event Action OnRevived;
+        public event Action<float> OnHealthChanged;
 
         public float Max => maxHealth;
         public float Current => _current;
@@ -67,6 +69,7 @@ namespace GameJamKit
 
         void OnEnable()
         {
+            _lifetimeVersion++;
             // 풀에서 재사용될 때 초기화
             if (IsDead) ResetHealth();
         }
@@ -161,11 +164,24 @@ namespace GameJamKit
 
             if (disableOnDeath)
             {
-                if (deathDelay > 0f) this.DelayCall(deathDelay, () => PoolManager.Despawn(gameObject));
+                if (deathDelay > 0f)
+                {
+                    int lifetimeVersion = _lifetimeVersion;
+                    TimerUtils.Delay(deathDelay, () =>
+                    {
+                        if (this == null || _lifetimeVersion != lifetimeVersion || !IsDead) return;
+                        PoolManager.Despawn(gameObject);
+                    });
+                }
                 else PoolManager.Despawn(gameObject);
             }
         }
 
-        void RaiseHealthChanged() => onHealthChanged01?.Invoke(Normalized);
+        void RaiseHealthChanged()
+        {
+            float normalized = Normalized;
+            onHealthChanged01?.Invoke(normalized);
+            OnHealthChanged?.Invoke(normalized);
+        }
     }
 }

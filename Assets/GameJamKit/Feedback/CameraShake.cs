@@ -81,12 +81,7 @@ namespace GameJamKit
             if (t == null) return;
 
             // 이전 프레임 오프셋 제거 (팔로우 스크립트가 이동시킨 위치를 보존)
-            t.localPosition -= _appliedPos;
-            if (!Mathf.Approximately(_appliedAngle, 0f))
-                t.localRotation = Quaternion.AngleAxis(-_appliedAngle, Vector3.forward) * t.localRotation;
-
-            _appliedPos = Vector3.zero;
-            _appliedAngle = 0f;
+            RestoreAppliedOffset(t);
 
             if (_trauma <= 0f) return;
 
@@ -103,6 +98,22 @@ namespace GameJamKit
             t.localRotation = Quaternion.AngleAxis(_appliedAngle, Vector3.forward) * t.localRotation;
 
             _trauma = Mathf.Max(0f, _trauma - decay * Time.unscaledDeltaTime);
+        }
+
+        void OnDisable()
+        {
+            if (target != null) RestoreAppliedOffset(target);
+            _trauma = 0f;
+        }
+
+        void RestoreAppliedOffset(Transform t)
+        {
+            t.localPosition -= _appliedPos;
+            if (!Mathf.Approximately(_appliedAngle, 0f))
+                t.localRotation = Quaternion.AngleAxis(-_appliedAngle, Vector3.forward) * t.localRotation;
+
+            _appliedPos = Vector3.zero;
+            _appliedAngle = 0f;
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GameJamKit
@@ -27,6 +28,8 @@ namespace GameJamKit
         [Header("Options")]
         [Tooltip("Ready 상태에서 게임 시작 전에도 시간이 흐를지")]
         [SerializeField] bool freezeTimeOnReady = false;
+
+        readonly HashSet<object> _pauseOwners = new HashSet<object>();
 
         public GameState State { get; private set; } = GameState.Ready;
         public GameState PreviousState { get; private set; } = GameState.Ready;
@@ -90,12 +93,35 @@ namespace GameJamKit
 
         public void StartGame()
         {
-            if (State == GameState.GameOver || State == GameState.Paused) ResetGame();
+            if (State == GameState.Paused)
+            {
+                Resume();
+                return;
+            }
+
+            if (State == GameState.GameOver) ResetGame();
             SetState(GameState.Playing);
         }
 
-        public void Pause()  { if (State == GameState.Playing) SetState(GameState.Paused); }
-        public void Resume() { if (State == GameState.Paused)  SetState(GameState.Playing); }
+        public void Pause() => AcquirePause(this);
+
+        public void Resume()
+        {
+            _pauseOwners.Remove(this);
+            ResumeWhenNoPauseOwners();
+        }
+
+        public void AcquirePause(object owner)
+        {
+            if (owner == null || !_pauseOwners.Add(owner)) return;
+            if (State == GameState.Playing) SetState(GameState.Paused);
+        }
+
+        public void ReleasePause(object owner)
+        {
+            if (owner == null || !_pauseOwners.Remove(owner)) return;
+            ResumeWhenNoPauseOwners();
+        }
 
         public void TogglePause()
         {
@@ -106,6 +132,12 @@ namespace GameJamKit
         public void GameOver()
         {
             if (State == GameState.GameOver) return;
+            if (State != GameState.Playing && State != GameState.Paused)
+            {
+                Debug.LogWarning($"[GameManager] {State} 상태에서는 GameOver로 전이할 수 없습니다.");
+                return;
+            }
+
             SubmitHighScore();
             SetState(GameState.GameOver);
         }
@@ -113,6 +145,7 @@ namespace GameJamKit
         /// <summary>점수 초기화 + Ready 상태로. 씬을 다시 로드하지는 않는다.</summary>
         public void ResetGame()
         {
+            _pauseOwners.Clear();
             SetScore(0);
             SetState(GameState.Ready);
         }
@@ -148,6 +181,12 @@ namespace GameJamKit
             if (Score <= HighScore) return false;
             Save.SetInt(highScoreKey, Score);
             return true;
+        }
+
+        void ResumeWhenNoPauseOwners()
+        {
+            if (_pauseOwners.Count == 0 && State == GameState.Paused)
+                SetState(GameState.Playing);
         }
     }
 }

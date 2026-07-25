@@ -1,7 +1,9 @@
+using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using static ContextStage.EditorTools.EditorSetupUtility;
 
 namespace ContextStage.EditorTools
 {
@@ -17,6 +19,11 @@ namespace ContextStage.EditorTools
     /// </summary>
     public static class StageLightSetupMenu
     {
+        const string PixelCookieFolder = "Assets/Resources/Lighting";
+        const string PixelCookiePath = PixelCookieFolder + "/PixelStageLightCookie.png";
+        const int PixelCookieSize = 64;
+        const int PixelCookieBands = 8;
+
         [MenuItem("Tools/Lighting/Setup Stage Lighting", false, 0)]
         public static void SetupScene()
         {
@@ -51,11 +58,49 @@ namespace ContextStage.EditorTools
             SetObjectField(controller, "globalLight", global);
             SetObjectField(controller, "leftStageLight", left);
             SetObjectField(controller, "rightStageLight", right);
+            ApplyPixelStyle(controller, left, right, GetOrCreatePixelCookie());
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             Selection.activeGameObject = root;
             Debug.Log("[StageLight] 셋업 완료. 인스펙터 ⋮ 메뉴의 Debug/Set Chill·Singalong·Mosh 로 먼저 확인하세요. " +
                       "(씬을 Ctrl+S 로 저장할 것)");
+        }
+
+        [MenuItem("Tools/Lighting/Apply Pixel Stage Light Style", false, 1)]
+        public static void ApplyPixelStageLightStyle()
+        {
+            var root = GameObject.Find("StageLighting");
+            var controller = root != null ? root.GetComponent<StageLightController>() : null;
+            if (controller == null)
+            {
+                Debug.LogWarning(
+                    "[StageLight] StageLighting/StageLightController가 없습니다. " +
+                    "먼저 Tools/Lighting/Setup Stage Lighting을 실행하세요.");
+                return;
+            }
+
+            var serialized = new SerializedObject(controller);
+            var left = serialized.FindProperty("leftStageLight")?.objectReferenceValue as Light2D;
+            var right = serialized.FindProperty("rightStageLight")?.objectReferenceValue as Light2D;
+            Sprite cookie = GetOrCreatePixelCookie();
+            if (cookie == null) return;
+
+            ApplyPixelStyle(controller, left, right, cookie);
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            Selection.activeObject = cookie;
+            Debug.Log(
+                $"[StageLight] 픽셀 라이트 적용 완료: {PixelCookiePath} " +
+                "(씬을 Ctrl+S 로 저장할 것)");
+        }
+
+        [MenuItem("Tools/Lighting/Create Pixel Stage Light Cookie Asset", false, 20)]
+        public static void CreatePixelStageLightCookieAsset()
+        {
+            Sprite cookie = GetOrCreatePixelCookie();
+            if (cookie == null) return;
+
+            Selection.activeObject = cookie;
+            Debug.Log($"[StageLight] 픽셀 라이트 쿠키 준비 완료: {PixelCookiePath}");
         }
 
         /// <summary>씬에 이미 있는 Global 타입 Light2D 를 찾는다.</summary>
@@ -94,19 +139,93 @@ namespace ContextStage.EditorTools
             return light;
         }
 
-        static void SetObjectField(Object target, string fieldName, Object value)
+        static void ApplyPixelStyle(
+            StageLightController controller,
+            Light2D left,
+            Light2D right,
+            Sprite cookie)
         {
-            if (target == null) return;
+            if (controller == null || cookie == null) return;
 
-            var so = new SerializedObject(target);
-            var prop = so.FindProperty(fieldName);
-            if (prop == null)
-            {
-                Debug.LogWarning($"[StageLight] {target.GetType().Name} 에서 '{fieldName}' 필드를 찾지 못했습니다.");
-                return;
-            }
-            prop.objectReferenceValue = value;
-            so.ApplyModifiedPropertiesWithoutUndo();
+            Undo.RecordObject(controller, "Apply Pixel Stage Light Style");
+            SetObjectField(controller, "pixelLightCookie", cookie);
+
+            ApplyPixelStyleToLight(left, cookie);
+            ApplyPixelStyleToLight(right, cookie);
+            controller.ApplyPixelLightStyle();
+            EditorUtility.SetDirty(controller);
         }
+
+        static void ApplyPixelStyleToLight(Light2D light, Sprite cookie)
+        {
+            if (light == null || light.lightType != Light2D.LightType.Point) return;
+
+            Undo.RecordObject(light, "Apply Pixel Stage Light Cookie");
+            light.lightCookieSprite = cookie;
+            light.falloffIntensity = 0.95f;
+            light.shadowSoftness = 0.05f;
+            light.shadowSoftnessFalloffIntensity = 0.05f;
+            EditorUtility.SetDirty(light);
+        }
+
+        static Sprite GetOrCreatePixelCookie()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<Sprite>(PixelCookiePath);
+            if (existing != null) return existing;
+
+            EnsureFolder(PixelCookieFolder);
+
+            var texture = new Texture2D(
+                PixelCookieSize,
+                PixelCookieSize,
+                TextureFormat.RGBA32,
+                mipChain: false,
+                linear: true);
+            texture.name = "PixelStageLightCookie";
+
+            var colors = new Color32[PixelCookieSize * PixelCookieSize];
+            for (int y = 0; y < PixelCookieSize; y++)
+            {
+                for (int x = 0; x < PixelCookieSize; x++)
+                {
+                    float nx = ((x + 0.5f) / PixelCookieSize) * 2f - 1f;
+                    float ny = ((y + 0.5f) / PixelCookieSize) * 2f - 1f;
+                    float radius = Mathf.Sqrt(nx * nx + ny * ny);
+                    float intensity = Mathf.Clamp01(1f - radius);
+                    intensity = Mathf.Pow(intensity, 0.55f);
+                    intensity = Mathf.Round(intensity * (PixelCookieBands - 1))
+                                / (PixelCookieBands - 1f);
+
+                    byte value = (byte)Mathf.RoundToInt(intensity * 255f);
+                    colors[y * PixelCookieSize + x] = new Color32(value, value, value, value);
+                }
+            }
+
+            texture.SetPixels32(colors);
+            texture.Apply(updateMipmaps: false, makeNoLongerReadable: false);
+            byte[] png = texture.EncodeToPNG();
+            Object.DestroyImmediate(texture);
+            File.WriteAllBytes(PixelCookiePath, png);
+
+            AssetDatabase.ImportAsset(PixelCookiePath, ImportAssetOptions.ForceSynchronousImport);
+            if (AssetImporter.GetAtPath(PixelCookiePath) is not TextureImporter importer)
+            {
+                Debug.LogError($"[StageLight] 픽셀 쿠키 Importer를 찾지 못했습니다: {PixelCookiePath}");
+                return null;
+            }
+
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
+            importer.spritePixelsPerUnit = PixelCookieSize;
+            importer.mipmapEnabled = false;
+            importer.filterMode = FilterMode.Point;
+            importer.wrapMode = TextureWrapMode.Clamp;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.alphaIsTransparency = true;
+            importer.SaveAndReimport();
+
+            return AssetDatabase.LoadAssetAtPath<Sprite>(PixelCookiePath);
+        }
+
     }
 }

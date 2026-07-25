@@ -13,7 +13,7 @@ namespace ContextStage
     /// 매니저를 직접 참조하지 않고 EventBus 만 구독하므로,
     /// UI 쪽 SpecialAudienceView 와 <b>동시에</b> 붙여 쓸 수 있다 (게이지는 UI, 캐릭터는 무대).
     ///
-    /// 관객이 아직 배치되지 않았거나 CrowdSpawner 가 없으면 제자리(fallback)에 선다.
+    /// CrowdSpawner 참조나 배치된 관객이 없으면 오류를 남기고 표시하지 않는다.
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(SpriteRenderer))]
@@ -69,9 +69,6 @@ namespace ContextStage
             airTimeRatio = 0.7f, squash = 0.12f,
         };
 
-        [SerializeField, Tooltip("Special Hit 성공 후 환호하다 사라지기까지의 시간(초). 매니저의 연출 유지시간과 맞추면 자연스럽다")]
-        float celebrateDuration = 0.7f;
-
         [SerializeField, Tooltip("Special Hit 성공 시 잠깐 크게 뛰는 연출")]
         CrowdMotionProfile celebrateMotion = new CrowdMotionProfile
         {
@@ -81,20 +78,18 @@ namespace ContextStage
             airTimeRatio = 0.75f, squash = 0.18f,
         };
 
-        [Header("드롭 판정 영역")]
-        [SerializeField, Tooltip("씬에 SpecialAudienceDropTarget 이 없으면 런타임에 하나 만들어 붙인다.\n" +
-                                 "프리팹을 씬에 배치하지 않아도 카드 드롭 위치 판정이 동작하게 하기 위함")]
-        bool ensureDropTarget = true;
+        [Header("Mosh Special Hit 화면 효과")]
+        [SerializeField, Tooltip("지정하면 이 통합 화면 효과 프로필을 사용한다. 비어 있으면 기본 링 디스토션을 사용한다")]
+        LocalScreenEffectProfile moshSpecialHitEffect;
 
-        [SerializeField, Tooltip("자동 생성할 히트 영역 크기(월드 유닛). 캐릭터보다 살짝 넉넉하게")]
-        Vector2 hitAreaSize = new Vector2(2.6f, 3.6f);
+        [SerializeField, Tooltip("효과 영역의 가로·세로 크기(월드 유닛)")]
+        Vector2 moshSpecialHitEffectSize = new Vector2(10f, 10f);
 
-        [SerializeField, Tooltip("자동 생성할 히트 영역 오프셋")]
-        Vector2 hitAreaOffset = Vector2.zero;
+        [SerializeField, Min(0f), Tooltip("프로필 강도 배율")]
+        float moshSpecialHitStrengthMultiplier = 1f;
 
-        [Header("군중이 없을 때")]
-        [SerializeField, Tooltip("CrowdSpawner 를 찾지 못했을 때 설 위치(월드)")]
-        Vector3 fallbackPosition = new Vector3(0f, -3f, 0f);
+        [SerializeField, Min(0f), Tooltip("0이면 프로필 시간 사용, 0보다 크면 이 시간으로 덮어쓴다")]
+        float moshSpecialHitDurationOverride;
 
         SpriteRenderer _renderer;
         readonly SpriteAnimationPlayer _player = new SpriteAnimationPlayer();
@@ -102,6 +97,7 @@ namespace ContextStage
         bool _active;
         bool _celebrating;
         float _celebrateUntil;    // 환호 연출이 끝나는 시각
+        float _activeHitHoldDuration;
         Vector3 _feet;            // 점프·반동을 뺀 실제 발 위치 (부모 기준 로컬)
         Vector3 _anchor;          // 지금 향하고 있는 자리 (부모 기준 로컬)
         float _repathAt;          // 다음에 자리를 옮길 시각
@@ -140,21 +136,22 @@ namespace ContextStage
 
         void Start()
         {
-            // Awake 가 아니라 Start 에서 확인한다. 씬에 이미 배치된 DropTarget 들이
-            // 모두 Awake/OnEnable 을 마친 뒤여야 "없다"는 판단이 정확하다.
-            EnsureDropTarget();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             WarnIfDuplicateActor();
+#endif
         }
 
         void OnEnable()
         {
             EventBus.Subscribe<SpecialAudienceSpawned>(OnSpawned);
+            EventBus.Subscribe<SpecialHitLanded>(OnSpecialHit);
             EventBus.Subscribe<SpecialAudienceEnded>(OnEnded);
         }
 
         void OnDisable()
         {
             EventBus.Unsubscribe<SpecialAudienceSpawned>(OnSpawned);
+            EventBus.Unsubscribe<SpecialHitLanded>(OnSpecialHit);
             EventBus.Unsubscribe<SpecialAudienceEnded>(OnEnded);
         }
 
@@ -164,7 +161,7 @@ namespace ContextStage
         {
             _celebrating = false;
             ApplyClip(e.RequestType);
-            AttachToCrowd();
+            if (!AttachToCrowd()) return;
             PickNewSpot(immediate: true);
             SetVisible(true);
         }
@@ -175,41 +172,51 @@ namespace ContextStage
             if (e.Reason == SpecialAudienceEndReason.SpecialHit)
             {
                 _celebrating = true;
-                _celebrateUntil = Time.time + Mathf.Max(0f, celebrateDuration);
+                _celebrateUntil = Time.time + _activeHitHoldDuration;
                 return;
             }
             SetVisible(false);
         }
 
-        // ---------------- 드롭 판정 영역 ----------------
-
-        /// <summary>
-        /// 씬에 드롭 판정 영역이 없으면 하나 만들어 붙인다.
-        ///
-        /// <b>형제 오브젝트로 만드는 이유:</b> 자식으로 두면 점프·스쿼시로 변하는 이 오브젝트의
-        /// 스케일을 물려받아 히트 영역이 같이 떨린다. 형제로 두고 위치만 따라가게 한다.
-        /// </summary>
-        void EnsureDropTarget()
+        void OnSpecialHit(SpecialHitLanded e)
         {
-            if (!ensureDropTarget) return;
-            if (FindFirstObjectByType<SpecialAudienceDropTarget>() != null) return; // 이미 있으면 그것을 쓴다
+            _activeHitHoldDuration = Mathf.Max(0f, e.HoldDuration);
+            if (!_active || e.RequestType != HeatStage.Mosh) return;
 
-            var go = new GameObject("SpecialAudienceHitArea");
-            go.transform.SetParent(motionRoot.parent, false); // 형제로 붙인다
-            go.transform.position = motionRoot.position;
+            Vector3 effectPosition = CharacterRenderer != null
+                ? CharacterRenderer.bounds.center
+                : motionRoot.position;
 
-            var box = go.AddComponent<BoxCollider2D>();
-            box.isTrigger = true;      // 물리 이동용이 아니라 드롭 영역 판정용
-            box.size = hitAreaSize;
-            box.offset = hitAreaOffset;
+            if (moshSpecialHitEffect != null)
+            {
+                ScreenEffects.Play(
+                    moshSpecialHitEffect,
+                    effectPosition,
+                    moshSpecialHitEffectSize,
+                    moshSpecialHitStrengthMultiplier,
+                    moshSpecialHitDurationOverride);
+                return;
+            }
 
-            var target = go.AddComponent<SpecialAudienceDropTarget>();
-            target.Configure(box, motionRoot, visualRoot);
-
-            Debug.Log($"[SpecialAudience] 드롭 판정 영역을 자동 생성했습니다 (size={hitAreaSize}). " +
-                      "프리팹을 씬에 배치하면 그쪽이 우선 사용됩니다.", go);
+            float radius = Mathf.Max(
+                0.01f,
+                Mathf.Max(moshSpecialHitEffectSize.x, moshSpecialHitEffectSize.y) * 0.5f);
+            float strength = 0.04f * moshSpecialHitStrengthMultiplier;
+            if (moshSpecialHitDurationOverride > 0f)
+            {
+                ScreenEffects.PlayDistortion(
+                    effectPosition,
+                    radius,
+                    strength,
+                    moshSpecialHitDurationOverride);
+            }
+            else
+            {
+                ScreenEffects.PlayDistortion(effectPosition, radius, strength);
+            }
         }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         void WarnIfDuplicateActor()
         {
             var actors = FindObjectsByType<SpecialAudienceCrowdActor>(FindObjectsSortMode.None);
@@ -218,23 +225,27 @@ namespace ContextStage
             Debug.LogWarning($"[SpecialAudience] 특별 관객 액터가 {actors.Length}개 있습니다. " +
                              "하나만 남기세요 — 여러 개면 등장 이벤트에 모두 반응해 관객이 여러 명 보입니다.", this);
         }
+#endif
 
         // ---------------- 배치 ----------------
 
         /// <summary>군중 오브젝트를 찾아 그 자식으로 들어간다. 좌표·크기 기준을 관객과 맞추기 위함.</summary>
-        void AttachToCrowd()
+        bool AttachToCrowd()
         {
-            if (crowdSpawner == null) crowdSpawner = FindFirstObjectByType<CrowdSpawner>();
-
             if (crowdSpawner == null)
             {
-                motionRoot.position = fallbackPosition;
-                return;
+                Debug.LogError(
+                    "[SpecialAudience] CrowdSpawner 참조가 없습니다. 씬 설정 도구로 참조를 연결하세요.",
+                    this);
+                SetVisible(false);
+                return false;
             }
 
             // 옮기는 것은 motionRoot 다. 프리팹에서는 루트라서 HitArea 까지 함께 따라간다.
             if (parentUnderCrowd && motionRoot.parent != crowdSpawner.transform)
                 motionRoot.SetParent(crowdSpawner.transform, worldPositionStays: false);
+
+            return true;
         }
 
         /// <summary>
@@ -248,11 +259,10 @@ namespace ContextStage
             var members = crowdSpawner != null ? crowdSpawner.Members : null;
             if (members == null || members.Count == 0)
             {
-                _anchor = motionRoot.parent != null
-                    ? motionRoot.parent.InverseTransformPoint(fallbackPosition)
-                    : fallbackPosition;
-                _targetScale = scaleMultiplier;
-                if (immediate) SnapToAnchor();
+                Debug.LogWarning(
+                    "[SpecialAudience] 배치된 군중이 없어 특별 관객을 표시하지 않습니다.",
+                    this);
+                SetVisible(false);
                 return;
             }
 
@@ -350,15 +360,7 @@ namespace ContextStage
         }
 
         SpriteAnimationClip ResolveClip(HeatStage requestType)
-        {
-            switch (requestType)
-            {
-                case HeatStage.Chill:     return chillClip;
-                case HeatStage.Singalong: return singalongClip;
-                case HeatStage.Mosh:      return moshClip;
-                default:                  return null;
-            }
-        }
+            => requestType.Select(chillClip, singalongClip, moshClip);
 
         void SetVisible(bool visible)
         {

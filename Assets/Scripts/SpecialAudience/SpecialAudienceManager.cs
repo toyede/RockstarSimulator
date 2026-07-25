@@ -11,14 +11,13 @@ namespace ContextStage
     /// <summary>
     /// 특별 관객 시스템. 카드·점수·열기 시스템과 완전히 독립적으로 동작한다.
     ///
-    /// - 공연이 시작되면 firstSpawnDelay 뒤 특별 관객이 등장하고, 이후 spawnInterval 마다 반복
+    /// - 공연이 시작되면 설정된 대기시간 뒤 특별 관객이 등장하고, 설정 간격마다 반복
     /// - 요구 타입은 셔플 백(Chill/Singalong/Mosh)에서 하나씩 꺼내 뽑는다
-    /// - requestDuration 안에 대응하지 못하면 <b>패널티 없이</b> 사라진다
+    /// - 설정된 요구시간 안에 대응하지 못하면 <b>패널티 없이</b> 사라진다
     /// - P 키(디버그)로 즉시 등장·교체할 수 있다
     ///
-    /// [카드 담당이 나중에 연결할 지점]
-    ///   if (SpecialAudience.TryHit(cardType, out var reward)) { /* reward 를 점수·열기에 적용 */ }
-    ///   또는 직접 참조로: specialAudienceManager.TrySpecialHit(cardType, out var reward)
+    /// [카드 담당 연결 지점]
+    ///   카드가 CardDefinition의 보상을 적용한 뒤 ConsumeRequest로 요청을 소비한다.
     ///
     /// [점수·열기 담당]
     ///   EventBus.Subscribe&lt;SpecialHitLanded&gt;(e => ...); // 보상만 받아서 적용
@@ -38,28 +37,12 @@ namespace ContextStage
             HitHold    // Special Hit 연출 유지 중
         }
 
-        [Header("등장 규칙")]
-        [SerializeField, Tooltip("공연 시작 후 첫 특별 관객이 등장하기까지의 시간(초)")]
-        float firstSpawnDelay = 10f;
-
-        [SerializeField, Tooltip("특별 관객이 사라진 뒤 다음 등장까지의 간격(초)")]
-        float spawnInterval = 15f;
-
-        [SerializeField, Tooltip("요구가 유지되는 제한시간(초). 이 안에 대응하지 못하면 패널티 없이 사라진다")]
-        float requestDuration = 7f;
+        [Header("설정")]
+        [SerializeField, Tooltip("필수 등장 주기·요구 시간·연출 시간 설정")]
+        SpecialAudienceConfig config;
 
         [SerializeField, Tooltip("공연 시작(Ready → Playing)에 시스템을 자동으로 켤지")]
         bool autoStart = true;
-
-        [Header("Special Hit 보상 (직접 적용하지 않고 이벤트로만 전달)")]
-        [SerializeField, Tooltip("Special Hit 기본 점수")]
-        int specialHitBaseScore = 400;
-
-        [SerializeField, Tooltip("Special Hit 열기(호응도) 보너스")]
-        float specialHitBonusHeat = 25f;
-
-        [SerializeField, Tooltip("Special Hit 연출을 유지하는 시간(초). 이후 특별 관객이 숨겨진다")]
-        float specialHitHoldDuration = 0.7f;
 
         [Header("View")]
         [SerializeField, Tooltip("표시 담당. 비워두면 로직만 동작한다 (null-safe)")]
@@ -69,11 +52,13 @@ namespace ContextStage
         [SerializeField, Tooltip("이 키를 누르면 특별 관객이 즉시 등장한다 (에디터·개발 빌드 전용)")]
         KeyCode debugSpawnKey = KeyCode.P;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         [SerializeField, Tooltip("디버그 키 입력을 받을지")]
         bool enableDebugKey = true;
 
         [SerializeField, Tooltip("콘솔 로그 출력 여부")]
         bool verboseLogs = true;
+#endif
 
         // ---------------- 상태 ----------------
 
@@ -93,14 +78,15 @@ namespace ContextStage
 
         public bool HasActiveRequest => _phase == Phase.Active;
         public HeatStage CurrentRequestType => _currentRequest;
-        public float RequestDuration => requestDuration;
+        public SpecialAudienceConfig Config => config;
+        public float RequestDuration => config != null ? config.RequestDuration : 0f;
 
         public float RemainingTime =>
             _phase == Phase.Active ? Mathf.Max(0f, _phaseDeadline - Time.time) : 0f;
 
         /// <summary>현재 남은 시간의 0~1 비율. 게이지용.</summary>
         public float RemainingNormalized =>
-            requestDuration > 0f ? Mathf.Clamp01(RemainingTime / requestDuration) : 0f;
+            RequestDuration > 0f ? Mathf.Clamp01(RemainingTime / RequestDuration) : 0f;
 
         public bool IsRunning => _phase != Phase.Stopped;
 
@@ -135,20 +121,39 @@ namespace ContextStage
             get
             {
                 if (!requireDropOnTarget) return false;
-                EnsureDropTargetRegistered();
                 if (CurrentDropTarget == null) WarnNoDropTargetOnce();
                 return true;
             }
         }
 
         bool _warnedNoDropTarget;
+        bool _warnedMissingConfig;
+
+        bool EnsureConfigured()
+        {
+            if (config != null) return true;
+            if (!_warnedMissingConfig)
+            {
+                _warnedMissingConfig = true;
+                Debug.LogError(
+                    "[SpecialAudience] SpecialAudienceConfig 참조가 없습니다. " +
+                    "Tools/Special Audience/Setup Special Audience를 실행하세요.",
+                    this);
+            }
+
+            enabled = false;
+            view?.Hide(instant: true);
+            return false;
+        }
 
         void WarnNoDropTargetOnce()
         {
             if (_warnedNoDropTarget) return;
             _warnedNoDropTarget = true;
-            Debug.LogWarning("[SpecialAudience] 씬에 DropTarget 이 없어 Special Hit 를 차단합니다. " +
-                             "SpecialAudienceCrowdActor 의 ensureDropTarget 이 켜져 있는지 확인하세요.", this);
+            Debug.LogWarning(
+                "[SpecialAudience] 등록된 DropTarget이 없어 Special Hit를 차단합니다. " +
+                "씬 또는 프리팹에 SpecialAudienceDropTarget을 명시적으로 배치하세요.",
+                this);
         }
 
         /// <summary>DropTarget 이 스스로 등록한다. (씬에 한 개만 있다고 가정)</summary>
@@ -164,12 +169,6 @@ namespace ContextStage
             if (CurrentDropTarget == target) CurrentDropTarget = null;
         }
 
-        void EnsureDropTargetRegistered()
-        {
-            if (CurrentDropTarget != null) return;
-            RegisterDropTarget(FindFirstObjectByType<SpecialAudienceDropTarget>());
-        }
-
         /// <summary>드롭 순간의 확정 좌표로 현재 특별 관객 요청을 판정한다.</summary>
         public SpecialCardRequest ResolveDropRequest(Vector2 screenPosition, float radiusPixels)
         {
@@ -177,7 +176,6 @@ namespace ContextStage
             if (!requireDropOnTarget)
                 return new SpecialCardRequest(CurrentRequestType);
 
-            EnsureDropTargetRegistered();
             if (CurrentDropTarget == null)
             {
                 WarnNoDropTargetOnce();
@@ -213,19 +211,23 @@ namespace ContextStage
         protected override void OnAwake()
         {
             if (view == null) view = GetComponentInChildren<SpecialAudienceView>(true);
+            if (!EnsureConfigured()) return;
             RefillBag();
         }
 
         void Start()
         {
-            EnsureDropTargetRegistered();
-
+            if (!EnsureConfigured()) return;
             // 이미 공연이 진행 중인 상태에서 늦게 활성화돼도 자연스럽게 합류한다
             if (autoStart && GameManager.HasInstance && GameManager.Instance.IsPlaying) StartSystem();
             else view?.Hide(instant: true);
         }
 
-        void OnEnable() => EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
+        void OnEnable()
+        {
+            if (EnsureConfigured())
+                EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
+        }
 
         void OnDisable()
         {
@@ -254,10 +256,11 @@ namespace ContextStage
         /// <summary>시스템을 켠다. 첫 등장까지 firstSpawnDelay 만큼 기다린다.</summary>
         public void StartSystem()
         {
+            if (!EnsureConfigured()) return;
             ResetSystem();
             _phase = Phase.Waiting;
-            _phaseDeadline = Time.time + Mathf.Max(0f, firstSpawnDelay);
-            Log($"Start (first spawn in {firstSpawnDelay:0.#}s)");
+            _phaseDeadline = Time.time + config.FirstSpawnDelay;
+            Log($"Start (first spawn in {config.FirstSpawnDelay:0.#}s)");
         }
 
         /// <summary>시스템을 멈춘다. 활성 요청이 있으면 StageEnded 로 종료 처리한다.</summary>
@@ -295,28 +298,20 @@ namespace ContextStage
         }
 
         /// <summary>
-        /// [카드 담당용 공개 API] 낸 카드의 타입이 현재 요구와 맞는지 판정한다.
-        ///
-        /// 성공하면 true 와 보상 데이터를 돌려주고, 제한시간을 멈춘 뒤 연출에 들어간다.
-        /// 실패하면 false 를 돌려주고 <b>현재 요청은 그대로 유지된다</b> (남은 시간도 계속 감소).
-        /// 어느 쪽이든 이 함수는 점수·열기를 직접 건드리지 않는다.
+        /// 구형 호출부 호환용. 요청은 소비하지만 보상 데이터는 반환하지 않는다.
         /// </summary>
+        [Obsolete("Use ConsumeRequest so CardDefinition remains the single reward source.")]
         public bool TrySpecialHit(HeatStage playedType, out SpecialHitReward reward)
         {
             reward = default;
-            if (!CanAcceptHit(playedType)) return false;
-
-            reward = new SpecialHitReward(specialHitBaseScore, specialHitBonusHeat);
-            CompleteHit(reward);
-            return true;
+            return ConsumeRequest(playedType, 0, 0f);
         }
 
         /// <summary>
         /// [카드 판정 경로용] 카드가 자기 수치(CardDefinition 의 SpecialHitBaseScore/HeatDelta)로
         /// 이미 보상을 적용한 뒤, 요청을 소비만 시킬 때 쓴다.
         ///
-        /// TrySpecialHit 과 달리 매니저의 보상 수치를 쓰지 않는다.
-        /// (같은 히트에 매니저 400점 + 카드 400점이 이중 적용되는 것을 막기 위함)
+        /// 보상 수치의 단일 원천은 CardDefinition이다.
         /// 이벤트에는 <b>실제로 적용된</b> 값이 실려 나간다.
         /// </summary>
         public bool ConsumeRequest(HeatStage playedType, int appliedBaseScore, float appliedHeatDelta)
@@ -344,7 +339,7 @@ namespace ContextStage
 
             // 1. 제한시간 중지 → 2. 이벤트 → 3. 연출 → (4. 유지 후 숨김·다음 간격 시작은 Update 에서)
             _phase = Phase.HitHold;
-            _phaseDeadline = Time.time + Mathf.Max(0f, specialHitHoldDuration);
+            _phaseDeadline = Time.time + config.SpecialHitHoldDuration;
 
             var type = _currentRequest;
 
@@ -354,7 +349,8 @@ namespace ContextStage
             {
                 RequestType = type,
                 Reward = reward,
-                AlreadyApplied = alreadyApplied
+                AlreadyApplied = alreadyApplied,
+                HoldDuration = config.SpecialHitHoldDuration
             });
             EventBus.Raise(new SpecialAudienceEnded { RequestType = type, Reason = SpecialAudienceEndReason.SpecialHit });
 
@@ -408,8 +404,8 @@ namespace ContextStage
             if (Mathf.Approximately(remaining, _lastReportedRemaining)) return;
 
             _lastReportedRemaining = remaining;
-            OnRequestTimeChanged?.Invoke(remaining, requestDuration);
-            view?.SetRemaining(remaining, requestDuration);
+            OnRequestTimeChanged?.Invoke(remaining, config.RequestDuration);
+            view?.SetRemaining(remaining, config.RequestDuration);
         }
 
         void Spawn(HeatStage requestType)
@@ -418,16 +414,16 @@ namespace ContextStage
             _hitRaisedForCurrentRequest = false;
             _lastReportedRemaining = -1f;
             _phase = Phase.Active;
-            _phaseDeadline = Time.time + Mathf.Max(0.01f, requestDuration);
+            _phaseDeadline = Time.time + config.RequestDuration;
 
-            OnSpecialAudienceSpawned?.Invoke(requestType, requestDuration);
-            EventBus.Raise(new SpecialAudienceSpawned { RequestType = requestType, Duration = requestDuration });
+            OnSpecialAudienceSpawned?.Invoke(requestType, config.RequestDuration);
+            EventBus.Raise(new SpecialAudienceSpawned { RequestType = requestType, Duration = config.RequestDuration });
 
-            view?.Show(requestType, requestDuration);
+            view?.Show(requestType, config.RequestDuration);
             ReportRemaining();
         }
 
-        /// <summary>요청을 끝낸다. (Special Hit 는 TrySpecialHit 에서 따로 처리하므로 여기로 오지 않는다)</summary>
+        /// <summary>만료·교체·공연 종료로 요청을 끝낸다. 성공 처리는 CompleteHit이 담당한다.</summary>
         void EndRequest(SpecialAudienceEndReason reason, bool hideInstant)
         {
             var type = _currentRequest;
@@ -448,7 +444,7 @@ namespace ContextStage
         void ScheduleNextSpawn()
         {
             _phase = Phase.Waiting;
-            _phaseDeadline = Time.time + Mathf.Max(0f, spawnInterval);
+            _phaseDeadline = Time.time + config.SpawnInterval;
         }
 
         // ---------------- 셔플 백 ----------------
@@ -572,9 +568,9 @@ namespace ContextStage
                 return;
             }
 
-            // 현재 요구 타입을 그대로 넘겨 정상 경로(TrySpecialHit)로 성공시킨다
-            if (TrySpecialHit(_currentRequest, out var reward))
-                Debug.Log($"[SpecialAudience] Debug Special Hit 성공 → {reward}");
+            // 보상은 CardDefinition만 소유하므로 디버그 경로는 요청 소비와 연출만 검증한다.
+            if (ConsumeRequest(_currentRequest, 0, 0f))
+                Debug.Log("[SpecialAudience] Debug Special Hit 성공");
         }
     }
 
@@ -645,7 +641,8 @@ namespace ContextStage
                 reward = default;
                 return false;
             }
-            return SpecialAudienceManager.Instance.TrySpecialHit(playedType, out reward);
+            reward = default;
+            return SpecialAudienceManager.Instance.ConsumeRequest(playedType, 0, 0f);
         }
 
         public static void ForceSpawnRandom()

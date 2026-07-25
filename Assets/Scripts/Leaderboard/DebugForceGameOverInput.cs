@@ -19,11 +19,14 @@ namespace ContextStage
     /// </summary>
     public class DebugForceGameOverInput : MonoBehaviour
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         [SerializeField, Tooltip("화면 좌상단에 조작법을 표시할지")]
         bool showOnScreenHelp = true;
+#endif
 
         void Update()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             var gm = GameManager.Instance;
             if (gm == null || gm.State != GameState.Playing) return;
 
@@ -36,6 +39,7 @@ namespace ContextStage
 #else
             if (Input.GetKeyDown(KeyCode.End)) gm.GameOver();
 #endif
+#endif
         }
 
         static bool IsUiInputFocused()
@@ -46,11 +50,13 @@ namespace ContextStage
 
         void OnGUI()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (!showOnScreenHelp || !GameManager.HasInstance) return;
             if (GameManager.Instance.State != GameState.Playing) return;
 
             var style = new GUIStyle(GUI.skin.label) { fontSize = 20 };
             GUI.Label(new Rect(20f, 50f, 900f, 40f), "[디버그] End: 공연 강제 종료 (점수 저장 테스트)", style);
+#endif
         }
     }
 }

@@ -20,11 +20,13 @@ namespace GameJamKit
         readonly Transform _root;
         readonly Stack<GameObject> _idle = new Stack<GameObject>();
         readonly HashSet<GameObject> _active = new HashSet<GameObject>();
+        readonly Dictionary<GameObject, IPoolable[]> _callbacks = new Dictionary<GameObject, IPoolable[]>();
         readonly int _maxSize;
 
         public GameObject Prefab => _prefab;
         public int IdleCount => _idle.Count;
         public int ActiveCount => _active.Count;
+        public event System.Action<GameObject> InstanceDiscarded;
 
         public ObjectPool(GameObject prefab, Transform root, int prewarm = 0, int maxSize = 512)
         {
@@ -48,13 +50,24 @@ namespace GameJamKit
         {
             var go = Object.Instantiate(_prefab, _root);
             go.name = _prefab.name;
+            _callbacks[go] = go.GetComponentsInChildren<IPoolable>(true);
             return go;
         }
 
         public GameObject Spawn(Vector3 position, Quaternion rotation, Transform parent)
         {
             GameObject go = null;
-            while (_idle.Count > 0 && go == null) go = _idle.Pop(); // 파괴된 인스턴스 걸러내기
+            while (_idle.Count > 0 && go == null)
+            {
+                GameObject candidate = _idle.Pop();
+                if (candidate == null)
+                {
+                    ForgetInstance(candidate);
+                    continue;
+                }
+
+                go = candidate;
+            }
             if (go == null) go = CreateInstance();
 
             var t = go.transform;
@@ -65,7 +78,7 @@ namespace GameJamKit
             go.SetActive(true);
             _active.Add(go);
 
-            var poolables = go.GetComponentsInChildren<IPoolable>(true);
+            IPoolable[] poolables = GetCallbacks(go);
             for (int i = 0; i < poolables.Length; i++) poolables[i].OnSpawned();
 
             return go;
@@ -73,16 +86,22 @@ namespace GameJamKit
 
         public void Despawn(GameObject go)
         {
-            if (go == null) return;
+            if (ReferenceEquals(go, null)) return;
+            if (go == null)
+            {
+                _active.Remove(go);
+                ForgetInstance(go);
+                return;
+            }
             if (!_active.Remove(go)) return; // 이미 반납됨 = 중복 Despawn 무시
 
-            var poolables = go.GetComponentsInChildren<IPoolable>(true);
+            IPoolable[] poolables = GetCallbacks(go);
             for (int i = 0; i < poolables.Length; i++) poolables[i].OnDespawned();
 
             go.SetActive(false);
             go.transform.SetParent(_root, false);
 
-            if (_idle.Count >= _maxSize) Object.Destroy(go);
+            if (_idle.Count >= _maxSize) DiscardInstance(go);
             else _idle.Push(go);
         }
 
@@ -100,8 +119,33 @@ namespace GameJamKit
             while (_idle.Count > 0)
             {
                 var go = _idle.Pop();
-                if (go != null) Object.Destroy(go);
+                if (go != null) DiscardInstance(go);
+                else ForgetInstance(go);
             }
+        }
+
+        IPoolable[] GetCallbacks(GameObject go)
+        {
+            if (!_callbacks.TryGetValue(go, out IPoolable[] callbacks))
+            {
+                callbacks = go.GetComponentsInChildren<IPoolable>(true);
+                _callbacks[go] = callbacks;
+            }
+
+            return callbacks;
+        }
+
+        void DiscardInstance(GameObject go)
+        {
+            ForgetInstance(go);
+            if (go != null) Object.Destroy(go);
+        }
+
+        void ForgetInstance(GameObject go)
+        {
+            if (ReferenceEquals(go, null)) return;
+            _callbacks.Remove(go);
+            InstanceDiscarded?.Invoke(go);
         }
     }
 }

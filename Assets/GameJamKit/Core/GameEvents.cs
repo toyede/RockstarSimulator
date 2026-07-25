@@ -80,19 +80,13 @@ namespace GameJamKit
         public float Delta;       // 이 판정으로 적용된 증감량
     }
 
-    /// <summary>
-    /// 호응도 100 도달(앙코르) 시 발행.
-    /// 카드 담당: 이 이벤트를 구독해서 카드 1장 추가 드로우를 구현하면 된다.
-    /// 연출 담당: 게이지 점멸·관객 함성도 여기에 붙인다.
-    /// 발행 직후 호응도는 70으로 내려가고 잠시 감소가 멈춘다. (HypeSystem 이 처리)
-    /// </summary>
-    public struct EncoreTriggered { }
-
-    /// <summary>
-    /// 호응도 0 도달(공연 실패) 시 발행. 직후 GameManager.GameOver() 가 호출된다.
-    /// 연출 담당: 조명 소등·야유 등 실패 연출을 여기에 붙인다.
-    /// </summary>
-    public struct HypeDepleted { }
+    /// <summary>공연 경과 시간이 갱신될 때마다 PerformanceTimerSystem 이 발행. 타이머 바 UI가 구독한다.</summary>
+    public struct PerformanceTimeChanged
+    {
+        public float Elapsed;     // 경과 시간(초)
+        public float Duration;    // 총 제한시간(초)
+        public float Normalized;  // 0~1 비율 (게이지 fillAmount 용)
+    }
 
     /// <summary>
     /// 관객 앰비언스 단계(low/middle/high...)가 바뀔 때 CrowdAmbienceSystem 이 발행.
@@ -146,6 +140,27 @@ namespace GameJamKit
         public float Multiplier; // 카드를 낼 때의 열기 배율. 획득 점수 = BaseScore × Multiplier
     }
 
+    /// <summary>
+    /// Final authoritative result of one card play.
+    /// Score systems consume this event only; CardSelected remains for input/audio/visual feedback.
+    /// </summary>
+    public struct CardResolved
+    {
+        public string CardId;
+        public string DisplayName;
+        public int HandIndex;
+        public ContextStage.CardRole Role;
+        public ContextStage.CrowdPreference TargetPreference;
+        public ContextStage.CrowdReactionGrade CrowdReaction;
+        public HypeJudgement Judgement;
+        public int BaseScore;
+        public float HypeMultiplier;
+        public float CrowdMultiplier;
+        public int GainedScore;
+        public float HypeDelta;
+        public bool IsSpecialHit;
+    }
+
     // ------------------------------------------------------------------
     // 특별 관객 (SpecialAudienceManager 가 발행)
     // 매니저에는 C# event 도 함께 있으니, 직접 참조가 있으면 그쪽을 써도 된다.
@@ -174,6 +189,7 @@ namespace GameJamKit
     {
         public ContextStage.HeatStage RequestType;
         public ContextStage.SpecialHitReward Reward;
+        public float HoldDuration;
 
         /// <summary>
         /// true 면 카드 판정 경로가 이미 점수·열기를 적용했으므로 <b>다시 적용하면 안 된다.</b>

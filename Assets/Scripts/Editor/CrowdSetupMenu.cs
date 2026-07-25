@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using static ContextStage.EditorTools.EditorSetupUtility;
 
 namespace ContextStage.EditorTools
 {
@@ -113,6 +114,7 @@ namespace ContextStage.EditorTools
         {
             var sprites = AssetDatabase.LoadAllAssetRepresentationsAtPath(path)
                 .OfType<Sprite>()
+                .Where(sprite => sprite.rect.width >= 32f && sprite.rect.height >= 32f)
                 .ToList();
 
             sprites.Sort((a, b) => TrailingNumber(a.name).CompareTo(TrailingNumber(b.name)));
@@ -141,29 +143,5 @@ namespace ContextStage.EditorTools
             return asset;
         }
 
-        // ---------------- 공용 헬퍼 ----------------
-
-        static void EnsureFolder(string path)
-        {
-            if (string.IsNullOrEmpty(path) || AssetDatabase.IsValidFolder(path)) return;
-
-            var parent = Path.GetDirectoryName(path).Replace('\\', '/');
-            var leaf = Path.GetFileName(path);
-            EnsureFolder(parent);
-            AssetDatabase.CreateFolder(parent, leaf);
-        }
-
-        static void SetObjectField(Object target, string fieldName, Object value)
-        {
-            var so = new SerializedObject(target);
-            var prop = so.FindProperty(fieldName);
-            if (prop == null)
-            {
-                Debug.LogWarning($"[Crowd] {target.GetType().Name} 에서 '{fieldName}' 필드를 찾지 못했습니다.");
-                return;
-            }
-            prop.objectReferenceValue = value;
-            so.ApplyModifiedPropertiesWithoutUndo();
-        }
     }
 }

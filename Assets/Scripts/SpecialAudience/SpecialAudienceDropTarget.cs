@@ -295,7 +295,8 @@ namespace ContextStage
                 return false;
             if (!SpecialAudienceManager.HasInstance) return false;
 
-            return SpecialAudienceManager.Instance.TrySpecialHit(playedType, out reward);
+            reward = default;
+            return SpecialAudienceManager.Instance.ConsumeRequest(playedType, 0, 0f);
         }
 
         // ---------------- Hover ----------------

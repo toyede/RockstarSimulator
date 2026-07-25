@@ -357,6 +357,7 @@ MonoBehaviour:
   description: 
   role: 0
   targetStage: 0
+  targetPreference: 0
   utilityEffect: 0
   exactBaseScore: 100
   adjacentBaseScore: 50
