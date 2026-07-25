@@ -81,6 +81,18 @@ namespace ContextStage
 
         public bool TryAdd(
             CrowdPreference preference,
+            float joinedAt,
+            out AudienceSnapshot audience)
+        {
+            return TryAdd(
+                preference,
+                _engagementRules.DrawInitialEngagement(_random),
+                joinedAt,
+                out audience);
+        }
+
+        public bool TryAdd(
+            CrowdPreference preference,
             float engagement,
             float joinedAt,
             out AudienceSnapshot audience)

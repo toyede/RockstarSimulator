@@ -30,6 +30,23 @@ namespace ContextStage
         public Transform MemberRoot => memberRoot;
         public int VisibleCount => _actors.Count;
 
+        public bool TryGetRandomActor(out AudienceMemberActor actor)
+        {
+            actor = null;
+            if (_order.Count == 0) return false;
+
+            int start = Random.Range(0, _order.Count);
+            for (int offset = 0; offset < _order.Count; offset++)
+            {
+                AudienceId id = _order[(start + offset) % _order.Count];
+                if (_actors.TryGetValue(id, out actor) && actor != null)
+                    return true;
+            }
+
+            actor = null;
+            return false;
+        }
+
         void OnEnable()
         {
             EventBus.Subscribe<AudienceJoined>(OnAudienceJoined);

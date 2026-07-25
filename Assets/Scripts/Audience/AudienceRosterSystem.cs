@@ -27,6 +27,7 @@ namespace ContextStage
         public IReadOnlyList<AudienceSnapshot> Members =>
             _model != null ? _model.Members : EmptyMembers;
         public int Count => _model != null ? _model.Count : 0;
+        public int Capacity => _model != null ? _model.Capacity : 0;
         public bool IsConfigured => _model != null;
         public AudienceSummary Summary =>
             _model != null ? _model.CreateSummary() : default;
@@ -151,6 +152,21 @@ namespace ContextStage
             return true;
         }
 
+        public bool TryAdd(
+            CrowdPreference preference,
+            AudienceJoinReason reason,
+            out AudienceSnapshot audience)
+        {
+            audience = default;
+            if (_model == null ||
+                !_model.TryAdd(preference, Time.time, out audience))
+                return false;
+
+            EventBus.Raise(new AudienceJoined(audience, reason));
+            RaiseSummary();
+            return true;
+        }
+
         public bool TryChangeEngagement(
             AudienceId id,
             float delta,
@@ -202,10 +218,9 @@ namespace ContextStage
             if (_model == null || !_model.TryGet(id, out AudienceSnapshot previous))
                 return false;
 
-            int signedReaction = reactionValue;
             float multiplier = Mathf.Max(0f, cardEngagementMultiplier);
             float engagementDelta =
-                signedReaction *
+                reactionValue *
                 _model.EngagementRules.EngagementPerReactionPoint *
                 multiplier;
             float appliedDelta =
@@ -217,7 +232,7 @@ namespace ContextStage
                 current = previous;
                 EventBus.Raise(new AudienceCardReacted(
                     cardId ?? string.Empty,
-                    signedReaction,
+                    reactionValue,
                     0f,
                     previous,
                     current));
@@ -237,7 +252,7 @@ namespace ContextStage
             current = change.Current;
             EventBus.Raise(new AudienceCardReacted(
                 cardId ?? string.Empty,
-                signedReaction,
+                reactionValue,
                 current.Engagement - previous.Engagement,
                 previous,
                 current));

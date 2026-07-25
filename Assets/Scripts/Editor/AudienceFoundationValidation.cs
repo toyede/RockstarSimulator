@@ -214,6 +214,32 @@ namespace ContextStage.EditorTools
                 disabledResult.Value == 0,
                 "A card with audience reactions disabled produced a reaction.",
                 failures);
+
+            var negativeProfile = new AudienceReactionProfile(
+                true,
+                -4,
+                0,
+                3,
+                -3,
+                1,
+                3,
+                1f);
+            var calmChillAudience = new AudienceSnapshot(
+                new AudienceId(2),
+                CrowdPreference.Chill,
+                20f,
+                AudienceEngagementStage.Calm,
+                0f);
+            AudienceReactionResult negativeResult =
+                AudienceReactionResolver.Resolve(
+                    negativeProfile,
+                    calmChillAudience);
+            Require(
+                negativeResult.PreferenceScore == -4 &&
+                negativeResult.StageScore == -3 &&
+                negativeResult.Value == -7,
+                "Negative audience reaction values were clamped or mixed up.",
+                failures);
         }
 
         static void ValidateMemberPrefab(List<string> failures)

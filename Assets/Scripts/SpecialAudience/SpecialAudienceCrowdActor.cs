@@ -1,32 +1,29 @@
 using GameJamKit;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace ContextStage
 {
     /// <summary>
     /// 특별 관객을 <b>무대 아래 일반 관객들 사이</b>에 세우고 돌아다니게 하는 월드 표현.
     ///
-    /// - 등장하면 CrowdSpawner 가 배치한 관객 중 한 명의 자리를 골라 그 줄에 섞여 선다
+    /// - 등장하면 AudienceRosterPresenter가 표시 중인 관객 중 한 명의 자리를 골라 그 줄에 섞여 선다
     /// - 일정 시간마다 다른 관객 자리로 옮겨 다닌다 (줄이 바뀌면 크기·정렬 순서도 그 줄을 따라간다)
     /// - 걷는 동안에도 일반 관객과 같은 반동·흔들림·점프를 한다 (CrowdMotionProfile 재사용)
     ///
     /// 매니저를 직접 참조하지 않고 EventBus 만 구독하므로,
     /// UI 쪽 SpecialAudienceView 와 <b>동시에</b> 붙여 쓸 수 있다 (게이지는 UI, 캐릭터는 무대).
     ///
-    /// CrowdSpawner 참조나 배치된 관객이 없으면 오류를 남기고 표시하지 않는다.
+    /// AudienceRosterPresenter 참조나 표시 중인 관객이 없으면 오류를 남기고 표시하지 않는다.
     /// </summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(SpriteRenderer))]
     public sealed class SpecialAudienceCrowdActor : MonoBehaviour
     {
-        [Header("군중")]
-        [SerializeField, Tooltip("비워두면 씬에서 한 번만 찾아온다")]
-        [FormerlySerializedAs("crowdSpawner")]
+        [Header("개별 관객 런타임")]
+        [SerializeField, Tooltip("현재 개별 관객을 표시하는 Presenter. 씬 설치 도구가 연결한다")]
         AudienceRosterPresenter audiencePresenter;
 
-        [SerializeField, Tooltip("체크하면 등장 시 군중 오브젝트의 자식으로 들어간다 (좌표계를 맞추기 위해 권장)")]
-        [FormerlySerializedAs("parentUnderCrowd")]
+        [SerializeField, Tooltip("등장 시 개별 관객 루트의 자식으로 들어가 같은 좌표계를 사용한다")]
         bool parentUnderAudience = true;
 
         [Header("적용 대상 (프리팹 구조에 맞게 분리)")]
@@ -131,8 +128,17 @@ namespace ContextStage
             _player.Bind(_renderer);
             _phase = Random.value * 10f;
 
-            if (motionRoot == null) motionRoot = transform;
-            if (visualRoot == null) visualRoot = transform;
+            if (motionRoot == null)
+            {
+                SpecialAudienceDropTarget dropTarget =
+                    GetComponentInParent<SpecialAudienceDropTarget>();
+                motionRoot =
+                    dropTarget != null ? dropTarget.transform : transform;
+            }
+            if (visualRoot == null)
+                visualRoot = transform.parent != null
+                    ? transform.parent
+                    : transform;
 
             SetVisible(false);
         }
@@ -142,6 +148,13 @@ namespace ContextStage
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             WarnIfDuplicateActor();
 #endif
+        }
+
+        public AudienceRosterPresenter AudiencePresenter => audiencePresenter;
+
+        public void Configure(AudienceRosterPresenter presenter)
+        {
+            audiencePresenter = presenter;
         }
 
         void OnEnable()
@@ -232,29 +245,36 @@ namespace ContextStage
 
         // ---------------- 배치 ----------------
 
-        /// <summary>군중 오브젝트를 찾아 그 자식으로 들어간다. 좌표·크기 기준을 관객과 맞추기 위함.</summary>
+        /// <summary>개별 관객 루트의 자식으로 들어가 좌표·크기 기준을 맞춘다.</summary>
         bool AttachToCrowd()
         {
-            if (audiencePresenter == null)
+            if (audiencePresenter == null &&
+                AudienceRosterSystem.HasInstance)
+            {
                 audiencePresenter =
-                    FindFirstObjectByType<AudienceRosterPresenter>();
+                    AudienceRosterSystem.Instance
+                        .GetComponent<AudienceRosterPresenter>();
+            }
 
             if (audiencePresenter == null ||
                 audiencePresenter.MemberRoot == null)
             {
                 Debug.LogError(
-                    "[SpecialAudience] AudienceRosterPresenter와 MemberRoot가 필요합니다.",
+                    "[SpecialAudience] AudienceRosterPresenter 참조가 없습니다. " +
+                    "관객 런타임 설치 도구로 연결하세요.",
                     this);
                 SetVisible(false);
                 return false;
             }
 
+            // motionRoot는 SpecialAudience 프리팹 루트이므로 HitArea도 함께 이동한다.
             if (parentUnderAudience &&
                 motionRoot.parent != audiencePresenter.MemberRoot)
             {
                 motionRoot.SetParent(
                     audiencePresenter.MemberRoot,
                     worldPositionStays: false);
+                motionRoot.localScale = Vector3.one;
             }
 
             return true;
@@ -269,24 +289,36 @@ namespace ContextStage
             _repathAt = Time.time + Mathf.Max(0.1f, dwellDuration);
 
             if (audiencePresenter == null ||
-                !audiencePresenter.TryGetRandomVisualAnchor(
-                    out Vector3 position,
-                    out float scale,
-                    out int sortingOrder))
+                !audiencePresenter.TryGetRandomActor(out AudienceMemberActor picked))
             {
                 Debug.LogWarning(
-                    "[SpecialAudience] 배치할 개별 관객 앵커가 없습니다.",
+                    "[SpecialAudience] 표시 중인 개별 관객이 없어 특별 관객을 표시하지 않습니다.",
                     this);
                 SetVisible(false);
                 return;
             }
 
+            // 후보를 몇 번 뽑아 지금 위치에서 너무 가깝지 않은 자리를 고른다.
+            for (int i = 0; i < 4; i++)
+            {
+                if (!audiencePresenter.TryGetRandomActor(
+                        out AudienceMemberActor candidate))
+                    break;
+                picked = candidate;
+                if (Mathf.Abs(
+                        candidate.LayoutLocalPosition.x -
+                        motionRoot.localPosition.x) > lateralOffset)
+                    break;
+            }
+            if (picked == null) return;
+
             float side = Random.value < 0.5f ? -1f : 1f;
             _anchor =
-                position + new Vector3(lateralOffset * side, 0f, 0f);
+                picked.LayoutLocalPosition +
+                new Vector3(lateralOffset * side, 0f, 0f);
 
-            _targetScale = scale * scaleMultiplier;
-            _renderer.sortingOrder = sortingOrder + sortingOrderBonus;
+            _targetScale = picked.LayoutScale * scaleMultiplier;
+            _renderer.sortingOrder = picked.SortingOrder + sortingOrderBonus;
 
             if (immediate) SnapToAnchor();
         }
@@ -333,8 +365,8 @@ namespace ContextStage
         }
 
         /// <summary>
-        /// CrowdMemberView 와 같은 공식. (그쪽은 상태 전환 블렌드가 있어 인라인으로 계산하고,
-        /// 여기는 단일 프로필이라 이 함수를 쓴다. 수치 구조는 CrowdMotionProfile 로 공유한다)
+        /// 특별 관객은 기존 CrowdMotionProfile 연출을 유지하되,
+        /// 위치와 크기만 개별 관객 Presenter에서 가져온다.
         /// </summary>
         static void EvaluateMotion(CrowdMotionProfile p, float t, out float height, out float sway, out float squash)
         {

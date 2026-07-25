@@ -59,6 +59,10 @@ namespace ContextStage
         [SerializeField] AudienceReactionProfile audienceReaction =
             new AudienceReactionProfile();
 
+        [Header("스페셜 관객 저격 효과")]
+        [SerializeField] SpecialCardTargetEffect specialTargetEffect =
+            new SpecialCardTargetEffect();
+
         [Header("유틸리티")]
         [SerializeField, Min(0)] int drawCount = 2;
 
@@ -83,6 +87,7 @@ namespace ContextStage
         public int SpecialHitBaseScore => specialHitBaseScore;
         public float SpecialHitHeatDelta => specialHitHeatDelta;
         public AudienceReactionProfile AudienceReaction => audienceReaction;
+        public SpecialCardTargetEffect SpecialTargetEffect => specialTargetEffect;
         public int DrawCount => Mathf.Max(0, drawCount);
         public Sprite Artwork => artwork;
         public Color CardColor => cardColor;
