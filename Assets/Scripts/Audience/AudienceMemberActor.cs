@@ -51,6 +51,10 @@ namespace ContextStage
         [Header("Card Reaction")]
         [SerializeField] AudienceReactionPopup reactionPopup;
 
+        [Header("Preference Hover")]
+        [SerializeField] Collider2D preferenceHoverCollider;
+        [SerializeField] SpecialAudienceOutline preferenceOutline;
+
         [Header("Motion")]
         [SerializeField, Min(0f)] float enterDuration = 0.6f;
         [SerializeField, Min(0f)] float exitDuration = 0.7f;
@@ -116,6 +120,10 @@ namespace ContextStage
         public float LayoutScale => _layoutScale;
         public int SortingOrder =>
             characterRenderer != null ? characterRenderer.sortingOrder : 0;
+        public Vector2 PreferenceHoverCenter =>
+            preferenceHoverCollider != null
+                ? preferenceHoverCollider.bounds.center
+                : transform.position;
 
         void Awake()
         {
@@ -161,6 +169,7 @@ namespace ContextStage
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
             if (reactionPopup != null) reactionPopup.ResetVisual();
+            SetPreferenceReveal(false, default, 0f);
             ApplyTransform();
         }
 
@@ -176,6 +185,7 @@ namespace ContextStage
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
             if (reactionPopup != null) reactionPopup.ResetVisual();
+            SetPreferenceReveal(false, default, 0f);
         }
 
         public void Bind(AudienceSnapshot snapshot, float calmUpperBound)
@@ -191,6 +201,7 @@ namespace ContextStage
             _exitElapsed = 0f;
             _hasLayout = false;
             _snapshot = snapshot;
+            SetPreferenceReveal(false, default, 0f);
             ApplyVisual(snapshot.Preference, snapshot.Stage);
             UpdateWarning();
         }
@@ -254,6 +265,7 @@ namespace ContextStage
                 : (_boundId.Value & 1) == 0 ? -1f : 1f;
             _exitElapsed = 0f;
             _exitCompleted = completed;
+            SetPreferenceReveal(false, default, 0f);
             if (warningRoot != null) warningRoot.SetActive(false);
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
@@ -263,6 +275,33 @@ namespace ContextStage
         {
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(threatened && !_exiting);
+        }
+
+        public bool ContainsPreferenceHoverPoint(Vector2 worldPosition)
+        {
+            return IsBound &&
+                   !_exiting &&
+                   preferenceHoverCollider != null &&
+                   preferenceHoverCollider.enabled &&
+                   preferenceHoverCollider.OverlapPoint(worldPosition);
+        }
+
+        public void SetPreferenceReveal(
+            bool visible,
+            Color color,
+            float outlineThickness)
+        {
+            if (preferenceOutline == null) return;
+
+            if (visible)
+            {
+                preferenceOutline.Configure(
+                    characterRenderer,
+                    color,
+                    outlineThickness);
+            }
+
+            preferenceOutline.SetVisible(visible);
         }
 
         void Update()
