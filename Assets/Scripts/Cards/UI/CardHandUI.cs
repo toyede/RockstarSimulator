@@ -122,7 +122,7 @@ namespace ContextStage
             var dragHandler = view.GetComponent<CardDragHandler>();
             if (dragHandler != null) dragHandler.enabled = true;
 
-            if (!SingletonRuntime.IsQuitting && PoolManager.HasInstance) PoolManager.Despawn(view);
+            if (!IsTearingDown) PoolManager.Despawn(view);
         }
 
         void ReleaseDissolvingViews()
@@ -198,9 +198,19 @@ namespace ContextStage
                 LayoutRebuilder.ForceRebuildLayoutImmediate(parentRect);
         }
 
+        /// <summary>
+        /// 씬이 언로드되는 중인가. 이때 PoolManager.Despawn 을 부르면 파괴 중인 부모에
+        /// 리페어런트를 시도해 "Cannot set the parent ... while deactivating" 경고가 쏟아진다.
+        /// Unity 가 어차피 오브젝트를 정리하므로 이럴 때는 목록만 비운다.
+        /// </summary>
+        bool IsTearingDown =>
+            SingletonRuntime.IsQuitting ||
+            !PoolManager.HasInstance ||
+            !gameObject.scene.isLoaded;
+
         void ReleaseViews()
         {
-            if (SingletonRuntime.IsQuitting || !PoolManager.HasInstance)
+            if (IsTearingDown)
             {
                 _activeViews.Clear();
                 return;

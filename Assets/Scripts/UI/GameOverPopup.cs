@@ -63,7 +63,7 @@ namespace ContextStage
         public void OnClickRestart() => GameManager.Instance.RestartScene();
 
         /// <summary>[선택] 타이틀로 돌아가는 버튼을 만들면 OnClick 에 이 함수를 연결한다. (LeaderboardPopup.OnClickTitle 과 동일한 패턴)</summary>
-        public void OnClickTitle() => UIManager.Instance.LoadScene("Title");
+        public void OnClickTitle() => TitleReturn.Go();
 
         /// <summary>[선택] 리더보드를 바로 보고 싶을 때 버튼 OnClick 에 연결한다. GameOver 시 자동으로도 열리므로 보조 수단이다.</summary>
         public void OnClickLeaderboard() => UIManager.Instance.Open<LeaderboardPopup>();
