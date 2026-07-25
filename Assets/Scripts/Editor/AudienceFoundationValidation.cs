@@ -170,22 +170,48 @@ namespace ContextStage.EditorTools
 
         static void ValidateAudienceReaction(List<string> failures)
         {
-            var profile = new AudienceReactionProfile();
+            var profile = new AudienceReactionProfile(
+                true,
+                10,
+                20,
+                30,
+                100,
+                200,
+                300,
+                1f);
             var audience = new AudienceSnapshot(
                 new AudienceId(1),
                 CrowdPreference.Mosh,
-                50f,
-                AudienceEngagementStage.Middle,
+                80f,
+                AudienceEngagementStage.Excited,
                 0f);
             AudienceReactionResult result =
                 AudienceReactionResolver.Resolve(profile, audience);
 
             Require(
                 result.AudienceId == audience.Id &&
-                result.PreferenceScore == 1 &&
-                result.StageScore == 2 &&
-                result.Value == 3,
-                "Audience reaction is not preference score + stage score.",
+                result.PreferenceScore == 30 &&
+                result.StageScore == 300 &&
+                result.Value == 330,
+                "Audience reaction values were mixed up or capped.",
+                failures);
+
+            var disabledProfile = new AudienceReactionProfile(
+                false,
+                999,
+                999,
+                999,
+                999,
+                999,
+                999,
+                1f);
+            AudienceReactionResult disabledResult =
+                AudienceReactionResolver.Resolve(disabledProfile, audience);
+            Require(
+                disabledResult.PreferenceScore == 0 &&
+                disabledResult.StageScore == 0 &&
+                disabledResult.Value == 0,
+                "A card with audience reactions disabled produced a reaction.",
                 failures);
         }
 

@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace ContextStage.EditorTools
@@ -136,13 +136,30 @@ namespace ContextStage.EditorTools
             Debug.Log($"[AudienceSetup] Audience member prefab ready: {MemberPrefabPath}");
         }
 
-        [MenuItem("Tools/Audience/Configure Audience Card Profiles")]
+        [MenuItem("Tools/Audience/Validate Audience Card Prefab Values")]
         public static void ConfigureCardProfiles()
+        {
+            var failures = new List<string>();
+            CollectCardProfileFailures(failures);
+            if (failures.Count > 0)
+                throw new InvalidOperationException(
+                    "Audience card prefab validation failed:\n- " +
+                    string.Join("\n- ", failures));
+
+            Debug.Log(
+                "[AudienceSetup] Card prefab audience values are valid. " +
+                "No prefab values were changed.");
+        }
+
+        [MenuItem("Tools/Audience/Prepare Card Prefabs For Manual Values")]
+        public static void PrepareCardPrefabsForManualValues()
         {
             string[] guids = AssetDatabase.FindAssets(
                 "t:Prefab",
                 new[] { "Assets/Card_Prefab" });
-            int configured = 0;
+            var captured = new Dictionary<string, CardProfileValues>(
+                StringComparer.OrdinalIgnoreCase);
+            string basePath = "Assets/Card_Prefab/Card_Base.prefab";
 
             for (int i = 0; i < guids.Length; i++)
             {
@@ -152,49 +169,7 @@ namespace ContextStage.EditorTools
                 {
                     CardDefinition card = root.GetComponent<CardDefinition>();
                     if (card == null) continue;
-
-                    var serialized = new SerializedObject(card);
-                    if (card.Role == CardRole.Special)
-                    {
-                        RequireProperty(serialized, "role").enumValueIndex =
-                            (int)CardRole.Normal;
-                    }
-                    SerializedProperty profile =
-                        RequireProperty(serialized, "audienceReaction");
-                    bool applies = card.Role != CardRole.Utility;
-                    bool isTemplate = string.Equals(
-                        path,
-                        "Assets/Card_Prefab/Card_Base.prefab",
-                        StringComparison.OrdinalIgnoreCase);
-                    SetBool(profile, "appliesToAudience", applies);
-                    SetInt(
-                        profile,
-                        "chillScore",
-                        applies
-                            ? !isTemplate &&
-                              card.TargetPreference == CrowdPreference.Chill ? 3 : 1
-                            : 0);
-                    SetInt(
-                        profile,
-                        "singalongScore",
-                        applies
-                            ? !isTemplate &&
-                              card.TargetPreference == CrowdPreference.Singalong ? 3 : 1
-                            : 0);
-                    SetInt(
-                        profile,
-                        "moshScore",
-                        applies
-                            ? !isTemplate &&
-                              card.TargetPreference == CrowdPreference.Mosh ? 3 : 1
-                            : 0);
-                    SetInt(profile, "calmScore", applies ? 1 : 0);
-                    SetInt(profile, "middleScore", applies ? 2 : 0);
-                    SetInt(profile, "excitedScore", applies ? 3 : 0);
-                    SetFloat(profile, "engagementMultiplier", applies ? 1f : 0f);
-                    serialized.ApplyModifiedPropertiesWithoutUndo();
-                    PrefabUtility.SaveAsPrefabAsset(root, path);
-                    configured++;
+                    captured[path] = CardProfileValues.From(card.AudienceReaction);
                 }
                 finally
                 {
@@ -202,95 +177,43 @@ namespace ContextStage.EditorTools
                 }
             }
 
+            if (!captured.ContainsKey(basePath))
+                throw new UnityException(
+                    $"[AudienceSetup] Card base prefab is missing: {basePath}");
+
+            WriteCardProfile(basePath, CardProfileValues.NoReaction);
+            foreach (KeyValuePair<string, CardProfileValues> pair in captured)
+            {
+                if (string.Equals(
+                        pair.Key,
+                        basePath,
+                        StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                WriteCardProfile(pair.Key, pair.Value);
+            }
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log($"[AudienceSetup] Configured {configured} card audience profiles.");
+            ConfigureCardProfiles();
+            Debug.Log(
+                $"[AudienceSetup] Prepared {captured.Count - 1} card prefabs for " +
+                "manual audience-value authoring. Existing effective values were preserved.");
         }
 
-        [MenuItem("Tools/Audience/Configure Main Scene For Individual Audience")]
+        [Obsolete("Use AudienceRuntimeSetup.InstallInActiveScene instead.")]
         public static void ConfigureMainScene()
         {
-            GameObject root = GameObject.Find("[AudienceSystem]");
-            if (root == null)
-                throw new UnityException(
-                    "[AudienceSetup] The staged [AudienceSystem] object is missing.");
-
-            AudienceRosterSystem system = root.GetComponent<AudienceRosterSystem>();
-            if (system == null)
-                throw new UnityException(
-                    "[AudienceSetup] AudienceRosterSystem is missing.");
-            AudienceRosterPresenter presenter =
-                root.GetComponent<AudienceRosterPresenter>();
-            if (presenter == null)
-                presenter = root.AddComponent<AudienceRosterPresenter>();
-            AudienceDebugInput debugInput = root.GetComponent<AudienceDebugInput>();
-            if (debugInput == null)
-                debugInput = root.AddComponent<AudienceDebugInput>();
-
-            AudienceEngagementConfig engagement =
-                AssetDatabase.LoadAssetAtPath<AudienceEngagementConfig>(
-                    EngagementConfigPath);
-            AudienceFlowConfig flow =
-                AssetDatabase.LoadAssetAtPath<AudienceFlowConfig>(FlowConfigPath);
-            if (engagement == null || flow == null)
-                throw new UnityException(
-                    "[AudienceSetup] Run Setup Audience Foundation Assets first.");
-            AudienceMemberActor memberPrefab =
-                AssetDatabase.LoadAssetAtPath<GameObject>(MemberPrefabPath)
-                    ?.GetComponent<AudienceMemberActor>();
-            if (memberPrefab == null)
-                throw new UnityException(
-                    "[AudienceSetup] Run Create Or Update Audience Member Prefab first.");
-
-            root.transform.position = new Vector3(0f, 2f, 0f);
-            bool engagementAssigned = EditorSetupUtility.SetObjectField(
-                system,
-                "engagementConfig",
-                engagement);
-            bool flowAssigned = EditorSetupUtility.SetObjectField(
-                system,
-                "flowConfig",
-                flow);
-            bool prefabAssigned = EditorSetupUtility.SetObjectField(
-                presenter,
-                "memberPrefab",
-                memberPrefab);
-            bool rootAssigned = EditorSetupUtility.SetObjectField(
-                presenter,
-                "memberRoot",
-                root.transform);
-            CardSystem cards = UnityEngine.Object.FindFirstObjectByType<CardSystem>(
-                FindObjectsInactive.Include);
-            bool rosterAssigned =
-                cards != null &&
-                EditorSetupUtility.SetObjectField(cards, "audienceRoster", system);
-            if (!engagementAssigned ||
-                !flowAssigned ||
-                !prefabAssigned ||
-                !rootAssigned ||
-                !rosterAssigned)
-                throw new UnityException(
-                    "[AudienceSetup] Failed to configure the audience runtime.");
-
-            system.enabled = true;
-            presenter.enabled = true;
-            debugInput.enabled = true;
-            DisableLegacySceneSystems();
-
-            EditorSceneManager.MarkSceneDirty(root.scene);
-            Debug.Log(
-                "[AudienceSetup] Main now uses the individual audience runtime.",
-                system);
+            AudienceRuntimeSetup.InstallInActiveScene();
         }
 
         public static void SetupCompleteIndividualAudience()
         {
             SetupAssets();
             CreateOrUpdateMemberPrefab();
+            AudienceRuntimeSetup.CreateOrUpdateRuntimePrefab();
             ConfigureCardProfiles();
-            ConfigureMainScene();
             AssetDatabase.SaveAssets();
-            EditorSceneManager.SaveOpenScenes();
         }
 
         static T LoadOrCreate<T>(string path) where T : ScriptableObject
@@ -323,36 +246,84 @@ namespace ContextStage.EditorTools
             return go.transform;
         }
 
-        static void DisableLegacySceneSystems()
+        internal static void CollectCardProfileFailures(List<string> failures)
         {
-            SetEnabled<CrowdSpawner>(false);
-            SetEnabled<CrowdMoodDirector>(false);
-            SetEnabled<CrowdCompositionManager>(false);
-            SetEnabled<CrowdCompositionDebugView>(false);
-            SetEnabled<CrowdShiftDirector>(false);
-            SetEnabled<HypeSystem>(false);
-            SetEnabled<HypeDebugInput>(false);
-            SetEnabled<SpecialAudienceManager>(false);
-            SetEnabled<SpecialAudienceDropTarget>(false);
-            SetEnabled<StageLightEventBridge>(false);
-            SetEnabled<CrowdAmbienceSystem>(false);
-            SetEnabled<CrowdAmbienceDebugInput>(false);
+            if (failures == null) throw new ArgumentNullException(nameof(failures));
 
-            GameObject hypeGauge = GameObject.Find("HypeCanvas/HypeGauge");
-            if (hypeGauge != null) hypeGauge.SetActive(false);
-            GameObject specialAudience = GameObject.Find("[Crowd]/SpecialAudience");
-            if (specialAudience != null) specialAudience.SetActive(false);
-            GameObject specialCanvas = GameObject.Find("SpecialAudienceCanvas");
-            if (specialCanvas != null) specialCanvas.SetActive(false);
+            string[] guids = AssetDatabase.FindAssets(
+                "t:Prefab",
+                new[] { "Assets/Card_Prefab" });
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                CardDefinition card =
+                    prefab != null ? prefab.GetComponent<CardDefinition>() : null;
+                if (card == null) continue;
+
+                AudienceReactionProfile profile = card.AudienceReaction;
+                if (profile == null)
+                {
+                    failures.Add($"[{path}] Audience reaction values are missing.");
+                    continue;
+                }
+
+                if (!profile.TryValidate(out string error))
+                {
+                    failures.Add($"[{path}] {error}");
+                    continue;
+                }
+
+                bool isTemplate = string.Equals(
+                    path,
+                    "Assets/Card_Prefab/Card_Base.prefab",
+                    StringComparison.OrdinalIgnoreCase);
+                bool shouldReact = !isTemplate && card.Role != CardRole.Utility;
+                if (profile.AppliesToAudience != shouldReact)
+                {
+                    failures.Add(
+                        $"[{path}] AppliesToAudience must be {shouldReact} for " +
+                        $"{(isTemplate ? "the base template" : card.Role.ToString())}.");
+                }
+
+                if (!shouldReact && !CardProfileValues.From(profile).IsNoReaction)
+                    failures.Add(
+                        $"[{path}] Non-performance cards must keep every audience " +
+                        "value and multiplier at zero.");
+            }
         }
 
-        static void SetEnabled<T>(bool value) where T : Behaviour
+        static void WriteCardProfile(string path, CardProfileValues values)
         {
-            T[] components = UnityEngine.Object.FindObjectsByType<T>(
-                FindObjectsInactive.Include,
-                FindObjectsSortMode.None);
-            for (int i = 0; i < components.Length; i++)
-                components[i].enabled = value;
+            GameObject root = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                CardDefinition card = root.GetComponent<CardDefinition>();
+                if (card == null)
+                    throw new UnityException(
+                        $"[AudienceSetup] CardDefinition is missing: {path}");
+
+                var serialized = new SerializedObject(card);
+                SerializedProperty profile =
+                    RequireProperty(serialized, "audienceReaction");
+                SetBool(profile, "appliesToAudience", values.AppliesToAudience);
+                SetInt(profile, "chillScore", values.ChillScore);
+                SetInt(profile, "singalongScore", values.SingalongScore);
+                SetInt(profile, "moshScore", values.MoshScore);
+                SetInt(profile, "calmScore", values.CalmScore);
+                SetInt(profile, "middleScore", values.MiddleScore);
+                SetInt(profile, "excitedScore", values.ExcitedScore);
+                SetFloat(
+                    profile,
+                    "engagementMultiplier",
+                    values.EngagementMultiplier);
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                PrefabUtility.SaveAsPrefabAsset(root, path);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
         }
 
         static SerializedProperty RequireProperty(
@@ -407,5 +378,66 @@ namespace ContextStage.EditorTools
             string fieldName,
             float value) =>
             RequireRelative(parent, fieldName).floatValue = value;
+
+        readonly struct CardProfileValues
+        {
+            public CardProfileValues(
+                bool appliesToAudience,
+                int chillScore,
+                int singalongScore,
+                int moshScore,
+                int calmScore,
+                int middleScore,
+                int excitedScore,
+                float engagementMultiplier)
+            {
+                AppliesToAudience = appliesToAudience;
+                ChillScore = chillScore;
+                SingalongScore = singalongScore;
+                MoshScore = moshScore;
+                CalmScore = calmScore;
+                MiddleScore = middleScore;
+                ExcitedScore = excitedScore;
+                EngagementMultiplier = engagementMultiplier;
+            }
+
+            public static CardProfileValues NoReaction =>
+                new CardProfileValues(false, 0, 0, 0, 0, 0, 0, 0f);
+
+            public bool AppliesToAudience { get; }
+            public int ChillScore { get; }
+            public int SingalongScore { get; }
+            public int MoshScore { get; }
+            public int CalmScore { get; }
+            public int MiddleScore { get; }
+            public int ExcitedScore { get; }
+            public float EngagementMultiplier { get; }
+
+            public bool IsNoReaction =>
+                !AppliesToAudience &&
+                ChillScore == 0 &&
+                SingalongScore == 0 &&
+                MoshScore == 0 &&
+                CalmScore == 0 &&
+                MiddleScore == 0 &&
+                ExcitedScore == 0 &&
+                Mathf.Approximately(EngagementMultiplier, 0f);
+
+            public static CardProfileValues From(AudienceReactionProfile profile)
+            {
+                if (profile == null)
+                    throw new ArgumentNullException(nameof(profile));
+
+                return new CardProfileValues(
+                    profile.AppliesToAudience,
+                    profile.ChillScore,
+                    profile.SingalongScore,
+                    profile.MoshScore,
+                    profile.CalmScore,
+                    profile.MiddleScore,
+                    profile.ExcitedScore,
+                    profile.EngagementMultiplier);
+            }
+        }
     }
 }
