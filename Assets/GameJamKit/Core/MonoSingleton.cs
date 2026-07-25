@@ -16,7 +16,7 @@ namespace GameJamKit
     {
         static T s_instance;
 
-        public static bool HasInstance => s_instance != null;
+        public static bool HasInstance => !SingletonRuntime.IsQuitting && s_instance != null;
 
         public static T Instance
         {

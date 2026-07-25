@@ -142,7 +142,7 @@ namespace ContextStage
             }
 
             enabled = false;
-            view?.Hide(instant: true);
+            if (view != null) view.Hide(instant: true);
             return false;
         }
 
@@ -220,7 +220,7 @@ namespace ContextStage
             if (!EnsureConfigured()) return;
             // 이미 공연이 진행 중인 상태에서 늦게 활성화돼도 자연스럽게 합류한다
             if (autoStart && GameManager.HasInstance && GameManager.Instance.IsPlaying) StartSystem();
-            else view?.Hide(instant: true);
+            else if (view != null) view.Hide(instant: true);
         }
 
         void OnEnable()
@@ -271,7 +271,7 @@ namespace ContextStage
 
             _phase = Phase.Stopped;
             _phaseDeadline = 0f;
-            view?.Hide(instant: true);
+            if (view != null) view.Hide(instant: true);
         }
 
         /// <summary>내부 상태를 초기값으로 되돌린다. (타이머·셔플 백·연출)</summary>
@@ -282,7 +282,7 @@ namespace ContextStage
             _hitRaisedForCurrentRequest = false;
             _lastReportedRemaining = -1f;
             RefillBag();
-            view?.Hide(instant: true);
+            if (view != null) view.Hide(instant: true);
         }
 
         /// <summary>랜덤 타입으로 즉시 등장시킨다. 이미 활성 요청이 있으면 교체한다.</summary>
@@ -354,7 +354,7 @@ namespace ContextStage
             });
             EventBus.Raise(new SpecialAudienceEnded { RequestType = type, Reason = SpecialAudienceEndReason.SpecialHit });
 
-            view?.PlaySpecialHit();
+            if (view != null) view.PlaySpecialHit();
             Log($"Special Hit: {type} ({reward}){(alreadyApplied ? " [카드가 이미 적용함]" : "")}");
         }
 
@@ -391,7 +391,7 @@ namespace ContextStage
                 case Phase.HitHold:
                     if (Time.time >= _phaseDeadline)
                     {
-                        view?.Hide(instant: false);
+                        if (view != null) view.Hide(instant: false);
                         ScheduleNextSpawn();
                     }
                     break;
@@ -405,7 +405,7 @@ namespace ContextStage
 
             _lastReportedRemaining = remaining;
             OnRequestTimeChanged?.Invoke(remaining, config.RequestDuration);
-            view?.SetRemaining(remaining, config.RequestDuration);
+            if (view != null) view.SetRemaining(remaining, config.RequestDuration);
         }
 
         void Spawn(HeatStage requestType)
@@ -419,7 +419,7 @@ namespace ContextStage
             OnSpecialAudienceSpawned?.Invoke(requestType, config.RequestDuration);
             EventBus.Raise(new SpecialAudienceSpawned { RequestType = requestType, Duration = config.RequestDuration });
 
-            view?.Show(requestType, config.RequestDuration);
+            if (view != null) view.Show(requestType, config.RequestDuration);
             ReportRemaining();
         }
 
@@ -437,8 +437,9 @@ namespace ContextStage
             _hitRaisedForCurrentRequest = false;
             _lastReportedRemaining = -1f;
 
-            if (reason == SpecialAudienceEndReason.Expired) view?.PlayExpire();
-            else view?.Hide(hideInstant);
+            if (view == null) return;
+            if (reason == SpecialAudienceEndReason.Expired) view.PlayExpire();
+            else view.Hide(hideInstant);
         }
 
         void ScheduleNextSpawn()

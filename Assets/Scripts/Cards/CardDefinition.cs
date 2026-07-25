@@ -55,6 +55,10 @@ namespace ContextStage
         [SerializeField, Min(0)] int specialHitBaseScore = 400;
         [SerializeField] float specialHitHeatDelta = 25f;
 
+        [Header("개별 관객 반응")]
+        [SerializeField] AudienceReactionProfile audienceReaction =
+            new AudienceReactionProfile();
+
         [Header("유틸리티")]
         [SerializeField, Min(0)] int drawCount = 2;
         [SerializeField, Min(1)] int rerollDrawCount = 3;
@@ -79,6 +83,7 @@ namespace ContextStage
         public float FarHeatDelta => farHeatDelta;
         public int SpecialHitBaseScore => specialHitBaseScore;
         public float SpecialHitHeatDelta => specialHitHeatDelta;
+        public AudienceReactionProfile AudienceReaction => audienceReaction;
         public int DrawCount => Mathf.Max(0, drawCount);
         public int RerollDrawCount => Mathf.Max(1, rerollDrawCount);
         public Sprite Artwork => artwork;

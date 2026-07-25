@@ -94,7 +94,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: role
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: artwork
@@ -130,10 +130,6 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
-      propertyPath: targetPreference
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: exactBaseScore
       value: 150
       objectReference: {fileID: 0}
@@ -142,12 +138,24 @@ PrefabInstance:
       value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
+      propertyPath: targetPreference
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: adjacentBaseScore
       value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: adjacentHeatDelta
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
+      propertyPath: audienceReaction.moshScore
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
+      propertyPath: audienceReaction.chillScore
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4133523582202247847, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: m_Color.b

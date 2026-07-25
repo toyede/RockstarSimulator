@@ -6,14 +6,17 @@ namespace ContextStage
 {
     /// <summary>
     /// 프리팹 카드 손패와 10장 단위 현재/대기 덱을 관리한다.
+    /// 공연 카드는 현재 관객을 개별 계산해 몰입도를 갱신하고 반응값 합계를 점수로 발행한다.
     /// 사용한 카드는 사라지고, 덱 묶음이 소진되면 미리 만든 다음 묶음으로 이어서 뽑는다.
     /// </summary>
     public sealed class CardSystem : MonoSingleton<CardSystem>
     {
         [SerializeField] CardDeckConfig config;
-        [SerializeField] CrowdCompositionManager crowdComposition;
+        [SerializeField] AudienceRosterSystem audienceRoster;
 
         readonly List<CardDefinition> _hand = new List<CardDefinition>();
+        readonly List<AudienceReactionResult> _audienceReactions =
+            new List<AudienceReactionResult>(10);
         PreparedDeck<CardDefinition> _deck;
 
         bool _selecting;
@@ -29,13 +32,14 @@ namespace ContextStage
         public int BonusCardCount => Mathf.Max(0, HandCount - MinimumHandSize);
         public int PreparedDeckCount => _deck != null ? _deck.PreparedBatchCount : 0;
         public int CurrentDeckRemaining => _deck != null ? _deck.CurrentRemaining : 0;
+        public AudienceRosterSystem AudienceRoster => audienceRoster;
 
         protected override void OnAwake()
         {
-            if (crowdComposition == null || !crowdComposition.IsConfigured)
+            if (audienceRoster == null)
             {
                 Debug.LogError(
-                    "[CardSystem] A configured CrowdCompositionManager reference is required.",
+                    "[CardSystem] An AudienceRosterSystem reference is required.",
                     this);
             }
             StartRun();
@@ -88,9 +92,13 @@ namespace ContextStage
         {
             if (_selecting) return false;
             if (!GameManager.HasInstance || !GameManager.Instance.IsPlaying) return false;
-            if (!HypeSystem.HasInstance)
+            if (audienceRoster == null ||
+                !audienceRoster.isActiveAndEnabled ||
+                !audienceRoster.IsConfigured)
             {
-                Debug.LogWarning("[CardSystem] HypeSystem이 없어 카드를 사용할 수 없습니다.");
+                Debug.LogError(
+                    "[CardSystem] Active configured AudienceRosterSystem is required.",
+                    this);
                 return false;
             }
             if (index < 0 || index >= _hand.Count) return false;
@@ -99,47 +107,78 @@ namespace ContextStage
             try
             {
                 var card = _hand[index];
-                if (card.Role == CardRole.Normal &&
-                    (crowdComposition == null || !crowdComposition.IsConfigured))
+                AudienceReactionProfile profile = card.AudienceReaction;
+                if (profile == null)
                 {
                     Debug.LogError(
-                        "[CardSystem] Cannot resolve a normal card without crowd composition.",
+                        $"[CardSystem] Card '{card.Id}' has no audience reaction data.",
+                        card);
+                    return false;
+                }
+                if (!profile.TryValidate(out string profileError))
+                {
+                    Debug.LogError(
+                        $"[CardSystem] Card '{card.Id}' has invalid audience reaction data: " +
+                        $"{profileError}",
                         this);
                     return false;
                 }
+                if (card.Role != CardRole.Utility && !profile.AppliesToAudience)
+                {
+                    Debug.LogError(
+                        $"[CardSystem] Performance card '{card.Id}' must apply an audience reaction.",
+                        card);
+                    return false;
+                }
+
+                _audienceReactions.Clear();
+                IReadOnlyList<AudienceSnapshot> members = audienceRoster.Members;
+                int gainedScore = 0;
+                int positiveReactionCount = 0;
+                for (int i = 0; i < members.Count; i++)
+                {
+                    AudienceReactionResult reaction =
+                        AudienceReactionResolver.Resolve(profile, members[i]);
+                    _audienceReactions.Add(reaction);
+                    gainedScore += reaction.Value;
+                    if (reaction.Value > 0) positiveReactionCount++;
+                }
+
+                for (int i = 0; i < _audienceReactions.Count; i++)
+                {
+                    AudienceReactionResult reaction = _audienceReactions[i];
+                    if (!audienceRoster.TryApplyCardReaction(
+                            reaction.AudienceId,
+                            card.Id,
+                            reaction.Value,
+                            profile.EngagementMultiplier,
+                            out _))
+                    {
+                        Debug.LogError(
+                            $"[CardSystem] Failed to apply '{card.Id}' to audience " +
+                            $"{reaction.AudienceId}.",
+                            this);
+                        return false;
+                    }
+                }
 
                 _hand.RemoveAt(index);
+                HypeJudgement feedback = ResolveFeedback(
+                    gainedScore,
+                    positiveReactionCount,
+                    _audienceReactions.Count);
 
-                float currentHype = Hype.Current;
-                CrowdReactionGrade crowdReaction =
-                    card.Role != CardRole.Normal
-                        ? CrowdReactionGrade.Good
-                        : crowdComposition.EvaluateReaction(card.TargetPreference);
-
-                var result = card.Role == CardRole.Normal
-                    ? CardEffectResolver.ResolveForCrowd(card, crowdReaction)
-                    : CardEffectResolver.Resolve(
-                        card,
-                        currentHype,
-                        HypeSystem.Instance.Config,
-                        specialRequest);
-                float multiplier = Hype.MultiplierFor(currentHype);
-                float crowdMultiplier = card.Role == CardRole.Normal
-                    ? CardEffectResolver.CrowdScoreMultiplier(crowdReaction)
-                    : 1f;
-                int gainedScore = Mathf.RoundToInt(
-                    result.BaseScore * multiplier * crowdMultiplier);
-
-                // 동기 EventBus 구독자가 현재 열기 배율로 점수를 먼저 반영한다.
+                // CardSelected is retained as the input/audio/visual notification contract.
+                // Gameplay score and engagement use the per-audience result above.
                 EventBus.Raise(new CardSelected
                 {
                     CardId = card.Id,
                     DisplayName = card.DisplayName,
                     HandIndex = index,
-                    Judgement = result.Judgement,
-                    Delta = result.HeatDelta,
-                    BaseScore = result.BaseScore,
-                    Multiplier = multiplier * crowdMultiplier
+                    Judgement = feedback,
+                    Delta = 0f,
+                    BaseScore = gainedScore,
+                    Multiplier = 1f
                 });
 
                 EventBus.Raise(new CardResolved
@@ -149,23 +188,17 @@ namespace ContextStage
                     HandIndex = index,
                     Role = card.Role,
                     TargetPreference = card.TargetPreference,
-                    CrowdReaction = crowdReaction,
-                    Judgement = result.Judgement,
-                    BaseScore = result.BaseScore,
-                    HypeMultiplier = multiplier,
-                    CrowdMultiplier = crowdMultiplier,
+                    CrowdReaction = gainedScore > 0
+                        ? CrowdReactionGrade.Good
+                        : CrowdReactionGrade.Weak,
+                    Judgement = feedback,
+                    BaseScore = gainedScore,
+                    HypeMultiplier = 1f,
+                    CrowdMultiplier = 1f,
                     GainedScore = gainedScore,
-                    HypeDelta = result.HeatDelta,
-                    IsSpecialHit = result.IsSpecialHit
+                    HypeDelta = 0f,
+                    IsSpecialHit = false
                 });
-
-                // 이 카드의 점수 계산이 끝난 뒤 열기를 변경한다.
-                if (!Mathf.Approximately(result.HeatDelta, 0f))
-                    Hype.ApplyDelta(result.HeatDelta, result.Judgement);
-
-                // 특수 히트였다면 특별 관객 요청을 소비시킨다. (보상은 위에서 이미 적용됐으므로 매니저는 연출·이벤트만)
-                if (result.IsSpecialHit)
-                    SpecialAudience.ConsumeRequest(card.TargetStage, result.BaseScore, result.HeatDelta);
 
                 ResolveHandEffect(card);
                 RaiseHandChanged();
@@ -175,6 +208,20 @@ namespace ContextStage
             {
                 _selecting = false;
             }
+        }
+
+        static HypeJudgement ResolveFeedback(
+            int totalReaction,
+            int positiveReactionCount,
+            int audienceCount)
+        {
+            if (totalReaction <= 0 || positiveReactionCount <= 0)
+                return HypeJudgement.Miss;
+            if (audienceCount > 0 &&
+                positiveReactionCount == audienceCount &&
+                totalReaction >= audienceCount * 5)
+                return HypeJudgement.Perfect;
+            return HypeJudgement.Good;
         }
 
         public CardDefinition GetCard(int index)
