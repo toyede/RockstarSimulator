@@ -29,6 +29,8 @@ namespace ContextStage
         [Tooltip("글자 크기(TMP fontSize)")]
         [Min(0.1f)] public float fontSize;
 
+        public FontStyles fontStyle;
+
         public static FloatingWorldTextStyle Default => new FloatingWorldTextStyle
         {
             duration = 1.1f,
@@ -37,6 +39,7 @@ namespace ContextStage
             peakScale = 1.25f,
             fadeStart = 0.6f,
             fontSize = 3f,
+            fontStyle = FontStyles.Normal,
         };
 
         /// <summary>
@@ -54,6 +57,7 @@ namespace ContextStage
                 peakScale = peakScale >= 0.01f ? peakScale : fallback.peakScale,
                 fadeStart = Mathf.Clamp01(fadeStart),
                 fontSize = fontSize >= 0.1f ? fontSize : fallback.fontSize,
+                fontStyle = fontStyle,
             };
         }
     }
@@ -110,6 +114,7 @@ namespace ContextStage
             _style = style.Sanitized();
             if (font != null) _text.font = font;
             _text.fontSize = _style.fontSize;
+            _text.fontStyle = _style.fontStyle;
             if (!string.IsNullOrEmpty(sortingLayer))
                 _text.renderer.sortingLayerName = sortingLayer;
 
