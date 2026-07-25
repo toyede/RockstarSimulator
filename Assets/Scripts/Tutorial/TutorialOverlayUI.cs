@@ -32,7 +32,12 @@ namespace ContextStage
         [SerializeField, Tooltip("딤 페이드 속도")] float dimFadeSpeed = 6f;
 
         [Header("스포트라이트")]
-        [SerializeField, Tooltip("대상 발밑 글로우 색")] Color glowColor = new Color(1f, 0.95f, 0.7f, 0.55f);
+        [SerializeField, Tooltip("CHILL 관객 글로우 색")]
+        Color chillGlowColor = new Color32(0x31, 0xDF, 0xEA, 0x8C);
+        [SerializeField, Tooltip("SINGALONG 관객 글로우 색")]
+        Color singalongGlowColor = new Color32(0x64, 0x31, 0xEA, 0x8C);
+        [SerializeField, Tooltip("MOSH 관객 글로우 색")]
+        Color moshGlowColor = new Color32(0xF0, 0x1F, 0x1F, 0x8C);
         [SerializeField, Tooltip("글로우 펄스 속도")] float glowPulseSpeed = 3f;
 
         public event System.Action ContinueClicked;
@@ -126,10 +131,22 @@ namespace ContextStage
             if (actor == null) return;
 
             _spotTarget = actor.transform;
+            if (_glow != null) _glow.color = GlowColorFor(actor.Snapshot.Preference);
             foreach (var sr in actor.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 _boosted.Add((sr, sr.sortingOrder));
                 sr.sortingOrder += BoostOffset;
+            }
+        }
+
+        Color GlowColorFor(CrowdPreference preference)
+        {
+            switch (preference)
+            {
+                case CrowdPreference.Chill: return chillGlowColor;
+                case CrowdPreference.Singalong: return singalongGlowColor;
+                case CrowdPreference.Mosh: return moshGlowColor;
+                default: return chillGlowColor;
             }
         }
 
@@ -173,7 +190,7 @@ namespace ContextStage
             go.transform.SetParent(transform, false);
             _glow = go.AddComponent<SpriteRenderer>();
             _glow.sprite = CreateRadialSprite();
-            _glow.color = glowColor;
+            _glow.color = chillGlowColor; // Spotlight() 호출 시 대상 성향 색으로 바뀐다
             _glow.sortingOrder = DimOrder + 1; // 딤 바로 위, 부스트된 관객 아래
             _glow.enabled = false;
         }

@@ -22,6 +22,9 @@ namespace ContextStage
         float _hoverElapsed;
         bool _revealed;
 
+        /// <summary>[튜토리얼 전용] 현재 테두리가 표시된 대상. 없으면 null.</summary>
+        public AudienceMemberActor RevealedActor => _revealed ? _hoveredActor : null;
+
         void Awake()
         {
             if (presenter == null)

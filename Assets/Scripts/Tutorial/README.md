@@ -19,19 +19,31 @@ Tools/Tutorial/Setup Tutorial   →   Ctrl+S  (Main.unity 에서!)
 
 | 단계 | 내용 | 진행 조건 |
 |---|---|---|
-| Intro | 관객 3명(Mosh/Singalong/Chill) 고정, 딤 + 핵심 문장 | 클릭 |
+| Intro | 관객 Mosh 1명 등장, 손패는 성향별 고정 카드 3장(Mosh/Singalong/Chill), 딤 + 핵심 문장 | 클릭 |
 | PrefMosh | Mosh 관객 스포트라이트, **정답 공개** | 맞는 카드 사용 |
-| PrefSingalong | **절반 힌트** | 맞는 카드 사용 |
-| PrefChill | **힌트 없음** — 직접 판단 | 맞는 카드 사용 |
-| CrossUse→Explain | 아무 공연 카드 사용 → 실제 총반응 수치로 교차 반응 설명 | 사용 → 클릭 |
+| PrefSingalong | Mosh 퇴장 → Singalong 관객 등장, **절반 힌트** | 맞는 카드 사용 |
+| PrefChill | Singalong 퇴장 → Chill 관객 등장, **힌트 없음** — 직접 판단 | 맞는 카드 사용 |
+| HoverHint | 같은 Chill 관객 유지, 호버 시 테두리로 성향 확인하는 법 안내 | 실제로 호버해 테두리 확인 → 클릭 |
+| CrossUse→Explain | 세 관객(Mosh/Singalong/Chill) 재소집 → 아무 공연 카드 사용 → 실제 총반응 수치로 교차 반응 설명 | 사용 → 클릭 |
 | Excitement | Chill 관객을 지루 상태로 만들고 구하게 함 | Chill 카드 사용 |
 | CrowdChange | 흥분한 Singalong 관객 입장, **2초 관찰 강제** | 클릭 |
+| FeverIntro | 피버타임 강제 발동, 카드 사용해 보너스 점수 확인 | 카드 사용 |
+| FeverExplain | 피버 중 스코어링 방식(관객 수 기반) 설명 | 클릭 |
 | FinalRun | 관객 6명(지루한 Chill 2 포함), **30초 · 반응 +100 · 이탈 ≤1** | 타이머 |
 | Complete/Fail | 성공 → 본 공연 시작 / 실패 → **미니 공연만 재시작** | 클릭 |
 
+- 튜토리얼 시작 손패는 랜덤이 아니라 성향별 카드 1장씩, 총 3장으로 고정된다 (`CardSystem.SetHand`)
+- 관객은 Intro~PrefChill 구간에서 한 명씩만 등장해 세 성향을 순서대로 경험하고, CrossUse부터
+  세 관객이 함께 재소집된다 (`SetRoster`)
 - 틀린 카드는 **소모되지 않고 손패로 돌아오며** 힌트 문구가 뜬다 (CardInput.UseFilter 훅)
 - 손패에 정답 카드가 없으면 소프트락 방지를 위해 전부 허용된다
-- 튜토리얼 중: 자연 유입 정지 · 호응도 감소 정지 · 특별 관객 정지 · Crisis 정지 → 끝나면 전부 복구
+- 스포트라이트 글로우 색은 대상 관객의 성향(Chill 청록/Singalong 보라/Mosh 빨강)에 맞춰 바뀐다
+- PrefChill 직후, 실제로 관객 위에 마우스를 올려 테두리 색으로 성향을 확인하는 법을 안내한다
+  (개별 판단 연습을 먼저 끝낸 뒤 보조 도구로 소개, `AudiencePreferenceHoverController.RevealedActor` 폴링)
+- CrowdChange 직후, 실제 콤보 달성 여부와 무관하게 피버타임을 강제로 한 번 체험시킨다
+  (`FeverSystem.ForceStart()`, `IsActive`가 꺼지면 이 단계 동안 계속 재발동해 플레이어가 놓치지 않게 한다)
+- 튜토리얼 중: 자연 유입 정지 · 관객 개별 몰입도 자연 감소 정지 · 전역 Hype 감소 정지 ·
+  특별 관객 정지 · Crisis 정지 → 끝나면 전부 복구
 - 끝나면 로스터/콤보/점수/호응도 리셋 후 **깨끗한 본 공연** 시작
 
 ## 3. 연출
@@ -56,7 +68,11 @@ Tools/Tutorial/Setup Tutorial   →   Ctrl+S  (Main.unity 에서!)
 |---|---|
 | `CardInput.cs` | `static UseFilter` / `UseBlocked` — null 이면 평소와 동일 |
 | `AudienceRosterSystem.cs` | `SuppressNaturalArrivals` — false 면 평소와 동일 |
+| `AudienceRosterSystem.cs` | `SuppressEngagementDecay` — false 면 평소와 동일 (관객 개별 몰입도 자연 감소) |
 | `AudienceRosterPresenter.cs` | `TryGetActor(id)` 읽기 전용 조회 |
+| `CardSystem.cs` | `SetHand(cards)` — 손패를 지정 카드로 강제 교체, 덱은 건드리지 않음 |
+| `AudiencePreferenceHoverController.cs` | `RevealedActor` — 현재 호버로 테두리가 표시된 관객 (읽기 전용 폴링) |
+| `FeverSystem.cs` | `ForceStart()` — 콤보 조건 없이 즉시 피버타임 시작 (이미 활성 중이면 무시) |
 
 ※ 프리젠터의 구버전 API 참조 2건(`PlayDeparture`/`LayoutPosition`)도 이번에 수정 — 컴파일 복구.
 
