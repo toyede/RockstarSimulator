@@ -227,6 +227,26 @@ namespace ContextStage
             if (_from == null) _from = _to;
         }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        /// <summary>
+        /// 이 컴포넌트만 켜져 있으면 조명은 시작 단계(Chill)에서 <b>영원히 멈춘다.</b>
+        /// 단계를 넣어 주는 건 StageLightEventBridge 이기 때문이다.
+        /// 실제로 브리지 체크가 꺼진 채로 "조명이 안 바뀐다"를 한참 찾은 적이 있어 경고를 남긴다.
+        /// (조명만 단독으로 튜닝하려고 일부러 껐다면 무시해도 되는 경고다)
+        /// </summary>
+        void Start()
+        {
+            var bridge = GetComponent<StageLightEventBridge>();
+            if (bridge != null && bridge.enabled) return;
+
+            Debug.LogWarning(
+                "[StageLight] StageLightEventBridge 가 없거나 꺼져 있습니다 — " +
+                "조명이 시작 단계에서 멈춥니다. " +
+                "Tools/Lighting/Fix Stage Light Wiring 을 실행하세요.",
+                this);
+        }
+#endif
+
         void OnEnable()
         {
             // 꺼졌다 켜져도 현재 단계 상태로 즉시 복구한다 (플래시 잔상 없음)

@@ -53,7 +53,7 @@ namespace ContextStage.EditorTools
 
             // 3) 컨트롤러 + 브리지
             var controller = EnsureComponent<StageLightController>(root);
-            if (root.GetComponent<StageLightEventBridge>() == null) Undo.AddComponent<StageLightEventBridge>(root);
+            EnsureBridgeWiring(root, controller);
 
             SetObjectField(controller, "globalLight", global);
             SetObjectField(controller, "leftStageLight", left);
@@ -65,6 +65,82 @@ namespace ContextStage.EditorTools
             Debug.Log("[StageLight] 셋업 완료. 인스펙터 ⋮ 메뉴의 Debug/Set Chill·Singalong·Mosh 로 먼저 확인하세요. " +
                       "(씬을 Ctrl+S 로 저장할 것)");
         }
+
+        /// <summary>
+        /// 조명이 <b>전혀 바뀌지 않을 때</b> 쓰는 복구 메뉴.
+        ///
+        /// 실제로 이 사고가 있었다: 씬에서 StageLightEventBridge 컴포넌트의 체크가 꺼져 있어
+        /// 아무 이벤트도 구독하지 않았고, 컨트롤러는 시작 단계(Chill)에 멈춰 있었다.
+        /// 밝기·색 값은 전혀 건드리지 않으므로 튜닝해 둔 프리셋이 날아가지 않는다.
+        /// </summary>
+        [MenuItem("Tools/Lighting/Fix Stage Light Wiring", false, 3)]
+        public static void FixStageLightWiring()
+        {
+            var root = GameObject.Find("StageLighting");
+            var controller = root != null ? root.GetComponent<StageLightController>() : null;
+            if (controller == null)
+            {
+                Debug.LogWarning(
+                    "[StageLight] StageLighting/StageLightController 가 없습니다. " +
+                    "먼저 Tools/Lighting/Setup Stage Lighting 을 실행하세요.");
+                return;
+            }
+
+            bool controllerWasDisabled = !controller.enabled;
+            if (controllerWasDisabled)
+            {
+                Undo.RecordObject(controller, "Enable Stage Light Controller");
+                controller.enabled = true;
+                EditorUtility.SetDirty(controller);
+            }
+
+            bool bridgeWasDisabled = EnsureBridgeWiring(root, controller);
+
+            if (!AudienceRosterSystemExists())
+            {
+                Debug.LogWarning(
+                    "[StageLight] 씬에서 AudienceRosterSystem 을 찾지 못했습니다. " +
+                    "관객 최다 성향 대신 열기 단계로 폴백합니다. " +
+                    "AudienceRuntime 프리팹이 배치돼 있는지 확인하세요.");
+            }
+
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            Selection.activeGameObject = root;
+
+            string fixedParts =
+                (controllerWasDisabled ? "Controller 켬 / " : string.Empty) +
+                (bridgeWasDisabled ? "EventBridge 켬 / " : string.Empty);
+            Debug.Log(
+                $"[StageLight] 배선 확인 완료. {(string.IsNullOrEmpty(fixedParts) ? "이미 정상이었습니다. " : fixedParts)}" +
+                "밝기·프리셋 값은 건드리지 않았습니다. (씬을 Ctrl+S 로 저장할 것)",
+                controller);
+        }
+
+        /// <summary>
+        /// 브리지를 붙이고 <b>반드시 켜 둔다.</b> 컨트롤러만 켜져 있으면 조명은
+        /// 시작 단계에서 영원히 멈춰 있으므로, 셋업이 이 상태를 남기면 안 된다.
+        /// </summary>
+        /// <returns>꺼져 있던 것을 켰으면 true.</returns>
+        static bool EnsureBridgeWiring(GameObject root, StageLightController controller)
+        {
+            var bridge = EnsureComponent<StageLightEventBridge>(root);
+            if (bridge == null) return false;
+
+            bool wasDisabled = !bridge.enabled;
+            if (wasDisabled)
+            {
+                Undo.RecordObject(bridge, "Enable Stage Light Event Bridge");
+                bridge.enabled = true;
+                EditorUtility.SetDirty(bridge);
+            }
+
+            // Awake 에서도 GetComponent 로 찾지만, 인스펙터에서 눈으로 확인되도록 채워 둔다
+            SetObjectField(bridge, "controller", controller);
+            return wasDisabled;
+        }
+
+        static bool AudienceRosterSystemExists() =>
+            Object.FindFirstObjectByType<AudienceRosterSystem>(FindObjectsInactive.Include) != null;
 
         [MenuItem("Tools/Lighting/Apply Pixel Stage Light Style", false, 1)]
         public static void ApplyPixelStageLightStyle()

@@ -219,6 +219,8 @@ namespace ContextStage
             _exiting = false;
             _exitStyle = AudienceExitStyle.Default;
             _animationPlayer.Stop();
+            if (characterRenderer != null)
+                characterRenderer.flipX = false;
             if (warningRoot != null) warningRoot.SetActive(false);
             if (crisisWarningRoot != null)
                 crisisWarningRoot.SetActive(false);
@@ -570,9 +572,12 @@ namespace ContextStage
                 motionOffset;
             // 착지 스쿼시: 눌리면 세로로 줄고 가로로 퍼진다 (점프에 무게감을 준다)
             float scale = _currentLayoutScale * sizeRatio * (1f + pulse);
-            float flip = allowHorizontalFlip ? _variance.Flip : 1f;
+            bool flipCharacter =
+                allowHorizontalFlip &&
+                _variance.Flip < 0f;
+            characterRenderer.flipX = flipCharacter;
             transform.localScale = new Vector3(
-                flip * scale * (1f + squashAmount * 0.5f),
+                scale * (1f + squashAmount * 0.5f),
                 scale * (1f - squashAmount),
                 1f);
 
