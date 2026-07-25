@@ -51,6 +51,7 @@ namespace ContextStage.EditorTools
             ValidateStageBoundaries(engagement, failures);
             ValidateRosterLifecycle(engagement, flow, failures);
             ValidateAudienceReaction(failures);
+            ValidateMemberPrefab(failures);
         }
 
         static void ValidateStageBoundaries(
@@ -212,6 +213,40 @@ namespace ContextStage.EditorTools
                 disabledResult.StageScore == 0 &&
                 disabledResult.Value == 0,
                 "A card with audience reactions disabled produced a reaction.",
+                failures);
+        }
+
+        static void ValidateMemberPrefab(List<string> failures)
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                AudienceFoundationSetup.MemberPrefabPath);
+            Require(
+                prefab != null,
+                "Audience member prefab is missing.",
+                failures);
+            if (prefab == null) return;
+
+            AudienceMemberActor actor =
+                prefab.GetComponent<AudienceMemberActor>();
+            AudienceReactionPopup popup =
+                prefab.GetComponentInChildren<AudienceReactionPopup>(true);
+            Require(
+                actor != null,
+                "AudienceMemberActor is missing from the member prefab.",
+                failures);
+            Require(
+                popup != null,
+                "AudienceReactionPopup is missing from the member prefab.",
+                failures);
+            if (actor == null || popup == null) return;
+
+            Require(
+                actor.ReactionPopup == popup,
+                "AudienceMemberActor does not reference its reaction popup.",
+                failures);
+            Require(
+                popup.IsConfigured && popup.ValueText != null,
+                "Audience reaction popup text reference is incomplete.",
                 failures);
         }
 

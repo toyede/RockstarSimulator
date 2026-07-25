@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 
@@ -99,6 +100,51 @@ namespace ContextStage.EditorTools
                 fillRenderer.sprite = barSprite;
                 fillRenderer.color = new Color(0.95f, 0.19f, 0.16f, 1f);
 
+                RectTransform reactionRoot =
+                    FindOrCreateRectChild(
+                        root.transform,
+                        "ReactionPopup",
+                        out bool createdReactionRoot);
+                if (createdReactionRoot)
+                {
+                    reactionRoot.localPosition = new Vector3(0f, 1.75f, 0f);
+                    reactionRoot.localRotation = Quaternion.identity;
+                    reactionRoot.localScale = Vector3.one;
+                    reactionRoot.sizeDelta = new Vector2(3f, 1f);
+                }
+
+                TextMeshPro reactionText =
+                    reactionRoot.GetComponent<TextMeshPro>();
+                bool createdReactionText = reactionText == null;
+                if (reactionText == null)
+                    reactionText = reactionRoot.gameObject.AddComponent<TextMeshPro>();
+                AudienceReactionPopup reactionPopup =
+                    reactionRoot.GetComponent<AudienceReactionPopup>();
+                if (reactionPopup == null)
+                    reactionPopup =
+                        reactionRoot.gameObject.AddComponent<AudienceReactionPopup>();
+
+                if (createdReactionText)
+                {
+                    reactionText.font = TMP_Settings.defaultFontAsset;
+                    reactionText.fontSize = 4.5f;
+                    reactionText.fontStyle = FontStyles.Bold;
+                    reactionText.alignment = TextAlignmentOptions.Center;
+                    reactionText.color = new Color(1f, 0.92f, 0.28f, 1f);
+                    reactionText.margin = Vector4.zero;
+                    reactionText.richText = false;
+                }
+                if (reactionText.font == null)
+                    throw new UnityException(
+                        "[AudienceSetup] TMP default font is not configured.");
+
+                reactionText.text = string.Empty;
+                reactionText.enabled = false;
+
+                var reactionSerialized = new SerializedObject(reactionPopup);
+                SetReference(reactionSerialized, "valueText", reactionText);
+                reactionSerialized.ApplyModifiedPropertiesWithoutUndo();
+
                 var serialized = new SerializedObject(actor);
                 SetReference(serialized, "characterRenderer", character);
                 SetReference(serialized, "chillSprite", chillSource.sprite);
@@ -114,6 +160,7 @@ namespace ContextStage.EditorTools
                     "warningBackgroundRenderer",
                     backgroundRenderer);
                 SetReference(serialized, "warningFillRenderer", fillRenderer);
+                SetReference(serialized, "reactionPopup", reactionPopup);
                 serialized.ApplyModifiedPropertiesWithoutUndo();
 
                 character.sprite = moshSource.sprite;
@@ -244,6 +291,27 @@ namespace ContextStage.EditorTools
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
             return go.transform;
+        }
+
+        static RectTransform FindOrCreateRectChild(
+            Transform parent,
+            string name,
+            out bool created)
+        {
+            Transform child = parent.Find(name);
+            if (child != null)
+            {
+                created = false;
+                if (child is RectTransform rectTransform) return rectTransform;
+                throw new UnityException(
+                    $"[AudienceSetup] '{name}' must use RectTransform.");
+            }
+
+            var go = new GameObject(name, typeof(RectTransform));
+            var rect = (RectTransform)go.transform;
+            rect.SetParent(parent, false);
+            created = true;
+            return rect;
         }
 
         internal static void CollectCardProfileFailures(List<string> failures)

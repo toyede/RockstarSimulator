@@ -102,7 +102,7 @@ namespace ContextStage
         {
             if (!_actors.TryGetValue(e.Current.Id, out AudienceMemberActor actor)) return;
             actor.ApplySnapshot(e.Current);
-            actor.PlayReaction(e.ReactionValue);
+            actor.PlayReaction(e.ReactionValue, e.EngagementDelta);
         }
 
         void OnAudienceDeparted(AudienceDeparted e)
