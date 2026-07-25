@@ -260,32 +260,7 @@ namespace ContextStage.EditorTools
 
         static void ValidateCardAudienceProfiles(List<string> failures)
         {
-            string[] guids = AssetDatabase.FindAssets(
-                "t:Prefab",
-                new[] { "Assets/Card_Prefab" });
-            for (int i = 0; i < guids.Length; i++)
-            {
-                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
-                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                CardDefinition card =
-                    prefab != null ? prefab.GetComponent<CardDefinition>() : null;
-                if (card == null) continue;
-
-                AudienceReactionProfile profile = card.AudienceReaction;
-                Require(
-                    profile != null,
-                    $"[{path}] AudienceReactionProfile missing.",
-                    failures);
-                if (profile == null) continue;
-                Require(
-                    profile.TryValidate(out _),
-                    $"[{path}] AudienceReactionProfile is invalid.",
-                    failures);
-                Require(
-                    card.Role == CardRole.Utility || profile.AppliesToAudience,
-                    $"[{path}] performance card does not apply to the audience.",
-                    failures);
-            }
+            AudienceFoundationSetup.CollectCardProfileFailures(failures);
         }
 
         static void ValidateCompositionConfig(

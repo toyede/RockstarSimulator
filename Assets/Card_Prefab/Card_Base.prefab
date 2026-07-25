@@ -368,14 +368,14 @@ MonoBehaviour:
   specialHitBaseScore: 400
   specialHitHeatDelta: 25
   audienceReaction:
-    appliesToAudience: 1
-    chillScore: 1
-    singalongScore: 1
-    moshScore: 1
-    calmScore: 1
-    middleScore: 2
-    excitedScore: 3
-    engagementMultiplier: 1
+    appliesToAudience: 0
+    chillScore: 0
+    singalongScore: 0
+    moshScore: 0
+    calmScore: 0
+    middleScore: 0
+    excitedScore: 0
+    engagementMultiplier: 0
   drawCount: 2
   rerollDrawCount: 3
   artwork: {fileID: 0}

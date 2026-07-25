@@ -6,19 +6,44 @@ namespace ContextStage
     [Serializable]
     public sealed class AudienceReactionProfile
     {
-        [SerializeField] bool appliesToAudience = true;
+        [SerializeField] private bool appliesToAudience = true;
 
-        [Header("Preference Score")]
-        [SerializeField] int chillScore = 1;
-        [SerializeField] int singalongScore = 1;
-        [SerializeField] int moshScore = 1;
+        [Header("성향별 값")]
+        [SerializeField] private int chillScore = 1;
+        [SerializeField] private int singalongScore = 1;
+        [SerializeField] private int moshScore = 1;
 
-        [Header("Engagement Stage Score")]
-        [SerializeField] int calmScore = 1;
-        [SerializeField] int middleScore = 2;
-        [SerializeField] int excitedScore = 3;
+        [Header("몰입도별 값")]
+        [SerializeField] private int calmScore = 1;
+        [SerializeField] private int middleScore = 2;
+        [SerializeField] private int excitedScore = 3;
 
-        [SerializeField, Min(0f)] float engagementMultiplier = 1f;
+        [Header("몰입도 적용")]
+        [SerializeField, Min(0f)] private float engagementMultiplier = 1f;
+
+        public AudienceReactionProfile()
+        {
+        }
+
+        public AudienceReactionProfile(
+            bool appliesToAudience,
+            int chillScore,
+            int singalongScore,
+            int moshScore,
+            int calmScore,
+            int middleScore,
+            int excitedScore,
+            float engagementMultiplier)
+        {
+            this.appliesToAudience = appliesToAudience;
+            this.chillScore = chillScore;
+            this.singalongScore = singalongScore;
+            this.moshScore = moshScore;
+            this.calmScore = calmScore;
+            this.middleScore = middleScore;
+            this.excitedScore = excitedScore;
+            this.engagementMultiplier = engagementMultiplier;
+        }
 
         public bool AppliesToAudience => appliesToAudience;
         public int ChillScore => chillScore;

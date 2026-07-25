@@ -29,12 +29,30 @@ reaches zero is removed before `AudienceDeparted` is published. Card reactions
 are clamped to non-negative values and publish `AudienceCardReacted` before the
 corresponding state/summary events.
 
-## Main scene authority
+## Scene installation
 
-`Main.unity` uses this system as its audience gameplay authority. It starts with
-three roster members and creates exactly one `AudienceMember.prefab` actor for
-each member. `CrowdSpawner`, `CrowdCompositionManager`, `CrowdMoodDirector`,
-`HypeSystem`, and the former special-audience runtime are disabled in Main.
+`AudienceRuntime.prefab` is the portable scene root. Open the target scene, then
+use `Tools/Audience/Install Individual Audience Runtime`. The installer places
+or reuses the prefab, connects the scene `CardSystem`, and disables the former
+Crowd/Hype/SpecialAudience runtime in that scene. It never saves the scene
+automatically; review and save the active scene explicitly.
+
+Use `Tools/Audience/Validate Active Scene` after installation. The command is
+scene-name agnostic so the same prefab can be verified in `JWY.unity` now and
+installed into `Main.unity` later without copying scene YAML.
+
+## Card authoring
+
+Audience reaction values live directly on each card prefab's `CardDefinition`:
+
+- preference values: Chill, Singalong, Mosh
+- engagement-stage values: Calm, Middle, Excited
+- engagement multiplier
+
+Edit these values in Prefab Mode. There is no maximum-value clamp. The
+`Card_Base.prefab` reaction is neutral, so performance-card variants own their
+effective non-zero values. `Tools/Audience/Validate Audience Card Prefab Values`
+checks the data but never writes or replaces authored values.
 
 Performance cards calculate each member independently:
 
