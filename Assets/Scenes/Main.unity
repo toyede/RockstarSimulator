@@ -573,6 +573,74 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 266567186}
   m_CullTransparentMesh: 1
+--- !u!1001 &304657659
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3037661686435673757, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3037661686435673757, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3037661686435673757, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3037661686435673757, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3037661686435673757, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3037661686435673757, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3037661686435673757, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3037661686435673757, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3037661686435673757, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3037661686435673757, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8894026757008860659, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+      propertyPath: m_Name
+      value: AudienceRuntime
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+--- !u!114 &304657660 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3695097993084952874, guid: a64782199a01eb043a539223e4bf2c60, type: 3}
+  m_PrefabInstance: {fileID: 304657659}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1736125c2818e340b6b4ad1e54ba1df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceRosterSystem
 --- !u!1 &396843108
 GameObject:
   m_ObjectHideFlags: 0
@@ -1420,87 +1488,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &668832795
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 668832796}
-  - component: {fileID: 668832797}
-  - component: {fileID: 668832798}
-  - component: {fileID: 668832799}
-  m_Layer: 0
-  m_Name: '[AudienceSystem]'
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &668832796
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 668832795}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &668832797
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 668832795}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1736125c2818e340b6b4ad1e54ba1df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceRosterSystem
-  engagementConfig: {fileID: 11400000, guid: 003ddd77d0ce2bd41bdf6dc85a8424c2, type: 2}
-  flowConfig: {fileID: 11400000, guid: 6e900a7dd50af3444a179423041d33e5, type: 2}
---- !u!114 &668832798
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 668832795}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e63698126691f0445a11765dd297be56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceRosterPresenter
-  memberPrefab: {fileID: 1886025634550606897, guid: 91a9a4840ddd07a4292922b590dd2fed, type: 3}
-  memberRoot: {fileID: 668832796}
-  maximumColumns: 5
-  horizontalSpacing: 1.35
-  rowSpacing: 0.55
-  frontRowScale: 0.58
-  rowScaleFalloff: 0.86
-  baseSortingOrder: 5
---- !u!114 &668832799
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 668832795}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29f1ca76de426cb45afc6dd41689c7dd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceDebugInput
-  showOnScreenHelp: 1
 --- !u!1 &677778741
 GameObject:
   m_ObjectHideFlags: 0
@@ -1745,7 +1732,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CardSystem
   config: {fileID: 11400000, guid: 87cc67db836168d4daef0bab52eeb4b8, type: 2}
-  audienceRoster: {fileID: 668832797}
+  audienceRoster: {fileID: 304657660}
 --- !u!4 &831138398
 Transform:
   m_ObjectHideFlags: 0
@@ -4830,4 +4817,4 @@ SceneRoots:
   - {fileID: 1713894531}
   - {fileID: 677778744}
   - {fileID: 396843110}
-  - {fileID: 668832796}
+  - {fileID: 304657659}
