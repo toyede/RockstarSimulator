@@ -23,9 +23,14 @@ namespace ContextStage
         [SerializeField] SpriteRenderer warningBackgroundRenderer;
         [SerializeField] SpriteRenderer warningFillRenderer;
 
+        [Header("Crisis Warning")]
+        [SerializeField] GameObject crisisWarningRoot;
+
         [Header("Motion")]
         [SerializeField, Min(0f)] float enterDuration = 0.35f;
         [SerializeField, Min(0f)] float exitDuration = 0.45f;
+        [SerializeField, Min(0f)] float crisisExitDuration = 0.5f;
+        [SerializeField, Min(0f)] float crisisHorizontalTravel = 3.2f;
         [SerializeField, Min(0f)] float reactionPulseDuration = 0.22f;
         [SerializeField, Min(0f)] float reactionPulseScale = 0.18f;
         [SerializeField, Min(0f)] float calmBobHeight = 0.025f;
@@ -42,6 +47,8 @@ namespace ContextStage
         float _reactionPulseRemaining;
         float _exitElapsed;
         bool _exiting;
+        AudienceExitStyle _exitStyle;
+        float _exitDirection = 1f;
         Color _characterColor = Color.white;
         Action _exitCompleted;
 
@@ -75,9 +82,12 @@ namespace ContextStage
             _reactionPulseRemaining = 0f;
             _exitElapsed = 0f;
             _exiting = false;
+            _exitStyle = AudienceExitStyle.Default;
             _exitCompleted = null;
             _phase = UnityEngine.Random.value * Mathf.PI * 2f;
             if (warningRoot != null) warningRoot.SetActive(false);
+            if (crisisWarningRoot != null)
+                crisisWarningRoot.SetActive(false);
             ApplyTransform();
         }
 
@@ -87,7 +97,10 @@ namespace ContextStage
             _boundId = default;
             _exitCompleted = null;
             _exiting = false;
+            _exitStyle = AudienceExitStyle.Default;
             if (warningRoot != null) warningRoot.SetActive(false);
+            if (crisisWarningRoot != null)
+                crisisWarningRoot.SetActive(false);
         }
 
         public void Bind(AudienceSnapshot snapshot, float calmUpperBound)
@@ -131,12 +144,29 @@ namespace ContextStage
         }
 
         public void PlayExit(Action completed)
+            => PlayExit(AudienceExitStyle.Default, completed);
+
+        public void PlayExit(
+            AudienceExitStyle style,
+            Action completed)
         {
             if (_exiting) return;
             _exiting = true;
+            _exitStyle = style;
+            _exitDirection = Mathf.Abs(_layoutPosition.x) > 0.05f
+                ? Mathf.Sign(_layoutPosition.x)
+                : (_boundId.Value & 1) == 0 ? -1f : 1f;
             _exitElapsed = 0f;
             _exitCompleted = completed;
             if (warningRoot != null) warningRoot.SetActive(false);
+            if (crisisWarningRoot != null)
+                crisisWarningRoot.SetActive(false);
+        }
+
+        public void SetCrisisThreatened(bool threatened)
+        {
+            if (crisisWarningRoot != null)
+                crisisWarningRoot.SetActive(threatened && !_exiting);
         }
 
         void Update()
@@ -147,7 +177,11 @@ namespace ContextStage
             if (_exiting)
             {
                 _exitElapsed += deltaTime;
-                float duration = Mathf.Max(0.01f, exitDuration);
+                float duration = Mathf.Max(
+                    0.01f,
+                    _exitStyle == AudienceExitStyle.NearbyConcert
+                        ? crisisExitDuration
+                        : exitDuration);
                 _visibility = 1f - Mathf.Clamp01(_exitElapsed / duration);
                 ApplyTransform();
 
@@ -236,12 +270,39 @@ namespace ContextStage
                     Mathf.Clamp01(_reactionPulseRemaining / reactionPulseDuration) *
                     Mathf.PI) * reactionPulseScale
                 : 0f;
-            float exitOffset = _exiting ? (1f - _visibility) * 0.8f : 0f;
+            float exitProgress = _exiting ? 1f - _visibility : 0f;
+            Vector3 exitOffset;
+            float visualVisibility;
+            if (_exitStyle == AudienceExitStyle.NearbyConcert && _exiting)
+            {
+                float travel = Mathf.Pow(exitProgress, 1.35f);
+                exitOffset = new Vector3(
+                    _exitDirection * crisisHorizontalTravel * travel,
+                    Mathf.Sin(exitProgress * Mathf.PI * 5f) * 0.08f,
+                    0f);
+                visualVisibility = Mathf.Lerp(0.75f, 1f, _visibility);
+                transform.localRotation = Quaternion.Euler(
+                    0f,
+                    0f,
+                    -_exitDirection * exitProgress * 8f);
+            }
+            else
+            {
+                exitOffset = new Vector3(
+                    0f,
+                    exitProgress * 0.8f,
+                    0f);
+                visualVisibility = _visibility;
+                transform.localRotation = Quaternion.identity;
+            }
 
             transform.localPosition =
-                _layoutPosition + new Vector3(0f, bob + exitOffset, 0f);
+                _layoutPosition +
+                new Vector3(0f, bob, 0f) +
+                exitOffset;
             transform.localScale =
-                Vector3.one * (_layoutScale * _visibility * (1f + pulse));
+                Vector3.one *
+                (_layoutScale * visualVisibility * (1f + pulse));
 
             Color color = _characterColor;
             color.a *= _visibility;
