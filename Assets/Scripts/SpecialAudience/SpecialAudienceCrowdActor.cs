@@ -351,7 +351,7 @@ namespace ContextStage
 
             // 2) 제자리 움직임 — 일반 관객과 같은 방식으로 반동·흔들림·점프
             var profile = _celebrating ? celebrateMotion : motion;
-            EvaluateMotion(profile, Time.time + _phase, out float height, out float sway, out float squash);
+            CrowdMotionEvaluator.Evaluate(profile, Time.time + _phase, out float height, out float sway, out float squash);
 
             // 발 위치는 따로 들고 있고 점프는 거기에 얹기만 한다 (점프하면서 자리가 밀려 올라가지 않는다)
             motionRoot.localPosition = _feet + new Vector3(0f, height, 0f);
@@ -362,30 +362,6 @@ namespace ContextStage
                 _facing * _currentScale * (1f + squash * 0.5f) * _hoverScaleMultiplier,
                 _currentScale * (1f - squash) * _hoverScaleMultiplier,
                 1f);
-        }
-
-        /// <summary>
-        /// 특별 관객은 기존 CrowdMotionProfile 연출을 유지하되,
-        /// 위치와 크기만 개별 관객 Presenter에서 가져온다.
-        /// </summary>
-        static void EvaluateMotion(CrowdMotionProfile p, float t, out float height, out float sway, out float squash)
-        {
-            height = 0f;
-            squash = 0f;
-
-            if (p.jumpHeight > 0.001f && p.jumpsPerSecond > 0.001f)
-            {
-                float air = Mathf.Clamp(p.airTimeRatio, 0.1f, 1f);
-                float cycle = Mathf.Repeat(t * p.jumpsPerSecond, 1f);
-
-                if (cycle < air) height = Mathf.Sin(Mathf.PI * (cycle / air)) * p.jumpHeight;
-                else squash = Mathf.Sin(Mathf.PI * ((cycle - air) / (1f - air))) * p.squash;
-            }
-
-            height += Mathf.Abs(Mathf.Sin(t * Mathf.PI * p.bobSpeed)) * p.bobHeight
-                      * (1f - Mathf.Clamp01(p.jumpHeight * 2f));
-
-            sway = Mathf.Sin(t * Mathf.PI * p.swaySpeed) * p.swayAngle;
         }
 
         // ---------------- 표시 ----------------
