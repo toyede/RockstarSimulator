@@ -66,9 +66,40 @@ namespace ContextStage
         [SerializeField, Min(0.01f)] float layoutFollowSpeed = 4f;
         [SerializeField, Min(0f)] float reactionPulseDuration = 0.22f;
         [SerializeField, Min(0f)] float reactionPulseScale = 0.18f;
-        [SerializeField, Min(0f)] float calmBobHeight = 0.025f;
-        [SerializeField, Min(0f)] float middleBobHeight = 0.07f;
-        [SerializeField, Min(0f)] float excitedBobHeight = 0.16f;
+        [Header("Idle Motion (몰입도 단계별)")]
+        [SerializeField, Tooltip("Calm — 차분하게 몸만 흔든다")]
+        CrowdMotionProfile calmMotion = new CrowdMotionProfile
+        {
+            bobHeight = 0.03f, bobSpeed = 0.8f,
+            swayAngle = 2f, swaySpeed = 0.6f,
+            jumpHeight = 0f, jumpsPerSecond = 0f,
+            speedVariance = 0.25f,
+        };
+
+        [SerializeField, Tooltip("Middle — 뚜렷하게 흔들고 기운다")]
+        CrowdMotionProfile middleMotion = new CrowdMotionProfile
+        {
+            bobHeight = 0.08f, bobSpeed = 1.6f,
+            swayAngle = 6f, swaySpeed = 1.3f,
+            jumpHeight = 0f, jumpsPerSecond = 0f,
+            speedVariance = 0.2f,
+        };
+
+        [SerializeField, Tooltip("Excited — 방방 뛴다 (착지 스쿼시 포함)")]
+        CrowdMotionProfile excitedMotion = new CrowdMotionProfile
+        {
+            bobHeight = 0.04f, bobSpeed = 2f,
+            swayAngle = 8f, swaySpeed = 2.2f,
+            jumpHeight = 0.45f, jumpsPerSecond = 1.8f,
+            airTimeRatio = 0.7f, squash = 0.15f,
+            speedVariance = 0.15f,
+        };
+
+        [SerializeField, Min(0f), Tooltip("단계가 바뀔 때 움직임이 서서히 섞이는 시간(초)")]
+        float motionBlendDuration = 0.6f;
+
+        [SerializeField, Tooltip("좌우 반전을 개체마다 다르게 줘서 같은 스프라이트가 덜 반복돼 보이게 한다")]
+        bool allowHorizontalFlip = true;
 
         // 에셋 없이 코드만으로 그리는 호응도 바용 1x1 흰색 스프라이트.
         // pixelsPerUnit=1이라 localScale이 곧 월드 유닛 크기가 된다.
@@ -103,6 +134,12 @@ namespace ContextStage
         bool _hasLayout;
         float _calmUpperBound = 33f;
         float _phase;
+
+        // 개체별 편차 + 단계 전환 블렌드 (CrowdMemberView 와 같은 방식)
+        CrowdMotionEvaluator.Variance _variance = CrowdMotionEvaluator.Variance.Identity;
+        CrowdMotionProfile _motionFrom, _motionTo;
+        float _motionBlend = 1f;
+        AudienceEngagementStage _motionStage = AudienceEngagementStage.Calm;
         float _visibility;
         float _reactionPulseRemaining;
         float _exitElapsed;
@@ -163,6 +200,7 @@ namespace ContextStage
             _exitStyle = AudienceExitStyle.Default;
             _exitCompleted = null;
             _phase = UnityEngine.Random.value * Mathf.PI * 2f;
+            ResetMotion();
             _hasLayout = false;
             _animationPlayer.Stop();
             if (warningRoot != null) warningRoot.SetActive(false);
@@ -215,6 +253,7 @@ namespace ContextStage
             _snapshot = snapshot;
             if (preferenceChanged || stageChanged || characterRenderer.sprite == null)
                 ApplyVisual(snapshot.Preference, snapshot.Stage);
+            if (stageChanged) SetMotionStage(snapshot.Stage, instant: false);
             UpdateWarning();
         }
 
@@ -310,6 +349,10 @@ namespace ContextStage
 
             float deltaTime = Time.deltaTime;
             _animationPlayer.Tick(deltaTime);
+
+            // 단계 전환 블렌드 진행 (프로필 값이 툭 튀지 않게)
+            if (_motionBlend < 1f && motionBlendDuration > 0f)
+                _motionBlend = Mathf.Min(1f, _motionBlend + deltaTime / motionBlendDuration);
 
             float followStep = layoutFollowSpeed * deltaTime;
             _currentLayoutPosition = Vector3.MoveTowards(_currentLayoutPosition, _layoutPosition, followStep);
@@ -419,32 +462,60 @@ namespace ContextStage
             warningFill.localPosition = position;
         }
 
+        // ---------------- Idle 모션 (배경 군중과 공유하는 공식) ----------------
+
+        /// <summary>스폰 시 개체 편차를 뽑고 현재 단계 프로필로 즉시 맞춘다.</summary>
+        void ResetMotion()
+        {
+            _motionStage = _snapshot.Stage;
+            _motionTo = ProfileFor(_motionStage);
+            _motionFrom = _motionTo;
+            _motionBlend = 1f;
+
+            // id 기반이라 같은 관객은 항상 같은 개성을 갖는다 (재배치돼도 튀지 않음)
+            int seed = _boundId.IsValid ? _boundId.Value : GetInstanceID();
+            _variance = CrowdMotionEvaluator.MakeVariance(seed, _motionTo.speedVariance);
+        }
+
+        /// <summary>몰입도 단계가 바뀌면 프로필을 갈아탄다. 전환 중이면 지금 보이는 값에서 출발한다.</summary>
+        void SetMotionStage(AudienceEngagementStage stage, bool instant)
+        {
+            if (_motionStage == stage && _motionTo != null && !instant) return;
+
+            _motionStage = stage;
+            _motionFrom = _motionBlend >= 1f || _motionFrom == null ? _motionTo : _motionFrom;
+            _motionTo = ProfileFor(stage);
+            _motionBlend = instant || motionBlendDuration <= 0f ? 1f : 0f;
+
+            if (_motionFrom == null) _motionFrom = _motionTo;
+        }
+
+        CrowdMotionProfile ProfileFor(AudienceEngagementStage stage)
+        {
+            switch (stage)
+            {
+                case AudienceEngagementStage.Middle:  return middleMotion;
+                case AudienceEngagementStage.Excited: return excitedMotion;
+                default:                              return calmMotion;
+            }
+        }
+
         void ApplyTransform()
         {
-            float time = Time.time + _phase;
-            float bobHeight;
-            float bobSpeed;
-            switch (_snapshot.Stage)
-            {
-                case AudienceEngagementStage.Calm:
-                    bobHeight = calmBobHeight;
-                    bobSpeed = 1.4f;
-                    break;
-                case AudienceEngagementStage.Middle:
-                    bobHeight = middleBobHeight;
-                    bobSpeed = 2.4f;
-                    break;
-                case AudienceEngagementStage.Excited:
-                    bobHeight = excitedBobHeight;
-                    bobSpeed = 3.4f;
-                    break;
-                default:
-                    bobHeight = 0f;
-                    bobSpeed = 0f;
-                    break;
-            }
+            // 개체별 위상·속도 편차를 곱해 같은 공식을 써도 군무처럼 보이지 않게 한다.
+            float time = (Time.time + _phase) * _variance.SpeedMultiplier;
 
-            float bob = Mathf.Abs(Mathf.Sin(time * bobSpeed)) * bobHeight;
+            // 배경 군중(CrowdMemberView)·특별 관객과 완전히 같은 공식을 쓴다.
+            // bob + sway + 점프(사인 아치) + 착지 스쿼시. 단계 전환은 부드럽게 섞인다.
+            CrowdMotionEvaluator.EvaluateBlended(
+                _motionFrom,
+                _motionTo,
+                _motionBlend,
+                time,
+                out float bob,
+                out float swayAngle,
+                out float squashAmount);
+
             float pulse = reactionPulseDuration > 0f
                 ? Mathf.Sin(
                     Mathf.Clamp01(_reactionPulseRemaining / reactionPulseDuration) *
@@ -478,15 +549,21 @@ namespace ContextStage
                 sizeRatio = _exiting
                     ? _visibility
                     : Mathf.Lerp(enterStartScale, 1f, _visibility);
-                transform.localRotation = Quaternion.identity;
+                // 평상시에는 좌우로 기운다. (퇴장 연출은 위 분기가 자기 회전을 쓴다)
+                transform.localRotation = Quaternion.Euler(0f, 0f, swayAngle * _variance.Flip);
             }
 
             transform.localPosition =
                 _currentLayoutPosition +
                 new Vector3(0f, bob, 0f) +
                 motionOffset;
-            transform.localScale =
-                Vector3.one * (_currentLayoutScale * sizeRatio * (1f + pulse));
+            // 착지 스쿼시: 눌리면 세로로 줄고 가로로 퍼진다 (점프에 무게감을 준다)
+            float scale = _currentLayoutScale * sizeRatio * (1f + pulse);
+            float flip = allowHorizontalFlip ? _variance.Flip : 1f;
+            transform.localScale = new Vector3(
+                flip * scale * (1f + squashAmount * 0.5f),
+                scale * (1f - squashAmount),
+                1f);
 
             Color color = _characterColor;
             color.a *= _visibility;
