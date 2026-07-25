@@ -167,7 +167,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  - {fileID: 9153425214152322562, guid: bd63a3a276d8d6b44879e493ef372fe1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -213,8 +213,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: bd63a3a276d8d6b44879e493ef372fe1, type: 2}
+  m_sharedMaterial: {fileID: 9153425214152322562, guid: bd63a3a276d8d6b44879e493ef372fe1, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -302,8 +302,12 @@ MonoBehaviour:
   displayMode: 0
   showZero: 0
   strongReactionThreshold: 5
+  strongNegativeThreshold: -10
   positiveColor: {r: 1, g: 0.92, b: 0.28, a: 1}
   strongColor: {r: 0.35, g: 1, b: 0.5, a: 1}
+  negativeColor: {r: 1, g: 0.55, b: 0.2, a: 1}
+  strongNegativeColor: {r: 1, g: 0.2, b: 0.18, a: 1}
+  departedColor: {r: 0.8, g: 0.82, b: 0.88, a: 1}
   zeroColor: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   duration: 0.75
   riseDistance: 0.55

@@ -206,7 +206,7 @@ namespace ContextStage.EditorTools
 
             Text text = go.GetComponent<Text>();
             text.text = content;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = ProjectFontTool.LegacyFont;
             text.fontSize = fontSize;
             text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.UpperRight;

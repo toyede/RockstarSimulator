@@ -310,7 +310,7 @@ namespace ContextStage.EditorTools
 
             var text = go.AddComponent<Text>();
             text.text = label;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = ProjectFontTool.LegacyFont;
             text.fontSize = 34;
             text.fontStyle = FontStyle.Bold;
             text.alignment = TextAnchor.MiddleCenter;
@@ -351,7 +351,7 @@ namespace ContextStage.EditorTools
             var go = CreateUIObject(name, parent);
             var text = go.AddComponent<Text>();
             text.text = content;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.font = ProjectFontTool.LegacyFont;
             text.fontSize = size;
             text.alignment = TextAnchor.MiddleCenter;
             text.color = new Color(0.9f, 0.9f, 0.9f);
