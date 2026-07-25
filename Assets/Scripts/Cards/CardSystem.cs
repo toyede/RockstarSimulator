@@ -72,9 +72,8 @@ namespace ContextStage
             }
 
             _deck = new PreparedDeck<CardDefinition>(
-                config.GeneratedDeckSize,
                 config.PreparedDeckCount,
-                PickWeightedCard);
+                BuildDeckBatch);
             _deck.Reset();
             RefillToMinimumHand();
             RaiseHandChanged();
@@ -311,32 +310,15 @@ namespace ContextStage
             return true;
         }
 
-        CardDefinition PickWeightedCard()
+        List<CardDefinition> BuildDeckBatch()
         {
-            if (config == null || !config.HasUsableCards) return null;
+            if (CardDeckBatchBuilder.TryBuild(config, out var cards, out string error))
+                return cards;
 
-            float totalWeight = 0f;
-            var pool = config.CardPool;
-            for (int i = 0; i < pool.Count; i++)
+            if (!_warnedInvalidPool)
             {
-                var entry = pool[i];
-                if (entry != null && entry.IsUsable) totalWeight += entry.Weight;
-            }
-            if (totalWeight <= 0f) return null;
-
-            float roll = Random.value * totalWeight;
-            for (int i = 0; i < pool.Count; i++)
-            {
-                var entry = pool[i];
-                if (entry == null || !entry.IsUsable) continue;
-
-                roll -= entry.Weight;
-                if (roll <= 0f) return entry.Prefab;
-            }
-
-            for (int i = pool.Count - 1; i >= 0; i--)
-            {
-                if (pool[i] != null && pool[i].IsUsable) return pool[i].Prefab;
+                Debug.LogError($"[CardSystem] Invalid generated deck: {error}", this);
+                _warnedInvalidPool = true;
             }
 
             return null;

@@ -19,16 +19,21 @@ namespace ContextStage
             public T Draw() => Remaining > 0 ? _items[_nextIndex++] : null;
         }
 
-        readonly int _batchSize;
         readonly int _preparedBatchCount;
-        readonly Func<T> _pickOne;
+        readonly Func<List<T>> _buildBatch;
         readonly Queue<Batch> _batches = new Queue<Batch>();
 
         public PreparedDeck(int batchSize, int preparedBatchCount, Func<T> pickOne)
+            : this(
+                preparedBatchCount,
+                CreatePickerBatchFactory(batchSize, pickOne))
         {
-            _batchSize = Math.Max(1, batchSize);
+        }
+
+        public PreparedDeck(int preparedBatchCount, Func<List<T>> buildBatch)
+        {
             _preparedBatchCount = Math.Max(2, preparedBatchCount);
-            _pickOne = pickOne ?? throw new ArgumentNullException(nameof(pickOne));
+            _buildBatch = buildBatch ?? throw new ArgumentNullException(nameof(buildBatch));
         }
 
         public int PreparedBatchCount => _batches.Count;
@@ -79,15 +84,27 @@ namespace ContextStage
 
         Batch BuildBatch()
         {
-            var items = new List<T>(_batchSize);
-            for (int i = 0; i < _batchSize; i++)
-            {
-                T item = _pickOne();
-                if (item == null) break;
-                items.Add(item);
-            }
+            List<T> items = _buildBatch();
+            return items != null && items.Count > 0 ? new Batch(items) : null;
+        }
 
-            return items.Count > 0 ? new Batch(items) : null;
+        static Func<List<T>> CreatePickerBatchFactory(int batchSize, Func<T> pickOne)
+        {
+            if (pickOne == null) throw new ArgumentNullException(nameof(pickOne));
+
+            int safeBatchSize = Math.Max(1, batchSize);
+            return () =>
+            {
+                var items = new List<T>(safeBatchSize);
+                for (int i = 0; i < safeBatchSize; i++)
+                {
+                    T item = pickOne();
+                    if (item == null) break;
+                    items.Add(item);
+                }
+
+                return items;
+            };
         }
     }
 }
