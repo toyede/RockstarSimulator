@@ -1965,8 +1965,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 939828361}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &527919864
@@ -12891,11 +12890,6 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 39de0d7d62720b54b85ff9acffaaab1b, type: 2}
   enableDebugInput: 1
   enableDebugLogs: 1
---- !u!4 &939828361 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5256696856276732725, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-  m_PrefabInstance: {fileID: 1346490491}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &996349273
 GameObject:
   m_ObjectHideFlags: 0
@@ -13034,7 +13028,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1034479901
 Transform:
   m_ObjectHideFlags: 0
@@ -14357,115 +14351,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1001 &1346490491
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 519420032}
-    m_Modifications:
-    - target: {fileID: 811713421759899004, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: UVModule.enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 811713421759899004, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 13
-      objectReference: {fileID: 0}
-    - target: {fileID: 811713421759899004, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: InitialModule.startSpeed.scalar
-      value: 0.01
-      objectReference: {fileID: 0}
-    - target: {fileID: 811713421759899004, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: InitialModule.gravityModifier.scalar
-      value: -0.01
-      objectReference: {fileID: 0}
-    - target: {fileID: 1644918177313463634, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2251932655838468050, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_Name
-      value: Particle
-      objectReference: {fileID: 0}
-    - target: {fileID: 5256696856276732725, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.27738
-      objectReference: {fileID: 0}
-    - target: {fileID: 5256696856276732725, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.57563
-      objectReference: {fileID: 0}
-    - target: {fileID: 5256696856276732725, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 5256696856276732725, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5256696856276732725, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5256696856276732725, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5256696856276732725, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5256696856276732725, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5256696856276732725, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5256696856276732725, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6644627999720074912, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: simulationSpeed
-      value: 0.12
-      objectReference: {fileID: 0}
-    - target: {fileID: 6644627999720074912, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: UVModule.enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6644627999720074912, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 6644627999720074912, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: InitialModule.startSize.scalar
-      value: 0.29
-      objectReference: {fileID: 0}
-    - target: {fileID: 6644627999720074912, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: InitialModule.startSize.minScalar
-      value: 0.24
-      objectReference: {fileID: 0}
-    - target: {fileID: 6644627999720074912, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: InitialModule.gravityModifier.scalar
-      value: -0.01
-      objectReference: {fileID: 0}
-    - target: {fileID: 6979498968829335697, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: UVModule.enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6979498968829335697, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
-      propertyPath: UVModule.sprites.Array.data[0].sprite
-      value: 
-      objectReference: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 83c35b4e37f473e4dbbde7a43ced8301, type: 3}
 --- !u!1 &1351886964
 GameObject:
   m_ObjectHideFlags: 0
@@ -15789,8 +15674,6 @@ GameObject:
   - component: {fileID: 1727356344}
   - component: {fileID: 1727356348}
   - component: {fileID: 1727356347}
-  - component: {fileID: 1727356350}
-  - component: {fileID: 1727356349}
   m_Layer: 0
   m_Name: '[CrowdAmbience]'
   m_TagString: Untagged
@@ -15889,110 +15772,6 @@ MonoBehaviour:
   fadeInDuration: 1.5
   stopOnGameOver: 0
   fadeOutDuration: 1.5
---- !u!114 &1727356349
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1727356343}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5eb7c679643d71047bc6d747f67c632d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.StageAmbienceLayers
-  layers:
-  - layerName: Amp Noise
-    clip: {fileID: 8300000, guid: c143cc153c4114040b2b846f28bf80a8, type: 3}
-    volume: 0.35
-    minCombo: 0
-    fadeDuration: 2
-    startOffset: 0
-  - layerName: Festival Noise
-    clip: {fileID: 8300000, guid: 2dbf4cd9e53ee174fbf65ca8ebfb763d, type: 3}
-    volume: 0.082
-    minCombo: 0
-    fadeDuration: 2.5
-    startOffset: 3
-  - layerName: Crowd Middle (combo)
-    clip: {fileID: 8300000, guid: d9d403c7772aaaf4897419fb5a4d6def, type: 3}
-    volume: 0.288
-    minCombo: 3
-    fadeDuration: 1.5
-    startOffset: 0
-  - layerName: Crowd High (combo)
-    clip: {fileID: 8300000, guid: d02550a51f8a8e94b9fba6640f6f12c7, type: 3}
-    volume: 0.453
-    minCombo: 7
-    fadeDuration: 1.5
-    startOffset: 2
-  playOnStart: 1
-  stopOnGameOver: 1
-  stopFadeDuration: 1.5
-  masterScale: 1
---- !u!114 &1727356350
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1727356343}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04d193393c4f89e4abc9ed70df590d5a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceReactionSfx
-  reactions:
-  - label: Great (LOVE IT!)
-    minScore: 20
-    clip: {fileID: 8300000, guid: 7a8fa683c1487d642b1b10aa41048180, type: 3}
-    volume: 0.85
-    startTime: 0
-    duration: 0
-    pitchRange: {x: 0.97, y: 1.03}
-  - label: Good (INTERESTED)
-    minScore: 9
-    clip: {fileID: 8300000, guid: 190108a3d22a90d4a9d212abdd079a34, type: 3}
-    volume: 0.7
-    startTime: 0
-    duration: 0
-    pitchRange: {x: 0.95, y: 1.06}
-  - label: Bad (NOT FOR ME)
-    minScore: -16
-    clip: {fileID: 8300000, guid: 603cbc3609f35fe429c67a9ce48c3e17, type: 3}
-    volume: 0.6
-    startTime: 0
-    duration: 1.2
-    pitchRange: {x: 0.98, y: 1.04}
-  - label: "Awful (BORED, \uADC0\uB69C\uB77C\uBBF8)"
-    minScore: -2147483648
-    clip: {fileID: 8300000, guid: 77d75096252835f46a626d0870e3395a, type: 3}
-    volume: 0.8
-    startTime: 0.05
-    duration: 0.3
-    pitchRange: {x: 1, y: 1}
-  specialHitReaction:
-    label: Special Hit
-    minScore: 0
-    clip: {fileID: 8300000, guid: 7a8fa683c1487d642b1b10aa41048180, type: 3}
-    volume: 1
-    startTime: 0
-    duration: 0
-    pitchRange: {x: 1.02, y: 1.08}
-  useSpecialHitReaction: 1
-  booingMaxScore: -25
-  booing:
-    label: "\uC57C\uC720"
-    minScore: 0
-    clip: {fileID: 8300000, guid: d6ca14aff2c9cc244b1e43e9230746e9, type: 3}
-    volume: 0.75
-    startTime: 0.2
-    duration: 2.5
-    pitchRange: {x: 1, y: 1}
-  booingCooldown: 8
-  masterScale: 1
-  voiceCount: 4
-  reactToZeroScore: 0
 --- !u!1 &1760673222
 GameObject:
   m_ObjectHideFlags: 0

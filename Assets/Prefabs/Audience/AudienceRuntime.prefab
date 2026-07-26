@@ -68,7 +68,6 @@ MonoBehaviour:
   frontRowScale: 0.58
   rowScaleFalloff: 0.86
   baseSortingOrder: 5
-  cardReactionPresentationDelay: 0.05
 --- !u!114 &6613373462250735996
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -81,4 +80,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29f1ca76de426cb45afc6dd41689c7dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceDebugInput
-  showOnScreenHelp: 0
+  showOnScreenHelp: 1
