@@ -338,7 +338,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4000000000000002, guid: 19b180dc8c054d7bab6eedd9e8e0856a, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_StringArgument
-      value: ui_click_wooden
+      value: game_start
       objectReference: {fileID: 0}
     - target: {fileID: 4000000000000002, guid: 19b180dc8c054d7bab6eedd9e8e0856a, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName

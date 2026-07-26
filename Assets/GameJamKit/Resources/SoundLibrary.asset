@@ -48,6 +48,8 @@ MonoBehaviour:
   - id: guitar_solo
     clips:
     - {fileID: 8300000, guid: d861007818bbcf54894ce724bab8c01b, type: 3}
+    - {fileID: 8300000, guid: 56c6e0f432398344bae3598546169a19, type: 3}
+    - {fileID: 8300000, guid: fadf5558d82495142820085cbce97233, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -56,6 +58,9 @@ MonoBehaviour:
   - id: guitar_stroke
     clips:
     - {fileID: 8300000, guid: 5524091ba13378d4d8d3472159a13f97, type: 3}
+    - {fileID: 8300000, guid: 9ff3f6cc9623c914e86e645714c4ff20, type: 3}
+    - {fileID: 8300000, guid: 0ae279ed3deb9824189a66f2868cbf57, type: 3}
+    - {fileID: 8300000, guid: 56ad4769e3a375a48b398fe89cb1a33b, type: 3}
     volume: 1
     pitchMin: 1
     pitchMax: 1
@@ -140,4 +145,12 @@ MonoBehaviour:
     pitchMin: 1
     pitchMax: 1
     loop: 1
+    minInterval: 0.02
+  - id: game_start
+    clips:
+    - {fileID: 8300000, guid: f35fa6460355dd5409295c1da239f759, type: 3}
+    volume: 0.9
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
     minInterval: 0.02
