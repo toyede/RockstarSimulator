@@ -43,7 +43,8 @@ Tools/Tutorial/Setup Tutorial   →   Ctrl+S  (Main.unity 에서!)
 - CrowdChange 직후, 실제 콤보 달성 여부와 무관하게 피버타임을 강제로 한 번 체험시킨다
   (`FeverSystem.ForceStart()`, `IsActive`가 꺼지면 이 단계 동안 계속 재발동해 플레이어가 놓치지 않게 한다)
 - 튜토리얼 중: 자연 유입 정지 · 관객 개별 몰입도 자연 감소 정지 · 전역 Hype 감소 정지 ·
-  특별 관객 정지 · Crisis 정지 → 끝나면 전부 복구
+  특별 관객 정지 · Crisis 정지 · **공연 제한시간 정지**(`PerformanceTimer.SetPaused(true)`) → 끝나면 전부 복구
+  (스킵/완료 시 `PerformanceTimerSystem.ResetTimer()`로 0부터 다시 시작 — 본 공연이 항상 꽉 찬 제한시간으로 시작)
 - 끝나면 로스터/콤보/점수/호응도 리셋 후 **깨끗한 본 공연** 시작
 
 ## 3. 연출
@@ -73,6 +74,7 @@ Tools/Tutorial/Setup Tutorial   →   Ctrl+S  (Main.unity 에서!)
 | `CardSystem.cs` | `SetHand(cards)` — 손패를 지정 카드로 강제 교체, 덱은 건드리지 않음 |
 | `AudiencePreferenceHoverController.cs` | `RevealedActor` — 현재 호버로 테두리가 표시된 관객 (읽기 전용 폴링) |
 | `FeverSystem.cs` | `ForceStart()` — 콤보 조건 없이 즉시 피버타임 시작 (이미 활성 중이면 무시) |
+| `PerformanceTimerSystem.cs` | `SetPaused(bool)`(정적 파사드 `PerformanceTimer.SetPaused`) — true 인 동안 제한시간 정지 |
 
 ※ 프리젠터의 구버전 API 참조 2건(`PlayDeparture`/`LayoutPosition`)도 이번에 수정 — 컴파일 복구.
 

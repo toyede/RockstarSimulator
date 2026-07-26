@@ -9,14 +9,19 @@ namespace ContextStage
     /// <summary>
     /// ESC 로 일시정지 패널을 열고 닫는 트리거. 열기/닫기를 이 스크립트가 전담한다.
     ///
-    ///   ESC (Playing 중, 팝업 없음) : PausePopup 열기 → pauseGameWhileOpen 이 자동으로 Pause()
-    ///   ESC (Paused 중)             : PausePopup 닫기 → pauseGameWhileOpen 이 자동으로 Resume()
+    ///   ESC (Playing 중, 팝업 없음)     : PausePopup 열기 → pauseGameWhileOpen 이 자동으로 Pause()
+    ///   ESC (Paused 중, 옵션 팝업 없음) : PausePopup 닫기 → pauseGameWhileOpen 이 자동으로 Resume()
+    ///   ESC (옵션 팝업이 일시정지 위에 열려 있음) : 옵션만 닫는다 (일시정지는 유지)
     ///
     /// 주의: PausePopup 은 씬 인스펙터에서 closableByEscape 를 꺼둬야 한다.
     /// 켜져 있으면 킷의 UIManager.Update() 가 "같은 프레임"에 같은 ESC 입력으로 CloseTop() 을
     /// 먼저 실행해버릴 수 있고, 그 직후 이 스크립트가 (이미 Playing 으로 바뀐) State 를 보고
     /// 다시 Open() 을 호출해 즉시 재오픈되는 경합(같은 ESC 한 번에 닫혔다 열리는 버그)이 생긴다.
     /// 그래서 "닫기" 권한은 UIManager 의 자동 ESC 처리에 맡기지 않고 여기서만 갖는다.
+    ///
+    /// 같은 이유로 일시정지 위에서 여는 OptionsPopup 도 closableByEscape 를 꺼서(씬 오버라이드),
+    /// UIManager 가 최상단 팝업을 자동으로 닫아버리는 것과 이 스크립트가 같은 프레임에
+    /// PausePopup 까지 같이 닫아버리는 이중 닫힘을 막는다. 옵션이 열려 있으면 옵션부터 닫는다.
     /// </summary>
     public class PauseInput : MonoBehaviour
     {
@@ -34,7 +39,12 @@ namespace ContextStage
 #endif
             if (!escPressed) return;
 
-            if (gm.State == GameState.Paused)
+            var options = UIManager.Instance.Get<OptionsPopup>();
+            if (options != null && options.IsOpen)
+            {
+                options.Close();
+            }
+            else if (gm.State == GameState.Paused)
             {
                 UIManager.Instance.Close<PausePopup>();
             }

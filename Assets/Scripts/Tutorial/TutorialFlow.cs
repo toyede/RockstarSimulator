@@ -24,6 +24,7 @@ namespace ContextStage
     ///   위기 정지      : NearbyConcertCrisisDirector.enabled = false
     ///   호버 안내      : AudiencePreferenceHoverController.RevealedActor (읽기 전용 폴링)
     ///   피버 체험      : FeverSystem.ForceStart() (강제 발동, IsActive 폴링으로 유지)
+    ///   공연 시간 정지  : PerformanceTimer.SetPaused(true)
     /// 끝나면(스킵 포함) 전부 원래대로 복구하고 새 공연을 시작한다.
     ///
     /// 완료 여부는 Save("tutorial_done") 에 저장되어 다음 실행부터는 자동으로 뜨지 않는다.
@@ -218,6 +219,7 @@ namespace ContextStage
             var roster = AudienceRosterSystem.Instance;
             roster.SuppressNaturalArrivals = true;
             Hype.SetDecayPaused(true);
+            PerformanceTimer.SetPaused(true);
             if (SpecialAudienceManager.HasInstance) SpecialAudienceManager.Instance.StopSystem();
 
             _crisis = FindFirstObjectByType<NearbyConcertCrisisDirector>();
@@ -246,6 +248,7 @@ namespace ContextStage
                 AudienceRosterSystem.Instance.SuppressEngagementDecay = false;
             }
             Hype.SetDecayPaused(false);
+            PerformanceTimer.SetPaused(false);
             if (_crisis != null) _crisis.enabled = _crisisWasEnabled;
             CardInput.UseFilter = null;
             overlay?.HideAll();
@@ -266,6 +269,7 @@ namespace ContextStage
                 if (ComboSystem.HasInstance) ComboSystem.Instance.ResetCombo();
                 GameManager.Instance.SetScore(0);
                 if (HypeSystem.HasInstance) HypeSystem.Instance.ResetHype();
+                if (PerformanceTimerSystem.HasInstance) PerformanceTimerSystem.Instance.ResetTimer();
                 if (SpecialAudienceManager.HasInstance) SpecialAudienceManager.Instance.StartSystem();
             }
         }
