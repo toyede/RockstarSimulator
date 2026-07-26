@@ -133,3 +133,11 @@ MonoBehaviour:
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+  - id: breakdown
+    clips:
+    - {fileID: 8300000, guid: e368a0cb55066b9429db92a43acf15da, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
