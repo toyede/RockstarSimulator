@@ -120,6 +120,8 @@ namespace ContextStage
                 source.playOnAwake = false;
                 source.spatialBlend = 0f;   // 2D — 화면 어디서 나든 같은 크기
                 source.volume = 0f;
+                // 겹마다 전용 소스라 생성 시 한 번 고정한다 (전부 관객 소리)
+                source.outputAudioMixerGroup = AudioRouting.Resolve(AudioBus.Crowd);
                 layer.Source = source;
                 layer.CurrentVolume = 0f;
             }

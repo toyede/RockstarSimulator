@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: AudioRoutingConfig
+  m_EditorClassIdentifier: Assembly-CSharp:GameJamKit:AudioRoutingConfig
+  music: {fileID: -8422361001857858827, guid: 9e963faabf5c65f479a21511d19c1c75, type: 2}
+  crowd: {fileID: 4261357418045804110, guid: 9e963faabf5c65f479a21511d19c1c75, type: 2}
+  cardSfx: {fileID: -2588170891534814187, guid: 9e963faabf5c65f479a21511d19c1c75, type: 2}
+  impactSfx: {fileID: 6508657033846965550, guid: 9e963faabf5c65f479a21511d19c1c75, type: 2}
+  eventSfx: {fileID: 7371037753916313941, guid: 9e963faabf5c65f479a21511d19c1c75, type: 2}
+  ui: {fileID: 1628447898391824882, guid: 9e963faabf5c65f479a21511d19c1c75, type: 2}

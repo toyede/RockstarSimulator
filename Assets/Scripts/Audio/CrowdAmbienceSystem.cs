@@ -115,6 +115,9 @@ namespace ContextStage
             src.loop = true;        // 앰비언스는 항상 루프
             src.spatialBlend = 0f;  // 2D
             src.volume = 0f;
+            // 이 소스는 관객 소리만 내므로 생성 시 한 번 고정한다
+            // (AudioManager 의 SFX 보이스처럼 여러 종류가 돌려쓰지 않는다)
+            src.outputAudioMixerGroup = AudioRouting.Resolve(AudioBus.Crowd);
             return src;
         }
 

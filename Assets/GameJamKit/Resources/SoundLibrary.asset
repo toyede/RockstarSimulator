@@ -21,6 +21,7 @@ MonoBehaviour:
     pitchMax: 1
     loop: 1
     minInterval: 0.02
+    bus: 4
   - id: crowd_middle
     clips:
     - {fileID: 8300000, guid: d9d403c7772aaaf4897419fb5a4d6def, type: 3}
@@ -29,6 +30,7 @@ MonoBehaviour:
     pitchMax: 1
     loop: 1
     minInterval: 0.02
+    bus: 4
   - id: crowd_high
     clips:
     - {fileID: 8300000, guid: d02550a51f8a8e94b9fba6640f6f12c7, type: 3}
@@ -37,6 +39,7 @@ MonoBehaviour:
     pitchMax: 1
     loop: 1
     minInterval: 0.02
+    bus: 4
   - id: crowd_mistake
     clips:
     - {fileID: 8300000, guid: dc1016183aa625444811f6bfe3a50cf9, type: 3}
@@ -45,27 +48,30 @@ MonoBehaviour:
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 4
   - id: guitar_solo
     clips:
     - {fileID: 8300000, guid: d861007818bbcf54894ce724bab8c01b, type: 3}
     - {fileID: 8300000, guid: 56c6e0f432398344bae3598546169a19, type: 3}
     - {fileID: 8300000, guid: fadf5558d82495142820085cbce97233, type: 3}
-    volume: 1
+    volume: 0.25
     pitchMin: 1
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 1
   - id: guitar_stroke
     clips:
     - {fileID: 8300000, guid: 5524091ba13378d4d8d3472159a13f97, type: 3}
     - {fileID: 8300000, guid: 9ff3f6cc9623c914e86e645714c4ff20, type: 3}
     - {fileID: 8300000, guid: 0ae279ed3deb9824189a66f2868cbf57, type: 3}
     - {fileID: 8300000, guid: 56ad4769e3a375a48b398fe89cb1a33b, type: 3}
-    volume: 1
+    volume: 0.65
     pitchMin: 1
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 1
   - id: hey_high
     clips:
     - {fileID: 8300000, guid: 3e278e2589c0ff5428dc17d632c3b0bb, type: 3}
@@ -74,6 +80,7 @@ MonoBehaviour:
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 4
   - id: hey_low
     clips:
     - {fileID: 8300000, guid: 2b25d9f067e392d40bd7a25d82b5298b, type: 3}
@@ -82,6 +89,7 @@ MonoBehaviour:
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 4
   - id: big_rock
     clips:
     - {fileID: 8300000, guid: ab2eb68739d06a44e91a68eb02b2147c, type: 3}
@@ -90,30 +98,34 @@ MonoBehaviour:
     pitchMax: 1
     loop: 1
     minInterval: 0.02
+    bus: 0
   - id: ui_click_wooden
     clips:
     - {fileID: 8300000, guid: c407b0217c5bd514fa30f4d86c83eef2, type: 3}
-    volume: 1
+    volume: 0.69
     pitchMin: 1
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 3
   - id: card_tempo_up
     clips:
     - {fileID: 8300000, guid: 020604a983c2eef40a67311938e0e66b, type: 3}
-    volume: 1
+    volume: 0.47
     pitchMin: 1
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 1
   - id: card_response_call
     clips:
     - {fileID: 8300000, guid: 9762630e4cabd0d4ca2a685b8b77a6fa, type: 3}
-    volume: 1
+    volume: 0.99
     pitchMin: 1
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 1
   - id: card_reroll_hand
     clips:
     - {fileID: 8300000, guid: 855bda4e408603547aa6a46d675115d8, type: 3}
@@ -122,22 +134,25 @@ MonoBehaviour:
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 1
   - id: card_draw_two
     clips:
     - {fileID: 8300000, guid: f93601d4977cc324681e3bf0d9f21504, type: 3}
-    volume: 1
+    volume: 0.48
     pitchMin: 1
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 1
   - id: card_open_mosh_pit
     clips:
     - {fileID: 8300000, guid: 9b884f0085736824dba3165ec61a7a5d, type: 3}
-    volume: 1
+    volume: 0.4
     pitchMin: 1
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 1
   - id: breakdown
     clips:
     - {fileID: 8300000, guid: e368a0cb55066b9429db92a43acf15da, type: 3}
@@ -146,11 +161,13 @@ MonoBehaviour:
     pitchMax: 1
     loop: 1
     minInterval: 0.02
+    bus: 0
   - id: game_start
     clips:
     - {fileID: 8300000, guid: f35fa6460355dd5409295c1da239f759, type: 3}
-    volume: 0.9
+    volume: 1
     pitchMin: 1
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 3

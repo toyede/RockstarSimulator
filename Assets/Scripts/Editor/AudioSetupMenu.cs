@@ -162,6 +162,13 @@ namespace ContextStage.EditorTools
                 element.FindPropertyRelative("loop").boolValue = loop;
                 element.FindPropertyRelative("minInterval").floatValue = 0.02f;
 
+                // 새 항목도 처음부터 올바른 믹서 버스로 들어가게 한다.
+                // 분류표는 AudioMixerRoutingSetup 한 곳에만 둔다 — 두 벌이면 재실행 때 어긋난다
+                var busProperty = element.FindPropertyRelative("bus");
+                if (busProperty != null &&
+                    AudioMixerRoutingSetup.TryGetDefaultBus(id, out GameJamKit.AudioBus bus))
+                    busProperty.enumValueIndex = (int)bus;
+
                 var clips = element.FindPropertyRelative("clips");
                 clips.arraySize = 1;
                 clips.GetArrayElementAtIndex(0).objectReferenceValue = clip;

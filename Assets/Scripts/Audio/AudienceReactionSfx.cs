@@ -115,6 +115,9 @@ namespace ContextStage
                 source.playOnAwake = false;
                 source.loop = false;
                 source.spatialBlend = 0f;
+                // 이 보이스 풀은 관객 반응만 낸다 (환호·휘파람·헛기침·귀뚜라미·야유).
+                // 종류가 섞이지 않으므로 생성 시 한 번 고정한다
+                source.outputAudioMixerGroup = AudioRouting.Resolve(AudioBus.Crowd);
                 _voices.Add(new Voice { Source = source });
             }
         }

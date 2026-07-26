@@ -108,7 +108,8 @@ namespace ContextStage
             PlayBanner();
             AccelerateAnimators();
 
-            if (introClip != null) Sound.PlayClip(introClip, introVolume);
+            // 피버 진입은 공통 임팩트다 — 공용 SFX 보이스로 나가므로 버스를 명시한다
+            if (introClip != null) Sound.PlayClip(introClip, AudioBus.ImpactSFX, introVolume);
         }
 
         // ---------------- 캐릭터 가속 ----------------

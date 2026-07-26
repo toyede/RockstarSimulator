@@ -63,6 +63,12 @@ namespace GameJamKit
             _bgmA = CreateSource("BGM_A");
             _bgmB = CreateSource("BGM_B");
             _bgmA.loop = _bgmB.loop = true;
+
+            // BGM 은 음악 전용 소스라 버스를 고를 여지가 없다 — 생성 즉시 Music 에 고정한다.
+            // (SFX 보이스는 공용이라 재생할 때마다 다시 정한다. ConfigureVoice 참고)
+            var music = AudioRouting.ResolveMusic();
+            _bgmA.outputAudioMixerGroup = music;
+            _bgmB.outputAudioMixerGroup = music;
         }
 
         AudioSource CreateSource(string name)
@@ -111,8 +117,15 @@ namespace GameJamKit
             src.Play();
         }
 
-        /// <summary>라이브러리에 등록하지 않은 클립을 즉석에서 재생.</summary>
+        /// <summary>
+        /// 라이브러리에 등록하지 않은 클립을 즉석에서 재생.
+        /// 버스를 지정하지 않으면 범용 임팩트로 나간다 — 기존 호출부를 깨지 않기 위한 기본값이다.
+        /// </summary>
         public void PlayClip(AudioClip clip, float volume = 1f, float pitch = 1f)
+            => PlayClip(clip, AudioBus.ImpactSFX, volume, pitch);
+
+        /// <summary>버스를 지정해 즉석 재생. (Fever 진입음처럼 소속이 분명한 소리용)</summary>
+        public void PlayClip(AudioClip clip, AudioBus bus, float volume = 1f, float pitch = 1f)
         {
             if (clip == null) return;
             var src = GetFreeVoice();
@@ -122,6 +135,7 @@ namespace GameJamKit
             src.volume = Mathf.Clamp01(volume) * _sfxVolume * _master;
             src.pitch = pitch;
             src.spatialBlend = 0f;
+            src.outputAudioMixerGroup = AudioRouting.Resolve(bus); // 공용 보이스라 매번 갱신
             src.Play();
         }
 
@@ -141,6 +155,13 @@ namespace GameJamKit
             return entry;
         }
 
+        /// <summary>
+        /// 보이스 하나를 이번 재생에 맞게 준비한다.
+        ///
+        /// <b>Output 그룹을 매번 다시 정하는 것이 핵심이다.</b> SFX_0~11 은 카드·UI·Fever·
+        /// 이벤트가 모두 돌려쓰는 공용 풀이라, 생성 시 그룹을 하나 고정하면
+        /// 직전 재생이 남긴 그룹으로 엉뚱한 소리가 나간다.
+        /// </summary>
         void ConfigureVoice(AudioSource src, SoundEntry entry, float volumeScale)
         {
             src.transform.localPosition = Vector3.zero;
@@ -148,6 +169,7 @@ namespace GameJamKit
             src.loop = false;
             src.volume = entry.volume * Mathf.Clamp01(volumeScale) * _sfxVolume * _master;
             src.pitch = entry.PickPitch();
+            src.outputAudioMixerGroup = AudioRouting.Resolve(entry.bus);
         }
 
         AudioSource GetFreeVoice()
@@ -250,6 +272,10 @@ namespace GameJamKit
         public static void Play(string id, float volumeScale = 1f) => AudioManager.Instance?.PlaySfx(id, volumeScale);
         public static void PlayAt(string id, Vector3 position, float volumeScale = 1f) => AudioManager.Instance?.PlaySfxAt(id, position, volumeScale);
         public static void PlayClip(AudioClip clip, float volume = 1f, float pitch = 1f) => AudioManager.Instance?.PlayClip(clip, volume, pitch);
+
+        /// <summary>버스를 지정해 즉석 재생. (소속이 분명한 클립은 이쪽을 쓴다)</summary>
+        public static void PlayClip(AudioClip clip, AudioBus bus, float volume = 1f, float pitch = 1f)
+            => AudioManager.Instance?.PlayClip(clip, bus, volume, pitch);
 
         public static void Bgm(string id, float fade = 1f) => AudioManager.Instance?.PlayBgm(id, fade);
         public static void StopBgm(float fade = 1f) => AudioManager.Instance?.StopBgm(fade);

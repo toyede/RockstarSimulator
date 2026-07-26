@@ -13925,7 +13925,7 @@ MonoBehaviour:
   fadeOutDuration: 0.5
   popPeakScale: 1.18
   introClip: {fileID: 8300000, guid: fa2e4f5452e74ce429da82e4f88b1e91, type: 3}
-  introVolume: 1
+  introVolume: 0.89
   acceleratedAnimators:
   - {fileID: 1259268671}
   animatorSpeedMultiplier: 2
@@ -15904,25 +15904,25 @@ MonoBehaviour:
   layers:
   - layerName: Amp Noise
     clip: {fileID: 8300000, guid: c143cc153c4114040b2b846f28bf80a8, type: 3}
-    volume: 0.35
+    volume: 0.375
     minCombo: 0
     fadeDuration: 2
     startOffset: 0
   - layerName: Festival Noise
     clip: {fileID: 8300000, guid: 2dbf4cd9e53ee174fbf65ca8ebfb763d, type: 3}
-    volume: 0.082
+    volume: 0.19
     minCombo: 0
     fadeDuration: 2.5
     startOffset: 3
   - layerName: Crowd Middle (combo)
     clip: {fileID: 8300000, guid: d9d403c7772aaaf4897419fb5a4d6def, type: 3}
-    volume: 0.288
+    volume: 0.53
     minCombo: 3
     fadeDuration: 1.5
     startOffset: 0
   - layerName: Crowd High (combo)
     clip: {fileID: 8300000, guid: d02550a51f8a8e94b9fba6640f6f12c7, type: 3}
-    volume: 0.453
+    volume: 0.39
     minCombo: 7
     fadeDuration: 1.5
     startOffset: 2
@@ -15946,28 +15946,28 @@ MonoBehaviour:
   - label: Great (LOVE IT!)
     minScore: 20
     clip: {fileID: 8300000, guid: 7a8fa683c1487d642b1b10aa41048180, type: 3}
-    volume: 0.85
+    volume: 1
     startTime: 0
     duration: 0
     pitchRange: {x: 0.97, y: 1.03}
   - label: Good (INTERESTED)
     minScore: 9
     clip: {fileID: 8300000, guid: 190108a3d22a90d4a9d212abdd079a34, type: 3}
-    volume: 0.7
+    volume: 0.33
     startTime: 0
     duration: 0
     pitchRange: {x: 0.95, y: 1.06}
   - label: Bad (NOT FOR ME)
     minScore: -16
     clip: {fileID: 8300000, guid: 603cbc3609f35fe429c67a9ce48c3e17, type: 3}
-    volume: 0.6
+    volume: 1
     startTime: 0
     duration: 1.2
     pitchRange: {x: 0.98, y: 1.04}
   - label: "Awful (BORED, \uADC0\uB69C\uB77C\uBBF8)"
     minScore: -2147483648
     clip: {fileID: 8300000, guid: 77d75096252835f46a626d0870e3395a, type: 3}
-    volume: 0.8
+    volume: 0.92
     startTime: 0.05
     duration: 0.3
     pitchRange: {x: 1, y: 1}
@@ -15985,7 +15985,7 @@ MonoBehaviour:
     label: "\uC57C\uC720"
     minScore: 0
     clip: {fileID: 8300000, guid: d6ca14aff2c9cc244b1e43e9230746e9, type: 3}
-    volume: 0.75
+    volume: 0.54
     startTime: 0.2
     duration: 2.5
     pitchRange: {x: 1, y: 1}

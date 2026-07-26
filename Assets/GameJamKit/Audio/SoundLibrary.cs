@@ -22,6 +22,12 @@ namespace GameJamKit
         [Tooltip("같은 사운드가 이 간격 안에 다시 재생되지 않는다 (겹침 방지)")]
         public float minInterval = 0.02f;
 
+        [Tooltip(
+            "이 소리가 나갈 믹서 버스. SFX 보이스는 여러 종류가 돌려쓰므로 " +
+            "재생 직전에 이 값으로 Output 그룹이 정해진다.\n" +
+            "BGM 은 전용 소스(BGM_A/B)로만 나가므로 이 값을 쓰지 않는다.")]
+        public AudioBus bus = AudioBus.ImpactSFX;
+
         [System.NonSerialized] public float LastPlayTime = -999f;
 
         public AudioClip PickClip()
