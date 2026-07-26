@@ -180,8 +180,7 @@ namespace ContextStage
             // 첫 공연 자동 실행
             if (autoRunOnFirstPlay &&
                 !IsRunning &&
-                e.Previous == GameState.Ready && e.Current == GameState.Playing &&
-                !Save.GetBool(TutorialDoneKey, false))
+                e.Previous == GameState.Ready && e.Current == GameState.Playing)
             {
                 _pendingStartAt = Time.unscaledTime + startDelay;
             }
@@ -260,7 +259,7 @@ namespace ContextStage
             _phase = Phase.Idle;
             ReleaseControl();
 
-            if (markDone) Save.SetBool(TutorialDoneKey, true);
+            // 완료 여부를 저장하지 않아 다음 실행에서도 튜토리얼이 다시 진행된다
 
             if (restartRun && GameManager.HasInstance && GameManager.Instance.IsPlaying)
             {
