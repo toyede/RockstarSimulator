@@ -16,5 +16,6 @@ namespace ContextStage
     {
         public void OnClickResume() => Close();
         public void OnClickRestart() => GameManager.Instance.RestartScene();
+        public void OnClickQuit() => UIManager.Instance.QuitGame();
     }
 }

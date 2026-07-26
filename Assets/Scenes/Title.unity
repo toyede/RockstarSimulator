@@ -1218,9 +1218,37 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 782388899}
+    - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 1324515250}
+    - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: QuitGame
+      objectReference: {fileID: 0}
+    - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: GameJamKit.UIManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 6094319431505745077, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
