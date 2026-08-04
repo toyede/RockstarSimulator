@@ -39,11 +39,19 @@ namespace ContextStage
         {
             if (!_initialized)
             {
+#if UNITY_WEBGL && !UNITY_EDITOR
+                // Browsers own the WebGL canvas size. Applying a saved desktop
+                // resolution here desynchronizes Unity's render target from the
+                // canvas until the browser emits a resize event.
+                _isFullscreen = IsFullscreen();
+                SyncDropdown();
+#else
                 _isFullscreen = Save.Has(FullscreenSaveKey)
                     ? Save.GetBool(FullscreenSaveKey)
                     : IsFullscreen();
 
                 ApplyDisplayMode(savePreference: false);
+#endif
                 _initialized = true;
             }
             else
@@ -93,6 +101,16 @@ namespace ContextStage
 
         void ApplyDisplayMode(bool savePreference)
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            // A browser fullscreen request must originate from the user's input.
+            // Do not call Screen.SetResolution on WebGL: the HTML/CSS canvas is
+            // responsible for sizing and Unity synchronizes its render target to it.
+            Screen.fullScreen = _isFullscreen;
+
+            if (savePreference) Save.SetBool(FullscreenSaveKey, _isFullscreen);
+            SyncDropdown();
+            return;
+#else
             if (_isFullscreen)
             {
                 Resolution nativeResolution = Screen.currentResolution;
@@ -111,6 +129,7 @@ namespace ContextStage
 
             if (savePreference) Save.SetBool(FullscreenSaveKey, _isFullscreen);
             SyncDropdown();
+#endif
         }
 
         void SyncDropdown()
