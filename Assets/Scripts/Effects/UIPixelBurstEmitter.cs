@@ -32,18 +32,89 @@ namespace ContextStage
             Color color,
             int count,
             float minimumSpeed = 80f,
-            float maximumSpeed = 180f)
+            float maximumSpeed = 180f,
+            float minimumSize = 4f,
+            float maximumSize = 9f,
+            float minimumLifetime = 0.28f,
+            float maximumLifetime = 0.52f)
         {
             if (source == null || count <= 0) return;
             EnsureCanvas();
             if (!TryResolvePosition(source, out Vector2 origin)) return;
+
+            EmitBurstAtPosition(
+                origin,
+                color,
+                count,
+                minimumSpeed,
+                maximumSpeed,
+                minimumSize,
+                maximumSize,
+                minimumLifetime,
+                maximumLifetime);
+        }
+
+        public void EmitBurstAtNormalizedPoint(
+            RectTransform source,
+            Vector2 normalizedPoint,
+            Color color,
+            int count,
+            float minimumSpeed = 80f,
+            float maximumSpeed = 180f,
+            float minimumSize = 4f,
+            float maximumSize = 9f,
+            float minimumLifetime = 0.28f,
+            float maximumLifetime = 0.52f)
+        {
+            if (source == null || count <= 0) return;
+            EnsureCanvas();
+            if (!TryResolvePosition(
+                    source,
+                    normalizedPoint,
+                    out Vector2 origin))
+                return;
+
+            EmitBurstAtPosition(
+                origin,
+                color,
+                count,
+                minimumSpeed,
+                maximumSpeed,
+                minimumSize,
+                maximumSize,
+                minimumLifetime,
+                maximumLifetime);
+        }
+
+        void EmitBurstAtPosition(
+            Vector2 origin,
+            Color color,
+            int count,
+            float minimumSpeed,
+            float maximumSpeed,
+            float minimumSize,
+            float maximumSize,
+            float minimumLifetime,
+            float maximumLifetime)
+        {
+            minimumSpeed = Mathf.Max(0f, minimumSpeed);
+            maximumSpeed = Mathf.Max(minimumSpeed, maximumSpeed);
+            minimumSize = Mathf.Max(1f, minimumSize);
+            maximumSize = Mathf.Max(minimumSize, maximumSize);
+            minimumLifetime = Mathf.Max(0.05f, minimumLifetime);
+            maximumLifetime = Mathf.Max(minimumLifetime, maximumLifetime);
 
             for (int i = 0; i < count; i++)
             {
                 float angle = Random.Range(0f, Mathf.PI * 2f);
                 float speed = Random.Range(minimumSpeed, maximumSpeed);
                 Vector2 velocity = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * speed;
-                ActivatePixel(origin, velocity, color, Random.Range(0.28f, 0.52f));
+                ActivatePixel(
+                    origin,
+                    velocity,
+                    color,
+                    Random.Range(minimumLifetime, maximumLifetime),
+                    Random.Range(minimumSize, maximumSize));
             }
         }
 
@@ -57,7 +128,12 @@ namespace ContextStage
             {
                 Vector2 offset = new Vector2(Random.Range(-5f, 5f), Random.Range(-3f, 3f));
                 Vector2 velocity = new Vector2(Random.Range(-35f, 10f), Random.Range(-75f, -28f));
-                ActivatePixel(origin + offset, velocity, color, Random.Range(0.35f, 0.65f));
+                ActivatePixel(
+                    origin + offset,
+                    velocity,
+                    color,
+                    Random.Range(0.35f, 0.65f),
+                    Random.Range(4f, 9f));
             }
         }
 
@@ -100,10 +176,10 @@ namespace ContextStage
             Vector2 position,
             Vector2 velocity,
             Color color,
-            float lifetime)
+            float lifetime,
+            float size)
         {
             Pixel pixel = GetPixel();
-            float size = Random.Range(4f, 9f);
             pixel.Rect.gameObject.SetActive(true);
             pixel.Rect.anchoredPosition = position;
             pixel.Rect.sizeDelta = new Vector2(size, size);
@@ -161,9 +237,22 @@ namespace ContextStage
 
         bool TryResolvePosition(RectTransform source, out Vector2 localPosition)
         {
-            Vector3[] corners = new Vector3[4];
-            source.GetWorldCorners(corners);
-            Vector3 worldCenter = (corners[0] + corners[2]) * 0.5f;
+            return TryResolvePosition(
+                source,
+                new Vector2(0.5f, 0.5f),
+                out localPosition);
+        }
+
+        bool TryResolvePosition(
+            RectTransform source,
+            Vector2 normalizedPoint,
+            out Vector2 localPosition)
+        {
+            Rect rect = source.rect;
+            Vector2 sourceLocal = new Vector2(
+                Mathf.Lerp(rect.xMin, rect.xMax, Mathf.Clamp01(normalizedPoint.x)),
+                Mathf.Lerp(rect.yMin, rect.yMax, Mathf.Clamp01(normalizedPoint.y)));
+            Vector3 worldCenter = source.TransformPoint(sourceLocal);
             Canvas sourceCanvas = source.GetComponentInParent<Canvas>();
             Camera camera = sourceCanvas != null && sourceCanvas.renderMode != RenderMode.ScreenSpaceOverlay
                 ? sourceCanvas.worldCamera

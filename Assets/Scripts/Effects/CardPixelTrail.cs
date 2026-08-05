@@ -46,16 +46,20 @@ namespace ContextStage
                 maximumPixels);
         }
 
-        public void Begin(Vector2 localPosition)
+        public void Begin(RectTransform source)
         {
             EnsureGraphic();
-            if (_graphic == null) return;
+            if (_graphic == null ||
+                !TryResolveTrailPosition(source, out Vector2 localPosition))
+                return;
             _graphic.Begin(localPosition);
         }
 
-        public void AddPoint(Vector2 localPosition)
+        public void AddPoint(RectTransform source)
         {
-            if (_graphic != null) _graphic.AddPoint(localPosition);
+            if (_graphic != null &&
+                TryResolveTrailPosition(source, out Vector2 localPosition))
+                _graphic.AddPoint(localPosition);
         }
 
         public void End()
@@ -98,6 +102,38 @@ namespace ContextStage
                 headSize,
                 tailSize,
                 maximumPixels);
+        }
+
+        bool TryResolveTrailPosition(
+            RectTransform source,
+            out Vector2 localPosition)
+        {
+            localPosition = Vector2.zero;
+            if (source == null || _graphic == null) return false;
+
+            Vector3 worldCenter = source.TransformPoint(source.rect.center);
+            Canvas sourceCanvas = source.GetComponentInParent<Canvas>();
+            Camera sourceCamera =
+                sourceCanvas != null &&
+                sourceCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+                    ? sourceCanvas.worldCamera
+                    : null;
+            Vector2 screenPosition = RectTransformUtility.WorldToScreenPoint(
+                sourceCamera,
+                worldCenter);
+
+            RectTransform trailRect = _graphic.rectTransform;
+            Canvas trailCanvas = trailRect.GetComponentInParent<Canvas>();
+            Camera trailCamera =
+                trailCanvas != null &&
+                trailCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+                    ? trailCanvas.worldCamera
+                    : null;
+            return RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                trailRect,
+                screenPosition,
+                trailCamera,
+                out localPosition);
         }
     }
 

@@ -420,7 +420,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 100
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -13089,7 +13089,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 983559046}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ee5b8a646bb5b84e9d104eaf5a3f182, type: 3}
   m_Name: 
@@ -13100,6 +13100,10 @@ MonoBehaviour:
   countdownText: {fileID: 85267433}
   progressText: {fileID: 1541304344}
   resultHoldDuration: 1.35
+  initialDimAlpha: 0.28
+  activeDimAlpha: 0.1
+  initialWarningHold: 0.5
+  dimFadeDuration: 0.35
 --- !u!114 &983559048
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14241,19 +14245,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1649020222590429987, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1649020222590429987, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1649020222590429987, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 172.52
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1649020222590429987, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -290.795
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1651501786871573280, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
@@ -14333,35 +14337,35 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2817673845852031991, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2817673845852031991, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2817673845852031991, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 172.52
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2817673845852031991, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -96.93167
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3742963552201059870, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3742963552201059870, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3742963552201059870, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 172.52
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3742963552201059870, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -484.65836
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
@@ -15300,7 +15304,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1486864291
 RectTransform:
   m_ObjectHideFlags: 0
@@ -15781,6 +15785,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceCrisisDebugInput
   director: {fileID: 1592772199}
+  showDebugButtons: 1
 --- !u!114 &1592772199
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17080,7 +17085,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 72
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1

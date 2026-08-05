@@ -177,12 +177,12 @@ namespace ContextStage
             if (TryGetPointerLocalPosition(eventData, out var pointerPosition))
             {
                 _pointerOffset = _rectTransform.anchoredPosition - pointerPosition;
-                _pixelTrail.Begin(_rectTransform.anchoredPosition);
+                _pixelTrail.Begin(_rectTransform);
             }
             else
             {
                 _pointerOffset = Vector2.zero;
-                _pixelTrail.Begin(_rectTransform.anchoredPosition);
+                _pixelTrail.Begin(_rectTransform);
             }
         }
 
@@ -192,7 +192,7 @@ namespace ContextStage
             if (!TryGetPointerLocalPosition(eventData, out var pointerPosition)) return;
 
             _rectTransform.anchoredPosition = pointerPosition + _pointerOffset;
-            _pixelTrail.AddPoint(_rectTransform.anchoredPosition);
+            _pixelTrail.AddPoint(_rectTransform);
         }
 
         public void OnEndDrag(PointerEventData eventData)

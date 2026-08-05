@@ -27,7 +27,12 @@ namespace ContextStage
             HeatStage stage,
             Color cardColor)
         {
-            if (cardColor.a > 0.05f &&
+            bool isUnsetWhite =
+                cardColor.r > 0.9f &&
+                cardColor.g > 0.9f &&
+                cardColor.b > 0.9f;
+            if (!isUnsetWhite &&
+                cardColor.a > 0.05f &&
                 Mathf.Max(cardColor.r, cardColor.g, cardColor.b) > 0.08f)
             {
                 cardColor.a = 1f;

@@ -33,6 +33,12 @@ namespace ContextStage
         public AudienceCrisisState State => _state;
         public bool IsWarning => _state == AudienceCrisisState.Warning;
         public float WarningRemaining => _warningRemaining;
+        public bool CanForceEvent =>
+            isActiveAndEnabled &&
+            GameManager.HasInstance &&
+            GameManager.Instance.IsPlaying &&
+            _state != AudienceCrisisState.Warning &&
+            _state != AudienceCrisisState.Resolving;
 
         void Start()
         {
@@ -79,8 +85,9 @@ namespace ContextStage
         [ContextMenu("Debug/Force Nearby Concert Crisis")]
         public void ForceStartCrisis()
         {
-            if (!GameManager.HasInstance ||
-                !GameManager.Instance.IsPlaying)
+            if (TryForceStartCrisis()) return;
+
+            if (!GameManager.HasInstance || !GameManager.Instance.IsPlaying)
             {
                 Debug.LogWarning(
                     "[AudienceCrisis] Forced crisis requires Playing state.",
@@ -88,14 +95,36 @@ namespace ContextStage
                 return;
             }
 
+            Debug.LogWarning(
+                "[AudienceCrisis] Crisis is already active or no removable " +
+                "audience member is available.",
+                this);
+        }
+
+        public bool TryForceStartCrisis()
+        {
+            if (!CanForceEvent) return false;
             _wasPlaying = true;
-            if (!TryStartCrisis(true))
-            {
-                Debug.LogWarning(
-                    "[AudienceCrisis] At least one removable audience member " +
-                    "is required for a forced crisis.",
-                    this);
-            }
+            return TryStartCrisis(true);
+        }
+
+        [ContextMenu("Debug/Force Audience Comeback")]
+        public void ForceStartComeback()
+        {
+            if (TryForceStartComeback()) return;
+            Debug.LogWarning(
+                "[AudienceCrisis] Comeback requires Playing state and no " +
+                "active crisis.",
+                this);
+        }
+
+        public bool TryForceStartComeback()
+        {
+            if (!CanForceEvent || audienceRoster == null) return false;
+            _wasPlaying = true;
+            _state = AudienceCrisisState.Resolving;
+            _resolutionRoutine = StartCoroutine(ResolveComeback());
+            return true;
         }
 
         void UpdateArmed()

@@ -217,7 +217,7 @@ namespace ContextStage.EditorTools
             Stretch(overlayRect);
 
             Image dim = EnsureComponent<Image>(overlay.gameObject);
-            dim.color = new Color(0f, 0f, 0f, 0.74f);
+            dim.color = new Color(0f, 0f, 0f, 0.1f);
             dim.raycastTarget = false;
 
             CanvasGroup group =
@@ -228,7 +228,7 @@ namespace ContextStage.EditorTools
             Text title = CreateText(
                 overlay,
                 "Title",
-                "!  CROWD CRISIS  !",
+                "긴급 상황!",
                 72,
                 new Color(1f, 0.12f, 0.08f),
                 new Vector2(0f, 150f),
@@ -236,7 +236,7 @@ namespace ContextStage.EditorTools
             Text description = CreateText(
                 overlay,
                 "Description",
-                "A nearby concert is starting!",
+                "옆동네 인기 밴드의 공연이 곧 시작됩니다",
                 38,
                 Color.white,
                 new Vector2(0f, 50f),
@@ -244,7 +244,7 @@ namespace ContextStage.EditorTools
             Text countdown = CreateText(
                 overlay,
                 "Countdown",
-                "6.0",
+                "관객 이탈까지 6.0초",
                 100,
                 new Color(1f, 0.78f, 0.12f),
                 new Vector2(0f, -80f),
@@ -252,7 +252,7 @@ namespace ContextStage.EditorTools
             Text progress = CreateText(
                 overlay,
                 "Progress",
-                "FANS SECURED  0 / 3",
+                "붙잡은 관객 0 / 3",
                 34,
                 Color.white,
                 new Vector2(0f, -190f),

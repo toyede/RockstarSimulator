@@ -152,21 +152,63 @@ namespace ContextStage
             Color scoreColor = delta > 0
                 ? new Color32(0xF9, 0xC2, 0x2B, 0xFF)
                 : new Color32(0xEA, 0x4F, 0x36, 0xFF);
-            _pixelVfx.EmitBurst(
+            int magnitude = Mathf.Abs(delta);
+            int particleCount = delta > 0
+                ? Mathf.Clamp(14 + magnitude / 100, 14, 24)
+                : Mathf.Clamp(9 + magnitude / 150, 9, 15);
+            Vector2 gaugeTip = gaugeFill != null
+                ? new Vector2(0.5f, Mathf.Clamp01(_targetFill))
+                : new Vector2(0.5f, 0.5f);
+
+            _pixelVfx.EmitBurstAtNormalizedPoint(
                 scoreOrigin,
+                gaugeTip,
                 scoreColor,
-                delta > 0 ? 9 : 5,
-                delta > 0 ? 75f : 45f,
-                delta > 0 ? 165f : 105f);
+                particleCount,
+                delta > 0 ? 105f : 70f,
+                delta > 0 ? 245f : 165f,
+                6f,
+                delta > 0 ? 13f : 11f,
+                0.4f,
+                delta > 0 ? 0.75f : 0.62f);
+
+            if (delta > 0)
+            {
+                _pixelVfx.EmitBurstAtNormalizedPoint(
+                    scoreOrigin,
+                    gaugeTip,
+                    Color.white,
+                    6,
+                    145f,
+                    285f,
+                    4f,
+                    8f,
+                    0.22f,
+                    0.46f);
+            }
 
             if (_rankIndex > previousRank && rankImage != null)
             {
                 _pixelVfx.EmitBurst(
                     rankImage.rectTransform,
                     new Color32(0xFB, 0xFF, 0x86, 0xFF),
-                    16,
-                    110f,
-                    230f);
+                    30,
+                    145f,
+                    325f,
+                    8f,
+                    16f,
+                    0.55f,
+                    0.9f);
+                _pixelVfx.EmitBurst(
+                    rankImage.rectTransform,
+                    Color.white,
+                    10,
+                    190f,
+                    360f,
+                    5f,
+                    10f,
+                    0.28f,
+                    0.55f);
             }
         }
 
