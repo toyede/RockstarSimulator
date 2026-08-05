@@ -27,6 +27,13 @@ namespace ContextStage
         [SerializeField, Tooltip("패널 전체를 덮는 진행 버튼")] Button continueButton;
         [SerializeField] Button skipButton;
 
+        [Header("타이포그래피")]
+        [SerializeField, Min(10)] int titleFontSize = 34;
+        [SerializeField, Min(10)] int titleMinFontSize = 26;
+        [SerializeField, Min(10)] int bodyFontSize = 25;
+        [SerializeField, Min(10)] int bodyMinFontSize = 20;
+        [SerializeField, Min(10)] int continueFontSize = 19;
+
         [Header("딤")]
         [SerializeField, Range(0f, 1f), Tooltip("월드 딤 어둡기")] float dimAlpha = 0.6f;
         [SerializeField, Tooltip("딤 페이드 속도")] float dimFadeSpeed = 6f;
@@ -48,6 +55,8 @@ namespace ContextStage
         Transform _spotTarget;
         float _dimTarget;             // 0 = 밝음, dimAlpha = 어두움
         float _dimCurrent;
+        Button _fullScreenContinueButton;
+        bool _continueArmed;
 
         // 스포트라이트로 끌어올린 렌더러들의 원래 sortingOrder
         readonly List<(SpriteRenderer renderer, int order)> _boosted =
@@ -58,16 +67,89 @@ namespace ContextStage
 
         void Awake()
         {
+            ConfigureMessageLayout();
             EnsureDim();
             EnsureGlow();
-            if (continueButton != null) continueButton.onClick.AddListener(() => ContinueClicked?.Invoke());
+            EnsureFullScreenContinueButton();
+            if (continueButton != null) continueButton.onClick.AddListener(RequestContinue);
+            if (_fullScreenContinueButton != null)
+                _fullScreenContinueButton.onClick.AddListener(RequestContinue);
             if (skipButton != null) skipButton.onClick.AddListener(() => SkipClicked?.Invoke());
             HideAll();
         }
 
+        /// <summary>
+        /// TutorialPanel 자체의 위치와 크기는 건드리지 않고, 그 안의 제목·본문·진행 안내만
+        /// 현재 좁은 패널에서도 잘리지 않도록 재배치한다.
+        /// </summary>
+        void ConfigureMessageLayout()
+        {
+            if (mainText != null)
+            {
+                var rect = mainText.rectTransform;
+                rect.anchorMin = new Vector2(0f, 1f);
+                rect.anchorMax = new Vector2(1f, 1f);
+                rect.pivot = new Vector2(0.5f, 1f);
+                rect.anchoredPosition = new Vector2(0f, -14f);
+                rect.sizeDelta = new Vector2(-32f, 88f);
+
+                mainText.fontSize = titleFontSize;
+                mainText.resizeTextForBestFit = true;
+                mainText.resizeTextMinSize = titleMinFontSize;
+                mainText.resizeTextMaxSize = titleFontSize;
+                mainText.alignment = TextAnchor.UpperCenter;
+                mainText.horizontalOverflow = HorizontalWrapMode.Wrap;
+                mainText.verticalOverflow = VerticalWrapMode.Overflow;
+                mainText.lineSpacing = 0.9f;
+            }
+
+            if (subText != null)
+            {
+                var rect = subText.rectTransform;
+                rect.anchorMin = new Vector2(0f, 1f);
+                rect.anchorMax = new Vector2(1f, 1f);
+                rect.pivot = new Vector2(0.5f, 1f);
+                rect.anchoredPosition = new Vector2(0f, -108f);
+                rect.sizeDelta = new Vector2(-40f, 190f);
+
+                subText.fontSize = bodyFontSize;
+                subText.resizeTextForBestFit = true;
+                subText.resizeTextMinSize = bodyMinFontSize;
+                subText.resizeTextMaxSize = bodyFontSize;
+                subText.alignment = TextAnchor.UpperCenter;
+                subText.horizontalOverflow = HorizontalWrapMode.Wrap;
+                subText.verticalOverflow = VerticalWrapMode.Overflow;
+                subText.lineSpacing = 0.9f;
+            }
+
+            if (continueHint != null)
+            {
+                var rect = continueHint.transform as RectTransform;
+                if (rect != null)
+                {
+                    rect.anchorMin = new Vector2(1f, 0f);
+                    rect.anchorMax = new Vector2(1f, 0f);
+                    rect.pivot = new Vector2(1f, 0f);
+                    rect.anchoredPosition = new Vector2(-18f, 14f);
+                    rect.sizeDelta = new Vector2(280f, 32f);
+                }
+
+                var hintText = continueHint.GetComponent<Text>();
+                if (hintText != null)
+                {
+                    hintText.fontSize = continueFontSize;
+                    hintText.resizeTextForBestFit = true;
+                    hintText.resizeTextMinSize = 16;
+                    hintText.resizeTextMaxSize = continueFontSize;
+                }
+            }
+        }
+
         void OnDestroy()
         {
-            if (continueButton != null) continueButton.onClick.RemoveAllListeners();
+            if (continueButton != null) continueButton.onClick.RemoveListener(RequestContinue);
+            if (_fullScreenContinueButton != null)
+                _fullScreenContinueButton.onClick.RemoveListener(RequestContinue);
             if (skipButton != null) skipButton.onClick.RemoveAllListeners();
         }
 
@@ -111,6 +193,12 @@ namespace ContextStage
             }
             if (continueHint != null) continueHint.SetActive(clickToContinue);
             if (continueButton != null) continueButton.interactable = clickToContinue;
+            _continueArmed = clickToContinue;
+            if (_fullScreenContinueButton != null)
+            {
+                _fullScreenContinueButton.interactable = clickToContinue;
+                _fullScreenContinueButton.gameObject.SetActive(clickToContinue);
+            }
         }
 
         /// <summary>서브 텍스트만 잠깐 바꾼다 (틀린 카드 힌트 등).</summary>
@@ -152,6 +240,9 @@ namespace ContextStage
 
         public void HideAll()
         {
+            _continueArmed = false;
+            if (_fullScreenContinueButton != null)
+                _fullScreenContinueButton.gameObject.SetActive(false);
             if (panelRoot != null) panelRoot.SetActive(false);
             SetDim(false);
             Spotlight(null);
@@ -163,6 +254,46 @@ namespace ContextStage
         }
 
         // ---------------- 내부 ----------------
+
+        void RequestContinue()
+        {
+            if (!_continueArmed) return;
+
+            // 한 클릭으로 두 단계가 연속 진행되는 것을 막는다.
+            _continueArmed = false;
+            if (continueButton != null) continueButton.interactable = false;
+            if (_fullScreenContinueButton != null)
+                _fullScreenContinueButton.gameObject.SetActive(false);
+            ContinueClicked?.Invoke();
+        }
+
+        void EnsureFullScreenContinueButton()
+        {
+            if (_fullScreenContinueButton != null) return;
+
+            var go = new GameObject(
+                "TutorialFullScreenContinue",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image),
+                typeof(Button));
+            go.transform.SetParent(transform, false);
+            go.transform.SetAsFirstSibling();
+
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            var image = go.GetComponent<Image>();
+            image.color = new Color(0f, 0f, 0f, 0f);
+            image.raycastTarget = true;
+
+            _fullScreenContinueButton = go.GetComponent<Button>();
+            _fullScreenContinueButton.transition = Selectable.Transition.None;
+            go.SetActive(false);
+        }
 
         void RestoreBoosted()
         {
@@ -236,5 +367,16 @@ namespace ContextStage
             tex.hideFlags = HideFlags.HideAndDontSave;
             return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
         }
+
+#if UNITY_EDITOR
+        void OnValidate()
+        {
+            titleFontSize = Mathf.Max(10, titleFontSize);
+            titleMinFontSize = Mathf.Clamp(titleMinFontSize, 10, titleFontSize);
+            bodyFontSize = Mathf.Max(10, bodyFontSize);
+            bodyMinFontSize = Mathf.Clamp(bodyMinFontSize, 10, bodyFontSize);
+            continueFontSize = Mathf.Max(10, continueFontSize);
+        }
+#endif
     }
 }

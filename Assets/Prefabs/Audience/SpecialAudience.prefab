@@ -285,8 +285,15 @@ MonoBehaviour:
     fps: 12
     loop: 1
     pingPong: 0
+  personalityVFX: {fileID: 0}
+  cardImpactReactionDelay: 0.05
   moveSpeed: 1.6
   dwellDuration: 1.8
+  dwellVariance: 0.4
+  hopDuration: 0.48
+  hopHeight: 0.48
+  anticipationDuration: 0.08
+  landingDuration: 0.12
   lateralOffset: 0.45
   sortingOrderBonus: 1
   scaleMultiplier: 1.15
@@ -313,10 +320,34 @@ MonoBehaviour:
     squash: 0.18
     speedVariance: 0.2
     spriteCycleFps: 0
-  moshSpecialHitEffect: {fileID: 0}
-  moshSpecialHitEffectSize: {x: 10, y: 10}
-  moshSpecialHitStrengthMultiplier: 1
-  moshSpecialHitDurationOverride: 0
+  specialHitEffects:
+  - stage: 0
+    profile: {fileID: 0}
+    effectSize: {x: 9, y: 9}
+    strengthMultiplier: 1
+    durationOverride: 0
+    useBuiltinDistortionFallback: 0
+    cameraShake: 0
+    shakeStrength: 0
+    shakeDuration: 0
+  - stage: 1
+    profile: {fileID: 0}
+    effectSize: {x: 9, y: 9}
+    strengthMultiplier: 1
+    durationOverride: 0
+    useBuiltinDistortionFallback: 0
+    cameraShake: 1
+    shakeStrength: 0.35
+    shakeDuration: 0.35
+  - stage: 2
+    profile: {fileID: 0}
+    effectSize: {x: 10, y: 10}
+    strengthMultiplier: 1
+    durationOverride: 0
+    useBuiltinDistortionFallback: 1
+    cameraShake: 0
+    shakeStrength: 0
+    shakeDuration: 0
 --- !u!1 &6623914429014283280
 GameObject:
   m_ObjectHideFlags: 0

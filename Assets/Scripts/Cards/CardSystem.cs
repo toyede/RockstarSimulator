@@ -158,6 +158,9 @@ namespace ContextStage
                 int reactionAudienceCount = 0;
                 bool isSpecialHit = false;
                 int specialBonusScore = 0;
+                bool isFeverActive =
+                    FeverSystem.HasInstance &&
+                    FeverSystem.Instance.IsActive;
 
                 bool matchesTargetedRequest =
                     card.Role == CardRole.Special &&
@@ -218,6 +221,16 @@ namespace ContextStage
                     return false;
                 }
 
+                if (isFeverActive)
+                {
+                    float engagementGain =
+                        FeverSystem.Instance.Config != null
+                            ? FeverSystem.Instance.Config
+                                .FeverEngagementGainPerAudience
+                            : 0f;
+                    audienceRoster.ApplyFeverEngagementPulse(engagementGain);
+                }
+
                 // 수치 계산은 끝났지만 점수·콤보 이벤트는 아직 발행하지 않은 시점이다.
                 // 중앙 임팩트를 먼저 보여주고, 관객/HUD 쪽은 각자 짧게 지연해
                 // "카드 → 관객 반응 → 결과" 순서만 연출 계층에서 만든다.
@@ -239,9 +252,6 @@ namespace ContextStage
                     ? 0
                     : Mathf.RoundToInt(rawScore * combo.Multiplier);
                 int feverAudienceCount = audienceRoster.Members.Count;
-                bool isFeverActive =
-                    FeverSystem.HasInstance &&
-                    FeverSystem.Instance.IsActive;
                 int feverBonusScore = isFeverActive
                     ? FeverSystem.Instance.CalculateCardBonus(feverAudienceCount)
                     : 0;

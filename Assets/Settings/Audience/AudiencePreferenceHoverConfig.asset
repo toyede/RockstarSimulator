@@ -13,6 +13,16 @@ MonoBehaviour:
   m_Name: AudiencePreferenceHoverConfig
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudiencePreferenceHoverConfig
   revealDelay: 0.3
+  dialogueDelay: 0.45
+  dialogueFont: {fileID: 11400000, guid: f9409ab9754d80b479fc0616c345236e, type: 2}
+  dialogueBackground: {r: 0.18039216, g: 0.13333334, b: 0.18431373, a: 0.9411765}
+  dialogueWorldOffset: 1.15
+  dialogueSize: {x: 460, y: 100}
+  dialogueFontSize: 25
+  dialogueFadeSpeed: 12
+  useHangulTypewriter: 1
+  dialogueTypingInterval: 0.035
+  dialoguePunctuationDelay: 0.08
   chillColor: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 1}
   singalongColor: {r: 0.39215687, g: 0.19215687, b: 0.91764706, a: 1}
   moshColor: {r: 0.9411765, g: 0.12156863, b: 0.12156863, a: 1}

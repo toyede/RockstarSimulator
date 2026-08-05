@@ -17,6 +17,17 @@ namespace ContextStage.EditorTools
     /// </summary>
     public static class TutorialSetupMenu
     {
+        const float FinalPerformanceDuration = 10f;
+        const int FinalPerformanceScoreGoal = 1000;
+        const string ComboTip =
+            "카드의 총 반응이 양수면 COMBO가 이어집니다. 콤보가 높을수록 점수 배율도 올라갑니다.";
+        const string SpecialAudienceTip =
+            "특별 관객 등장! 요청 아이콘과 같은 SPECIAL 카드를 관객에게 직접 전달하세요.";
+        const string CrisisTip =
+            "관객 이탈 위기! 경고가 끝나기 전에 높은 호응을 만들어 이탈 인원을 줄이세요.";
+        const string UtilityTip =
+            "DRAW는 카드를 보충하고, REROLL은 손패를 교체합니다. 막힌 손패를 바꿀 때 사용하세요.";
+
         [MenuItem("Tools/Tutorial/Setup Tutorial", false, 0)]
         public static void SetupScene()
         {
@@ -34,9 +45,11 @@ namespace ContextStage.EditorTools
             var flow = root.GetComponent<ContextStage.TutorialFlow>();
             if (flow == null) flow = Undo.AddComponent<ContextStage.TutorialFlow>(root);
             SetObjectField(flow, "overlay", overlay);
+            ApplyCurrentTutorialValues(flow);
 
             var tips = root.GetComponent<ContextStage.TutorialTips>();
             if (tips == null) tips = Undo.AddComponent<ContextStage.TutorialTips>(root);
+            ApplyCurrentTutorialTips(tips);
             EnsureTipText(tips, overlay.transform.parent != null ? overlay.GetComponentInParent<Canvas>() : null);
 
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
@@ -46,6 +59,46 @@ namespace ContextStage.EditorTools
         }
 
         // ---------------- UI 빌드 ----------------
+
+        /// <summary>
+        /// Keeps already-serialized scene instances aligned with the current short tutorial spec.
+        /// Public so automation can update a loaded scene without editing Unity YAML.
+        /// </summary>
+        public static bool ApplyCurrentTutorialValues()
+        {
+            var flow = Object.FindFirstObjectByType<ContextStage.TutorialFlow>(FindObjectsInactive.Include);
+            if (flow == null)
+            {
+                Debug.LogError("[Tutorial] TutorialFlow was not found in the loaded scene.");
+                return false;
+            }
+
+            ApplyCurrentTutorialValues(flow);
+            var tips = flow.GetComponent<ContextStage.TutorialTips>();
+            if (tips != null) ApplyCurrentTutorialTips(tips);
+            EditorSceneManager.MarkSceneDirty(flow.gameObject.scene);
+            return EditorSceneManager.SaveScene(flow.gameObject.scene);
+        }
+
+        static void ApplyCurrentTutorialValues(ContextStage.TutorialFlow flow)
+        {
+            var serialized = new SerializedObject(flow);
+            serialized.FindProperty("finalDuration").floatValue = FinalPerformanceDuration;
+            serialized.FindProperty("finalScoreGoal").intValue = FinalPerformanceScoreGoal;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(flow);
+        }
+
+        static void ApplyCurrentTutorialTips(ContextStage.TutorialTips tips)
+        {
+            var serialized = new SerializedObject(tips);
+            serialized.FindProperty("comboTip").stringValue = ComboTip;
+            serialized.FindProperty("specialAudienceTip").stringValue = SpecialAudienceTip;
+            serialized.FindProperty("crisisTip").stringValue = CrisisTip;
+            serialized.FindProperty("utilityTip").stringValue = UtilityTip;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(tips);
+        }
 
         static ContextStage.TutorialOverlayUI BuildOverlay(Transform parent)
         {
@@ -76,17 +129,30 @@ namespace ContextStage.EditorTools
             var continueButton = panel.gameObject.AddComponent<Button>();
             continueButton.transition = Selectable.Transition.None;
 
-            var main = CreateText(panel, "MainText", "튜토리얼", 34, TextAnchor.MiddleCenter,
-                new Vector2(0f, -14f), new Vector2(-40f, 60f), stretchTop: true);
+            var main = CreateText(panel, "MainText", "튜토리얼", 28, TextAnchor.UpperCenter,
+                new Vector2(0f, -18f), new Vector2(-48f, 76f), stretchTop: true);
             main.color = new Color(1f, 0.9f, 0.5f);
+            main.resizeTextForBestFit = true;
+            main.resizeTextMinSize = 18;
+            main.resizeTextMaxSize = 28;
+            main.verticalOverflow = VerticalWrapMode.Overflow;
+            main.lineSpacing = 0.9f;
 
-            var sub = CreateText(panel, "SubText", "", 24, TextAnchor.UpperCenter,
-                new Vector2(0f, -78f), new Vector2(-60f, 80f), stretchTop: true);
+            var sub = CreateText(panel, "SubText", "", 21, TextAnchor.UpperCenter,
+                new Vector2(0f, -102f), new Vector2(-56f, 176f), stretchTop: true);
             sub.color = new Color(0.92f, 0.92f, 0.92f);
+            sub.resizeTextForBestFit = true;
+            sub.resizeTextMinSize = 16;
+            sub.resizeTextMaxSize = 21;
+            sub.verticalOverflow = VerticalWrapMode.Overflow;
+            sub.lineSpacing = 0.9f;
 
-            var hint = CreateText(panel, "ContinueHint", "▼ 클릭해서 계속", 18, TextAnchor.LowerRight,
-                new Vector2(-16f, 8f), new Vector2(260f, 26f), stretchTop: false);
+            var hint = CreateText(panel, "ContinueHint", "▼ 클릭해서 계속", 17, TextAnchor.LowerRight,
+                new Vector2(-18f, 14f), new Vector2(240f, 28f), stretchTop: false);
             hint.color = new Color(0.7f, 0.85f, 1f, 0.9f);
+            hint.resizeTextForBestFit = true;
+            hint.resizeTextMinSize = 14;
+            hint.resizeTextMaxSize = 17;
 
             // ---- 스킵 버튼 (우상단) ----
             var skipRect = CreateRect("SkipButton", canvasGo.transform,

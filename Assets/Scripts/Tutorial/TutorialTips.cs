@@ -25,17 +25,22 @@ namespace ContextStage
 
         [Header("한 번만 보여줄 팁 (비우면 비활성)")]
         [SerializeField, TextArea] string comboTip =
-            "긍정적인 총반응을 이어가면 COMBO 배율이 올라갑니다!";
+            "카드의 총 반응이 양수면 COMBO가 이어집니다. 콤보가 높을수록 점수 배율도 올라갑니다.";
         [SerializeField, TextArea] string specialAudienceTip =
-            "특별 관객 등장! 원하는 카드를 그 관객 위로 직접 드래그해 전달하세요.";
+            "특별 관객 등장!\n요청 아이콘과 같은 SPECIAL 카드를 직접 전달하세요.";
         [SerializeField, TextArea] string crisisTip =
-            "관객 이탈 위기! 경고가 끝나기 전에 공연을 달아오르게 하세요.";
+            "관객 이탈 위기! 경고가 끝나기 전에 높은 호응을 만들어 이탈 인원을 줄이세요.";
         [SerializeField, TextArea] string utilityTip =
-            "특수 카드로 손패의 흐름을 바꿀 수 있습니다. 사용한 카드는 새 카드로 교체됩니다.";
+            "DRAW는 카드를 보충하고, REROLL은 손패를 교체합니다.\n막힌 손패를 바꿀 때 사용하세요.";
 
         float _visibleUntil;
         float _hiddenAt;
         bool _animating;
+
+        void Awake()
+        {
+            ConfigureTipLayout();
+        }
 
         void OnEnable()
         {
@@ -102,6 +107,23 @@ namespace ContextStage
             var c = tipText.color;
             c.a = alpha;
             tipText.color = c;
+        }
+
+        void ConfigureTipLayout()
+        {
+            if (tipText == null) return;
+
+            RectTransform rect = tipText.rectTransform;
+            rect.sizeDelta = new Vector2(1100f, 90f);
+
+            tipText.fontSize = 26;
+            tipText.resizeTextForBestFit = true;
+            tipText.resizeTextMinSize = 22;
+            tipText.resizeTextMaxSize = 28;
+            tipText.alignment = TextAnchor.MiddleCenter;
+            tipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            tipText.verticalOverflow = VerticalWrapMode.Overflow;
+            tipText.lineSpacing = 0.9f;
         }
 
         [ContextMenu("Debug/Reset All Tip Flags")]

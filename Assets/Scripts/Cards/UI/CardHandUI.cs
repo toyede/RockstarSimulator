@@ -30,6 +30,7 @@ namespace ContextStage
 
         /// <summary>디졸브 중이라 손패에서 빠졌지만 아직 풀에 반납하지 않은 카드들.</summary>
         readonly List<CardSlotUI> _dissolvingViews = new List<CardSlotUI>();
+        bool _feverActive;
 
         public void Configure(
             Transform container,
@@ -49,6 +50,8 @@ namespace ContextStage
             // CardSelected 는 HandChanged 보다 먼저 발행된다. 그 사이에 사용된 카드 뷰를
             // 손패 목록에서 빼내야 Refresh 가 그것을 곧바로 풀에 반납하지 않는다.
             EventBus.Subscribe<CardSelected>(OnCardSelected);
+            EventBus.Subscribe<FeverStateChanged>(OnFeverStateChanged);
+            _feverActive = FeverSystem.HasInstance && FeverSystem.Instance.IsActive;
             Refresh();
         }
 
@@ -56,11 +59,22 @@ namespace ContextStage
         {
             EventBus.Unsubscribe<HandChanged>(OnHandChanged);
             EventBus.Unsubscribe<CardSelected>(OnCardSelected);
+            EventBus.Unsubscribe<FeverStateChanged>(OnFeverStateChanged);
             ReleaseDissolvingViews();
             ReleaseViews();
         }
 
         void OnHandChanged(HandChanged _) => Refresh();
+
+        void OnFeverStateChanged(FeverStateChanged e)
+        {
+            _feverActive = e.IsActive;
+            for (int i = 0; i < _activeViews.Count; i++)
+            {
+                if (_activeViews[i] != null)
+                    _activeViews[i].SetFeverVisual(_feverActive);
+            }
+        }
 
         // ---------------- 사용 연출 ----------------
 
@@ -183,6 +197,7 @@ namespace ContextStage
                 dragHandler.enabled = true;
 
                 view.Bind(card);
+                view.SetFeverVisual(_feverActive);
                 dragHandler.Bind(i, cardInput, dragLayer, parent as RectTransform);
                 _activeViews.Add(view);
             }

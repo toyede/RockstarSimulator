@@ -41,6 +41,7 @@ namespace ContextStage.EditorTools
             {
                 var asset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(TmpFontPath);
                 if (asset == null) asset = CreateTmpFontAsset();
+                else RepairTmpFontAsset(asset);
                 return asset != null ? asset : TMP_Settings.defaultFontAsset;
             }
         }
@@ -139,7 +140,11 @@ namespace ContextStage.EditorTools
         static TMP_FontAsset CreateTmpFontAsset()
         {
             var existing = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(TmpFontPath);
-            if (existing != null) return existing;
+            if (existing != null)
+            {
+                RepairTmpFontAsset(existing);
+                return existing;
+            }
 
             var sourceFont = AssetDatabase.LoadAssetAtPath<Font>(FontPath);
             if (sourceFont == null)
@@ -182,7 +187,41 @@ namespace ContextStage.EditorTools
             EditorUtility.SetDirty(asset);
             AssetDatabase.SaveAssets();
             AssetDatabase.ImportAsset(TmpFontPath);
+            RepairTmpFontAsset(asset);
             return asset;
+        }
+
+        /// <summary>
+        /// Dynamic TMP 폰트가 런타임에 한글 글리프를 추가할 수 있도록
+        /// 소스 TTF 참조와 Multi Atlas 설정을 복구한다.
+        /// </summary>
+        static void RepairTmpFontAsset(TMP_FontAsset asset)
+        {
+            if (asset == null) return;
+
+            Font sourceFont = AssetDatabase.LoadAssetAtPath<Font>(FontPath);
+            if (sourceFont == null)
+            {
+                Debug.LogWarning($"[Font] {FontPath} 를 찾지 못했습니다.");
+                return;
+            }
+
+            var serialized = new SerializedObject(asset);
+            SerializedProperty source = serialized.FindProperty("m_SourceFontFile");
+            SerializedProperty sourceGuid = serialized.FindProperty("m_SourceFontFileGUID");
+            SerializedProperty population = serialized.FindProperty("m_AtlasPopulationMode");
+            SerializedProperty multiAtlas = serialized.FindProperty("m_IsMultiAtlasTexturesEnabled");
+
+            if (source != null) source.objectReferenceValue = sourceFont;
+            if (sourceGuid != null)
+                sourceGuid.stringValue = AssetDatabase.AssetPathToGUID(FontPath);
+            if (population != null)
+                population.enumValueIndex = (int)AtlasPopulationMode.Dynamic;
+            if (multiAtlas != null) multiAtlas.boolValue = true;
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(asset);
+            AssetDatabase.SaveAssets();
         }
     }
 }

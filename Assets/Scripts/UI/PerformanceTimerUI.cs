@@ -27,8 +27,19 @@ namespace ContextStage
         [SerializeField, Tooltip("켜면 가득 찬 상태로 시작해 시간이 지날수록 줄어든다. 끄면(기본) 빈 상태로 시작해 차오른다.")]
         bool countDown = false;
 
+        UIPixelBurstEmitter _pixelVfx;
+        float _nextDustAt;
+
         void OnEnable()
         {
+            if (_pixelVfx == null)
+            {
+                _pixelVfx = GetComponent<UIPixelBurstEmitter>();
+                if (_pixelVfx == null)
+                    _pixelVfx = gameObject.AddComponent<UIPixelBurstEmitter>();
+            }
+            _nextDustAt = 0f;
+
             EventBus.Subscribe<PerformanceTimeChanged>(OnTimeChanged);
 
             // 씬 로드 직후 이벤트가 오기 전에도 현재값과 동기화
@@ -66,6 +77,28 @@ namespace ContextStage
                 int seconds = Mathf.FloorToInt(remaining % 60f);
                 valueText.text = $"{minutes}:{seconds:00}";
             }
+
+            EmitTimerDust(elapsed, duration);
+        }
+
+        void EmitTimerDust(float elapsed, float duration)
+        {
+            if (_pixelVfx == null || handleRect == null || duration <= 0f) return;
+            if (!GameManager.HasInstance || !GameManager.Instance.IsPlaying) return;
+            if (TutorialFlow.IsRunning) return;
+
+            float remaining = Mathf.Max(0f, duration - elapsed);
+            if (remaining <= 0f || Time.unscaledTime < _nextDustAt) return;
+
+            float interval = remaining <= 5f ? 0.06f : remaining <= 15f ? 0.08f : 0.12f;
+            _nextDustAt = Time.unscaledTime + interval;
+
+            Color color = remaining <= 5f
+                ? new Color32(0xEA, 0x4F, 0x36, 0xE6)
+                : remaining <= 15f
+                    ? new Color32(0xF9, 0xC2, 0x2B, 0xD9)
+                    : new Color32(0xC7, 0xDC, 0xD0, 0xA6);
+            _pixelVfx.EmitDust(handleRect, color, remaining <= 5f ? 2 : 1);
         }
     }
 }

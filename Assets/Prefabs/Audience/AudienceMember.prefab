@@ -2932,8 +2932,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceReactionVFX
   headLocalPosition: {x: 0, y: 1.55, z: -0.05}
   ellipsisLocalPosition: {x: 0, y: 1.82, z: -0.05}
+  frustrationLocalPosition: {x: 0, y: 1.56, z: -0.05}
   arrowLocalPosition: {x: 0, y: 1.72, z: -0.05}
   feetLocalPosition: {x: 0, y: 0.12, z: -0.05}
   flashSize: 0.44
   ellipsisDuration: 0.58
+  frustrationDuration: 0.9
   arrowDuration: 0.5

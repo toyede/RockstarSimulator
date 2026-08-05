@@ -61,6 +61,7 @@ namespace ContextStage
             // SuppressEngagementDecay: 튜토리얼이 관객 몰입도를 고정하는 동안만 true.
             // (TrySetEngagement/TryChangeEngagement 수동 호출은 계속 동작한다)
             if (!SuppressEngagementDecay &&
+                !IsFeverActive &&
                 _model.ApplyNaturalDecay(Time.deltaTime, _changes, _removed))
             {
                 for (int i = 0; i < _changes.Count; i++)
@@ -102,6 +103,9 @@ namespace ContextStage
 
         /// <summary>[튜토리얼 전용] true인 동안 관객 개별 몰입도 자연 감소를 멈춘다. 평소에는 false.</summary>
         public bool SuppressEngagementDecay { get; set; }
+
+        static bool IsFeverActive =>
+            FeverSystem.HasInstance && FeverSystem.Instance.IsActive;
 
         public bool ResetRoster()
         {
@@ -185,6 +189,9 @@ namespace ContextStage
             AudienceChangeReason reason,
             out AudienceSnapshot current)
         {
+            if (IsFeverActive && delta < 0f)
+                return TryGet(id, out current);
+
             if (_model == null ||
                 !_model.TryChangeEngagement(id, delta, out AudienceStateChange change, out bool departed))
             {
@@ -203,6 +210,15 @@ namespace ContextStage
             AudienceChangeReason reason,
             out AudienceSnapshot current)
         {
+            if (IsFeverActive &&
+                _model != null &&
+                _model.TryGet(id, out AudienceSnapshot previous) &&
+                engagement < previous.Engagement)
+            {
+                current = previous;
+                return true;
+            }
+
             if (_model == null ||
                 !_model.TrySetEngagement(
                     id,
@@ -235,6 +251,9 @@ namespace ContextStage
                 reactionValue *
                 _model.EngagementRules.EngagementPerReactionPoint *
                 multiplier;
+            if (IsFeverActive && engagementDelta < 0f)
+                engagementDelta = 0f;
+
             float appliedDelta =
                 _model.EngagementRules.Clamp(previous.Engagement + engagementDelta) -
                 previous.Engagement;
@@ -270,6 +289,28 @@ namespace ContextStage
                 current));
             PublishStateMutation(change, AudienceChangeReason.CardReaction, departed);
             return true;
+        }
+
+        public int ApplyFeverEngagementPulse(float engagementGain)
+        {
+            if (_model == null || !IsFeverActive || engagementGain <= 0f)
+                return 0;
+
+            int affectedCount = 0;
+            for (int i = _model.Members.Count - 1; i >= 0; i--)
+            {
+                AudienceId id = _model.Members[i].Id;
+                if (TryChangeEngagement(
+                        id,
+                        engagementGain,
+                        AudienceChangeReason.CardReaction,
+                        out _))
+                {
+                    affectedCount++;
+                }
+            }
+
+            return affectedCount;
         }
 
         public bool TryRemove(

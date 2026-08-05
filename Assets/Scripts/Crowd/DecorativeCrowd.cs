@@ -28,7 +28,7 @@ namespace ContextStage
 
         [Header("인원")]
         [SerializeField, Min(0), Tooltip("한 번에 보일 수 있는 최대 인원")]
-        int maxCount = 9;
+        int maxCount = 15;
 
         [SerializeField, Tooltip(
             "관객이 이 비율만큼 찼을 때 장식 인원이 가득 찬다. " +

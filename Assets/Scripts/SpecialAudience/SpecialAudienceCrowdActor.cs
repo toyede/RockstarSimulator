@@ -91,6 +91,21 @@ namespace ContextStage
         [SerializeField, Tooltip("한 자리에 머무는 시간(초). 이 시간이 지나면 다른 관객 자리로 옮긴다")]
         float dwellDuration = 1.8f;
 
+        [SerializeField, Min(0f), Tooltip("머무는 시간에 더하는 무작위 변화 폭")]
+        float dwellVariance = 0.4f;
+
+        [SerializeField, Min(0.1f), Tooltip("자리 사이를 뛰어갈 때의 기본 이동 시간")]
+        float hopDuration = 0.48f;
+
+        [SerializeField, Min(0f), Tooltip("자리 사이를 뛰어갈 때의 포물선 높이")]
+        float hopHeight = 0.48f;
+
+        [SerializeField, Min(0f), Tooltip("점프 직전 웅크리는 시간")]
+        float anticipationDuration = 0.08f;
+
+        [SerializeField, Min(0f), Tooltip("도착 직후 착지 스쿼시가 남는 시간")]
+        float landingDuration = 0.12f;
+
         [SerializeField, Tooltip("고른 관객 자리에서 좌우로 벗어나는 거리. 정확히 겹치지 않게 한다")]
         float lateralOffset = 0.45f;
 
@@ -169,6 +184,12 @@ namespace ContextStage
         float _hoverScaleMultiplier = 1f;
         float _facing = 1f;       // 스프라이트 좌우 반전
         float _phase;             // 개체 고유 위상 (일반 관객과 리듬이 겹치지 않게)
+        Vector3 _hopStart;
+        float _hopProgress;
+        float _hopTravelDuration;
+        float _anticipationRemaining;
+        float _landingRemaining;
+        bool _movingBetweenSpots;
         HeatStage _activeStage;
         Coroutine _personalityHitRoutine;
 
@@ -431,8 +452,6 @@ namespace ContextStage
         /// </summary>
         void PickNewSpot(bool immediate)
         {
-            _repathAt = Time.time + Mathf.Max(0.1f, dwellDuration);
-
             if (audiencePresenter == null ||
                 !audiencePresenter.TryGetRandomActor(out AudienceMemberActor picked))
             {
@@ -471,7 +490,24 @@ namespace ContextStage
                     _renderer.sortingOrder + 2);
             }
 
-            if (immediate) SnapToAnchor();
+            if (immediate)
+            {
+                SnapToAnchor();
+                ScheduleNextMove();
+                return;
+            }
+
+            _hopStart = _feet;
+            _hopProgress = 0f;
+            _anticipationRemaining = anticipationDuration;
+            float distance = Vector3.Distance(_hopStart, _anchor);
+            _hopTravelDuration = Mathf.Clamp(
+                hopDuration * Mathf.Lerp(0.85f, 1.2f, Mathf.Clamp01(distance / 5f)) *
+                (1.6f / Mathf.Max(0.1f, moveSpeed)),
+                0.3f,
+                0.65f);
+            _movingBetweenSpots = true;
+            _repathAt = float.PositiveInfinity;
         }
 
         void SnapToAnchor()
@@ -479,6 +515,16 @@ namespace ContextStage
             _feet = _anchor;
             motionRoot.localPosition = _anchor;
             _currentScale = _targetScale;
+            _movingBetweenSpots = false;
+            _hopProgress = 1f;
+            _anticipationRemaining = 0f;
+            _landingRemaining = 0f;
+        }
+
+        void ScheduleNextMove()
+        {
+            float variance = Random.Range(-dwellVariance, dwellVariance);
+            _repathAt = Time.time + Mathf.Max(0.35f, dwellDuration + variance);
         }
 
         // ---------------- 움직임 ----------------
@@ -491,25 +537,67 @@ namespace ContextStage
             // 환호가 끝나면 사라진다 (매니저가 특별 관객을 숨기는 타이밍과 맞춰둔다)
             if (_celebrating && Time.time >= _celebrateUntil) { SetVisible(false); return; }
 
-            // 1) 자리 이동 — 목표 자리로 걸어간다. 환호 중에는 제자리에서 뛴다.
-            if (!_celebrating && Time.time >= _repathAt) PickNewSpot(immediate: false);
+            // 카드를 들고 특별 관객을 겨누는 동안에는 이동을 멈춰 드롭 타깃이 달아나지 않게 한다.
+            bool interactionFocused = CardDragHandler.Current != null;
+
+            // 1) 자리 이동 — 짧게 웅크린 뒤 포물선으로 뛰어간다. 환호·카드 드래그 중에는 제자리.
+            if (!_celebrating && !interactionFocused && !_movingBetweenSpots && Time.time >= _repathAt)
+                PickNewSpot(immediate: false);
 
             float dx = _anchor.x - _feet.x;
             // 이동 애니메이션 원화가 왼쪽을 보고 있어 부호를 반대로 적용한다.
             if (Mathf.Abs(dx) > 0.01f) _facing = -Mathf.Sign(dx); // 진행 방향을 본다
 
-            if (!_celebrating)
-                _feet = Vector3.MoveTowards(_feet, _anchor, moveSpeed * Time.deltaTime);
+            float travelHeight = 0f;
+            float travelSquash = 0f;
+            if (!_celebrating && !interactionFocused && _movingBetweenSpots)
+            {
+                if (_anticipationRemaining > 0f)
+                {
+                    _anticipationRemaining = Mathf.Max(0f, _anticipationRemaining - Time.deltaTime);
+                    float anticipation = anticipationDuration <= 0f
+                        ? 1f
+                        : 1f - _anticipationRemaining / anticipationDuration;
+                    travelSquash = Mathf.Lerp(0f, 0.14f, anticipation);
+                }
+                else
+                {
+                    _hopProgress = Mathf.Clamp01(
+                        _hopProgress + Time.deltaTime / Mathf.Max(0.1f, _hopTravelDuration));
+                    float eased = _hopProgress * _hopProgress * (3f - 2f * _hopProgress);
+                    _feet = Vector3.Lerp(_hopStart, _anchor, eased);
+                    travelHeight = Mathf.Sin(_hopProgress * Mathf.PI) * hopHeight;
+                    travelSquash = -Mathf.Sin(_hopProgress * Mathf.PI) * 0.06f;
+
+                    if (_hopProgress >= 1f)
+                    {
+                        _feet = _anchor;
+                        _movingBetweenSpots = false;
+                        _landingRemaining = landingDuration;
+                        ScheduleNextMove();
+                    }
+                }
+            }
+
+            if (_landingRemaining > 0f)
+            {
+                _landingRemaining = Mathf.Max(0f, _landingRemaining - Time.deltaTime);
+                float landing = landingDuration <= 0f
+                    ? 0f
+                    : _landingRemaining / landingDuration;
+                travelSquash += 0.18f * landing;
+            }
 
             // 2) 제자리 움직임 — 일반 관객과 같은 방식으로 반동·흔들림·점프
             var profile = _celebrating ? celebrateMotion : motion;
             CrowdMotionEvaluator.Evaluate(profile, Time.time + _phase, out float height, out float sway, out float squash);
 
             // 발 위치는 따로 들고 있고 점프는 거기에 얹기만 한다 (점프하면서 자리가 밀려 올라가지 않는다)
-            motionRoot.localPosition = _feet + new Vector3(0f, height, 0f);
+            motionRoot.localPosition = _feet + new Vector3(0f, height + travelHeight, 0f);
             visualRoot.localRotation = Quaternion.Euler(0f, 0f, sway);
 
             _currentScale = Mathf.Lerp(_currentScale, _targetScale, Time.deltaTime * scaleLerpSpeed);
+            squash = Mathf.Clamp(squash + travelSquash, -0.12f, 0.32f);
             visualRoot.localScale = new Vector3(
                 _facing * _currentScale * (1f + squash * 0.5f) * _hoverScaleMultiplier,
                 _currentScale * (1f - squash) * _hoverScaleMultiplier,

@@ -12,7 +12,7 @@ namespace ContextStage
     ///
     /// 진행: Intro → 성향 3연습(Mosh 정답 공개 → Singalong 절반 힌트 → Chill 자율) → 호버 안내
     ///       → 교차 반응 → 상태 읽기(지루한 관객 구하기) → 관객 교체 → 피버타임 체험
-    ///       → 30초 최종 미니 공연 → 완료
+    ///       → 10초 최종 미니 공연 → 완료
     ///
     /// 다른 시스템을 제어하는 방법 (전부 기존 공개 API·한 줄 훅):
     ///   관객 고정      : AudienceRosterSystem.TryAdd/TryRemove/TrySetEngagement
@@ -41,9 +41,10 @@ namespace ContextStage
             PrefMosh, PrefSingalong, PrefChill,
             HoverHint,
             CrossUse, CrossExplain,
-            Excitement,
-            CrowdChange,
+            Excitement, GameOverExplain,
+            CrowdChange, LightingHint,
             FeverIntro, FeverExplain,
+            SpecialIntro, SpecialUse, SpecialExplain,
             FinalIntro, FinalRun, FinalFail,
             Complete
         }
@@ -65,9 +66,12 @@ namespace ContextStage
         [SerializeField, Tooltip("흥분(Excited) 상태로 만들 값")] float excitedEngagement = 88f;
 
         [Header("최종 미니 공연")]
-        [SerializeField, Tooltip("제한 시간(초)")] float finalDuration = 30f;
-        [SerializeField, Tooltip("목표 총 반응 점수")] int finalScoreGoal = 100;
-        [SerializeField, Tooltip("허용 이탈 인원")] int finalMaxDepartures = 1;
+        [SerializeField, Tooltip("제한 시간(초)")] float finalDuration = 10f;
+        [SerializeField, Tooltip("목표 총 반응 점수")] int finalScoreGoal = 1000;
+
+        [Header("관객 Hover 학습")]
+        [SerializeField, Min(0.5f), Tooltip("테두리와 말풍선을 읽도록 Hover를 유지해야 하는 시간(초)")]
+        float hoverInspectionDuration = 2f;
 
         /// <summary>튜토리얼 진행 중인가. (TutorialTips 가 이때는 조용히 있는다)</summary>
         public static bool IsRunning { get; private set; }
@@ -80,10 +84,11 @@ namespace ContextStage
         string _blockedHint = "";
         bool _allowAllCards;
         bool _hoverTaught;
+        float _hoverInspectionTimer;
+        AudienceId _crowdChangeHoverTargetId;
 
         // 최종 미니 공연 집계
         int _finalScore;
-        int _finalDepartures;
 
         // 복구용
         NearbyConcertCrisisDirector _crisis;
@@ -100,7 +105,6 @@ namespace ContextStage
         {
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
             EventBus.Subscribe<CardResolved>(OnCardResolved);
-            EventBus.Subscribe<AudienceDeparted>(OnAudienceDeparted);
             CardInput.UseBlocked += OnCardBlocked;
 
             if (overlay != null)
@@ -114,7 +118,6 @@ namespace ContextStage
         {
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
             EventBus.Unsubscribe<CardResolved>(OnCardResolved);
-            EventBus.Unsubscribe<AudienceDeparted>(OnAudienceDeparted);
             CardInput.UseBlocked -= OnCardBlocked;
 
             if (overlay != null)
@@ -141,21 +144,49 @@ namespace ContextStage
             switch (_phase)
             {
                 case Phase.CrowdChange:
-                    // 새 관객을 2초는 관찰하게 한 뒤에 진행 버튼을 살린다
-                    if (_phaseTimer >= 2f && overlay != null)
-                        overlay.ShowMessage("새로운 관객이 들어왔습니다!",
-                            "관객이 바뀌면 좋은 카드도 바뀝니다. (클릭해서 계속)", true);
+                    bool isInspectingNewAudience =
+                        !_hoverTaught &&
+                        _crowdChangeHoverTargetId.IsValid &&
+                        _hoverController != null &&
+                        _hoverController.RevealedActor != null &&
+                        _hoverController.RevealedActor.BoundId == _crowdChangeHoverTargetId;
+
+                    if (isInspectingNewAudience)
+                    {
+                        _hoverInspectionTimer += Time.unscaledDeltaTime;
+                        if (_hoverInspectionTimer >= hoverInspectionDuration)
+                        {
+                            _hoverTaught = true;
+                            overlay?.ShowMessage(
+                                "새 관객의 정보를 확인했습니다.",
+                                "관객 구성이 바뀌면 호응을 크게 이끌어낼 카드도 달라집니다. " +
+                                "새 관객의 취향을 기억하세요. (클릭해서 계속)",
+                                true);
+                        }
+                    }
+                    else if (!_hoverTaught)
+                    {
+                        _hoverInspectionTimer = 0f;
+                    }
                     break;
 
                 case Phase.HoverHint:
-                    if (!_hoverTaught && _hoverController != null && _hoverController.RevealedActor != null)
+                    bool isInspecting = _hoverController != null && _hoverController.RevealedActor != null;
+                    if (!_hoverTaught && isInspecting)
                     {
-                        _hoverTaught = true;
-                        overlay?.ShowMessage(
-                            "이렇게 테두리 색으로 성향을 바로 확인할 수 있습니다.",
-                            "확인했다면 계속하세요. (클릭해서 계속)",
-                            true);
+                        _hoverInspectionTimer += Time.unscaledDeltaTime;
+                        if (_hoverInspectionTimer >= hoverInspectionDuration)
+                        {
+                            _hoverTaught = true;
+                            overlay?.ShowMessage(
+                                "관객의 힌트를 확인했습니다.",
+                                "테두리 색은 선호하는 카드 계열을, 말풍선은 원하는 행동과 현재 기분을 알려줍니다. " +
+                                "(클릭해서 계속)",
+                                true);
+                        }
                     }
+                    else if (!_hoverTaught)
+                        _hoverInspectionTimer = 0f;
                     break;
 
                 case Phase.FeverIntro:
@@ -164,10 +195,20 @@ namespace ContextStage
                         FeverSystem.Instance.ForceStart();
                     break;
 
+                case Phase.SpecialIntro:
+                case Phase.SpecialUse:
+                    // 설명을 읽는 동안 요청 시간이 끝나도 바로 같은 요청을 다시 보여준다.
+                    if (SpecialAudienceManager.HasInstance &&
+                        !SpecialAudienceManager.Instance.HasActiveRequest)
+                    {
+                        SpecialAudienceManager.Instance.ForceSpawn(HeatStage.Singalong);
+                    }
+                    break;
+
                 case Phase.FinalRun:
                     float remain = Mathf.Max(0f, finalDuration - _phaseTimer);
                     overlay?.FlashSub(
-                        $"남은 시간 {remain:0}초 · 총 반응 {_finalScore:+0;-0;0} / {finalScoreGoal} · 이탈 {_finalDepartures}/{finalMaxDepartures}");
+                        $"남은 시간 {remain:0}초 · 총 반응 {_finalScore:+0;-0;0} / {finalScoreGoal}");
                     if (remain <= 0f) FinishFinalRun();
                     break;
             }
@@ -220,6 +261,11 @@ namespace ContextStage
             Hype.SetDecayPaused(true);
             PerformanceTimer.SetPaused(true);
             if (SpecialAudienceManager.HasInstance) SpecialAudienceManager.Instance.StopSystem();
+            if (FeverSystem.HasInstance)
+            {
+                FeverSystem.Instance.SetAutomaticTriggerEnabled(false);
+                FeverSystem.Instance.CancelFever();
+            }
 
             _crisis = FindFirstObjectByType<NearbyConcertCrisisDirector>();
             _crisisWasEnabled = _crisis != null && _crisis.enabled;
@@ -249,6 +295,13 @@ namespace ContextStage
             Hype.SetDecayPaused(false);
             PerformanceTimer.SetPaused(false);
             if (_crisis != null) _crisis.enabled = _crisisWasEnabled;
+            if (SpecialAudienceManager.HasInstance)
+                SpecialAudienceManager.Instance.StopSystem();
+            if (FeverSystem.HasInstance)
+            {
+                FeverSystem.Instance.CancelFever();
+                FeverSystem.Instance.SetAutomaticTriggerEnabled(true);
+            }
             CardInput.UseFilter = null;
             overlay?.HideAll();
             overlay?.SetSkipVisible(false);
@@ -306,6 +359,28 @@ namespace ContextStage
             else Debug.LogWarning("[Tutorial] 카드 풀에 성향별 Normal 카드가 3종 모두 있어야 합니다.");
         }
 
+        void SetupSpecialHand()
+        {
+            if (!CardSystem.HasInstance) return;
+            var system = CardSystem.Instance;
+            var config = system.Config;
+            if (config == null) return;
+
+            foreach (var entry in config.CardPool)
+            {
+                if (entry == null || !entry.IsUsable) continue;
+                var card = entry.Prefab;
+                if (card.Role != CardRole.Special ||
+                    card.TargetPreference != CrowdPreference.Singalong)
+                    continue;
+
+                system.SetHand(new[] { card });
+                return;
+            }
+
+            Debug.LogWarning("[Tutorial] SINGALONG Special 카드가 카드 풀에 없습니다.");
+        }
+
         /// <summary>기존 관객을 정리하고 지정 구성으로 채운다. (추가 먼저 → 제거 — 로스터가 비면 게임오버가 뜨므로)</summary>
         void SetRoster(params (CrowdPreference pref, float engagement)[] members)
         {
@@ -354,6 +429,12 @@ namespace ContextStage
             var card = CardSystem.Instance.GetCard(handIndex);
             if (card == null) return false;
 
+            if (_phase == Phase.SpecialUse)
+            {
+                return card.Role == CardRole.Special &&
+                       card.TargetPreference == CrowdPreference.Singalong;
+            }
+
             // 손패에 정답 카드가 없으면 소프트락 방지를 위해 전부 허용한다
             if (!HandHasMatch()) return true;
 
@@ -388,8 +469,12 @@ namespace ContextStage
                 case Phase.Intro:        EnterPrefMosh(); break;
                 case Phase.HoverHint:    EnterCrossUse(); break;
                 case Phase.CrossExplain: EnterExcitement(); break;
-                case Phase.CrowdChange:  EnterFeverIntro(); break;
-                case Phase.FeverExplain: EnterFinalIntro(); break;
+                case Phase.GameOverExplain: EnterCrowdChange(); break;
+                case Phase.CrowdChange:  EnterLightingHint(); break;
+                case Phase.LightingHint: EnterFeverIntro(); break;
+                case Phase.FeverExplain: EnterSpecialIntro(); break;
+                case Phase.SpecialIntro: EnterSpecialUse(); break;
+                case Phase.SpecialExplain: EnterFinalIntro(); break;
                 case Phase.FinalIntro:   EnterFinalRun(); break;
                 case Phase.FinalFail:    EnterFinalIntro(); break;
                 case Phase.Complete:     EndTutorial(markDone: true, restartRun: true); break;
@@ -406,16 +491,19 @@ namespace ContextStage
                 case Phase.PrefSingalong: EnterPrefChill(); break;
                 case Phase.PrefChill:     EnterHoverHint(); break;
                 case Phase.CrossUse:      EnterCrossExplain(e.GainedScore); break;
-                case Phase.Excitement:    EnterCrowdChange(); break;
+                case Phase.Excitement:    EnterGameOverExplain(); break;
                 case Phase.FeverIntro:    EnterFeverExplain(e.GainedScore); break;
+                case Phase.SpecialUse:
+                    if (e.IsSpecialHit) EnterSpecialExplain();
+                    else
+                    {
+                        SetupSpecialHand();
+                        overlay?.FlashSub(
+                            "요청 아이콘과 같은 SPECIAL 카드를 골라 특별 관객 위에 직접 놓으세요.");
+                    }
+                    break;
                 case Phase.FinalRun:      _finalScore += e.GainedScore; break;
             }
-        }
-
-        void OnAudienceDeparted(AudienceDeparted e)
-        {
-            if (!IsRunning || _phase != Phase.FinalRun) return;
-            if (e.Reason == AudienceDepartureReason.EngagementDepleted) _finalDepartures++;
         }
 
         void SetPhase(Phase phase)
@@ -434,8 +522,9 @@ namespace ContextStage
             overlay?.SetDim(true);
             overlay?.Spotlight(null);
             overlay?.ShowMessage(
-                "좋은 카드가 항상 좋은 반응을 만드는 것은 아닙니다.",
-                "지금 이 관객에게 맞는 카드를 찾아야 합니다. (클릭해서 계속)",
+                "관객을 읽고, 알맞은 행동 카드를 사용하세요.",
+                "이 게임은 관객의 복장과 상태를 살펴 호응을 이끌어내는 공연 게임입니다. " +
+                "옷차림은 취향을, 움직임은 현재 신난 정도를 보여줍니다. (클릭해서 계속)",
                 true);
         }
 
@@ -443,11 +532,12 @@ namespace ContextStage
         {
             SetPhase(Phase.PrefMosh);
             _expectedPref = CrowdPreference.Mosh;
-            _blockedHint = "이 관객은 거칠고 강한 연주를 원합니다. 다른 카드를 골라보세요.";
+            _blockedHint = "MOSH 관객은 격렬한 연주를 좋아합니다. 기타 솔로 카드를 골라보세요.";
             SpotlightPref(CrowdPreference.Mosh);
             overlay?.ShowMessage(
-                "검은 옷에 밴드 패치 — 격렬한 공연을 좋아하는 MOSH 관객입니다.",
-                "이 관객이 좋아할 카드를 위로 드래그해 사용해 보세요.",
+                "검은 옷과 밴드 패치 = MOSH 관객",
+                "MOSH 관객은 거칠고 강한 연주에 크게 호응합니다. " +
+                "기타 솔로 카드를 위로 드래그해 사용하세요.",
                 false);
         }
 
@@ -455,12 +545,13 @@ namespace ContextStage
         {
             SetPhase(Phase.PrefSingalong);
             _expectedPref = CrowdPreference.Singalong;
-            _blockedHint = "이 관객은 함께 부르고 싶어 합니다. 옷차림과 손동작을 다시 확인해보세요.";
+            _blockedHint = "SINGALONG 관객은 함께 노래하고 싶어 합니다. 손 머리 위로! 카드를 골라보세요.";
             SetRoster((CrowdPreference.Singalong, middleEngagement)); // Mosh 퇴장, Singalong 등장
             SpotlightPref(CrowdPreference.Singalong);
             overlay?.ShowMessage(
-                "이 관객은 따라 부르고 싶어 합니다.",
-                "옷차림을 보고 맞는 카드를 골라보세요.",
+                "트레이닝복을 입은 관객 = SINGALONG 관객",
+                "SINGALONG 관객은 함께 노래하고 공연에 참여하는 행동을 좋아합니다. " +
+                "손 머리 위로! 카드를 사용하세요.",
                 false);
         }
 
@@ -468,12 +559,13 @@ namespace ContextStage
         {
             SetPhase(Phase.PrefChill);
             _expectedPref = CrowdPreference.Chill;
-            _blockedHint = "옷차림을 다시 보세요. 차분한 복장의 관객은 여유로운 공연을 좋아합니다.";
+            _blockedHint = "CHILL 관객은 여유로운 공연을 좋아합니다. 청록색 CHILL 계열 카드를 골라보세요.";
             SetRoster((CrowdPreference.Chill, middleEngagement)); // Singalong 퇴장, Chill 등장
             SpotlightPref(CrowdPreference.Chill);
             overlay?.ShowMessage(
-                "이번에는 힌트가 없습니다.",
-                "옷차림만 보고 직접 판단해 보세요.",
+                "차분한 복장 = CHILL 관객",
+                "CHILL 관객은 편안하고 여유로운 공연에 크게 호응합니다. " +
+                "이번에는 옷차림을 단서로 알맞은 카드를 골라보세요.",
                 false);
         }
 
@@ -481,9 +573,11 @@ namespace ContextStage
         {
             SetPhase(Phase.HoverHint);
             _hoverTaught = false;
+            _hoverInspectionTimer = 0f;
             overlay?.ShowMessage(
-                "확실하지 않을 때는 관객 위에 마우스를 잠시 올려보세요.",
-                "테두리 색으로 성향을 바로 확인할 수 있습니다.",
+                "관객 위에 마우스를 올리면 관객의 마음을 알 수 있습니다.",
+                $"말풍선과 테두리색을 통해 좋아하는 행동과 현재 기분을 확인할 수 있습니다. " +
+                $"{hoverInspectionDuration:0.#}초 동안 유지해 힌트를 확인하세요.",
                 false);
         }
 
@@ -498,8 +592,9 @@ namespace ContextStage
             overlay?.SetDim(false);
             overlay?.Spotlight(null);
             overlay?.ShowMessage(
-                "카드 한 장은 무대의 모든 관객에게 영향을 줍니다.",
-                "아무 공연 카드나 사용하고, 세 관객의 반응 차이를 지켜보세요.",
+                "카드 한 장은 모든 관객에게 서로 다르게 작용합니다.",
+                "한 관객은 열광해도 다른 관객은 싫어할 수 있습니다. " +
+                "아무 공연 카드나 사용해 세 관객의 반응을 비교하세요.",
                 false);
         }
 
@@ -508,9 +603,9 @@ namespace ContextStage
             SetPhase(Phase.CrossExplain);
             _allowAllCards = false;
             overlay?.ShowMessage(
-                "같은 카드라도 관객마다 반응이 다릅니다.",
-                $"방금 카드의 총 반응: {gainedScore:+0;-0;0}. 누구를 열광시키고 누구의 실망을 감수할지 " +
-                "선택하는 것이 이 게임의 핵심입니다. (클릭해서 계속)",
+                "총 반응은 모든 관객의 반응을 합친 점수입니다.",
+                $"방금 카드의 총 반응은 {gainedScore:+0;-0;0}입니다. " +
+                "누구의 호응을 얻고 누구의 실망을 감수할지 판단하세요. (클릭해서 계속)",
                 true);
         }
 
@@ -518,7 +613,10 @@ namespace ContextStage
         {
             SetPhase(Phase.Excitement);
             _expectedPref = CrowdPreference.Chill;
-            _blockedHint = "지루한 관객의 취향에 맞는 카드가 필요합니다.";
+            _blockedHint = "지루해진 CHILL 관객이 떠나기 전에 CHILL 계열 카드로 관심을 되찾으세요.";
+
+            // 앞 단계의 드로우 결과와 무관하게 CHILL 카드를 반드시 보장한다.
+            SetupFixedHand();
 
             // 지루해진 CHILL 관객을 만든다
             var roster = AudienceRosterSystem.Instance;
@@ -531,8 +629,9 @@ namespace ContextStage
 
             SpotlightPref(CrowdPreference.Chill, AudienceEngagementStage.Calm);
             overlay?.ShowMessage(
-                "옷차림 = 무엇을 좋아하는가 · 움직임 = 지금 얼마나 신났는가",
-                "CHILL 관객이 지루해하고 있습니다. 떠나기 전에 취향에 맞는 카드로 관심을 끌어보세요.",
+                "옷차림은 취향, 움직임은 현재 호응 상태를 뜻합니다.",
+                "CHILL 관객의 움직임이 줄어 지루해하고 있습니다. " +
+                "떠나기 전에 CHILL 계열 카드로 관심을 되찾으세요.",
                 false);
         }
 
@@ -540,20 +639,52 @@ namespace ContextStage
         {
             SetPhase(Phase.CrowdChange);
             _allowAllCards = true;
+            _hoverTaught = false;
+            _hoverInspectionTimer = 0f;
+            _crowdChangeHoverTargetId = default;
 
-            AudienceRosterSystem.Instance.TryAdd(
+            bool added = AudienceRosterSystem.Instance.TryAdd(
                 CrowdPreference.Singalong, excitedEngagement,
                 AudienceJoinReason.RuntimeCommand, out var snapshot);
 
+            if (added) _crowdChangeHoverTargetId = snapshot.Id;
+
             overlay?.SetDim(true);
-            if (_presenter != null && _presenter.TryGetActor(snapshot.Id, out var actor))
+            if (added && _presenter != null && _presenter.TryGetActor(snapshot.Id, out var actor))
                 overlay?.Spotlight(actor);
 
-            // 2초 관찰 후 Update 에서 진행 버튼을 살린다
             overlay?.ShowMessage(
-                "새로운 관객이 들어왔습니다!",
-                "관객이 바뀌면 좋은 카드도 바뀝니다. 새 관객의 옷차림과 움직임을 확인해 보세요.",
+                "새로운 SINGALONG 관객이 들어왔습니다.",
+                "관객 구성이 바뀌면 높은 총 반응을 얻기 좋은 카드도 달라집니다. " +
+                $"새 관객 위에 마우스를 올리고 {hoverInspectionDuration:0.#}초 동안 " +
+                "옷차림·움직임·말풍선을 확인하세요.",
                 false);
+        }
+
+        void EnterGameOverExplain()
+        {
+            SetPhase(Phase.GameOverExplain);
+            _allowAllCards = false;
+            overlay?.SetDim(false);
+            overlay?.Spotlight(null);
+            overlay?.ShowMessage(
+                "관심을 잃은 관객은 공연장을 떠납니다.",
+                "모든 관객이 떠나면 즉시 GAME OVER입니다. 제한 시간이 끝났을 때 목표 점수에 " +
+                "도달하지 못해도 실패합니다. " +
+                "(클릭해서 계속)",
+                true);
+        }
+
+        void EnterLightingHint()
+        {
+            SetPhase(Phase.LightingHint);
+            overlay?.SetDim(false);
+            overlay?.Spotlight(null);
+            overlay?.ShowMessage(
+                "조명 색은 현재 가장 많은 관객 성향을 알려줍니다.",
+                "지금 보라색 조명은 SINGALONG 관객이 가장 많다는 힌트입니다. " +
+                "옷차림·움직임·말풍선과 함께 확인하세요. (클릭해서 계속)",
+                true);
         }
 
         void EnterFeverIntro()
@@ -567,8 +698,9 @@ namespace ContextStage
                 ? FeverSystem.Instance.Config.FeverComboInterval
                 : 5;
             overlay?.ShowMessage(
-                $"콤보를 {interval}번 연속 성공시키면 피버타임이 시작됩니다.",
-                "지금 미리 체험해보겠습니다 — 아무 카드나 사용해 피버 점수를 확인해보세요.",
+                "카드의 총 반응이 1점 이상이면 COMBO가 이어집니다.",
+                $"긍정적인 총 반응을 {interval}번 연속으로 만들면 FEVER TIME이 시작됩니다. " +
+                "지금 공연 카드를 한 장 사용해 피버 보너스를 확인하세요.",
                 false);
 
             if (FeverSystem.HasInstance) FeverSystem.Instance.ForceStart();
@@ -577,9 +709,65 @@ namespace ContextStage
         void EnterFeverExplain(int gainedScore)
         {
             SetPhase(Phase.FeverExplain);
+            // The tutorial gate only blocks an early automatic activation.
+            // Once the forced demonstration is complete, normal combo Fever is safe.
+            if (FeverSystem.HasInstance)
+                FeverSystem.Instance.SetAutomaticTriggerEnabled(true);
             overlay?.ShowMessage(
-                "피버타임 중에는 콤보 배율 대신 관객 수 기반 보너스 점수가 적용됩니다.",
-                $"방금 카드의 총 점수: {gainedScore:+0;-0;0}. (클릭해서 계속)",
+                "FEVER TIME에는 모든 카드가 금색으로 빛납니다.",
+                $"피버 중에는 현재 관객 수에 따른 보너스 점수를 얻습니다. " +
+                $"방금 획득 점수: {gainedScore:+0;-0;0}. (클릭해서 계속)",
+                true);
+        }
+
+        void EnterSpecialIntro()
+        {
+            SetPhase(Phase.SpecialIntro);
+            _allowAllCards = false;
+            if (FeverSystem.HasInstance) FeverSystem.Instance.CancelFever();
+            SetupSpecialHand();
+
+            if (SpecialAudienceManager.HasInstance)
+            {
+                SpecialAudienceManager.Instance.StopSystem();
+                SpecialAudienceManager.Instance.ForceSpawn(HeatStage.Singalong);
+            }
+
+            overlay?.SetDim(false);
+            overlay?.Spotlight(null);
+            overlay?.ShowMessage(
+                "특별 관객의 아이콘은 원하는 SPECIAL 카드를 뜻합니다.",
+                "지금 특별 관객은 함께 노래할 퍼포먼스를 요청하고 있습니다. " +
+                "요청 아이콘과 손패의 SPECIAL 카드를 비교하세요. (클릭해서 계속)",
+                true);
+        }
+
+        void EnterSpecialUse()
+        {
+            SetPhase(Phase.SpecialUse);
+            _allowAllCards = false;
+            _blockedHint = "요청 아이콘과 같은 SPECIAL 카드를 골라 특별 관객에게 직접 전달하세요.";
+            SetupSpecialHand();
+            if (SpecialAudienceManager.HasInstance &&
+                !SpecialAudienceManager.Instance.HasActiveRequest)
+            {
+                SpecialAudienceManager.Instance.ForceSpawn(HeatStage.Singalong);
+            }
+
+            overlay?.ShowMessage(
+                "SPECIAL 카드는 특별 관객에게 직접 전달합니다.",
+                "일반 카드처럼 무대 위로 던지지 마세요. 요청과 같은 SPECIAL 카드를 " +
+                "특별 관객 위로 드래그해 놓으세요.",
+                false);
+        }
+
+        void EnterSpecialExplain()
+        {
+            SetPhase(Phase.SpecialExplain);
+            overlay?.ShowMessage(
+                "SPECIAL HIT! 관객의 요청과 카드를 정확히 맞혔습니다.",
+                "특별 관객에게 요청과 같은 SPECIAL 카드를 전달하면 강력한 보너스 점수를 얻습니다. " +
+                "(클릭해서 계속)",
                 true);
         }
 
@@ -587,6 +775,9 @@ namespace ContextStage
         {
             SetPhase(Phase.FinalIntro);
             _allowAllCards = true;
+            if (SpecialAudienceManager.HasInstance)
+                SpecialAudienceManager.Instance.StopSystem();
+            SetupFixedHand();
 
             SetRoster(
                 (CrowdPreference.Mosh, middleEngagement),
@@ -599,9 +790,9 @@ namespace ContextStage
             overlay?.SetDim(false);
             overlay?.Spotlight(null);
             overlay?.ShowMessage(
-                $"{finalDuration:0}초 미니 공연!",
-                $"목표: 이탈 {finalMaxDepartures}명 이하 · 총 반응 +{finalScoreGoal}. " +
-                "지루한 관객부터 챙겨보세요. (클릭해서 시작)",
+                $"{finalDuration:0}초 안에 {finalScoreGoal:N0}점을 획득하세요.",
+                "관객의 옷차림·움직임·조명·말풍선을 확인하고, 총 반응이 높은 카드를 선택하세요. " +
+                "목표 점수에 도달하지 못하면 실패합니다. (클릭해서 시작)",
                 true);
         }
 
@@ -609,29 +800,30 @@ namespace ContextStage
         {
             SetPhase(Phase.FinalRun);
             _finalScore = 0;
-            _finalDepartures = 0;
-            overlay?.ShowMessage("공연 중!", "", false);
+            overlay?.ShowMessage("미니 공연 진행 중", "관객 구성을 읽고 총 반응이 높은 카드를 선택하세요.", false);
         }
 
         void FinishFinalRun()
         {
-            bool success = _finalScore >= finalScoreGoal && _finalDepartures <= finalMaxDepartures;
+            bool success = _finalScore >= finalScoreGoal;
 
             if (success)
             {
                 SetPhase(Phase.Complete);
                 overlay?.ShowMessage(
-                    "관객을 읽었습니다!",
-                    "옷으로 취향을 보고, 움직임으로 현재 상태를 확인하세요. (클릭해서 진짜 공연 시작)",
+                    "튜토리얼 완료! 관객의 맥락을 읽었습니다.",
+                    "옷차림은 취향, 움직임은 현재 호응 상태, 조명은 다수 관객 성향을 알려줍니다. " +
+                    "이 단서로 높은 총 반응을 만드세요. (클릭해서 진짜 공연 시작)",
                     true);
             }
             else
             {
                 SetPhase(Phase.FinalFail);
                 overlay?.ShowMessage(
-                    "다시 한 번!",
-                    $"총 반응 {_finalScore:+0;-0;0} · 이탈 {_finalDepartures}명. " +
-                    "지루해진 관객의 취향부터 맞춰보세요. (클릭해서 재도전)",
+                    "목표 점수에 도달하지 못했습니다.",
+                    $"획득 점수 {_finalScore:N0} / 목표 {finalScoreGoal:N0}. " +
+                    "관객 구성을 확인하고 총 반응이 양수가 되는 카드를 이어서 사용하세요. " +
+                    "(클릭해서 재도전)",
                     true);
             }
         }

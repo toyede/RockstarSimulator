@@ -16,10 +16,13 @@ namespace ContextStage
         [SerializeField, Min(1)] int feverComboInterval = 5;
         [SerializeField, Min(0.1f)] float feverDuration = 3f;
         [SerializeField, Min(0)] int feverScorePerAudience = 10;
+        [SerializeField, Min(0f)] float feverEngagementGainPerAudience = 2f;
 
         public int FeverComboInterval => Mathf.Max(1, feverComboInterval);
         public float FeverDuration => Mathf.Max(0.1f, feverDuration);
         public int FeverScorePerAudience => Mathf.Max(0, feverScorePerAudience);
+        public float FeverEngagementGainPerAudience =>
+            Mathf.Max(0f, feverEngagementGainPerAudience);
 
         public float ResolveMultiplier(int combo)
         {
@@ -42,6 +45,9 @@ namespace ContextStage
             feverComboInterval = Mathf.Max(1, feverComboInterval);
             feverDuration = Mathf.Max(0.1f, feverDuration);
             feverScorePerAudience = Mathf.Max(0, feverScorePerAudience);
+            feverEngagementGainPerAudience = Mathf.Max(
+                0f,
+                feverEngagementGainPerAudience);
         }
 #endif
     }

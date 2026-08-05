@@ -29,6 +29,10 @@ namespace ContextStage
                 OnResolved);
             EventBus.Subscribe<AudienceCrisisCancelled>(
                 OnCancelled);
+            EventBus.Subscribe<AudienceComebackStarted>(
+                OnComebackStarted);
+            EventBus.Subscribe<AudienceComebackResolved>(
+                OnComebackResolved);
             HideImmediate();
         }
 
@@ -44,6 +48,10 @@ namespace ContextStage
                 OnResolved);
             EventBus.Unsubscribe<AudienceCrisisCancelled>(
                 OnCancelled);
+            EventBus.Unsubscribe<AudienceComebackStarted>(
+                OnComebackStarted);
+            EventBus.Unsubscribe<AudienceComebackResolved>(
+                OnComebackResolved);
             if (_hideRoutine != null) StopCoroutine(_hideRoutine);
             _hideRoutine = null;
         }
@@ -122,6 +130,37 @@ namespace ContextStage
 
         void OnCancelled(AudienceCrisisCancelled e) =>
             HideImmediate();
+
+        void OnComebackStarted(AudienceComebackStarted e)
+        {
+            if (!HasRequiredReferences()) return;
+            if (_hideRoutine != null)
+            {
+                StopCoroutine(_hideRoutine);
+                _hideRoutine = null;
+            }
+
+            overlayRoot.SetActive(true);
+            titleText.text = "GOOD NEWS!";
+            descriptionText.text =
+                "공연의 입소문을 듣고 새로운 관객이 찾아옵니다!";
+            countdownText.text = "NEW FANS";
+            progressText.text = "COMEBACK CHANCE";
+        }
+
+        void OnComebackResolved(AudienceComebackResolved e)
+        {
+            if (!HasRequiredReferences()) return;
+            overlayRoot.SetActive(true);
+            titleText.text = "THE CROWD GROWS!";
+            descriptionText.text =
+                $"새 관객 {e.JoinedCount}명이 입장했고 공연장의 호응이 회복됐습니다.";
+            countdownText.text = string.Empty;
+            progressText.text = $"ENGAGEMENT BOOST  {e.BoostedCount} FANS";
+
+            if (_hideRoutine != null) StopCoroutine(_hideRoutine);
+            _hideRoutine = StartCoroutine(HideAfterDelay());
+        }
 
         void HideImmediate()
         {

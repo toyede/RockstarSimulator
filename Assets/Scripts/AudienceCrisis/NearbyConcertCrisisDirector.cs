@@ -26,6 +26,9 @@ namespace ContextStage
         int _runSequence;
         int _specialSaveCount;
         int _minimumSurvivorsForCurrentCrisis;
+        float _nextAdaptiveCheckAt;
+        float _highPerformanceSustain;
+        float _lowPerformanceSustain;
 
         public AudienceCrisisState State => _state;
         public bool IsWarning => _state == AudienceCrisisState.Warning;
@@ -97,6 +100,12 @@ namespace ContextStage
 
         void UpdateArmed()
         {
+            if (config.UseAdaptiveTrigger)
+            {
+                UpdateAdaptiveArmed();
+                return;
+            }
+
             float elapsed = PerformanceTimer.Elapsed;
             if (elapsed < _triggerTime) return;
 
@@ -127,6 +136,23 @@ namespace ContextStage
             CancelCrisis(false);
             _runSequence++;
 
+            _nextAdaptiveCheckAt = 0f;
+            _highPerformanceSustain = 0f;
+            _lowPerformanceSustain = 0f;
+
+            float duration = PerformanceTimer.Duration;
+            if (duration <= 0f)
+            {
+                _state = AudienceCrisisState.Completed;
+                return;
+            }
+
+            if (config.UseAdaptiveTrigger)
+            {
+                _state = AudienceCrisisState.Armed;
+                return;
+            }
+
             int seed = unchecked(
                 System.Environment.TickCount ^
                 config.RandomSeed ^
@@ -134,13 +160,6 @@ namespace ContextStage
                 _runSequence);
             var random = new System.Random(seed);
             if (random.NextDouble() > config.EncounterChance)
-            {
-                _state = AudienceCrisisState.Completed;
-                return;
-            }
-
-            float duration = PerformanceTimer.Duration;
-            if (duration <= 0f)
             {
                 _state = AudienceCrisisState.Completed;
                 return;
@@ -154,6 +173,144 @@ namespace ContextStage
             _latestTriggerTime =
                 duration * config.LatestPerformanceRatio;
             _state = AudienceCrisisState.Armed;
+        }
+
+        void UpdateAdaptiveArmed()
+        {
+            float normalized = PerformanceTimer.Normalized;
+            if (normalized < config.AdaptiveEvaluationStartRatio)
+                return;
+
+            if (normalized > config.AdaptiveEvaluationEndRatio)
+            {
+                _state = AudienceCrisisState.Completed;
+                return;
+            }
+
+            if (TutorialFlow.IsRunning ||
+                (FeverSystem.HasInstance && FeverSystem.Instance.IsActive))
+            {
+                ResetAdaptiveSustain();
+                return;
+            }
+
+            if (Time.unscaledTime < _nextAdaptiveCheckAt) return;
+            _nextAdaptiveCheckAt = Time.unscaledTime + config.AdaptiveCheckInterval;
+
+            int targetScore = PerformanceTimer.TargetScore;
+            if (targetScore <= 0 || !GameManager.HasInstance)
+            {
+                _state = AudienceCrisisState.Completed;
+                return;
+            }
+
+            float expectedScore = Mathf.Max(1f, targetScore * normalized);
+            float pace = GameManager.Instance.Score / expectedScore;
+            float averageEngagement = ResolveAverageEngagement();
+            float step = config.AdaptiveCheckInterval;
+
+            bool highPerformance =
+                pace >= config.HighPerformancePace &&
+                averageEngagement >= config.HighPerformanceEngagement;
+            bool lowPerformance = pace <= config.LowPerformancePace;
+
+            _highPerformanceSustain = highPerformance
+                ? _highPerformanceSustain + step
+                : 0f;
+            _lowPerformanceSustain = lowPerformance
+                ? _lowPerformanceSustain + step
+                : 0f;
+
+            if (_highPerformanceSustain >= config.AdaptiveSustainDuration)
+            {
+                if (!TryStartCrisis(false))
+                    _state = AudienceCrisisState.Completed;
+                return;
+            }
+
+            if (_lowPerformanceSustain >= config.AdaptiveSustainDuration)
+            {
+                _state = AudienceCrisisState.Resolving;
+                _resolutionRoutine = StartCoroutine(ResolveComeback());
+            }
+        }
+
+        IEnumerator ResolveComeback()
+        {
+            EventBus.Raise(new AudienceComebackStarted(config.ComebackWarningDuration));
+            if (config.ComebackWarningDuration > 0f)
+                yield return new WaitForSecondsRealtime(config.ComebackWarningDuration);
+
+            int joinedCount = 0;
+            for (int i = 0; i < config.ComebackAudienceCount; i++)
+            {
+                CrowdPreference preference = ResolveLeastRepresentedPreference();
+                if (!audienceRoster.TryAdd(
+                        preference,
+                        config.ComebackAudienceEngagement,
+                        AudienceJoinReason.RuntimeCommand,
+                        out _))
+                    break;
+                joinedCount++;
+            }
+
+            _departureBuffer.Clear();
+            IReadOnlyList<AudienceSnapshot> members = audienceRoster.Members;
+            for (int i = 0; i < members.Count; i++)
+                _departureBuffer.Add(members[i].Id);
+
+            int boostedCount = 0;
+            for (int i = 0; i < _departureBuffer.Count; i++)
+            {
+                if (audienceRoster.TryChangeEngagement(
+                        _departureBuffer[i],
+                        config.ComebackEngagementBoost,
+                        AudienceChangeReason.RuntimeCommand,
+                        out _))
+                    boostedCount++;
+            }
+
+            EventBus.Raise(new AudienceComebackResolved(joinedCount, boostedCount));
+            _departureBuffer.Clear();
+            _resolutionRoutine = null;
+            _state = AudienceCrisisState.Completed;
+        }
+
+        CrowdPreference ResolveLeastRepresentedPreference()
+        {
+            int chill = 0;
+            int singalong = 0;
+            int mosh = 0;
+            IReadOnlyList<AudienceSnapshot> members = audienceRoster.Members;
+            for (int i = 0; i < members.Count; i++)
+            {
+                switch (members[i].Preference)
+                {
+                    case CrowdPreference.Chill: chill++; break;
+                    case CrowdPreference.Singalong: singalong++; break;
+                    case CrowdPreference.Mosh: mosh++; break;
+                }
+            }
+
+            if (chill <= singalong && chill <= mosh) return CrowdPreference.Chill;
+            return singalong <= mosh ? CrowdPreference.Singalong : CrowdPreference.Mosh;
+        }
+
+        float ResolveAverageEngagement()
+        {
+            IReadOnlyList<AudienceSnapshot> members = audienceRoster.Members;
+            if (members.Count == 0) return 0f;
+
+            float total = 0f;
+            for (int i = 0; i < members.Count; i++)
+                total += members[i].Engagement;
+            return total / members.Count;
+        }
+
+        void ResetAdaptiveSustain()
+        {
+            _highPerformanceSustain = 0f;
+            _lowPerformanceSustain = 0f;
         }
 
         bool TryStartCrisis(bool ignoreMinimumAudience)
@@ -436,6 +593,7 @@ namespace ContextStage
             _warningRemaining = 0f;
             _specialSaveCount = 0;
             _minimumSurvivorsForCurrentCrisis = 0;
+            ResetAdaptiveSustain();
             _state = AudienceCrisisState.Dormant;
         }
 
@@ -455,11 +613,10 @@ namespace ContextStage
                     config);
                 return false;
             }
-            if (audienceRoster == null ||
-                !audienceRoster.IsConfigured)
+            if (audienceRoster == null)
             {
                 Debug.LogError(
-                    "[AudienceCrisis] Configured audience roster is required.",
+                    "[AudienceCrisis] Audience roster reference is required.",
                     this);
                 return false;
             }

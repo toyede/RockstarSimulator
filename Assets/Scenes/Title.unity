@@ -498,6 +498,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1324515249}
   - component: {fileID: 1324515250}
+  - component: {fileID: 1324515251}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -533,6 +534,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameJamKit.UIManager
   escapeClosesTopPopup: 1
+--- !u!114 &1324515251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1324515248}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24fb2f727afc5ae47b88735b9f7c9447, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.PlatformQuitController
 --- !u!1 &1373872261
 GameObject:
   m_ObjectHideFlags: 0
@@ -1090,9 +1103,12 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1226437383937595024, guid: cc78566615bba624d9a6adb18c5d89dc, type: 3}
       propertyPath: m_Text
-      value: "[Raccon Roll]\n2026 \uB125\uC2A8 \uC7AC\uBC0C\uB125 13\uD300\n\n\n\n\uC774
-        \uBBFC \uC601\n\n\uC870 \uC724 \uBE48\n\n\uC7A5 \uC6B0 \uC6A9\n\n\uC815 \uD718
-        \uAC74\n\n\n\n\uAC1C\uBC1C\uAE30\uAC04\n2026.07.24-2026.07.26"
+      value: "[Raccoon Roll]\n2026 \uB125\uC2A8 \uC7AC\uBC0C\uB125 13\uD300\n\n\uC774
+        \uBBFC \uC601\n\uC870 \uC724 \uBE48\n\uC7A5 \uC6B0 \uC6A9\n\uC815 \uD718
+        \uAC74\n\n\uAC1C\uBC1C\uAE30\uAC04\n2026.07.24-2026.07.26\n\nMUSIC\n\"Big
+        Rock\" \u2014 Kevin MacLeod (incompetech.com)\n\"Breakdown\" \u2014 Kevin
+        MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution
+        4.0\nhttps://creativecommons.org/licenses/by/4.0/"
       objectReference: {fileID: 0}
     - target: {fileID: 3920016036741719429, guid: cc78566615bba624d9a6adb18c5d89dc, type: 3}
       propertyPath: m_Name
@@ -1402,7 +1418,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -1411,7 +1427,7 @@ PrefabInstance:
     - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
-      objectReference: {fileID: 1324515250}
+      objectReference: {fileID: 1324515251}
     - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
       value: 2
@@ -1422,11 +1438,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
-      value: GameJamKit.UIManager, Assembly-CSharp
+      value: ContextStage.PlatformQuitController, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 3744886588551376413, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: UnityEngine.Object, UnityEngine
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 6094319431505745077, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_Pivot.x

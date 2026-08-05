@@ -298,8 +298,10 @@ namespace ContextStage.EditorTools
 
             Text text = EnsureComponent<Text>(child.gameObject);
             text.text = content;
-            text.font =
-                Resources.GetBuiltinResource<Font>(
+            text.font = AssetDatabase.LoadAssetAtPath<Font>(
+                "Assets/Font/DungGeunMo.ttf");
+            if (text.font == null)
+                text.font = Resources.GetBuiltinResource<Font>(
                     "LegacyRuntime.ttf");
             text.fontSize = fontSize;
             text.fontStyle = FontStyle.Bold;

@@ -92,4 +92,26 @@ namespace ContextStage
     public readonly struct AudienceCrisisCancelled
     {
     }
+
+    public readonly struct AudienceComebackStarted
+    {
+        public AudienceComebackStarted(float duration)
+        {
+            Duration = duration;
+        }
+
+        public float Duration { get; }
+    }
+
+    public readonly struct AudienceComebackResolved
+    {
+        public AudienceComebackResolved(int joinedCount, int boostedCount)
+        {
+            JoinedCount = joinedCount;
+            BoostedCount = boostedCount;
+        }
+
+        public int JoinedCount { get; }
+        public int BoostedCount { get; }
+    }
 }

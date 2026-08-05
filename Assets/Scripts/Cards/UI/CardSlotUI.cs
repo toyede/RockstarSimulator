@@ -13,6 +13,22 @@ namespace ContextStage
         [SerializeField] Text descriptionText;
         [SerializeField] Text roleText;
 
+        [Header("Fever Visual")]
+        [SerializeField] Color feverBackgroundColor =
+            new Color32(0xF9, 0xC2, 0x2B, 0xFF);
+        [SerializeField] Color feverArtworkTint =
+            new Color32(0xFF, 0xE7, 0x8A, 0xFF);
+        [SerializeField] Color feverTextColor =
+            new Color32(0x2E, 0x22, 0x2F, 0xFF);
+
+        CardDefinition _boundCard;
+        bool _feverVisual;
+        bool _capturedBaseTextColors;
+        Color _titleBaseColor = Color.white;
+        Color _descriptionBaseColor = Color.white;
+        Color _roleBaseColor = Color.white;
+        SpecialCardIdleVFX _specialIdleVfx;
+
         void Awake()
         {
             var rectTransform = transform as RectTransform;
@@ -28,6 +44,8 @@ namespace ContextStage
             ConfigureText(titleText, 18, 26);
             ConfigureText(descriptionText, 13, 18);
             ConfigureText(roleText, 12, 16);
+            CaptureBaseTextColors();
+            EnsureSpecialIdleVfx();
         }
 
         public void Configure(
@@ -42,6 +60,10 @@ namespace ContextStage
             titleText = titleLabel;
             descriptionText = descriptionLabel;
             roleText = roleLabel;
+            // Configure can run after Awake for runtime-created slots. Capture
+            // the real prefab colours instead of retaining the white fallbacks.
+            _capturedBaseTextColors = false;
+            CaptureBaseTextColors();
         }
 
         public void Bind(CardDefinition card)
@@ -53,17 +75,75 @@ namespace ContextStage
             }
 
             gameObject.SetActive(true);
-            if (background != null) background.color = card.CardColor;
+            _boundCard = card;
             if (artwork != null)
             {
                 artwork.sprite = card.Artwork;
                 artwork.enabled = card.Artwork != null;
-                artwork.color = Color.white;
                 artwork.preserveAspect = true;
             }
             if (titleText != null) titleText.text = card.DisplayName;
             if (descriptionText != null) descriptionText.text = card.Description;
-            if (roleText != null) roleText.text = GetRoleLabel(card);
+            EnsureSpecialIdleVfx();
+            _specialIdleVfx.Bind(background, card.Role == CardRole.Special);
+            ApplyFeverVisual();
+        }
+
+        public void SetFeverVisual(bool active)
+        {
+            _feverVisual = active;
+            ApplyFeverVisual();
+        }
+
+        void OnDisable()
+        {
+            _feverVisual = false;
+            _boundCard = null;
+            if (_specialIdleVfx != null) _specialIdleVfx.SetActive(false);
+        }
+
+        void ApplyFeverVisual()
+        {
+            if (_boundCard == null) return;
+            CaptureBaseTextColors();
+
+            if (background != null)
+                background.color = _feverVisual
+                    ? feverBackgroundColor
+                    : _boundCard.CardColor;
+            if (artwork != null)
+                artwork.color = _feverVisual
+                    ? feverArtworkTint
+                    : Color.white;
+
+            if (titleText != null)
+                titleText.color = _feverVisual ? feverTextColor : _titleBaseColor;
+            if (descriptionText != null)
+                descriptionText.color = _feverVisual ? feverTextColor : _descriptionBaseColor;
+            if (roleText != null)
+            {
+                roleText.color = _feverVisual ? feverTextColor : _roleBaseColor;
+                roleText.text = _feverVisual
+                    ? $"FEVER | {GetRoleLabel(_boundCard)}"
+                    : GetRoleLabel(_boundCard);
+            }
+        }
+
+        void CaptureBaseTextColors()
+        {
+            if (_capturedBaseTextColors) return;
+            if (titleText != null) _titleBaseColor = titleText.color;
+            if (descriptionText != null) _descriptionBaseColor = descriptionText.color;
+            if (roleText != null) _roleBaseColor = roleText.color;
+            _capturedBaseTextColors = true;
+        }
+
+        void EnsureSpecialIdleVfx()
+        {
+            if (_specialIdleVfx != null) return;
+            _specialIdleVfx = GetComponent<SpecialCardIdleVFX>();
+            if (_specialIdleVfx == null)
+                _specialIdleVfx = gameObject.AddComponent<SpecialCardIdleVFX>();
         }
 
         static string GetRoleLabel(CardDefinition card)

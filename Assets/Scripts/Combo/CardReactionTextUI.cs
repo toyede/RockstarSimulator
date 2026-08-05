@@ -41,6 +41,8 @@ namespace ContextStage
         [Header("Special Hit 전용 라벨")]
         [SerializeField] string specialHitLabel = "SPECIAL!";
         [SerializeField] Color specialHitColor = new Color(0.35f, 1f, 0.85f, 1f);
+        [SerializeField] string mixedReactionLabel = "MIXED REACTION";
+        [SerializeField] Color mixedReactionColor = new Color(0.75f, 0.8f, 0.85f, 1f);
 
         [Header("점수 구간 (minScore 내림차순 자동 정렬)")]
         [SerializeField]
@@ -113,10 +115,9 @@ namespace ContextStage
             }
             else if (!TryResolveTier(e.GainedScore, out label, out color))
             {
-                // 중립 구간(빈 라벨) — 아무것도 띄우지 않고 지금 표시 중인 것도 즉시 감춘다
-                SetAlpha(0f);
-                _animating = false;
-                return;
+                // 어떤 카드 결과도 무반응으로 끝나지 않게 한다.
+                label = mixedReactionLabel;
+                color = mixedReactionColor;
             }
 
             _baseColor = color;

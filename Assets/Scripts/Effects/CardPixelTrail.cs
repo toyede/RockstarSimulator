@@ -20,6 +20,7 @@ namespace ContextStage
         PixelTrailGraphic _graphic;
         RectTransform _dragLayer;
         Color _color = Color.white;
+        bool _useGoldAccent;
 
         public int PixelCount =>
             _graphic != null ? _graphic.PixelCount : 0;
@@ -32,9 +33,12 @@ namespace ContextStage
         {
             _dragLayer = dragLayer;
             _color = CardVFXPalette.ResolveTrail(role, stage, cardColor);
+            _useGoldAccent = role == CardRole.Special;
             EnsureGraphic();
             _graphic.Configure(
                 _color,
+                CardVFXPalette.Utility,
+                _useGoldAccent,
                 sampleDistance,
                 lifetime,
                 headSize,
@@ -87,6 +91,8 @@ namespace ContextStage
             _graphic.raycastTarget = false;
             _graphic.Configure(
                 _color,
+                CardVFXPalette.Utility,
+                _useGoldAccent,
                 sampleDistance,
                 lifetime,
                 headSize,
@@ -112,11 +118,15 @@ namespace ContextStage
         float _tailSize = 3f;
         int _maximumPixels = 28;
         bool _emitting;
+        Color _accentColor = Color.white;
+        bool _useAccent;
 
         public int PixelCount => _pixels.Count;
 
         public void Configure(
             Color trailColor,
+            Color accentColor,
+            bool useAccent,
             float sampleDistance,
             float lifetime,
             float headSize,
@@ -124,6 +134,8 @@ namespace ContextStage
             int maximumPixels)
         {
             color = trailColor;
+            _accentColor = accentColor;
+            _useAccent = useAccent;
             _sampleDistance = Mathf.Max(1f, sampleDistance);
             _lifetime = Mathf.Max(0.01f, lifetime);
             _headSize = Mathf.Max(1f, headSize);
@@ -183,7 +195,9 @@ namespace ContextStage
                 Pixel pixel = _pixels[i];
                 float normalizedAge = Mathf.Clamp01(pixel.Age / _lifetime);
                 float size = Mathf.Lerp(_headSize, _tailSize, normalizedAge);
-                Color32 vertexColor = color;
+                Color32 vertexColor = _useAccent && i % 4 == 0
+                    ? _accentColor
+                    : color;
                 vertexColor.a = (byte)Mathf.RoundToInt(
                     255f * Mathf.Pow(1f - normalizedAge, 1.4f));
                 AddQuad(vh, pixel.Position, size, pixel.Rotation, vertexColor);

@@ -63,6 +63,7 @@ namespace ContextStage
         [SerializeField, Min(0f)] float cardPresentationDelay = 0.085f;
         float _lastCardPresentationAt = float.NegativeInfinity;
         Coroutine _scoreRoutine;
+        UIPixelBurstEmitter _pixelVfx;
 
         /// <summary>지금 랭크 이름. 결과 화면에서 읽어 쓸 수 있다.</summary>
         public string CurrentRankLabel =>
@@ -80,6 +81,13 @@ namespace ContextStage
 
         void OnEnable()
         {
+            if (_pixelVfx == null)
+            {
+                _pixelVfx = GetComponent<UIPixelBurstEmitter>();
+                if (_pixelVfx == null)
+                    _pixelVfx = gameObject.AddComponent<UIPixelBurstEmitter>();
+            }
+
             EventBus.Subscribe<ScoreChanged>(OnScoreChanged);
             EventBus.Subscribe<CardPresentationStarted>(OnCardPresentationStarted);
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
@@ -112,28 +120,54 @@ namespace ContextStage
                 Time.unscaledTime - _lastCardPresentationAt < 0.1f;
             if (!followsCard || cardPresentationDelay <= 0f)
             {
-                ApplyScore(e.Score);
+                ApplyScore(e.Score, e.Delta, true);
                 return;
             }
 
             if (_scoreRoutine != null) StopCoroutine(_scoreRoutine);
-            _scoreRoutine = StartCoroutine(ApplyScoreAfterDelay(e.Score));
+            _scoreRoutine = StartCoroutine(ApplyScoreAfterDelay(e.Score, e.Delta));
         }
 
         void OnCardPresentationStarted(CardPresentationStarted _) =>
             _lastCardPresentationAt = Time.unscaledTime;
 
-        IEnumerator ApplyScoreAfterDelay(int score)
+        IEnumerator ApplyScoreAfterDelay(int score, int delta)
         {
             yield return new WaitForSecondsRealtime(cardPresentationDelay);
             _scoreRoutine = null;
-            ApplyScore(score);
+            ApplyScore(score, delta, true);
         }
 
-        void ApplyScore(int score)
+        void ApplyScore(int score, int delta, bool showVfx)
         {
+            int previousRank = _rankIndex;
             _score = score;
             Refresh(instant: false);
+
+            if (!showVfx || delta == 0 || _pixelVfx == null) return;
+
+            RectTransform scoreOrigin = gaugeFill != null
+                ? gaugeFill.rectTransform
+                : rankImage != null ? rankImage.rectTransform : null;
+            Color scoreColor = delta > 0
+                ? new Color32(0xF9, 0xC2, 0x2B, 0xFF)
+                : new Color32(0xEA, 0x4F, 0x36, 0xFF);
+            _pixelVfx.EmitBurst(
+                scoreOrigin,
+                scoreColor,
+                delta > 0 ? 9 : 5,
+                delta > 0 ? 75f : 45f,
+                delta > 0 ? 165f : 105f);
+
+            if (_rankIndex > previousRank && rankImage != null)
+            {
+                _pixelVfx.EmitBurst(
+                    rankImage.rectTransform,
+                    new Color32(0xFB, 0xFF, 0x86, 0xFF),
+                    16,
+                    110f,
+                    230f);
+            }
         }
 
         void OnGameStateChanged(GameStateChanged e)

@@ -180,19 +180,21 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 9907906d092ce9948ba06b3f3ac3808b, type: 3}
-    m_FontSize: 46
+    m_FontSize: 34
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 46
+    m_BestFit: 1
+    m_MinSize: 18
+    m_MaxSize: 34
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
-    m_LineSpacing: 1
-  m_Text: "[Raccon Roll]\n2026 \uB125\uC2A8 \uC7AC\uBC0C\uB125 13\uD300\n\n\n\n\n\uC774
-    \uBBFC \uC601\n\uC870 \uC724 \uBE48\n\uC7A5 \uC6B0 \uC6A9\n\uC815 \uD718 \uAC74\n\n\n\n\n\uAC1C\uBC1C\uAE30\uAC04\n2026.07.24-2026.07.26"
+    m_LineSpacing: 0.9
+  m_Text: "[Raccoon Roll]\n2026 \uB125\uC2A8 \uC7AC\uBC0C\uB125 13\uD300\n\n\uC774
+    \uBBFC \uC601\n\uC870 \uC724 \uBE48\n\uC7A5 \uC6B0 \uC6A9\n\uC815 \uD718 \uAC74\n\n\uAC1C\uBC1C\uAE30\uAC04\n2026.07.24-2026.07.26\n\nMUSIC\n\"Big
+    Rock\" \u2014 Kevin MacLeod (incompetech.com)\n\"Breakdown\" \u2014 Kevin MacLeod
+    (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0\nhttps://creativecommons.org/licenses/by/4.0/"
 --- !u!1001 &5796183525282720022
 PrefabInstance:
   m_ObjectHideFlags: 0

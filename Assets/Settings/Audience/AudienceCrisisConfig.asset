@@ -16,6 +16,18 @@ MonoBehaviour:
   earliestPerformanceRatio: 0.3
   latestPerformanceRatio: 0.6
   randomSeed: 9187
+  useAdaptiveTrigger: 1
+  adaptiveEvaluationStartRatio: 0.25
+  adaptiveEvaluationEndRatio: 0.78
+  highPerformancePace: 1.25
+  lowPerformancePace: 0.65
+  highPerformanceEngagement: 70
+  adaptiveSustainDuration: 4
+  adaptiveCheckInterval: 0.5
+  comebackWarningDuration: 1.75
+  comebackAudienceCount: 2
+  comebackAudienceEngagement: 55
+  comebackEngagementBoost: 8
   warningDuration: 6
   minimumAudienceCount: 6
   threatenedRatio: 0.33

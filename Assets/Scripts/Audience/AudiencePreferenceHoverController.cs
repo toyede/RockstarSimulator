@@ -17,10 +17,14 @@ namespace ContextStage
         [SerializeField] AudiencePreferenceHoverConfig config;
         [SerializeField] AudienceRosterPresenter presenter;
         [SerializeField] Camera worldCamera;
+        [SerializeField] AudienceHoverDialogueView dialogueView;
 
         AudienceMemberActor _hoveredActor;
         float _hoverElapsed;
         bool _revealed;
+        bool _dialogueShown;
+        AudienceId _lastDialogueActor;
+        int _lastDialogueIndex = -1;
 
         /// <summary>[튜토리얼 전용] 현재 테두리가 표시된 대상. 없으면 null.</summary>
         public AudienceMemberActor RevealedActor => _revealed ? _hoveredActor : null;
@@ -31,6 +35,11 @@ namespace ContextStage
                 presenter = GetComponentInParent<AudienceRosterPresenter>();
             if (worldCamera == null)
                 worldCamera = Camera.main;
+            if (dialogueView == null)
+                dialogueView = GetComponent<AudienceHoverDialogueView>();
+            if (dialogueView == null)
+                dialogueView = gameObject.AddComponent<AudienceHoverDialogueView>();
+            dialogueView.Configure(config, worldCamera);
 
             if (config != null && presenter != null) return;
 
@@ -40,7 +49,11 @@ namespace ContextStage
             enabled = false;
         }
 
-        void OnDisable() => ClearHover();
+        void OnDisable()
+        {
+            ClearHover();
+            if (dialogueView != null) dialogueView.Hide(immediate: true);
+        }
 
         void Update()
         {
@@ -76,16 +89,33 @@ namespace ContextStage
                 _hoveredActor = target;
             }
 
-            if (_revealed) return;
-
             _hoverElapsed += Time.deltaTime;
-            if (_hoverElapsed < config.RevealDelay) return;
+            if (!_revealed && _hoverElapsed >= config.RevealDelay)
+            {
+                _revealed = true;
+                _hoveredActor.SetPreferenceReveal(
+                    true,
+                    config.GetColor(_hoveredActor.Snapshot.Preference),
+                    config.OutlineThickness);
+            }
 
-            _revealed = true;
-            _hoveredActor.SetPreferenceReveal(
-                true,
-                config.GetColor(_hoveredActor.Snapshot.Preference),
-                config.OutlineThickness);
+            if (_dialogueShown || _hoverElapsed < config.DialogueDelay) return;
+
+            int previousIndex = _lastDialogueActor == _hoveredActor.BoundId
+                ? _lastDialogueIndex
+                : -1;
+            string dialogue = config.GetRandomDialogue(
+                _hoveredActor.Snapshot.Preference,
+                _hoveredActor.Snapshot.Stage,
+                previousIndex,
+                out int selectedIndex);
+            _dialogueShown = true;
+            _lastDialogueActor = _hoveredActor.BoundId;
+            _lastDialogueIndex = selectedIndex;
+            dialogueView.Show(
+                _hoveredActor,
+                dialogue,
+                config.GetColor(_hoveredActor.Snapshot.Preference));
         }
 
         bool CanInspectAudience()
@@ -109,6 +139,8 @@ namespace ContextStage
             _hoveredActor = null;
             _hoverElapsed = 0f;
             _revealed = false;
+            _dialogueShown = false;
+            if (dialogueView != null) dialogueView.Hide(immediate: false);
         }
 
         static bool TryReadPointerPosition(out Vector2 position)

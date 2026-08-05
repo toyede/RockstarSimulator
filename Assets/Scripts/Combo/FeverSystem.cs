@@ -10,6 +10,7 @@ namespace ContextStage
 
         bool _isActive;
         bool _startAfterCurrentCard;
+        bool _automaticTriggerEnabled = true;
         float _remaining;
         int _triggerCombo;
 
@@ -18,6 +19,7 @@ namespace ContextStage
         public bool IsActive => _isActive;
         public float Remaining => Mathf.Max(0f, _remaining);
         public ComboFeverConfig Config => config;
+        public bool AutomaticTriggerEnabled => _automaticTriggerEnabled;
 
         protected override void OnAwake()
         {
@@ -68,9 +70,24 @@ namespace ContextStage
             StartFever(config != null ? config.FeverComboInterval : 0);
         }
 
+        /// <summary>
+        /// 자동 콤보 발동만 켜고 끈다. ForceStart는 튜토리얼처럼 명시적으로
+        /// 피버를 체험시켜야 하는 경우를 위해 이 게이트를 우회한다.
+        /// </summary>
+        public void SetAutomaticTriggerEnabled(bool enabled)
+        {
+            _automaticTriggerEnabled = enabled;
+            if (!enabled)
+                _startAfterCurrentCard = false;
+        }
+
+        /// <summary>활성/예약된 피버를 즉시 정리한다. 자동 발동 설정은 유지한다.</summary>
+        public void CancelFever() => ResetFever();
+
         void OnComboChanged(ComboChanged e)
         {
-            if (_isActive ||
+            if (!_automaticTriggerEnabled ||
+                _isActive ||
                 _startAfterCurrentCard ||
                 config == null ||
                 e.CurrentCombo <= e.PreviousCombo ||

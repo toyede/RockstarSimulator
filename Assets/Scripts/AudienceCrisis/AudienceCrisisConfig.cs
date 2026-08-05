@@ -13,6 +13,22 @@ namespace ContextStage
         [SerializeField, Range(0f, 1f)] float latestPerformanceRatio = 0.6f;
         [SerializeField] int randomSeed = 9187;
 
+        [Header("Adaptive Director")]
+        [SerializeField] bool useAdaptiveTrigger = true;
+        [SerializeField, Range(0f, 1f)] float adaptiveEvaluationStartRatio = 0.25f;
+        [SerializeField, Range(0f, 1f)] float adaptiveEvaluationEndRatio = 0.78f;
+        [SerializeField, Min(1f)] float highPerformancePace = 1.25f;
+        [SerializeField, Range(0.05f, 1f)] float lowPerformancePace = 0.65f;
+        [SerializeField, Min(0f)] float highPerformanceEngagement = 70f;
+        [SerializeField, Min(0.25f)] float adaptiveSustainDuration = 4f;
+        [SerializeField, Min(0.1f)] float adaptiveCheckInterval = 0.5f;
+
+        [Header("Comeback Event")]
+        [SerializeField, Min(0.1f)] float comebackWarningDuration = 1.75f;
+        [SerializeField, Min(1)] int comebackAudienceCount = 2;
+        [SerializeField, Range(0f, 100f)] float comebackAudienceEngagement = 55f;
+        [SerializeField, Min(0f)] float comebackEngagementBoost = 8f;
+
         [Header("Warning")]
         [SerializeField, Min(0.5f)] float warningDuration = 6f;
         [SerializeField, Min(1)] int minimumAudienceCount = 6;
@@ -32,6 +48,18 @@ namespace ContextStage
         public float EarliestPerformanceRatio => earliestPerformanceRatio;
         public float LatestPerformanceRatio => latestPerformanceRatio;
         public int RandomSeed => randomSeed;
+        public bool UseAdaptiveTrigger => useAdaptiveTrigger;
+        public float AdaptiveEvaluationStartRatio => adaptiveEvaluationStartRatio;
+        public float AdaptiveEvaluationEndRatio => adaptiveEvaluationEndRatio;
+        public float HighPerformancePace => highPerformancePace;
+        public float LowPerformancePace => lowPerformancePace;
+        public float HighPerformanceEngagement => highPerformanceEngagement;
+        public float AdaptiveSustainDuration => adaptiveSustainDuration;
+        public float AdaptiveCheckInterval => adaptiveCheckInterval;
+        public float ComebackWarningDuration => comebackWarningDuration;
+        public int ComebackAudienceCount => comebackAudienceCount;
+        public float ComebackAudienceEngagement => comebackAudienceEngagement;
+        public float ComebackEngagementBoost => comebackEngagementBoost;
         public float WarningDuration => warningDuration;
         public int MinimumAudienceCount => minimumAudienceCount;
         public float ThreatenedRatio => threatenedRatio;
@@ -68,6 +96,20 @@ namespace ContextStage
                 latestPerformanceRatio,
                 earliestPerformanceRatio,
                 1f);
+            adaptiveEvaluationStartRatio = Mathf.Clamp01(adaptiveEvaluationStartRatio);
+            adaptiveEvaluationEndRatio = Mathf.Clamp(
+                adaptiveEvaluationEndRatio,
+                adaptiveEvaluationStartRatio,
+                1f);
+            highPerformancePace = Mathf.Max(1f, highPerformancePace);
+            lowPerformancePace = Mathf.Clamp(lowPerformancePace, 0.05f, 1f);
+            highPerformanceEngagement = Mathf.Max(0f, highPerformanceEngagement);
+            adaptiveSustainDuration = Mathf.Max(0.25f, adaptiveSustainDuration);
+            adaptiveCheckInterval = Mathf.Max(0.1f, adaptiveCheckInterval);
+            comebackWarningDuration = Mathf.Max(0.1f, comebackWarningDuration);
+            comebackAudienceCount = Mathf.Max(1, comebackAudienceCount);
+            comebackAudienceEngagement = Mathf.Clamp(comebackAudienceEngagement, 0f, 100f);
+            comebackEngagementBoost = Mathf.Max(0f, comebackEngagementBoost);
             warningDuration = Mathf.Max(0.5f, warningDuration);
             minimumSurvivorCount = Mathf.Max(1, minimumSurvivorCount);
             minimumAudienceCount = Mathf.Max(

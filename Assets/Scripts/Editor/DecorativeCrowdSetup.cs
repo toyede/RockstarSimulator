@@ -102,6 +102,7 @@ namespace ContextStage.EditorTools
             var serialized = new SerializedObject(crowd);
 
             SetFloat(serialized, "baseScale", 2.2f);      // 기존 대비 약 2.2배
+            SetInt(serialized, "maxCount", 15);
             SetInt(serialized, "rows", 3);
             SetFloat(serialized, "rowSpacing", 0.55f);
             SetFloat(serialized, "rowScaleFalloff", 0.92f);
@@ -118,7 +119,7 @@ namespace ContextStage.EditorTools
 
             Debug.Log(
                 "[DecorativeCrowd] 배치를 권장값으로 맞췄습니다 — " +
-                "크기 2.2배 / 3줄 겹침 / 정렬 2. " +
+                "최대 15명 / 크기 2.2배 / 3줄 겹침 / 정렬 2. " +
                 "전체 위치는 오브젝트 Transform 으로 옮기세요. (씬을 Ctrl+S 로 저장할 것)",
                 crowd);
         }
