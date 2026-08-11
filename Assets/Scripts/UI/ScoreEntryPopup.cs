@@ -1,3 +1,4 @@
+using System.Collections;
 using GameJamKit;
 using UnityEngine;
 using UnityEngine.UI;
@@ -55,11 +56,12 @@ namespace ContextStage
         /// <summary>버튼 OnClick 에 연결.</summary>
         public void OnClickSave()
         {
-            string name = nameInput == null || string.IsNullOrWhiteSpace(nameInput.text)
-                ? "Player"
-                : nameInput.text.Trim();
+            string name = RemoteLeaderboardClient.NormalizePlayerName(
+                nameInput != null ? nameInput.text : string.Empty);
+            int score = Mathf.Max(0, GameManager.Instance.Score);
 
-            LeaderboardStore.Add(name, GameManager.Instance.Score);
+            // 네트워크 응답을 기다리지 않고 로컬 기록부터 보존한다.
+            LeaderboardStore.Add(name, score);
 
             // 패널은 닫지 않고 그대로 둔다 (등록해도 리더보드/입력 화면이 사라지면 안 됨).
             // 대신 중복 등록을 막기 위해 입력창과 등록 버튼을 비활성화한다.
@@ -70,6 +72,24 @@ namespace ContextStage
             // 목록이 갱신되지 않는다 (이미 열린 상태면 OnOpen 이 다시 불리지 않음) — Refresh()로 확실히 갱신.
             var leaderboard = UIManager.Instance.Open<LeaderboardPopup>();
             if (leaderboard != null) leaderboard.Refresh();
+
+            StartCoroutine(SubmitRemote(name, score, leaderboard));
+        }
+
+        IEnumerator SubmitRemote(
+            string playerName,
+            int score,
+            LeaderboardPopup leaderboard)
+        {
+            bool uploaded = false;
+            yield return RemoteLeaderboardClient.SubmitScore(
+                playerName,
+                score,
+                success => uploaded = success);
+
+            // 실패 시 이미 표시한 로컬 기록을 그대로 유지한다.
+            if (uploaded && leaderboard != null)
+                leaderboard.Refresh();
         }
     }
 }

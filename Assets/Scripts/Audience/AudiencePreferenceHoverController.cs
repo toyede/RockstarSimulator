@@ -58,7 +58,11 @@ namespace ContextStage
         void Update()
         {
             if (!CanInspectAudience() ||
-                !TryReadPointerPosition(out Vector2 screenPosition) ||
+                !TryReadPointerPosition(
+                    out Vector2 screenPosition,
+                    out int pointerId,
+                    out bool isTouch) ||
+                IsPointerOverUI(pointerId, isTouch) ||
                 worldCamera == null)
             {
                 ClearHover();
@@ -127,8 +131,16 @@ namespace ContextStage
             if (CardDragHandler.Current != null)
                 return false;
 
-            return EventSystem.current == null ||
-                   !EventSystem.current.IsPointerOverGameObject();
+            return true;
+        }
+
+        static bool IsPointerOverUI(int pointerId, bool isTouch)
+        {
+            if (EventSystem.current == null) return false;
+
+            return isTouch
+                ? EventSystem.current.IsPointerOverGameObject(pointerId)
+                : EventSystem.current.IsPointerOverGameObject();
         }
 
         void ClearHover()
@@ -143,20 +155,52 @@ namespace ContextStage
             if (dialogueView != null) dialogueView.Hide(immediate: false);
         }
 
-        static bool TryReadPointerPosition(out Vector2 position)
+        static bool TryReadPointerPosition(
+            out Vector2 position,
+            out int pointerId,
+            out bool isTouch)
         {
 #if ENABLE_INPUT_SYSTEM
+            Touchscreen touchscreen = Touchscreen.current;
+            if (touchscreen != null &&
+                touchscreen.primaryTouch.press.isPressed)
+            {
+                position = touchscreen.primaryTouch.position.ReadValue();
+                pointerId = touchscreen.primaryTouch.touchId.ReadValue();
+                isTouch = true;
+                return true;
+            }
+
             Mouse mouse = Mouse.current;
             if (mouse != null)
             {
                 position = mouse.position.ReadValue();
+                pointerId = -1;
+                isTouch = false;
                 return true;
             }
 
             position = default;
+            pointerId = -1;
+            isTouch = false;
             return false;
 #else
+            if (Input.touchCount > 0)
+            {
+                Touch touch = Input.GetTouch(0);
+                if (touch.phase != TouchPhase.Ended &&
+                    touch.phase != TouchPhase.Canceled)
+                {
+                    position = touch.position;
+                    pointerId = touch.fingerId;
+                    isTouch = true;
+                    return true;
+                }
+            }
+
             position = Input.mousePosition;
+            pointerId = -1;
+            isTouch = false;
             return true;
 #endif
         }

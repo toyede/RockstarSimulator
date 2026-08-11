@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using GameJamKit;
 using UnityEngine;
 
@@ -17,6 +19,9 @@ namespace ContextStage
     {
         [SerializeField] Transform listContent;
         [SerializeField] GameObject rowPrefab;
+
+        Coroutine _remoteRefreshRoutine;
+        int _refreshVersion;
 
         protected override void Awake()
         {
@@ -53,9 +58,41 @@ namespace ContextStage
         {
             if (listContent == null || rowPrefab == null) return;
 
+            int version = ++_refreshVersion;
+            RenderRecords(LeaderboardStore.GetAll());
+
+            if (!RemoteLeaderboardClient.IsConfigured) return;
+            if (_remoteRefreshRoutine != null)
+                StopCoroutine(_remoteRefreshRoutine);
+            _remoteRefreshRoutine = StartCoroutine(RefreshRemote(version));
+        }
+
+        IEnumerator RefreshRemote(int version)
+        {
+            bool succeeded = false;
+            List<ScoreRecord> remoteRecords = null;
+            yield return RemoteLeaderboardClient.GetTopScores(
+                DisplayCount,
+                (success, records) =>
+                {
+                    succeeded = success;
+                    remoteRecords = records;
+                });
+
+            _remoteRefreshRoutine = null;
+            if (!succeeded || version != _refreshVersion || remoteRecords == null)
+                yield break;
+
+            RenderRecords(remoteRecords);
+        }
+
+        void RenderRecords(IReadOnlyList<ScoreRecord> records)
+        {
+            if (listContent == null || rowPrefab == null || records == null)
+                return;
+
             foreach (Transform child in listContent) Destroy(child.gameObject);
 
-            var records = LeaderboardStore.GetAll();
             int count = Mathf.Min(DisplayCount, records.Count);
             for (int i = 0; i < count; i++)
             {

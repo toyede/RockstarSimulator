@@ -54,15 +54,16 @@ namespace ContextStage
         {
             new ScoreRankUI.RankTier { label = "F", minRatio = 0f },
             new ScoreRankUI.RankTier { label = "D", minRatio = 1.00f },
-            new ScoreRankUI.RankTier { label = "C", minRatio = 1.10f },
-            new ScoreRankUI.RankTier { label = "B", minRatio = 1.25f },
-            new ScoreRankUI.RankTier { label = "A", minRatio = 1.50f },
-            new ScoreRankUI.RankTier { label = "S", minRatio = 2.00f },
+            new ScoreRankUI.RankTier { label = "C", minRatio = 1.60f },
+            new ScoreRankUI.RankTier { label = "B", minRatio = 2.40f },
+            new ScoreRankUI.RankTier { label = "A", minRatio = 3.60f },
+            new ScoreRankUI.RankTier { label = "S", minRatio = 5.00f },
         };
 
         protected override void Awake()
         {
             base.Awake(); // 킷 규칙: UIPopup.Awake 를 반드시 호출해야 UIManager 에 등록된다
+            ScoreRankUI.ApplyCurrentBalance(rankTiers);
 
             // 주의: 닫힌 팝업은 SetActive(false) 상태라서 OnEnable/OnDisable 로 구독하면
             // 닫혀 있는 동안 이벤트를 놓친다. 그래서 Awake/OnDestroy 에서 구독한다.
@@ -83,6 +84,7 @@ namespace ContextStage
 
         protected override void OnOpen()
         {
+            ScoreRankUI.ApplyCurrentBalance(rankTiers);
             if (resultText != null) resultText.text = PerformanceTimer.Failed ? failText : clearText;
 
             // 게임오버 시점의 최종 점수와 클리어 목표 점수를 반영한다
@@ -117,5 +119,9 @@ namespace ContextStage
 
         /// <summary>[선택] 리더보드를 바로 보고 싶을 때 버튼 OnClick 에 연결한다. GameOver 시 자동으로도 열리므로 보조 수단이다.</summary>
         public void OnClickLeaderboard() => UIManager.Instance.Open<LeaderboardPopup>();
+
+#if UNITY_EDITOR
+        void OnValidate() => ScoreRankUI.ApplyCurrentBalance(rankTiers);
+#endif
     }
 }

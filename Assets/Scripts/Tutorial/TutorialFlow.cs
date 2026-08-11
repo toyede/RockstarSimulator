@@ -575,7 +575,7 @@ namespace ContextStage
             _hoverTaught = false;
             _hoverInspectionTimer = 0f;
             overlay?.ShowMessage(
-                "관객 위에 마우스를 올리면 관객의 마음을 알 수 있습니다.",
+                "관객 위에 마우스를 올리거나 길게 누르면 관객의 마음을 알 수 있습니다.",
                 $"말풍선과 테두리색을 통해 좋아하는 행동과 현재 기분을 확인할 수 있습니다. " +
                 $"{hoverInspectionDuration:0.#}초 동안 유지해 힌트를 확인하세요.",
                 false);
@@ -656,7 +656,7 @@ namespace ContextStage
             overlay?.ShowMessage(
                 "새로운 SINGALONG 관객이 들어왔습니다.",
                 "관객 구성이 바뀌면 높은 총 반응을 얻기 좋은 카드도 달라집니다. " +
-                $"새 관객 위에 마우스를 올리고 {hoverInspectionDuration:0.#}초 동안 " +
+                $"새 관객 위에 마우스를 올리거나 길게 누르고 {hoverInspectionDuration:0.#}초 동안 " +
                 "옷차림·움직임·말풍선을 확인하세요.",
                 false);
         }

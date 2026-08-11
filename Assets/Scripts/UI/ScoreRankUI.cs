@@ -44,10 +44,10 @@ namespace ContextStage
         {
             new RankTier { label = "F", minRatio = 0f },     // 목표 미달
             new RankTier { label = "D", minRatio = 1.00f },  // 목표 달성
-            new RankTier { label = "C", minRatio = 1.10f },
-            new RankTier { label = "B", minRatio = 1.25f },
-            new RankTier { label = "A", minRatio = 1.50f },
-            new RankTier { label = "S", minRatio = 2.00f },
+            new RankTier { label = "C", minRatio = 1.60f },
+            new RankTier { label = "B", minRatio = 2.40f },
+            new RankTier { label = "A", minRatio = 3.60f },
+            new RankTier { label = "S", minRatio = 5.00f },
         };
 
         [Header("게이지")]
@@ -81,6 +81,8 @@ namespace ContextStage
 
         void OnEnable()
         {
+            ApplyCurrentBalance(rankTiers);
+
             if (_pixelVfx == null)
             {
                 _pixelVfx = GetComponent<UIPixelBurstEmitter>();
@@ -254,5 +256,34 @@ namespace ContextStage
                     index = i;
             return index;
         }
+
+        /// <summary>
+        /// 랭크 아이콘 배열은 씬/프리팹에 직렬화되어 있으므로 아이콘은 보존하고
+        /// 현재 공통 밸런스의 점수 경계만 라벨 기준으로 동기화한다.
+        /// </summary>
+        public static void ApplyCurrentBalance(RankTier[] tiers)
+        {
+            if (tiers == null) return;
+
+            for (int i = 0; i < tiers.Length; i++)
+            {
+                RankTier tier = tiers[i];
+                switch (tier.label)
+                {
+                    case "F": tier.minRatio = 0f; break;
+                    case "D": tier.minRatio = 1f; break;
+                    case "C": tier.minRatio = 1.6f; break;
+                    case "B": tier.minRatio = 2.4f; break;
+                    case "A": tier.minRatio = 3.6f; break;
+                    case "S": tier.minRatio = 5f; break;
+                    default: continue;
+                }
+                tiers[i] = tier;
+            }
+        }
+
+#if UNITY_EDITOR
+        void OnValidate() => ApplyCurrentBalance(rankTiers);
+#endif
     }
 }
