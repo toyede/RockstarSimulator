@@ -22,6 +22,10 @@ namespace ContextStage
         [SerializeField, Min(0f)] float highPerformanceEngagement = 70f;
         [SerializeField, Min(0.25f)] float adaptiveSustainDuration = 4f;
         [SerializeField, Min(0.1f)] float adaptiveCheckInterval = 0.5f;
+        [SerializeField, Range(0f, 1f), Tooltip("이 시점까지 성적 조건이 유지되지 않으면 현재 점수 페이스로 이벤트를 한 번 확정합니다.")]
+        float adaptiveFallbackRatio = 0.55f;
+        [SerializeField, Min(0f), Tooltip("확정 이벤트 시 이 페이스 이상이면 이탈 위기, 미만이면 관객 지원을 우선합니다.")]
+        float fallbackCrisisPace = 0.95f;
 
         [Header("Comeback Event")]
         [SerializeField, Min(0.1f)] float comebackWarningDuration = 1.75f;
@@ -56,6 +60,8 @@ namespace ContextStage
         public float HighPerformanceEngagement => highPerformanceEngagement;
         public float AdaptiveSustainDuration => adaptiveSustainDuration;
         public float AdaptiveCheckInterval => adaptiveCheckInterval;
+        public float AdaptiveFallbackRatio => adaptiveFallbackRatio;
+        public float FallbackCrisisPace => fallbackCrisisPace;
         public float ComebackWarningDuration => comebackWarningDuration;
         public int ComebackAudienceCount => comebackAudienceCount;
         public float ComebackAudienceEngagement => comebackAudienceEngagement;
@@ -106,6 +112,11 @@ namespace ContextStage
             highPerformanceEngagement = Mathf.Max(0f, highPerformanceEngagement);
             adaptiveSustainDuration = Mathf.Max(0.25f, adaptiveSustainDuration);
             adaptiveCheckInterval = Mathf.Max(0.1f, adaptiveCheckInterval);
+            adaptiveFallbackRatio = Mathf.Clamp(
+                adaptiveFallbackRatio,
+                adaptiveEvaluationStartRatio,
+                adaptiveEvaluationEndRatio);
+            fallbackCrisisPace = Mathf.Max(0f, fallbackCrisisPace);
             comebackWarningDuration = Mathf.Max(0.1f, comebackWarningDuration);
             comebackAudienceCount = Mathf.Max(1, comebackAudienceCount);
             comebackAudienceEngagement = Mathf.Clamp(comebackAudienceEngagement, 0f, 100f);

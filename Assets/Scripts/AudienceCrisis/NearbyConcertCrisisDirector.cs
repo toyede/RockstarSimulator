@@ -252,16 +252,31 @@ namespace ContextStage
 
             if (_highPerformanceSustain >= config.AdaptiveSustainDuration)
             {
-                if (!TryStartCrisis(false))
-                    _state = AudienceCrisisState.Completed;
+                StartAdaptiveOutcome(preferCrisis: true);
                 return;
             }
 
             if (_lowPerformanceSustain >= config.AdaptiveSustainDuration)
             {
-                _state = AudienceCrisisState.Resolving;
-                _resolutionRoutine = StartCoroutine(ResolveComeback());
+                StartAdaptiveOutcome(preferCrisis: false);
+                return;
             }
+
+            // 중간 성적대에서는 high/low 조건이 끝까지 성립하지 않아 이벤트가
+            // 전혀 보이지 않았다. 중반 이후에는 현재 페이스를 기준으로 한 번 확정한다.
+            if (normalized >= config.AdaptiveFallbackRatio)
+                StartAdaptiveOutcome(pace >= config.FallbackCrisisPace);
+        }
+
+        void StartAdaptiveOutcome(bool preferCrisis)
+        {
+            if (preferCrisis && TryStartCrisis(false))
+                return;
+
+            // 관객 수가 위기 이벤트 최소 인원보다 적어도 이벤트를 없애지 않는다.
+            // 이 경우에는 관객 지원으로 전환해 한 판에 적어도 한 번은 변화를 준다.
+            _state = AudienceCrisisState.Resolving;
+            _resolutionRoutine = StartCoroutine(ResolveComeback());
         }
 
         IEnumerator ResolveComeback()

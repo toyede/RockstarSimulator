@@ -17,13 +17,15 @@ MonoBehaviour:
   latestPerformanceRatio: 0.6
   randomSeed: 9187
   useAdaptiveTrigger: 1
-  adaptiveEvaluationStartRatio: 0.25
-  adaptiveEvaluationEndRatio: 0.78
-  highPerformancePace: 1.25
-  lowPerformancePace: 0.65
+  adaptiveEvaluationStartRatio: 0.2
+  adaptiveEvaluationEndRatio: 0.85
+  highPerformancePace: 1.15
+  lowPerformancePace: 0.75
   highPerformanceEngagement: 70
-  adaptiveSustainDuration: 4
+  adaptiveSustainDuration: 2.5
   adaptiveCheckInterval: 0.5
+  adaptiveFallbackRatio: 0.55
+  fallbackCrisisPace: 0.95
   comebackWarningDuration: 1.75
   comebackAudienceCount: 2
   comebackAudienceEngagement: 55
