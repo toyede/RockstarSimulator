@@ -567,16 +567,16 @@ MonoBehaviour:
     minRatio: 1
     icon: {fileID: 21300000, guid: 7f04f62eb8a9c9742a1c00451338e06a, type: 3}
   - label: C
-    minRatio: 1.1
+    minRatio: 1.6
     icon: {fileID: 21300000, guid: 4c649006037748f4cad6c95cab09097b, type: 3}
   - label: B
-    minRatio: 1.25
+    minRatio: 2.4
     icon: {fileID: 21300000, guid: 18be004cbfc6c0e428b53911d0e93178, type: 3}
   - label: A
-    minRatio: 1.5
+    minRatio: 3.6
     icon: {fileID: 21300000, guid: f2088f4b00e13074e887c24e3a3d19c5, type: 3}
   - label: S
-    minRatio: 2
+    minRatio: 5
     icon: {fileID: 21300000, guid: 10b8c1d6204dcf241a78829fa80854f5, type: 3}
   clampFillAtTarget: 1
   fillLerpSpeed: 6
@@ -14291,6 +14291,22 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
       value: GameJamKit.UIManager, Assembly-CSharp
       objectReference: {fileID: 0}
+    - target: {fileID: 2522781241017214609, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2522781241017214609, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2522781241017214609, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2522781241017214609, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2815678205765897204, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
       value: 2
@@ -14836,6 +14852,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1351886964}
   m_CullTransparentMesh: 1
+--- !u!1 &1377890566
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1377890568}
+  - component: {fileID: 1377890567}
+  m_Layer: 0
+  m_Name: '[TourPerformance]'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1377890567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1377890566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ebc6540a50028542a58213da5928b55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.TourPerformanceBridge
+  tourHubSceneName: TourHub
+--- !u!4 &1377890568
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1377890566}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1401260089
 GameObject:
   m_ObjectHideFlags: 0
@@ -18220,3 +18281,4 @@ SceneRoots:
   - {fileID: 1466933572}
   - {fileID: 1034479901}
   - {fileID: 983559051}
+  - {fileID: 1377890568}

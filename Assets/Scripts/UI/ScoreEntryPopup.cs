@@ -39,6 +39,7 @@ namespace ContextStage
         void OnGameStateChanged(GameStateChanged e)
         {
             if (e.Current != GameState.GameOver) return;
+            if (TourRunManager.HasInstance && TourRunManager.Instance.CurrentRun != null) return;
             Open();
         }
 

@@ -1574,6 +1574,22 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
       value: GameJamKit.UIManager, Assembly-CSharp
       objectReference: {fileID: 0}
+    - target: {fileID: 2522781241017214609, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2522781241017214609, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2522781241017214609, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2522781241017214609, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2815678205765897204, guid: 65bb7ed1b4c62e947801337d5ec57ce4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
       value: 5

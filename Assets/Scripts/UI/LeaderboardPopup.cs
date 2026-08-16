@@ -41,7 +41,9 @@ namespace ContextStage
         void OnGameStateChanged(GameStateChanged e)
         {
             // 성공/실패 무관하게 GameOver가 되면 리더보드를 조회할 수 있게 스스로 연다.
-            if (e.Current == GameState.GameOver) Open();
+            if (e.Current != GameState.GameOver) return;
+            if (TourRunManager.HasInstance && TourRunManager.Instance.CurrentRun != null) return;
+            Open();
         }
 
         protected override void OnOpen() => Refresh();

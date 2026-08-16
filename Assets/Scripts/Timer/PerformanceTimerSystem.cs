@@ -24,13 +24,19 @@ namespace ContextStage
         float _elapsed;
         bool _ended; // 시간 초과 판정을 한 번만 실행하기 위한 가드
         bool _pausedManually; // 연출 담당(튜토리얼 등)이 SetPaused 로 제어하는 정지 플래그
+        float _runtimeDuration = -1f;
+        int _runtimeTargetScore = -1;
 
         protected override bool Persistent => false;
 
         public float Elapsed => _elapsed;
-        public float Duration => config == null ? 0f : config.duration;
+        public float Duration => _runtimeDuration > 0f
+            ? _runtimeDuration
+            : config == null ? 0f : config.duration;
         public float Normalized => Duration <= 0f ? 0f : Mathf.Clamp01(_elapsed / Duration);
-        public int TargetScore => config == null ? 0 : config.targetScore;
+        public int TargetScore => _runtimeTargetScore >= 0
+            ? _runtimeTargetScore
+            : config == null ? 0 : config.targetScore;
         public bool IsPaused => _pausedManually;
 
         /// <summary>현재 점수가 목표 점수 미달인지. 특정 트리거가 아니라 항상 실시간으로 계산된다.</summary>
@@ -56,6 +62,17 @@ namespace ContextStage
 
         /// <summary>[연출/튜토리얼 전용] true 인 동안 제한시간이 흐르지 않는다.</summary>
         public void SetPaused(bool paused) => _pausedManually = paused;
+
+        /// <summary>
+        /// 투어 스테이지가 현재 공연에만 적용할 제한시간과 목표 점수를 지정한다.
+        /// ScriptableObject 원본은 수정하지 않으며, Main 씬이 교체되면 함께 사라진다.
+        /// </summary>
+        public void SetRuntimeStageSettings(float duration, int targetScore)
+        {
+            _runtimeDuration = Mathf.Max(1f, duration);
+            _runtimeTargetScore = Mathf.Max(0, targetScore);
+            RaiseChanged();
+        }
 
         void Update()
         {

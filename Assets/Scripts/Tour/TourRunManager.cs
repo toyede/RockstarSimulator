@@ -11,12 +11,17 @@ namespace ContextStage
     public sealed class TourRunManager : MonoSingleton<TourRunManager>
     {
         [Header("Current Linear Tour")]
-        [SerializeField] List<StageDefinition> linearStages = new List<StageDefinition>();
+        [SerializeField] private List<StageDefinition> linearStages = new List<StageDefinition>();
+
+        readonly Dictionary<string, StageDefinition> _activeStages =
+            new Dictionary<string, StageDefinition>(StringComparer.Ordinal);
 
         public TourRunState CurrentRun { get; private set; }
         public bool HasActiveRun => CurrentRun != null &&
                                     CurrentRun.phase != RunPhase.Completed &&
                                     CurrentRun.phase != RunPhase.Failed;
+        public StageDefinition CurrentStageDefinition =>
+            CurrentRun == null ? null : FindStageDefinition(CurrentRun.CurrentNode?.stageId);
 
         public event Action StateChanged;
 
@@ -44,6 +49,10 @@ namespace ContextStage
                 return false;
             }
 
+            _activeStages.Clear();
+            for (int i = 0; i < stages.Count; i++)
+                _activeStages.Add(stages[i].StageId, stages[i]);
+
             CurrentRun = new TourRunState
             {
                 seed = seed,
@@ -58,6 +67,12 @@ namespace ContextStage
 
             NotifyStateChanged();
             return true;
+        }
+
+        public StageDefinition FindStageDefinition(string stageId)
+        {
+            if (string.IsNullOrWhiteSpace(stageId)) return null;
+            return _activeStages.TryGetValue(stageId, out StageDefinition stage) ? stage : null;
         }
 
         public bool SelectNode(string nodeId)
@@ -179,6 +194,7 @@ namespace ContextStage
         public void ResetRun()
         {
             CurrentRun = null;
+            _activeStages.Clear();
             NotifyStateChanged();
         }
 
