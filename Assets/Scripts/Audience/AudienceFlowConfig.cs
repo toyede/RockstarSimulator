@@ -35,8 +35,16 @@ namespace ContextStage
         public float ArrivalChance => arrivalChance;
 
         public AudienceFlowRules CreateRules() =>
-            new AudienceFlowRules(
-                initialAudienceCount,
+            CreateRules(0);
+
+        public AudienceFlowRules CreateRules(int additionalInitialAudience)
+        {
+            int effectiveInitialCount = Mathf.Clamp(
+                initialAudienceCount + Mathf.Max(0, additionalInitialAudience),
+                1,
+                maximumAudienceCount);
+            return new AudienceFlowRules(
+                effectiveInitialCount,
                 maximumAudienceCount,
                 chillWeight,
                 singalongWeight,
@@ -44,6 +52,7 @@ namespace ContextStage
                 randomSeed,
                 arrivalCheckInterval,
                 arrivalChance);
+        }
 
         public bool TryValidate(out string error) => CreateRules().TryValidate(out error);
 

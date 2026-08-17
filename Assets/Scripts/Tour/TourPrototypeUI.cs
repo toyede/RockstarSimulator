@@ -22,7 +22,7 @@ namespace ContextStage
         RectTransform _buttonRoot;
         TourRunManager _manager;
         AugmentSelectionPopup _augmentPopup;
-        PrototypeAugmentSelectionAdapter _prototypeAugmentAdapter;
+        AugmentSelectionCoordinator _augmentCoordinator;
 
         void Awake()
         {
@@ -34,19 +34,19 @@ namespace ContextStage
         {
             _manager = TourRunManager.Instance;
             if (_manager != null) _manager.StateChanged += Refresh;
-            _prototypeAugmentAdapter?.Bind(_manager);
+            _augmentCoordinator?.Bind(_manager);
             Refresh();
         }
 
         void OnDisable()
         {
             if (_manager != null) _manager.StateChanged -= Refresh;
-            _prototypeAugmentAdapter?.Unbind();
+            _augmentCoordinator?.Unbind();
         }
 
         void OnDestroy()
         {
-            _prototypeAugmentAdapter?.Dispose();
+            _augmentCoordinator?.Dispose();
         }
 
         void BuildUI()
@@ -105,7 +105,7 @@ namespace ContextStage
             layout.childForceExpandHeight = false;
 
             _augmentPopup = PrototypeAugmentSelectionUIFactory.Create(canvas.transform);
-            _prototypeAugmentAdapter = new PrototypeAugmentSelectionAdapter(_augmentPopup);
+            _augmentCoordinator = new AugmentSelectionCoordinator(_augmentPopup);
         }
 
         void Refresh()
@@ -200,7 +200,7 @@ namespace ContextStage
         void ShowReward()
         {
             if (_mainPanel != null) _mainPanel.gameObject.SetActive(false);
-            _prototypeAugmentAdapter?.Show();
+            _augmentCoordinator?.Show();
         }
 
         void ShowCompleted(TourRunState run)
@@ -236,7 +236,6 @@ namespace ContextStage
 
         void ReturnToTitle()
         {
-            if (_manager != null) _manager.ResetRun();
             TitleReturn.Go();
         }
 

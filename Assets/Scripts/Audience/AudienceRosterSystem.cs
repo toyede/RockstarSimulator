@@ -406,7 +406,7 @@ namespace ContextStage
 
             _model = new AudienceRosterModel(
                 engagementConfig.CreateRules(),
-                flowConfig.CreateRules());
+                flowConfig.CreateRules(AugmentRuntime.Current.InitialAudienceBonus));
             return true;
         }
 

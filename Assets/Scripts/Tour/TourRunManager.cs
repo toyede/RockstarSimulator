@@ -60,7 +60,7 @@ namespace ContextStage
                 currentNodeId = "",
                 map = map,
                 deck = new DeckRunState(),
-                ownedAugmentIds = new List<string>(),
+                ownedAugments = new List<OwnedAugmentState>(),
                 stageResults = new List<StageResult>(),
                 totalScore = 0
             };
@@ -163,7 +163,7 @@ namespace ContextStage
             return true;
         }
 
-        public bool SelectAugment(string augmentId)
+        public bool SelectAugment(string augmentId, AugmentTier tier)
         {
             if (!RequireRun(out TourRunState run) || run.phase != RunPhase.Reward) return false;
             if (string.IsNullOrWhiteSpace(augmentId))
@@ -172,10 +172,27 @@ namespace ContextStage
                 return false;
             }
 
+            AugmentCatalog catalog = AugmentCatalog.LoadDefault();
+            if (catalog == null ||
+                !catalog.TryGetDefinition(augmentId, out AugmentDefinition definition) ||
+                !definition.TryGetTierData(tier, out _))
+            {
+                Debug.LogWarning($"[TourRun] 등록되지 않은 증강입니다: {augmentId}:{tier}", this);
+                return false;
+            }
+
+            if (run.HasAugment(augmentId, tier))
+            {
+                Debug.LogWarning($"[TourRun] 이미 보유한 증강입니다: {augmentId}:{tier}", this);
+                return false;
+            }
+
             RunNodeState currentNode = run.CurrentNode;
             if (currentNode == null) return false;
 
-            run.ownedAugmentIds.Add(augmentId);
+            if (run.ownedAugments == null)
+                run.ownedAugments = new List<OwnedAugmentState>();
+            run.ownedAugments.Add(new OwnedAugmentState(augmentId, tier));
             currentNode.status = RunNodeStatus.Cleared;
 
             for (int i = 0; i < currentNode.nextNodeIds.Count; i++)

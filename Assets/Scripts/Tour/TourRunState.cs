@@ -94,7 +94,7 @@ namespace ContextStage
         public string currentNodeId;
         public TourMapState map = new TourMapState();
         public DeckRunState deck = new DeckRunState();
-        public List<string> ownedAugmentIds = new List<string>();
+        public List<OwnedAugmentState> ownedAugments = new List<OwnedAugmentState>();
         public List<StageResult> stageResults = new List<StageResult>();
         public int totalScore;
 
@@ -107,6 +107,21 @@ namespace ContextStage
                 if (stageResults == null || stageResults.Count == 0) return null;
                 return stageResults[stageResults.Count - 1];
             }
+        }
+
+        public bool HasAugment(string definitionId, AugmentTier tier)
+        {
+            if (string.IsNullOrWhiteSpace(definitionId) || ownedAugments == null)
+                return false;
+
+            for (int i = 0; i < ownedAugments.Count; i++)
+            {
+                OwnedAugmentState owned = ownedAugments[i];
+                if (owned != null && owned.Matches(definitionId, tier))
+                    return true;
+            }
+
+            return false;
         }
     }
 }

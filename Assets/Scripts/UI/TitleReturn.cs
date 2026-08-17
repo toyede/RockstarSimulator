@@ -31,6 +31,7 @@ namespace ContextStage
             CloseAllPopups();
             StopRunningSystems();
             ResetGameState();
+            ResetTourRun();
 
             SceneLoader.Load(TitleSceneName);
         }
@@ -57,6 +58,12 @@ namespace ContextStage
             // Ready 로 되돌려 타이틀에서 "시작" 을 눌렀을 때 정상 진행되게 한다.
             // (GameOver 상태가 남으면 카드 입력·ESC 일시정지가 전부 막힌다)
             GameManager.Instance.ResetGame();
+        }
+
+        static void ResetTourRun()
+        {
+            if (TourRunManager.HasInstance)
+                TourRunManager.Instance.ResetRun();
         }
     }
 }

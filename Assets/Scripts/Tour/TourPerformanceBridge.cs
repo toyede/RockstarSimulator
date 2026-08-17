@@ -17,6 +17,7 @@ namespace ContextStage
 
         void Awake()
         {
+            DisableTutorialDuringTour();
             ApplyStageSettings();
             if (HasTourPerformance()) BuildResultOverlay();
         }
@@ -40,7 +41,17 @@ namespace ContextStage
             StageDefinition stage = TourRunManager.Instance.CurrentStageDefinition;
             PerformanceTimerSystem timer = PerformanceTimerSystem.Instance;
             if (stage == null || timer == null) return;
-            timer.SetRuntimeStageSettings(stage.Duration, stage.TargetScore);
+            float duration = stage.Duration + AugmentRuntime.Current.PerformanceDurationBonus;
+            timer.SetRuntimeStageSettings(duration, stage.TargetScore);
+        }
+
+        void DisableTutorialDuringTour()
+        {
+            if (!HasTourPerformance()) return;
+
+            TutorialFlow tutorial = FindFirstObjectByType<TutorialFlow>(FindObjectsInactive.Include);
+            if (tutorial != null)
+                tutorial.enabled = false;
         }
 
         bool HasTourPerformance()

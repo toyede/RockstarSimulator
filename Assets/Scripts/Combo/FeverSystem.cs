@@ -12,6 +12,7 @@ namespace ContextStage
         bool _startAfterCurrentCard;
         bool _automaticTriggerEnabled = true;
         float _remaining;
+        float _activeDuration;
         int _triggerCombo;
 
         protected override bool Persistent => false;
@@ -121,13 +122,15 @@ namespace ContextStage
         {
             if (config == null) return;
 
+            float duration = config.FeverDuration + AugmentRuntime.Current.FeverDurationBonus;
             _isActive = true;
-            _remaining = config.FeverDuration;
+            _remaining = duration;
+            _activeDuration = duration;
             _triggerCombo = triggerCombo;
             EventBus.Raise(new FeverStateChanged(
                 true,
                 triggerCombo,
-                config.FeverDuration));
+                duration));
         }
 
         void EndFever()
@@ -139,7 +142,8 @@ namespace ContextStage
             EventBus.Raise(new FeverStateChanged(
                 false,
                 _triggerCombo,
-                config != null ? config.FeverDuration : 0f));
+                _activeDuration));
+            _activeDuration = 0f;
         }
 
         void ResetFever()
@@ -148,6 +152,7 @@ namespace ContextStage
             _isActive = false;
             _startAfterCurrentCard = false;
             _remaining = 0f;
+            _activeDuration = 0f;
             _triggerCombo = 0;
 
             if (wasActive)
