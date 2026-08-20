@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 952d778efcf3f95449977be732b7fbf7, type: 3}
+  m_Name: CardCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CardCatalog
+  definitions:
+  - {fileID: 5929231973239401959, guid: 59e51543dfbd0c941ae8b6683be23c10, type: 3}
+  - {fileID: 4085938393393045254, guid: 8fd713d72a3534047844dc815529cc7d, type: 3}
+  - {fileID: 2551996791545739517, guid: 3e469429d6f460947ad917bed2c80c48, type: 3}
+  - {fileID: 646157537038137547, guid: 306f84097534c5741bb43b617e512a56, type: 3}
+  - {fileID: 3573592530458964408, guid: 5d435464547ef984680797d43fb6f330, type: 3}
+  - {fileID: 8924249353746418271, guid: 2808f621a042e6f46b9bd862d07d8cfd, type: 3}
+  - {fileID: 7367045592451404702, guid: 95559096d82545942969af721b09b38d, type: 3}
+  - {fileID: 8033426421027984200, guid: 157aaabf7eeda9b44866321b7f3cbbba, type: 3}
+  - {fileID: 7840930225512351688, guid: 8070402508e11ac459fc4f2a23f9a67e, type: 3}
+  - {fileID: 6863122937097072033, guid: b0a18a93c61e60241b3562abdf84b7e2, type: 3}
+  - {fileID: 936027775136551679, guid: 063dfb87bdc6fc04ebccb7c1f79a1087, type: 3}

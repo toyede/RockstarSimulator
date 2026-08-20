@@ -11,11 +11,13 @@ namespace ContextStage
         [SerializeField] bool enabled = true;
         [SerializeField, Min(0f)] float value;
         [SerializeField, TextArea(2, 4)] string description = string.Empty;
+        [SerializeField] CardDefinition grantedCard;
 
         public AugmentTier Tier => tier;
         public bool Enabled => enabled;
         public float Value => Mathf.Max(0f, value);
         public string Description => description ?? string.Empty;
+        public CardDefinition GrantedCard => grantedCard;
     }
 
     /// <summary>

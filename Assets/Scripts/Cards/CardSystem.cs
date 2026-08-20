@@ -18,6 +18,8 @@ namespace ContextStage
         readonly List<AudienceReactionResult> _audienceReactions =
             new List<AudienceReactionResult>(10);
         readonly List<AudienceId> _audienceIds = new List<AudienceId>(10);
+        readonly List<CardDefinition> _runAddedCards =
+            new List<CardDefinition>();
         PreparedDeck<CardDefinition> _deck;
 
         bool _selecting;
@@ -32,6 +34,9 @@ namespace ContextStage
         public int BonusCardCount => Mathf.Max(0, HandCount - MinimumHandSize);
         public int PreparedDeckCount => _deck != null ? _deck.PreparedBatchCount : 0;
         public int CurrentDeckRemaining => _deck != null ? _deck.CurrentRemaining : 0;
+        public int RunAddedCardCount => _runAddedCards.Count;
+        public int EffectiveDeckBatchSize =>
+            config == null ? 0 : config.GeneratedDeckSize + _runAddedCards.Count;
         public AudienceRosterSystem AudienceRoster => audienceRoster;
 
         protected override void OnAwake()
@@ -75,12 +80,19 @@ namespace ContextStage
         {
             _deck = null;
             _hand.Clear();
+            _runAddedCards.Clear();
             _selecting = false;
             _warnedInvalidPool = false;
 
             if (config == null || !config.HasUsableCards)
             {
                 Debug.LogWarning("[CardSystem] 사용할 카드 프리팹이 없습니다. Tools/Cards/Setup Prefab Card System을 실행하세요.");
+                RaiseHandChanged();
+                return;
+            }
+
+            if (!TryResolveRunAddedCards())
+            {
                 RaiseHandChanged();
                 return;
             }
@@ -402,6 +414,11 @@ namespace ContextStage
                     _hand.Clear();
                     DrawCards(handCountBeforeUse);
                     break;
+                case UtilityCardEffect.ExtendPerformanceTime:
+                    PerformanceTimer.ExtendDuration(
+                        card.PerformanceTimeBonusSeconds);
+                    RefillToMinimumHand();
+                    break;
                 default:
                     RefillToMinimumHand();
                     break;
@@ -462,7 +479,11 @@ namespace ContextStage
 
         List<CardDefinition> BuildDeckBatch()
         {
-            if (CardDeckBatchBuilder.TryBuild(config, out var cards, out string error))
+            if (CardDeckBatchBuilder.TryBuild(
+                    config,
+                    _runAddedCards,
+                    out var cards,
+                    out string error))
                 return cards;
 
             if (!_warnedInvalidPool)
@@ -472,6 +493,47 @@ namespace ContextStage
             }
 
             return null;
+        }
+
+        bool TryResolveRunAddedCards()
+        {
+            if (!TourRunManager.HasInstance ||
+                TourRunManager.Instance.CurrentRun?.deck?.addedCards == null)
+                return true;
+
+            IReadOnlyList<RunCardState> runCards =
+                TourRunManager.Instance.CurrentRun.deck.addedCards;
+            if (runCards.Count == 0) return true;
+
+            CardCatalog catalog = CardCatalog.LoadDefault();
+            string catalogError = string.Empty;
+            if (catalog == null || !catalog.TryValidate(out catalogError))
+            {
+                Debug.LogError(
+                    $"[CardSystem] 런 덱 카드 카탈로그를 불러올 수 없습니다: " +
+                    $"{(catalog == null ? CardCatalog.ResourcesPath : catalogError)}",
+                    this);
+                return false;
+            }
+
+            for (int i = 0; i < runCards.Count; i++)
+            {
+                RunCardState runCard = runCards[i];
+                if (runCard == null ||
+                    !catalog.TryGetCard(runCard.cardId, out CardDefinition card))
+                {
+                    Debug.LogError(
+                        $"[CardSystem] 런 덱 카드 {i}를 찾을 수 없습니다: " +
+                        $"{runCard?.cardId ?? "<null>"}",
+                        this);
+                    _runAddedCards.Clear();
+                    return false;
+                }
+
+                _runAddedCards.Add(card);
+            }
+
+            return true;
         }
 
         void RaiseHandChanged()

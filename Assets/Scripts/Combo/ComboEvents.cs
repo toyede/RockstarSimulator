@@ -20,6 +20,18 @@ namespace ContextStage
         public bool WasLost { get; }
     }
 
+    public readonly struct ComboLossPrevented
+    {
+        public ComboLossPrevented(int protectedCombo, int remainingPreventions)
+        {
+            ProtectedCombo = protectedCombo;
+            RemainingPreventions = remainingPreventions;
+        }
+
+        public int ProtectedCombo { get; }
+        public int RemainingPreventions { get; }
+    }
+
     public readonly struct FeverStateChanged
     {
         public FeverStateChanged(

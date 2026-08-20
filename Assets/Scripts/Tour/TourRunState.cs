@@ -9,21 +9,50 @@ namespace ContextStage
         public string instanceId;
         public string cardId;
         public int upgradeLevel;
+        public string sourceAugmentId;
+        public AugmentTier sourceTier;
 
         public RunCardState() { }
 
-        public RunCardState(string instanceId, string cardId, int upgradeLevel = 0)
+        public RunCardState(
+            string instanceId,
+            string cardId,
+            int upgradeLevel = 0,
+            string sourceAugmentId = "",
+            AugmentTier sourceTier = AugmentTier.Bronze)
         {
             this.instanceId = instanceId;
             this.cardId = cardId;
             this.upgradeLevel = Math.Max(0, upgradeLevel);
+            this.sourceAugmentId = sourceAugmentId ?? "";
+            this.sourceTier = sourceTier;
         }
     }
 
     [Serializable]
     public sealed class DeckRunState
     {
-        public List<RunCardState> cards = new List<RunCardState>();
+        public List<RunCardState> addedCards = new List<RunCardState>();
+
+        public bool HasCardFromAugment(string augmentId, AugmentTier tier)
+        {
+            if (string.IsNullOrWhiteSpace(augmentId) || addedCards == null)
+                return false;
+
+            for (int i = 0; i < addedCards.Count; i++)
+            {
+                RunCardState card = addedCards[i];
+                if (card != null &&
+                    card.sourceTier == tier &&
+                    string.Equals(
+                        card.sourceAugmentId,
+                        augmentId,
+                        StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
+        }
     }
 
     [Serializable]

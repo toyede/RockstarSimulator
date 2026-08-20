@@ -149,7 +149,19 @@ namespace ContextStage
         static string GetRoleLabel(CardDefinition card)
         {
             if (card.Role == CardRole.Utility)
-                return card.UtilityEffect == UtilityCardEffect.Draw ? "UTILITY · DRAW" : "UTILITY · REROLL";
+            {
+                switch (card.UtilityEffect)
+                {
+                    case UtilityCardEffect.Draw:
+                        return "UTILITY · DRAW";
+                    case UtilityCardEffect.Reroll:
+                        return "UTILITY · REROLL";
+                    case UtilityCardEffect.ExtendPerformanceTime:
+                        return "UTILITY · ENCORE";
+                    default:
+                        return "UTILITY";
+                }
+            }
 
             AudienceReactionProfile profile = card.AudienceReaction;
             if (profile == null || !profile.AppliesToAudience)

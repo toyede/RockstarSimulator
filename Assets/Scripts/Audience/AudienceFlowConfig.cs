@@ -7,6 +7,8 @@ namespace ContextStage
         menuName = "ContextStage/Audience/Flow Config")]
     public sealed class AudienceFlowConfig : ScriptableObject
     {
+        const float MinimumEnabledArrivalCheckInterval = 0.1f;
+
         [Header("Roster")]
         [SerializeField, Min(1)] int initialAudienceCount = 3;
         [SerializeField, Min(1)] int maximumAudienceCount = 10;
@@ -35,14 +37,24 @@ namespace ContextStage
         public float ArrivalChance => arrivalChance;
 
         public AudienceFlowRules CreateRules() =>
-            CreateRules(0);
+            CreateRules(0, 0f);
 
-        public AudienceFlowRules CreateRules(int additionalInitialAudience)
+        public AudienceFlowRules CreateRules(int additionalInitialAudience) =>
+            CreateRules(additionalInitialAudience, 0f);
+
+        public AudienceFlowRules CreateRules(
+            int additionalInitialAudience,
+            float arrivalCheckIntervalReduction)
         {
             int effectiveInitialCount = Mathf.Clamp(
                 initialAudienceCount + Mathf.Max(0, additionalInitialAudience),
                 1,
                 maximumAudienceCount);
+            float effectiveArrivalCheckInterval = arrivalCheckInterval <= 0f
+                ? 0f
+                : Mathf.Max(
+                    MinimumEnabledArrivalCheckInterval,
+                    arrivalCheckInterval - Mathf.Max(0f, arrivalCheckIntervalReduction));
             return new AudienceFlowRules(
                 effectiveInitialCount,
                 maximumAudienceCount,
@@ -50,7 +62,7 @@ namespace ContextStage
                 singalongWeight,
                 moshWeight,
                 randomSeed,
-                arrivalCheckInterval,
+                effectiveArrivalCheckInterval,
                 arrivalChance);
         }
 

@@ -13,7 +13,10 @@ namespace ContextStage
     {
         FeverDurationSeconds,
         PerformanceDurationSeconds,
-        InitialAudienceCount
+        InitialAudienceCount,
+        AudienceArrivalIntervalReductionSeconds,
+        ComboBreakPreventionCount,
+        GrantCard
     }
 
     [Serializable]

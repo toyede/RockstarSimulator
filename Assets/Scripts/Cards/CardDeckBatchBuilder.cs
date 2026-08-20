@@ -17,6 +17,21 @@ namespace ContextStage
             out string error,
             Func<float> randomValue = null)
         {
+            return TryBuild(
+                config,
+                null,
+                out cards,
+                out error,
+                randomValue);
+        }
+
+        public static bool TryBuild(
+            CardDeckConfig config,
+            IReadOnlyList<CardDefinition> addedCards,
+            out List<CardDefinition> cards,
+            out string error,
+            Func<float> randomValue = null)
+        {
             cards = null;
             error = string.Empty;
 
@@ -61,6 +76,15 @@ namespace ContextStage
                 return false;
             }
 
+            int addedCardCount = addedCards?.Count ?? 0;
+            for (int i = 0; i < addedCardCount; i++)
+            {
+                if (addedCards[i] != null) continue;
+
+                error = $"Run-added card {i} is missing.";
+                return false;
+            }
+
             int bonusCount = config.GeneratedDeckSize - baseCards.Count;
             if (bonusCount > 0 && bonusCandidates.Count == 0)
             {
@@ -70,8 +94,11 @@ namespace ContextStage
                 return false;
             }
 
-            cards = new List<CardDefinition>(config.GeneratedDeckSize);
+            cards = new List<CardDefinition>(
+                config.GeneratedDeckSize + addedCardCount);
             cards.AddRange(baseCards);
+            for (int i = 0; i < addedCardCount; i++)
+                cards.Add(addedCards[i]);
 
             for (int i = 0; i < bonusCount; i++)
             {

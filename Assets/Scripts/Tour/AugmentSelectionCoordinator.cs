@@ -242,14 +242,19 @@ namespace ContextStage
         AugmentChoiceViewModel CreateViewModel(int slotIndex)
         {
             AugmentOffer offer = _currentOffers[slotIndex];
+            CardDefinition grantedCard = offer.TierData.GrantedCard;
             return new AugmentChoiceViewModel
             {
                 slotIndex = slotIndex,
-                icon = offer.Definition.Icon,
+                icon = offer.Definition.Icon != null
+                    ? offer.Definition.Icon
+                    : grantedCard?.Artwork,
                 tierLabel = offer.TierData.Tier.ToString(),
                 tierColor = ResolveTierColor(offer.TierData.Tier),
                 displayName = offer.Definition.DisplayName,
-                description = offer.TierData.Description,
+                description = grantedCard != null
+                    ? grantedCard.Description
+                    : offer.TierData.Description,
                 rerollsRemaining = _rerollsRemaining[slotIndex],
                 canSelect = true
             };

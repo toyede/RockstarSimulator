@@ -26,11 +26,13 @@ namespace ContextStage
         [SerializeField] ComboFeverConfig config;
 
         int _currentCombo;
+        int _remainingComboBreakPreventions;
 
         protected override bool Persistent => false;
 
         public int CurrentCombo => _currentCombo;
         public float CurrentMultiplier => ResolveMultiplier(_currentCombo);
+        public int RemainingComboBreakPreventions => _remainingComboBreakPreventions;
 
         protected override void OnAwake()
         {
@@ -40,6 +42,8 @@ namespace ContextStage
                     "[ComboSystem] A ComboFeverConfig reference is required.",
                     this);
             }
+
+            RestoreComboBreakPreventions();
         }
 
         void OnEnable() =>
@@ -73,12 +77,21 @@ namespace ContextStage
                     succeeded);
             }
 
+            bool comboLossPrevented =
+                failed &&
+                previous > 0 &&
+                TryPreventComboLoss(previous);
+
             if (succeeded)
                 _currentCombo = previous + 1;
-            else if (failed)
+            else if (failed && !comboLossPrevented)
                 _currentCombo = 0;
 
-            float multiplier = ResolveMultiplier(_currentCombo);
+            // 보호가 발동한 실패 카드의 손실까지 기존 콤보 배율로 키우지는 않는다.
+            // 콤보 상태만 유지하고, 유지된 배율은 다음 카드부터 다시 적용한다.
+            float multiplier = comboLossPrevented
+                ? 1f
+                : ResolveMultiplier(_currentCombo);
 
             if (_currentCombo != previous)
             {
@@ -109,11 +122,34 @@ namespace ContextStage
         float ResolveMultiplier(int combo)
             => config != null ? config.ResolveMultiplier(combo) : 1f;
 
+        bool TryPreventComboLoss(int protectedCombo)
+        {
+            if (_remainingComboBreakPreventions <= 0) return false;
+
+            _remainingComboBreakPreventions--;
+            EventBus.Raise(new ComboLossPrevented(
+                protectedCombo,
+                _remainingComboBreakPreventions));
+            return true;
+        }
+
+        void RestoreComboBreakPreventions()
+        {
+            _remainingComboBreakPreventions =
+                AugmentRuntime.Current.ComboBreakPreventionCount;
+        }
+
         void OnGameStateChanged(GameStateChanged e)
         {
-            if (e.Current == GameState.Ready ||
-                e.Current == GameState.GameOver)
+            if (e.Current == GameState.Ready)
+            {
                 ResetCombo();
+                RestoreComboBreakPreventions();
+            }
+            else if (e.Current == GameState.GameOver)
+            {
+                ResetCombo();
+            }
         }
 
     }

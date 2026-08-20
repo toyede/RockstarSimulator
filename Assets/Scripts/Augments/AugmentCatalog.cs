@@ -75,6 +75,14 @@ namespace ContextStage
                         error = $"{definition.AugmentId} has duplicate {tier.Tier} data.";
                         return false;
                     }
+
+                    if (definition.EffectType == AugmentEffectType.GrantCard &&
+                        tier.GrantedCard == null)
+                    {
+                        error =
+                            $"{definition.AugmentId}:{tier.Tier} has no granted card.";
+                        return false;
+                    }
                 }
 
                 if (enabledTiers.Count == 0)

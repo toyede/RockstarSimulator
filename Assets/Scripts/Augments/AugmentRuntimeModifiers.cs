@@ -7,17 +7,22 @@ namespace ContextStage
     {
         public AugmentRuntimeModifiers(
             float feverDurationBonus,
-            float performanceDurationBonus,
-            int initialAudienceBonus)
+            int initialAudienceBonus,
+            float audienceArrivalIntervalReduction,
+            int comboBreakPreventionCount)
         {
             FeverDurationBonus = Mathf.Max(0f, feverDurationBonus);
-            PerformanceDurationBonus = Mathf.Max(0f, performanceDurationBonus);
             InitialAudienceBonus = Mathf.Max(0, initialAudienceBonus);
+            AudienceArrivalIntervalReduction = Mathf.Max(
+                0f,
+                audienceArrivalIntervalReduction);
+            ComboBreakPreventionCount = Mathf.Max(0, comboBreakPreventionCount);
         }
 
         public float FeverDurationBonus { get; }
-        public float PerformanceDurationBonus { get; }
         public int InitialAudienceBonus { get; }
+        public float AudienceArrivalIntervalReduction { get; }
+        public int ComboBreakPreventionCount { get; }
     }
 
     /// <summary>
@@ -45,8 +50,9 @@ namespace ContextStage
                 return default;
 
             float feverDuration = 0f;
-            float performanceDuration = 0f;
             int initialAudience = 0;
+            float audienceArrivalIntervalReduction = 0f;
+            int comboBreakPreventionCount = 0;
             var applied = new HashSet<AugmentKey>();
 
             for (int i = 0; i < run.ownedAugments.Count; i++)
@@ -65,19 +71,23 @@ namespace ContextStage
                     case AugmentEffectType.FeverDurationSeconds:
                         feverDuration += tierData.Value;
                         break;
-                    case AugmentEffectType.PerformanceDurationSeconds:
-                        performanceDuration += tierData.Value;
-                        break;
                     case AugmentEffectType.InitialAudienceCount:
                         initialAudience += Mathf.RoundToInt(tierData.Value);
+                        break;
+                    case AugmentEffectType.AudienceArrivalIntervalReductionSeconds:
+                        audienceArrivalIntervalReduction += tierData.Value;
+                        break;
+                    case AugmentEffectType.ComboBreakPreventionCount:
+                        comboBreakPreventionCount += Mathf.RoundToInt(tierData.Value);
                         break;
                 }
             }
 
             return new AugmentRuntimeModifiers(
                 feverDuration,
-                performanceDuration,
-                initialAudience);
+                initialAudience,
+                audienceArrivalIntervalReduction,
+                comboBreakPreventionCount);
         }
     }
 }

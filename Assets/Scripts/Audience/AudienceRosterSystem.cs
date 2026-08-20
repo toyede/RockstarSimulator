@@ -404,9 +404,12 @@ namespace ContextStage
                 return false;
             }
 
+            AugmentRuntimeModifiers modifiers = AugmentRuntime.Current;
             _model = new AudienceRosterModel(
                 engagementConfig.CreateRules(),
-                flowConfig.CreateRules(AugmentRuntime.Current.InitialAudienceBonus));
+                flowConfig.CreateRules(
+                    modifiers.InitialAudienceBonus,
+                    modifiers.AudienceArrivalIntervalReduction));
             return true;
         }
 

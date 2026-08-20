@@ -74,6 +74,17 @@ namespace ContextStage
             RaiseChanged();
         }
 
+        /// <summary>현재 공연에만 제한시간을 더한다. 카드 사용 등 런타임 효과용 API.</summary>
+        public bool ExtendDuration(float seconds)
+        {
+            seconds = Mathf.Max(0f, seconds);
+            if (_ended || seconds <= 0f) return false;
+
+            _runtimeDuration = Mathf.Max(1f, Duration + seconds);
+            RaiseChanged();
+            return true;
+        }
+
         void Update()
         {
             if (config == null || _ended || _pausedManually) return;
@@ -147,5 +158,10 @@ namespace ContextStage
             if (PerformanceTimerSystem.HasInstance)
                 PerformanceTimerSystem.Instance.SetPaused(paused);
         }
+
+        /// <summary>현재 공연의 제한시간을 늘린다. 시스템이 없거나 종료된 뒤면 false.</summary>
+        public static bool ExtendDuration(float seconds) =>
+            PerformanceTimerSystem.HasInstance &&
+            PerformanceTimerSystem.Instance.ExtendDuration(seconds);
     }
 }

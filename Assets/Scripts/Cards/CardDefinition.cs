@@ -21,7 +21,8 @@ namespace ContextStage
     {
         None,
         Draw,
-        Reroll
+        Reroll,
+        ExtendPerformanceTime
     }
 
     /// <summary>
@@ -53,6 +54,7 @@ namespace ContextStage
 
         [Header("유틸리티")]
         [SerializeField, Min(0)] int drawCount = 2;
+        [SerializeField, Min(0f)] float performanceTimeBonusSeconds;
 
         [Header("외형")]
         [SerializeField] Sprite artwork;
@@ -68,6 +70,8 @@ namespace ContextStage
         public AudienceReactionProfile AudienceReaction => audienceReaction;
         public SpecialCardTargetEffect SpecialTargetEffect => specialTargetEffect;
         public int DrawCount => Mathf.Max(0, drawCount);
+        public float PerformanceTimeBonusSeconds =>
+            Mathf.Max(0f, performanceTimeBonusSeconds);
         public Sprite Artwork => artwork;
         public Color CardColor => cardColor;
 

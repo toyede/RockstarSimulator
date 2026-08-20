@@ -79,6 +79,7 @@ namespace ContextStage
         Phase _phase = Phase.Idle;
         float _phaseTimer;
         float _pendingStartAt = -1f;
+        bool _hasStartedThisScene;
 
         CrowdPreference _expectedPref;
         string _blockedHint = "";
@@ -220,6 +221,7 @@ namespace ContextStage
         {
             // 첫 공연 자동 실행
             if (autoRunOnFirstPlay &&
+                !_hasStartedThisScene &&
                 !IsRunning &&
                 e.Previous == GameState.Ready && e.Current == GameState.Playing)
             {
@@ -247,6 +249,7 @@ namespace ContextStage
             }
 
             IsRunning = true;
+            _hasStartedThisScene = true;
             TakeControl();
             EnterIntro();
         }
@@ -316,13 +319,10 @@ namespace ContextStage
 
             if (restartRun && GameManager.HasInstance && GameManager.Instance.IsPlaying)
             {
-                // 튜토리얼 흔적을 지우고 진짜 공연을 깨끗하게 시작한다
-                if (AudienceRosterSystem.HasInstance) AudienceRosterSystem.Instance.ResetRoster();
-                if (ComboSystem.HasInstance) ComboSystem.Instance.ResetCombo();
-                GameManager.Instance.SetScore(0);
-                if (HypeSystem.HasInstance) HypeSystem.Instance.ResetHype();
-                if (PerformanceTimerSystem.HasInstance) PerformanceTimerSystem.Instance.ResetTimer();
-                if (SpecialAudienceManager.HasInstance) SpecialAudienceManager.Instance.StartSystem();
+                // Ready 이벤트에서 덱·관객·콤보 자원·공연 결과 집계를 초기화하고,
+                // Playing 이벤트에서 타이머·호응도·공연 시스템을 새로 시작한다.
+                GameManager.Instance.ResetGame();
+                GameManager.Instance.StartGame();
             }
         }
 

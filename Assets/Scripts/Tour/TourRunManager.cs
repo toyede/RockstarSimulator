@@ -175,7 +175,7 @@ namespace ContextStage
             AugmentCatalog catalog = AugmentCatalog.LoadDefault();
             if (catalog == null ||
                 !catalog.TryGetDefinition(augmentId, out AugmentDefinition definition) ||
-                !definition.TryGetTierData(tier, out _))
+                !definition.TryGetTierData(tier, out AugmentTierData tierData))
             {
                 Debug.LogWarning($"[TourRun] 등록되지 않은 증강입니다: {augmentId}:{tier}", this);
                 return false;
@@ -187,12 +187,51 @@ namespace ContextStage
                 return false;
             }
 
+            CardDefinition grantedCard = null;
+            if (definition.EffectType == AugmentEffectType.GrantCard)
+            {
+                grantedCard = tierData.GrantedCard;
+                CardCatalog cardCatalog = CardCatalog.LoadDefault();
+                string cardCatalogError = string.Empty;
+                if (grantedCard == null ||
+                    cardCatalog == null ||
+                    !cardCatalog.TryValidate(out cardCatalogError) ||
+                    !cardCatalog.TryGetCard(
+                        grantedCard.Id,
+                        out CardDefinition catalogCard))
+                {
+                    Debug.LogWarning(
+                        $"[TourRun] 증강 카드가 올바르게 등록되지 않았습니다: " +
+                        $"{augmentId}:{tier} " +
+                        $"({(grantedCard == null ? "missing tier card" : cardCatalog == null ? CardCatalog.ResourcesPath : cardCatalogError)})",
+                        this);
+                    return false;
+                }
+
+                grantedCard = catalogCard;
+            }
+
             RunNodeState currentNode = run.CurrentNode;
             if (currentNode == null) return false;
 
             if (run.ownedAugments == null)
                 run.ownedAugments = new List<OwnedAugmentState>();
             run.ownedAugments.Add(new OwnedAugmentState(augmentId, tier));
+
+            if (grantedCard != null)
+            {
+                if (run.deck == null) run.deck = new DeckRunState();
+                if (run.deck.addedCards == null)
+                    run.deck.addedCards = new List<RunCardState>();
+
+                run.deck.addedCards.Add(new RunCardState(
+                    $"augment:{augmentId}:{tier}",
+                    grantedCard.Id,
+                    0,
+                    augmentId,
+                    tier));
+            }
+
             currentNode.status = RunNodeStatus.Cleared;
 
             for (int i = 0; i < currentNode.nextNodeIds.Count; i++)
