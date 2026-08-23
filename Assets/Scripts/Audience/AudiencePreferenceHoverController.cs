@@ -23,6 +23,7 @@ namespace ContextStage
         float _hoverElapsed;
         bool _revealed;
         bool _dialogueShown;
+        bool _revealAllPreferences;
         AudienceId _lastDialogueActor;
         int _lastDialogueIndex = -1;
 
@@ -41,7 +42,15 @@ namespace ContextStage
                 dialogueView = gameObject.AddComponent<AudienceHoverDialogueView>();
             dialogueView.Configure(config, worldCamera);
 
-            if (config != null && presenter != null) return;
+            if (config != null && presenter != null)
+            {
+                _revealAllPreferences =
+                    AugmentRuntime.Current.RevealAudiencePreferences;
+                presenter.SetAllPreferencesRevealed(
+                    _revealAllPreferences,
+                    config);
+                return;
+            }
 
             Debug.LogError(
                 "[AudiencePreferenceHover] Config and AudienceRosterPresenter are required.",
@@ -51,6 +60,8 @@ namespace ContextStage
 
         void OnDisable()
         {
+            if (presenter != null)
+                presenter.SetAllPreferencesRevealed(false, config);
             ClearHover();
             if (dialogueView != null) dialogueView.Hide(immediate: true);
         }
@@ -97,10 +108,13 @@ namespace ContextStage
             if (!_revealed && _hoverElapsed >= config.RevealDelay)
             {
                 _revealed = true;
-                _hoveredActor.SetPreferenceReveal(
-                    true,
-                    config.GetColor(_hoveredActor.Snapshot.Preference),
-                    config.OutlineThickness);
+                if (!_revealAllPreferences)
+                {
+                    _hoveredActor.SetPreferenceReveal(
+                        true,
+                        config.GetColor(_hoveredActor.Snapshot.Preference),
+                        config.OutlineThickness);
+                }
             }
 
             if (_dialogueShown || _hoverElapsed < config.DialogueDelay) return;
@@ -145,7 +159,7 @@ namespace ContextStage
 
         void ClearHover()
         {
-            if (_hoveredActor != null)
+            if (_hoveredActor != null && !_revealAllPreferences)
                 _hoveredActor.SetPreferenceReveal(false, default, 0f);
 
             _hoveredActor = null;

@@ -45,19 +45,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AugmentDefinition
   augmentId: fever_duration
-  displayName: FEVER EXTENSION
+  displayName: "\uD53C\uBC84 \uC5F0\uC7A5"
   icon: {fileID: 0}
   effectType: 0
+  tierOwnershipPolicy: 0
   tiers:
   - tier: 0
     enabled: 1
     value: 1
-    description: Fever lasts 1 second longer.
+    description: "\uD53C\uBC84 \uC2DC\uAC04\uC774 1\uCD08 \uC99D\uAC00\uD55C\uB2E4."
+    grantedCard: {fileID: 0}
   - tier: 1
     enabled: 1
     value: 2
-    description: Fever lasts 2 seconds longer.
+    description: "\uD53C\uBC84 \uC2DC\uAC04\uC774 2\uCD08 \uC99D\uAC00\uD55C\uB2E4."
+    grantedCard: {fileID: 0}
   - tier: 2
     enabled: 1
     value: 3
-    description: Fever lasts 3 seconds longer.
+    description: "\uD53C\uBC84 \uC2DC\uAC04\uC774 3\uCD08 \uC99D\uAC00\uD55C\uB2E4."
+    grantedCard: {fileID: 0}

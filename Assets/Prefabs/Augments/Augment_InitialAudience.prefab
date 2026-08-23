@@ -45,19 +45,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AugmentDefinition
   augmentId: initial_audience
-  displayName: EARLY CROWD
+  displayName: "\uC0AC\uC804 \uD64D\uBCF4"
   icon: {fileID: 0}
   effectType: 2
+  tierOwnershipPolicy: 0
   tiers:
   - tier: 0
     enabled: 1
     value: 1
-    description: Start each performance with 1 additional audience member.
+    description: "\uACF5\uC5F0 \uC2DC\uC791 \uC2DC \uC77C\uBC18 \uAD00\uAC1D\uC774
+      1\uBA85 \uCD94\uAC00\uB41C\uB2E4."
+    grantedCard: {fileID: 0}
   - tier: 1
     enabled: 1
     value: 2
-    description: Start each performance with 2 additional audience members.
+    description: "\uACF5\uC5F0 \uC2DC\uC791 \uC2DC \uC77C\uBC18 \uAD00\uAC1D\uC774
+      2\uBA85 \uCD94\uAC00\uB41C\uB2E4."
+    grantedCard: {fileID: 0}
   - tier: 2
     enabled: 1
     value: 3
-    description: Start each performance with 3 additional audience members.
+    description: "\uACF5\uC5F0 \uC2DC\uC791 \uC2DC \uC77C\uBC18 \uAD00\uAC1D\uC774
+      3\uBA85 \uCD94\uAC00\uB41C\uB2E4."
+    grantedCard: {fileID: 0}

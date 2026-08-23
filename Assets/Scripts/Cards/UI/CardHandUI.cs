@@ -13,6 +13,13 @@ namespace ContextStage
         [SerializeField] RectTransform dragLayer;
         [SerializeField] CardInput cardInput;
 
+        [Header("많은 손패 배치")]
+        [SerializeField, Min(1f), Tooltip("겹칠 때도 다음 카드가 드러나는 최소 가로 폭")]
+        float minimumVisibleCardStep = 48f;
+
+        [SerializeField, Min(0f), Tooltip("화면 양쪽에 남겨 둘 여백")]
+        float horizontalScreenMargin = 40f;
+
         [Header("사용 연출")]
         [SerializeField, Tooltip("카드를 사용하면 픽셀 디졸브로 사라지게 한다")]
         bool useDissolveOnPlay = true;
@@ -31,6 +38,9 @@ namespace ContextStage
         /// <summary>디졸브 중이라 손패에서 빠졌지만 아직 풀에 반납하지 않은 카드들.</summary>
         readonly List<CardSlotUI> _dissolvingViews = new List<CardSlotUI>();
         bool _feverActive;
+        HorizontalLayoutGroup _handLayout;
+        float _baseHandSpacing;
+        bool _capturedHandSpacing;
 
         public void Configure(
             Transform container,
@@ -42,6 +52,8 @@ namespace ContextStage
             hintText = hintLabel;
             dragLayer = dragRoot;
             cardInput = input;
+            _capturedHandSpacing = false;
+            ResolveHandLayout();
         }
 
         void OnEnable()
@@ -62,6 +74,7 @@ namespace ContextStage
             EventBus.Unsubscribe<FeverStateChanged>(OnFeverStateChanged);
             ReleaseDissolvingViews();
             ReleaseViews();
+            ResetHandSpacing();
         }
 
         void OnHandChanged(HandChanged _) => Refresh();
@@ -210,7 +223,64 @@ namespace ContextStage
             }
 
             if (parent is RectTransform parentRect)
+            {
+                UpdateAdaptiveSpacing(parentRect);
                 LayoutRebuilder.ForceRebuildLayoutImmediate(parentRect);
+            }
+        }
+
+        void ResolveHandLayout()
+        {
+            Transform container = cardContainer != null ? cardContainer : transform;
+            _handLayout = container.GetComponent<HorizontalLayoutGroup>();
+            if (_handLayout == null) return;
+
+            _baseHandSpacing = _handLayout.spacing;
+            _capturedHandSpacing = true;
+        }
+
+        void UpdateAdaptiveSpacing(RectTransform handRect)
+        {
+            if (!_capturedHandSpacing) ResolveHandLayout();
+            if (_handLayout == null || _activeViews.Count <= 1)
+            {
+                ResetHandSpacing();
+                return;
+            }
+
+            RectTransform availableRect = handRect.parent as RectTransform;
+            if (availableRect == null || availableRect.rect.width <= 0f)
+            {
+                ResetHandSpacing();
+                return;
+            }
+
+            float cardWidth = 160f;
+            RectTransform firstCard = _activeViews[0] == null
+                ? null
+                : _activeViews[0].transform as RectTransform;
+            if (firstCard != null && firstCard.rect.width > 0f)
+                cardWidth = firstCard.rect.width;
+
+            float availableWidth = Mathf.Max(
+                cardWidth,
+                availableRect.rect.width -
+                horizontalScreenMargin * 2f -
+                _handLayout.padding.horizontal);
+            float naturalStep = cardWidth + _baseHandSpacing;
+            float fittedStep =
+                (availableWidth - cardWidth) / (_activeViews.Count - 1);
+            float actualStep = Mathf.Clamp(
+                fittedStep,
+                Mathf.Min(minimumVisibleCardStep, naturalStep),
+                naturalStep);
+            _handLayout.spacing = actualStep - cardWidth;
+        }
+
+        void ResetHandSpacing()
+        {
+            if (_capturedHandSpacing && _handLayout != null)
+                _handLayout.spacing = _baseHandSpacing;
         }
 
         /// <summary>

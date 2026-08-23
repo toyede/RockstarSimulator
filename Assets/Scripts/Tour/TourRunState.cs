@@ -152,5 +152,24 @@ namespace ContextStage
 
             return false;
         }
+
+        public bool HasAugmentDefinition(string definitionId)
+        {
+            if (string.IsNullOrWhiteSpace(definitionId) || ownedAugments == null)
+                return false;
+
+            for (int i = 0; i < ownedAugments.Count; i++)
+            {
+                OwnedAugmentState owned = ownedAugments[i];
+                if (owned != null &&
+                    string.Equals(
+                        owned.definitionId,
+                        definitionId,
+                        StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
+        }
     }
 }

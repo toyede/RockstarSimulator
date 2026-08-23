@@ -16,7 +16,16 @@ namespace ContextStage
         InitialAudienceCount,
         AudienceArrivalIntervalReductionSeconds,
         ComboBreakPreventionCount,
-        GrantCard
+        GrantCard,
+        MinimumHandSizeIncrease,
+        RevealAudiencePreferences,
+        PeriodicIdleDrawSeconds
+    }
+
+    public enum AugmentTierOwnershipPolicy
+    {
+        IndependentTiers,
+        OneTierPerRun
     }
 
     [Serializable]

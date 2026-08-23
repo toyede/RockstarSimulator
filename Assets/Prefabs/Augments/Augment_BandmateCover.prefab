@@ -45,19 +45,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AugmentDefinition
   augmentId: bandmate_cover
-  displayName: BANDMATE COVER
+  displayName: "\uB3D9\uB8CC \uCEE4\uBC84"
   icon: {fileID: 0}
   effectType: 4
+  tierOwnershipPolicy: 0
   tiers:
   - tier: 0
     enabled: 1
     value: 1
-    description: Prevent combo loss 1 time per performance.
+    description: "\uACF5\uC5F0\uB9C8\uB2E4 \uCF64\uBCF4 \uB04A\uAE40\uC744 1\uD68C
+      \uBC29\uC9C0\uD55C\uB2E4."
+    grantedCard: {fileID: 0}
   - tier: 1
     enabled: 1
     value: 2
-    description: Prevent combo loss 2 times per performance.
+    description: "\uACF5\uC5F0\uB9C8\uB2E4 \uCF64\uBCF4 \uB04A\uAE40\uC744 2\uD68C
+      \uBC29\uC9C0\uD55C\uB2E4."
+    grantedCard: {fileID: 0}
   - tier: 2
     enabled: 1
     value: 3
-    description: Prevent combo loss 3 times per performance.
+    description: "\uACF5\uC5F0\uB9C8\uB2E4 \uCF64\uBCF4 \uB04A\uAE40\uC744 3\uD68C
+      \uBC29\uC9C0\uD55C\uB2E4."
+    grantedCard: {fileID: 0}

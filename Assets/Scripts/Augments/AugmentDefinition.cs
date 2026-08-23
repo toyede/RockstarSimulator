@@ -36,12 +36,14 @@ namespace ContextStage
 
         [Header("Effect")]
         [SerializeField] AugmentEffectType effectType;
+        [SerializeField] AugmentTierOwnershipPolicy tierOwnershipPolicy;
         [SerializeField] List<AugmentTierData> tiers = new List<AugmentTierData>();
 
         public string AugmentId => augmentId;
         public string DisplayName => displayName;
         public Sprite Icon => icon;
         public AugmentEffectType EffectType => effectType;
+        public AugmentTierOwnershipPolicy TierOwnershipPolicy => tierOwnershipPolicy;
         public IReadOnlyList<AugmentTierData> Tiers =>
             tiers ?? (IReadOnlyList<AugmentTierData>)Array.Empty<AugmentTierData>();
 

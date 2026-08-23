@@ -167,6 +167,9 @@ namespace ContextStage
             if (profile == null || !profile.AppliesToAudience)
                 return "AUDIENCE DATA MISSING";
 
+            if (profile.ReactionMode == AudienceReactionMode.FixedAllAudience)
+                return $"ALL {profile.FixedReactionValue:+0;-0;0}";
+
             return
                 $"PREF C{profile.ChillScore} " +
                 $"S{profile.SingalongScore} M{profile.MoshScore}  " +

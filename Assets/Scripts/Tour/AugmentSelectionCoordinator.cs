@@ -168,6 +168,10 @@ namespace ContextStage
             {
                 AugmentDefinition definition = definitions[definitionIndex];
                 if (definition == null) continue;
+                if (definition.TierOwnershipPolicy ==
+                        AugmentTierOwnershipPolicy.OneTierPerRun &&
+                    run.HasAugmentDefinition(definition.AugmentId))
+                    continue;
 
                 IReadOnlyList<AugmentTierData> tiers = definition.Tiers;
                 for (int tierIndex = 0; tierIndex < tiers.Count; tierIndex++)

@@ -3,10 +3,20 @@ using UnityEngine;
 
 namespace ContextStage
 {
+    public enum AudienceReactionMode
+    {
+        PreferenceAndEngagement,
+        FixedAllAudience
+    }
+
     [Serializable]
     public sealed class AudienceReactionProfile
     {
         [SerializeField] private bool appliesToAudience = true;
+
+        [Header("계산 방식")]
+        [SerializeField] private AudienceReactionMode reactionMode;
+        [SerializeField] private int fixedReactionValue = 1;
 
         [Header("성향별 값")]
         [SerializeField] private int chillScore = 1;
@@ -46,6 +56,8 @@ namespace ContextStage
         }
 
         public bool AppliesToAudience => appliesToAudience;
+        public AudienceReactionMode ReactionMode => reactionMode;
+        public int FixedReactionValue => fixedReactionValue;
         public int ChillScore => chillScore;
         public int SingalongScore => singalongScore;
         public int MoshScore => moshScore;
@@ -108,6 +120,14 @@ namespace ContextStage
             Value = preferenceScore + stageScore;
         }
 
+        public AudienceReactionResult(AudienceId audienceId, int fixedValue)
+        {
+            AudienceId = audienceId;
+            PreferenceScore = 0;
+            StageScore = 0;
+            Value = fixedValue;
+        }
+
         public AudienceId AudienceId { get; }
         public int PreferenceScore { get; }
         public int StageScore { get; }
@@ -125,6 +145,11 @@ namespace ContextStage
 
             if (!profile.AppliesToAudience)
                 return new AudienceReactionResult(audience.Id, 0, 0);
+
+            if (profile.ReactionMode == AudienceReactionMode.FixedAllAudience)
+                return new AudienceReactionResult(
+                    audience.Id,
+                    profile.FixedReactionValue);
 
             return new AudienceReactionResult(
                 audience.Id,

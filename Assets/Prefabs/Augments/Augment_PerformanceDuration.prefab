@@ -45,9 +45,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AugmentDefinition
   augmentId: performance_duration
-  displayName: ENCORE TIME
+  displayName: "\uC559\uCF54\uB974"
   icon: {fileID: 0}
   effectType: 5
+  tierOwnershipPolicy: 0
   tiers:
   - tier: 0
     enabled: 1

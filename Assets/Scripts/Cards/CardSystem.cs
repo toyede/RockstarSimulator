@@ -11,6 +11,8 @@ namespace ContextStage
     /// </summary>
     public sealed class CardSystem : MonoSingleton<CardSystem>
     {
+        const int MaximumSupportedHandSize = 4;
+
         [SerializeField] CardDeckConfig config;
         [SerializeField] AudienceRosterSystem audienceRoster;
 
@@ -21,6 +23,7 @@ namespace ContextStage
         readonly List<CardDefinition> _runAddedCards =
             new List<CardDefinition>();
         PreparedDeck<CardDefinition> _deck;
+        int _minimumHandSize;
 
         bool _selecting;
         bool _warnedInvalidPool;
@@ -30,7 +33,7 @@ namespace ContextStage
         public CardDeckConfig Config => config;
         public IReadOnlyList<CardDefinition> Hand => _hand;
         public int HandCount => _hand.Count;
-        public int MinimumHandSize => config != null ? config.MinimumHandSize : 0;
+        public int MinimumHandSize => _minimumHandSize;
         public int BonusCardCount => Mathf.Max(0, HandCount - MinimumHandSize);
         public int PreparedDeckCount => _deck != null ? _deck.PreparedBatchCount : 0;
         public int CurrentDeckRemaining => _deck != null ? _deck.CurrentRemaining : 0;
@@ -45,6 +48,8 @@ namespace ContextStage
             // 런타임에 한 번만 만들고 모든 카드 사용에서 재사용한다.
             if (GetComponent<CardImpactVFX>() == null)
                 gameObject.AddComponent<CardImpactVFX>();
+            if (GetComponent<BreathingRoomSystem>() == null)
+                gameObject.AddComponent<BreathingRoomSystem>();
 
             if (audienceRoster == null)
             {
@@ -78,6 +83,7 @@ namespace ContextStage
         /// <summary>새 공연용 현재 덱과 대기 덱을 만들고 기본 손패를 준비한다.</summary>
         public void StartRun()
         {
+            _minimumHandSize = ResolveMinimumHandSize();
             _deck = null;
             _hand.Clear();
             _runAddedCards.Clear();
@@ -103,6 +109,16 @@ namespace ContextStage
             _deck.Reset();
             RefillToMinimumHand();
             RaiseHandChanged();
+        }
+
+        int ResolveMinimumHandSize()
+        {
+            if (config == null) return 0;
+
+            return Mathf.Clamp(
+                config.MinimumHandSize + AugmentRuntime.Current.MinimumHandSizeBonus,
+                1,
+                MaximumSupportedHandSize);
         }
 
         /// <summary>손패를 지정한 카드로 강제 교체한다. 덱은 건드리지 않는다. (튜토리얼 등 고정 손패용)</summary>

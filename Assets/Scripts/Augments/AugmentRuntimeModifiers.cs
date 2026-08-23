@@ -9,7 +9,10 @@ namespace ContextStage
             float feverDurationBonus,
             int initialAudienceBonus,
             float audienceArrivalIntervalReduction,
-            int comboBreakPreventionCount)
+            int comboBreakPreventionCount,
+            int minimumHandSizeBonus,
+            bool revealAudiencePreferences,
+            float periodicIdleDrawIntervalSeconds)
         {
             FeverDurationBonus = Mathf.Max(0f, feverDurationBonus);
             InitialAudienceBonus = Mathf.Max(0, initialAudienceBonus);
@@ -17,12 +20,20 @@ namespace ContextStage
                 0f,
                 audienceArrivalIntervalReduction);
             ComboBreakPreventionCount = Mathf.Max(0, comboBreakPreventionCount);
+            MinimumHandSizeBonus = Mathf.Max(0, minimumHandSizeBonus);
+            RevealAudiencePreferences = revealAudiencePreferences;
+            PeriodicIdleDrawIntervalSeconds = Mathf.Max(
+                0f,
+                periodicIdleDrawIntervalSeconds);
         }
 
         public float FeverDurationBonus { get; }
         public int InitialAudienceBonus { get; }
         public float AudienceArrivalIntervalReduction { get; }
         public int ComboBreakPreventionCount { get; }
+        public int MinimumHandSizeBonus { get; }
+        public bool RevealAudiencePreferences { get; }
+        public float PeriodicIdleDrawIntervalSeconds { get; }
     }
 
     /// <summary>
@@ -53,6 +64,9 @@ namespace ContextStage
             int initialAudience = 0;
             float audienceArrivalIntervalReduction = 0f;
             int comboBreakPreventionCount = 0;
+            int minimumHandSizeBonus = 0;
+            bool revealAudiencePreferences = false;
+            float periodicIdleDrawIntervalSeconds = 0f;
             var applied = new HashSet<AugmentKey>();
 
             for (int i = 0; i < run.ownedAugments.Count; i++)
@@ -80,6 +94,21 @@ namespace ContextStage
                     case AugmentEffectType.ComboBreakPreventionCount:
                         comboBreakPreventionCount += Mathf.RoundToInt(tierData.Value);
                         break;
+                    case AugmentEffectType.MinimumHandSizeIncrease:
+                        minimumHandSizeBonus += Mathf.RoundToInt(tierData.Value);
+                        break;
+                    case AugmentEffectType.RevealAudiencePreferences:
+                        revealAudiencePreferences |= tierData.Value > 0f;
+                        break;
+                    case AugmentEffectType.PeriodicIdleDrawSeconds:
+                        if (tierData.Value > 0f &&
+                            (periodicIdleDrawIntervalSeconds <= 0f ||
+                             tierData.Value < periodicIdleDrawIntervalSeconds))
+                        {
+                            // OneTierPerRun 데이터가 잘못 중복돼도 가장 강한(짧은) 주기만 쓴다.
+                            periodicIdleDrawIntervalSeconds = tierData.Value;
+                        }
+                        break;
                 }
             }
 
@@ -87,7 +116,10 @@ namespace ContextStage
                 feverDuration,
                 initialAudience,
                 audienceArrivalIntervalReduction,
-                comboBreakPreventionCount);
+                comboBreakPreventionCount,
+                minimumHandSizeBonus,
+                revealAudiencePreferences,
+                periodicIdleDrawIntervalSeconds);
         }
     }
 }

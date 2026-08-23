@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3688214348457695869
+--- !u!1 &4645655039100414504
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,22 +8,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 9038222905434317655}
-  - component: {fileID: 4974276034794587484}
+  - component: {fileID: 3942930726037907803}
+  - component: {fileID: 6232682952676017362}
   m_Layer: 0
-  m_Name: Augment_AudiencePromotion
+  m_Name: Augment_StageControl
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &9038222905434317655
+--- !u!4 &3942930726037907803
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3688214348457695869}
+  m_GameObject: {fileID: 4645655039100414504}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -32,39 +32,39 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4974276034794587484
+--- !u!114 &6232682952676017362
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3688214348457695869}
+  m_GameObject: {fileID: 4645655039100414504}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5898dee52167dc744bac1ddb23159f8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AugmentDefinition
-  augmentId: audience_promotion
-  displayName: "\uACF5\uC5F0 \uD64D\uBCF4"
+  augmentId: stage_control
+  displayName: "\uBB34\uB300 \uC7A5\uC545"
   icon: {fileID: 0}
-  effectType: 3
+  effectType: 5
   tierOwnershipPolicy: 0
   tiers:
   - tier: 0
     enabled: 1
-    value: 0.5
-    description: "\uC77C\uBC18 \uAD00\uAC1D\uC758 \uC790\uC5F0 \uC720\uC785 \uC8FC\uAE30\uAC00
-      0.5\uCD08 \uC9E7\uC544\uC9C4\uB2E4."
-    grantedCard: {fileID: 0}
+    value: 0
+    description: "\uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C \uACE0\uC815 +10 \uD638\uC751\uC744
+      \uC801\uC6A9\uD55C\uB2E4."
+    grantedCard: {fileID: 236553137938645503, guid: 54d81209681d98e4995013fee31aa20e, type: 3}
   - tier: 1
     enabled: 1
-    value: 1
-    description: "\uC77C\uBC18 \uAD00\uAC1D\uC758 \uC790\uC5F0 \uC720\uC785 \uC8FC\uAE30\uAC00
-      1\uCD08 \uC9E7\uC544\uC9C4\uB2E4."
-    grantedCard: {fileID: 0}
+    value: 0
+    description: "\uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C \uACE0\uC815 +20 \uD638\uC751\uC744
+      \uC801\uC6A9\uD55C\uB2E4."
+    grantedCard: {fileID: 536865612095869564, guid: 446ec7a1137d4c641940498dedba8795, type: 3}
   - tier: 2
     enabled: 1
-    value: 1.5
-    description: "\uC77C\uBC18 \uAD00\uAC1D\uC758 \uC790\uC5F0 \uC720\uC785 \uC8FC\uAE30\uAC00
-      1.5\uCD08 \uC9E7\uC544\uC9C4\uB2E4."
-    grantedCard: {fileID: 0}
+    value: 0
+    description: "\uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C \uACE0\uC815 +30 \uD638\uC751\uC744
+      \uC801\uC6A9\uD55C\uB2E4."
+    grantedCard: {fileID: 4327399814536729102, guid: 889f5135f4250a84fad9e842a4f14d1e, type: 3}

@@ -29,10 +29,27 @@ namespace ContextStage
 
         bool _started;
         bool _deferRelayout;
+        bool _revealAllPreferences;
+        AudiencePreferenceHoverConfig _preferenceRevealConfig;
 
         public AudienceMemberActor MemberPrefab => memberPrefab;
         public Transform MemberRoot => memberRoot;
         public int VisibleCount => _actors.Count;
+
+        /// <summary>
+        /// 모든 현재/신규 일반 관객의 취향 테두리를 상시 표시한다.
+        /// 실제 호버 여부와 말풍선은 AudiencePreferenceHoverController가 별도로 관리한다.
+        /// </summary>
+        public void SetAllPreferencesRevealed(
+            bool revealed,
+            AudiencePreferenceHoverConfig revealConfig)
+        {
+            _revealAllPreferences = revealed && revealConfig != null;
+            _preferenceRevealConfig = _revealAllPreferences ? revealConfig : null;
+
+            foreach (AudienceMemberActor actor in _actors.Values)
+                ApplyPersistentPreferenceReveal(actor);
+        }
 
         /// <summary>[튜토리얼용 조회] 특정 관객의 화면 액터를 돌려준다. 없으면 false.</summary>
         public bool TryGetActor(AudienceId id, out AudienceMemberActor actor)
@@ -137,6 +154,8 @@ namespace ContextStage
                 OnCrisisDepartureEnded);
             ReleaseAllImmediate();
             _deferRelayout = false;
+            _revealAllPreferences = false;
+            _preferenceRevealConfig = null;
             _started = false;
         }
 
@@ -162,7 +181,10 @@ namespace ContextStage
         void OnAudienceStateChanged(AudienceStateChanged e)
         {
             if (_actors.TryGetValue(e.Current.Id, out AudienceMemberActor actor))
+            {
                 actor.ApplySnapshot(e.Current);
+                ApplyPersistentPreferenceReveal(actor);
+            }
         }
 
         void OnAudienceCardReacted(AudienceCardReacted e)
@@ -323,8 +345,25 @@ namespace ContextStage
             actor.Bind(
                 audience,
                 AudienceRosterSystem.Instance.EngagementConfig.CalmUpperBound);
+            ApplyPersistentPreferenceReveal(actor);
             _actors.Add(audience.Id, actor);
             _order.Add(audience.Id);
+        }
+
+        void ApplyPersistentPreferenceReveal(AudienceMemberActor actor)
+        {
+            if (actor == null) return;
+
+            if (!_revealAllPreferences || _preferenceRevealConfig == null)
+            {
+                actor.SetPreferenceReveal(false, default, 0f);
+                return;
+            }
+
+            actor.SetPreferenceReveal(
+                true,
+                _preferenceRevealConfig.GetColor(actor.Snapshot.Preference),
+                _preferenceRevealConfig.OutlineThickness);
         }
 
         void Relayout()

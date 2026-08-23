@@ -187,6 +187,17 @@ namespace ContextStage
                 return false;
             }
 
+            if (definition.TierOwnershipPolicy ==
+                    AugmentTierOwnershipPolicy.OneTierPerRun &&
+                run.HasAugmentDefinition(augmentId))
+            {
+                Debug.LogWarning(
+                    $"[TourRun] 다른 티어를 이미 보유해 함께 획득할 수 없는 증강입니다: " +
+                    $"{augmentId}:{tier}",
+                    this);
+                return false;
+            }
+
             CardDefinition grantedCard = null;
             if (definition.EffectType == AugmentEffectType.GrantCard)
             {

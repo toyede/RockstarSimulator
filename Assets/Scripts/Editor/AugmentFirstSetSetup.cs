@@ -18,6 +18,8 @@ namespace ContextStageEditor
         const string CardDeckConfigPath = "Assets/Settings/Cards/CardDeckConfig.asset";
         const string CardBasePrefabPath = CardPrefabFolder + "/Card_Base.prefab";
         const string EncoreBasePrefabPath = CardPrefabFolder + "/Card_EncoreBase.prefab";
+        const string StageControlBasePrefabPath =
+            CardPrefabFolder + "/Card_StageControlBase.prefab";
 
         [MenuItem("Tools/Tour/Setup First Augments", false, 20)]
         public static void Setup()
@@ -28,48 +30,101 @@ namespace ContextStageEditor
             EnsureFolder(CardResourceFolder);
 
             CardDefinition[] encoreCards = CreateEncoreCards();
+            CardDefinition[] stageControlCards = CreateStageControlCards();
 
             AugmentDefinition fever = CreateDefinitionIfMissing(
                 "Augment_FeverDuration",
                 "fever_duration",
-                "FEVER EXTENSION",
+                "피버 연장",
                 AugmentEffectType.FeverDurationSeconds,
                 new[] { 1f, 2f, 3f },
-                value => $"Fever lasts {value:0} second{(Mathf.Approximately(value, 1f) ? string.Empty : "s")} longer.");
+                value => $"피버 시간이 {value:0}초 증가한다.");
 
             AugmentDefinition performanceTime = CreateDefinitionIfMissing(
                 "Augment_PerformanceDuration",
                 "performance_duration",
-                "ENCORE TIME",
+                "앙코르",
                 AugmentEffectType.GrantCard,
                 new[] { 0f, 0f, 0f },
-                _ => "Adds an Encore card to every generated deck batch.");
+                _ => "매 덱 묶음에 공연 시간을 연장하는 앙코르 카드를 추가한다.");
 
-            ConfigureGrantedCardAugment(performanceTime, encoreCards);
+            ConfigureGrantedCardAugment(performanceTime, encoreCards, "앙코르");
 
             AugmentDefinition initialAudience = CreateDefinitionIfMissing(
                 "Augment_InitialAudience",
                 "initial_audience",
-                "EARLY CROWD",
+                "사전 홍보",
                 AugmentEffectType.InitialAudienceCount,
                 new[] { 1f, 2f, 3f },
-                value => $"Start each performance with {value:0} additional audience member{(Mathf.Approximately(value, 1f) ? string.Empty : "s")}.");
+                value => $"공연 시작 시 일반 관객이 {value:0}명 추가된다.");
 
             AugmentDefinition audiencePromotion = CreateDefinitionIfMissing(
                 "Augment_AudiencePromotion",
                 "audience_promotion",
-                "SHOW PROMOTION",
+                "공연 홍보",
                 AugmentEffectType.AudienceArrivalIntervalReductionSeconds,
                 new[] { 0.5f, 1f, 1.5f },
-                value => $"Natural audience arrival checks happen {value:0.#} seconds sooner.");
+                value => $"일반 관객의 자연 유입 주기가 {value:0.#}초 짧아진다.");
 
             AugmentDefinition bandmateCover = CreateDefinitionIfMissing(
                 "Augment_BandmateCover",
                 "bandmate_cover",
-                "BANDMATE COVER",
+                "동료 커버",
                 AugmentEffectType.ComboBreakPreventionCount,
                 new[] { 1f, 2f, 3f },
-                value => $"Prevent combo loss {value:0} time{(Mathf.Approximately(value, 1f) ? string.Empty : "s")} per performance.");
+                value => $"공연마다 콤보 끊김을 {value:0}회 방지한다.");
+
+            AugmentDefinition extraHand = CreateDefinitionIfMissing(
+                "Augment_ExtraHand",
+                "extra_hand",
+                "한 장의 여유",
+                AugmentEffectType.MinimumHandSizeIncrease,
+                new[] { 0f, 0f, 1f },
+                _ => "기본 손패가 3장에서 4장으로 증가한다.");
+            ConfigureGoldOnlyAugment(
+                extraHand,
+                1f,
+                "기본 손패가 3장에서 4장으로 증가한다.");
+
+            AugmentDefinition preferenceInsight = CreateDefinitionIfMissing(
+                "Augment_PreferenceInsight",
+                "preference_insight",
+                "취향 간파",
+                AugmentEffectType.RevealAudiencePreferences,
+                new[] { 0f, 0f, 1f },
+                _ => "모든 일반 관객의 취향 테두리가 항상 표시된다.");
+            ConfigureGoldOnlyAugment(
+                preferenceInsight,
+                1f,
+                "모든 일반 관객의 취향 테두리가 항상 표시된다.");
+
+            AugmentDefinition stageControl = CreateDefinitionIfMissing(
+                "Augment_StageControl",
+                "stage_control",
+                "무대 장악",
+                AugmentEffectType.GrantCard,
+                new[] { 0f, 0f, 0f },
+                _ => "매 덱 묶음에 무대 장악 카드를 추가한다.");
+            ConfigureGrantedCardAugment(
+                stageControl,
+                stageControlCards,
+                "무대 장악");
+            ConfigureOwnershipPolicy(
+                stageControl,
+                AugmentTierOwnershipPolicy.IndependentTiers);
+
+            AugmentDefinition breathingRoom = CreateDefinitionIfMissing(
+                "Augment_BreathingRoom",
+                "breathing_room",
+                "숨 고르기",
+                AugmentEffectType.PeriodicIdleDrawSeconds,
+                new[] { 5f, 4f, 3f },
+                value =>
+                    $"카드를 {value:0}초 동안 사용하지 않으면 카드 1장을 뽑는다. " +
+                    "계속 사용하지 않으면 같은 주기로 반복한다.");
+            ConfigureOwnershipPolicy(
+                breathingRoom,
+                AugmentTierOwnershipPolicy.OneTierPerRun);
 
             CreateOrUpdateCatalog(new[]
             {
@@ -77,9 +132,16 @@ namespace ContextStageEditor
                 performanceTime,
                 initialAudience,
                 audiencePromotion,
-                bandmateCover
+                bandmateCover,
+                extraHand,
+                preferenceInsight,
+                stageControl,
+                breathingRoom
             });
-            CreateOrUpdateCardCatalog(encoreCards);
+            var augmentCards = new List<CardDefinition>(6);
+            augmentCards.AddRange(encoreCards);
+            augmentCards.AddRange(stageControlCards);
+            CreateOrUpdateCardCatalog(augmentCards);
 
             // 티어 확률은 아직 미확정이므로 첫 검증 버전에서는 모두 같은 가중치로 둔다.
             CreateRewardTableIfMissing("reward_basic", 1f, 1f, 1f, 1);
@@ -87,7 +149,9 @@ namespace ContextStageEditor
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("[AugmentFirstSetSetup] 증강 5종과 앙코르 카드 3종, 런 덱 카탈로그 구성을 완료했습니다.");
+            Debug.Log(
+                "[AugmentFirstSetSetup] 증강 9종과 지급 카드 6종, " +
+                "런 덱 카탈로그 구성을 완료했습니다.");
         }
 
         static CardDefinition[] CreateEncoreCards()
@@ -219,14 +283,161 @@ namespace ContextStageEditor
             }
         }
 
+        static CardDefinition[] CreateStageControlCards()
+        {
+            GameObject basePrefab =
+                AssetDatabase.LoadAssetAtPath<GameObject>(CardBasePrefabPath);
+            if (basePrefab == null)
+            {
+                Debug.LogError(
+                    $"[AugmentFirstSetSetup] 카드 베이스 프리팹이 없습니다: " +
+                    CardBasePrefabPath);
+                return new CardDefinition[3];
+            }
+
+            CardDefinition placeholderCard = LoadCardDefinition("Card_05_GuitarSolo");
+            Sprite placeholderArtwork =
+                placeholderCard == null ? null : placeholderCard.Artwork;
+            CardDefinition stageControlBase = CreateStageControlBaseIfMissing(
+                basePrefab,
+                placeholderArtwork);
+            if (stageControlBase == null) return new CardDefinition[3];
+
+            return new[]
+            {
+                CreateStageControlTierIfMissing(
+                    stageControlBase.gameObject,
+                    "Card_StageControl_Bronze",
+                    "stage_control_bronze",
+                    "무대 장악 · 브론즈",
+                    10,
+                    new Color32(0xCD, 0x7F, 0x32, 0xFF)),
+                CreateStageControlTierIfMissing(
+                    stageControlBase.gameObject,
+                    "Card_StageControl_Silver",
+                    "stage_control_silver",
+                    "무대 장악 · 실버",
+                    20,
+                    new Color32(0xC0, 0xC0, 0xC0, 0xFF)),
+                CreateStageControlTierIfMissing(
+                    stageControlBase.gameObject,
+                    "Card_StageControl_Gold",
+                    "stage_control_gold",
+                    "무대 장악 · 골드",
+                    30,
+                    new Color32(0xFF, 0xD7, 0x00, 0xFF))
+            };
+        }
+
+        static CardDefinition CreateStageControlBaseIfMissing(
+            GameObject cardBasePrefab,
+            Sprite placeholderArtwork)
+        {
+            GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(
+                StageControlBasePrefabPath);
+            if (existing != null) return existing.GetComponent<CardDefinition>();
+
+            GameObject instance =
+                PrefabUtility.InstantiatePrefab(cardBasePrefab) as GameObject;
+            if (instance == null) return null;
+
+            try
+            {
+                instance.name = "Card_StageControlBase";
+                CardDefinition card = instance.GetComponent<CardDefinition>();
+                var serialized = new SerializedObject(card);
+                serialized.FindProperty("id").stringValue = "stage_control_base";
+                serialized.FindProperty("displayName").stringValue = "무대 장악";
+                serialized.FindProperty("description").stringValue =
+                    "모든 관객에게 동일한 고정 호응을 적용한다.";
+                serialized.FindProperty("role").enumValueIndex = (int)CardRole.Normal;
+                serialized.FindProperty("targetStage").enumValueIndex =
+                    (int)HeatStage.Mosh;
+                serialized.FindProperty("targetPreference").enumValueIndex =
+                    (int)CrowdPreference.Mosh;
+                serialized.FindProperty("utilityEffect").enumValueIndex =
+                    (int)UtilityCardEffect.None;
+                serialized.FindProperty("drawCount").intValue = 0;
+                serialized.FindProperty("performanceTimeBonusSeconds").floatValue = 0f;
+                serialized.FindProperty("artwork").objectReferenceValue =
+                    placeholderArtwork;
+
+                SerializedProperty reaction =
+                    serialized.FindProperty("audienceReaction");
+                reaction.FindPropertyRelative("appliesToAudience").boolValue = true;
+                reaction.FindPropertyRelative("reactionMode").enumValueIndex =
+                    (int)AudienceReactionMode.FixedAllAudience;
+                reaction.FindPropertyRelative("fixedReactionValue").intValue = 0;
+                reaction.FindPropertyRelative("chillScore").intValue = 0;
+                reaction.FindPropertyRelative("singalongScore").intValue = 0;
+                reaction.FindPropertyRelative("moshScore").intValue = 0;
+                reaction.FindPropertyRelative("calmScore").intValue = 0;
+                reaction.FindPropertyRelative("middleScore").intValue = 0;
+                reaction.FindPropertyRelative("excitedScore").intValue = 0;
+                reaction.FindPropertyRelative("engagementMultiplier").floatValue = 1f;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+
+                GameObject saved = PrefabUtility.SaveAsPrefabAsset(
+                    instance,
+                    StageControlBasePrefabPath);
+                return saved == null ? null : saved.GetComponent<CardDefinition>();
+            }
+            finally
+            {
+                Object.DestroyImmediate(instance);
+            }
+        }
+
+        static CardDefinition CreateStageControlTierIfMissing(
+            GameObject stageControlBasePrefab,
+            string fileName,
+            string cardId,
+            string displayName,
+            int fixedReactionValue,
+            Color color)
+        {
+            string path = $"{CardPrefabFolder}/{fileName}.prefab";
+            GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (existing != null) return existing.GetComponent<CardDefinition>();
+
+            GameObject instance =
+                PrefabUtility.InstantiatePrefab(stageControlBasePrefab) as GameObject;
+            if (instance == null) return null;
+
+            try
+            {
+                instance.name = fileName;
+                CardDefinition card = instance.GetComponent<CardDefinition>();
+                var serialized = new SerializedObject(card);
+                serialized.FindProperty("id").stringValue = cardId;
+                serialized.FindProperty("displayName").stringValue = displayName;
+                serialized.FindProperty("description").stringValue =
+                    $"모든 관객에게 고정 +{fixedReactionValue} 호응을 적용한다.";
+                serialized.FindProperty("audienceReaction")
+                    .FindPropertyRelative("fixedReactionValue")
+                    .intValue = fixedReactionValue;
+                serialized.FindProperty("cardColor").colorValue = color;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+
+                GameObject saved = PrefabUtility.SaveAsPrefabAsset(instance, path);
+                return saved == null ? null : saved.GetComponent<CardDefinition>();
+            }
+            finally
+            {
+                Object.DestroyImmediate(instance);
+            }
+        }
+
         static void ConfigureGrantedCardAugment(
             AugmentDefinition definition,
-            IReadOnlyList<CardDefinition> cards)
+            IReadOnlyList<CardDefinition> cards,
+            string cardSetName)
         {
             if (definition == null || cards == null || cards.Count != 3)
             {
                 Debug.LogError(
-                    "[AugmentFirstSetSetup] 공연 시간 증강을 카드 지급형으로 바꿀 수 없습니다.");
+                    $"[AugmentFirstSetSetup] {cardSetName} 증강을 카드 지급형으로 " +
+                    "구성할 수 없습니다.");
                 return;
             }
 
@@ -240,7 +451,8 @@ namespace ContextStageEditor
                 if (cards[i] == null)
                 {
                     Debug.LogError(
-                        $"[AugmentFirstSetSetup] 앙코르 {((AugmentTier)i)} 카드가 없습니다.");
+                        $"[AugmentFirstSetSetup] {cardSetName} {((AugmentTier)i)} " +
+                        "카드가 없습니다.");
                     continue;
                 }
 
@@ -252,6 +464,48 @@ namespace ContextStageEditor
                     cards[i].Description;
                 tier.FindPropertyRelative("grantedCard").objectReferenceValue =
                     cards[i];
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(definition);
+            PrefabUtility.SavePrefabAsset(definition.gameObject);
+        }
+
+        static void ConfigureOwnershipPolicy(
+            AugmentDefinition definition,
+            AugmentTierOwnershipPolicy policy)
+        {
+            if (definition == null) return;
+
+            var serialized = new SerializedObject(definition);
+            serialized.FindProperty("tierOwnershipPolicy").enumValueIndex =
+                (int)policy;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(definition);
+            PrefabUtility.SavePrefabAsset(definition.gameObject);
+        }
+
+        static void ConfigureGoldOnlyAugment(
+            AugmentDefinition definition,
+            float goldValue,
+            string goldDescription)
+        {
+            if (definition == null) return;
+
+            var serialized = new SerializedObject(definition);
+            SerializedProperty tiers = serialized.FindProperty("tiers");
+            tiers.arraySize = 3;
+            for (int i = 0; i < tiers.arraySize; i++)
+            {
+                bool isGold = i == (int)AugmentTier.Gold;
+                SerializedProperty tier = tiers.GetArrayElementAtIndex(i);
+                tier.FindPropertyRelative("tier").enumValueIndex = i;
+                tier.FindPropertyRelative("enabled").boolValue = isGold;
+                tier.FindPropertyRelative("value").floatValue =
+                    isGold ? goldValue : 0f;
+                tier.FindPropertyRelative("description").stringValue =
+                    isGold ? goldDescription : string.Empty;
+                tier.FindPropertyRelative("grantedCard").objectReferenceValue = null;
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -333,30 +587,31 @@ namespace ContextStageEditor
             string path = $"{PrefabFolder}/{assetName}.prefab";
             GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             if (existing != null)
-                return existing.GetComponent<AugmentDefinition>();
+            {
+                AugmentDefinition existingDefinition =
+                    existing.GetComponent<AugmentDefinition>();
+                ConfigureDefinition(
+                    existingDefinition,
+                    augmentId,
+                    displayName,
+                    effectType,
+                    values,
+                    createDescription);
+                PrefabUtility.SavePrefabAsset(existing);
+                return existingDefinition;
+            }
 
             var root = new GameObject(assetName);
             try
             {
                 AugmentDefinition definition = root.AddComponent<AugmentDefinition>();
-                var serialized = new SerializedObject(definition);
-                serialized.FindProperty("augmentId").stringValue = augmentId;
-                serialized.FindProperty("displayName").stringValue = displayName;
-                serialized.FindProperty("effectType").enumValueIndex = (int)effectType;
-
-                SerializedProperty tiers = serialized.FindProperty("tiers");
-                tiers.arraySize = 3;
-                for (int i = 0; i < tiers.arraySize; i++)
-                {
-                    SerializedProperty tier = tiers.GetArrayElementAtIndex(i);
-                    tier.FindPropertyRelative("tier").enumValueIndex = i;
-                    tier.FindPropertyRelative("enabled").boolValue = true;
-                    tier.FindPropertyRelative("value").floatValue = values[i];
-                    tier.FindPropertyRelative("description").stringValue =
-                        createDescription(values[i]);
-                }
-
-                serialized.ApplyModifiedPropertiesWithoutUndo();
+                ConfigureDefinition(
+                    definition,
+                    augmentId,
+                    displayName,
+                    effectType,
+                    values,
+                    createDescription);
                 PrefabUtility.SaveAsPrefabAsset(root, path);
             }
             finally
@@ -366,6 +621,45 @@ namespace ContextStageEditor
 
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             return prefab == null ? null : prefab.GetComponent<AugmentDefinition>();
+        }
+
+        static void ConfigureDefinition(
+            AugmentDefinition definition,
+            string augmentId,
+            string displayName,
+            AugmentEffectType effectType,
+            IReadOnlyList<float> values,
+            System.Func<float, string> createDescription)
+        {
+            if (definition == null || values == null || values.Count != 3)
+            {
+                Debug.LogError(
+                    $"[AugmentFirstSetSetup] 증강 기본 데이터를 구성할 수 없습니다: " +
+                    augmentId);
+                return;
+            }
+
+            var serialized = new SerializedObject(definition);
+            serialized.FindProperty("augmentId").stringValue = augmentId;
+            serialized.FindProperty("displayName").stringValue = displayName;
+            serialized.FindProperty("effectType").enumValueIndex = (int)effectType;
+            serialized.FindProperty("tierOwnershipPolicy").enumValueIndex =
+                (int)AugmentTierOwnershipPolicy.IndependentTiers;
+
+            SerializedProperty tiers = serialized.FindProperty("tiers");
+            tiers.arraySize = 3;
+            for (int i = 0; i < tiers.arraySize; i++)
+            {
+                SerializedProperty tier = tiers.GetArrayElementAtIndex(i);
+                tier.FindPropertyRelative("tier").enumValueIndex = i;
+                tier.FindPropertyRelative("enabled").boolValue = true;
+                tier.FindPropertyRelative("value").floatValue = values[i];
+                tier.FindPropertyRelative("description").stringValue =
+                    createDescription(values[i]);
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(definition);
         }
 
         static void CreateOrUpdateCatalog(IReadOnlyList<AugmentDefinition> definitions)
