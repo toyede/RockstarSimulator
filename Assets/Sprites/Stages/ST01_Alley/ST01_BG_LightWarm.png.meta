@@ -1,0 +1,1170 @@
+fileFormatVersion: 2
+guid: ebb25ef75ab781447bef4b2b4bacddf9
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8874017081104550904
+    second: ST01_BG_LightWarm_0
+  - first:
+      213: -7715917751958914160
+    second: ST01_BG_LightWarm_1
+  - first:
+      213: 1370123964691082783
+    second: ST01_BG_LightWarm_2
+  - first:
+      213: -852898711272317345
+    second: ST01_BG_LightWarm_3
+  - first:
+      213: -117460061317315826
+    second: ST01_BG_LightWarm_4
+  - first:
+      213: 422525455355280847
+    second: ST01_BG_LightWarm_5
+  - first:
+      213: -7732521773209700755
+    second: ST01_BG_LightWarm_6
+  - first:
+      213: 1938316337164630686
+    second: ST01_BG_LightWarm_7
+  - first:
+      213: 4684990004452398963
+    second: ST01_BG_LightWarm_8
+  - first:
+      213: 5514977297466251703
+    second: ST01_BG_LightWarm_9
+  - first:
+      213: 7799757787504723178
+    second: ST01_BG_LightWarm_10
+  - first:
+      213: 5520680524266636576
+    second: ST01_BG_LightWarm_11
+  - first:
+      213: 1202650039800068411
+    second: ST01_BG_LightWarm_12
+  - first:
+      213: 3581654398085691677
+    second: ST01_BG_LightWarm_13
+  - first:
+      213: -7238599080253441541
+    second: ST01_BG_LightWarm_14
+  - first:
+      213: 81434540741352119
+    second: ST01_BG_LightWarm_15
+  - first:
+      213: 8681770543582413976
+    second: ST01_BG_LightWarm_16
+  - first:
+      213: -1857751616160850659
+    second: ST01_BG_LightWarm_17
+  - first:
+      213: 6821914397247776666
+    second: ST01_BG_LightWarm_18
+  - first:
+      213: 6350688092301550911
+    second: ST01_BG_LightWarm_19
+  - first:
+      213: -2174276094460890455
+    second: ST01_BG_LightWarm_20
+  - first:
+      213: 6091739263872007512
+    second: ST01_BG_LightWarm_21
+  - first:
+      213: 3923056189152934
+    second: ST01_BG_LightWarm_22
+  - first:
+      213: -7626466119067340391
+    second: ST01_BG_LightWarm_23
+  - first:
+      213: -2389788932764218493
+    second: ST01_BG_LightWarm_24
+  - first:
+      213: -3917921897733414453
+    second: ST01_BG_LightWarm_25
+  - first:
+      213: 3551206024193817600
+    second: ST01_BG_LightWarm_26
+  - first:
+      213: 6194825932809831595
+    second: ST01_BG_LightWarm_27
+  - first:
+      213: 6566053278664714473
+    second: ST01_BG_LightWarm_28
+  - first:
+      213: 4213643261326044617
+    second: ST01_BG_LightWarm_29
+  - first:
+      213: -5556434519199267964
+    second: ST01_BG_LightWarm_30
+  - first:
+      213: -1994032612852096582
+    second: ST01_BG_LightWarm_31
+  - first:
+      213: 5309873495719326602
+    second: ST01_BG_LightWarm_32
+  - first:
+      213: -1452829583196919094
+    second: ST01_BG_LightWarm_33
+  - first:
+      213: -7659417751972370548
+    second: ST01_BG_LightWarm_34
+  - first:
+      213: -7497081062905771518
+    second: ST01_BG_LightWarm_35
+  - first:
+      213: 1949618615454640670
+    second: ST01_BG_LightWarm_36
+  - first:
+      213: -6324245054079121543
+    second: ST01_BG_LightWarm_37
+  - first:
+      213: -6282351664378526930
+    second: ST01_BG_LightWarm_38
+  - first:
+      213: 113154137473148078
+    second: ST01_BG_LightWarm_39
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 38
+        width: 1920
+        height: 1042
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fb4cf9c487d62b70800000000000000
+      internalID: 8874017081104550904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_1
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 726
+        width: 31
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 09bbb5e6fad8be490800000000000000
+      internalID: -7715917751958914160
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_2
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 761
+        width: 6
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f1e69a59c78a30310800000000000000
+      internalID: 1370123964691082783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_3
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 746
+        width: 8
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5e99351425e924f0800000000000000
+      internalID: -852898711272317345
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_4
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 688
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e03c2e152b2be5ef0800000000000000
+      internalID: -117460061317315826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_5
+      rect:
+        serializedVersion: 2
+        x: 46
+        y: 672
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fcdf20bb9ac1dd500800000000000000
+      internalID: 422525455355280847
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_6
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 427
+        width: 6
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d66bcd97a6090b490800000000000000
+      internalID: -7732521773209700755
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_7
+      rect:
+        serializedVersion: 2
+        x: 704
+        y: 383
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e9ab803607846ea10800000000000000
+      internalID: 1938316337164630686
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_8
+      rect:
+        serializedVersion: 2
+        x: 626
+        y: 334
+        width: 22
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37714af369d640140800000000000000
+      internalID: 4684990004452398963
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_9
+      rect:
+        serializedVersion: 2
+        x: 644
+        y: 362
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b9d1d7e1a2298c40800000000000000
+      internalID: 5514977297466251703
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_10
+      rect:
+        serializedVersion: 2
+        x: 1401
+        y: 362
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae44e42026e4e3c60800000000000000
+      internalID: 7799757787504723178
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_11
+      rect:
+        serializedVersion: 2
+        x: 1410
+        y: 359
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 025845fdfa56d9c40800000000000000
+      internalID: 5520680524266636576
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_12
+      rect:
+        serializedVersion: 2
+        x: 1413
+        y: 352
+        width: 7
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b39746bd6dba0b010800000000000000
+      internalID: 1202650039800068411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_13
+      rect:
+        serializedVersion: 2
+        x: 1692
+        y: 357
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d19fc1ad2b794b130800000000000000
+      internalID: 3581654398085691677
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_14
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 341
+        width: 9
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf9360efc745b8b90800000000000000
+      internalID: -7238599080253441541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_15
+      rect:
+        serializedVersion: 2
+        x: 1566
+        y: 343
+        width: 12
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7bad5598840512100800000000000000
+      internalID: 81434540741352119
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_16
+      rect:
+        serializedVersion: 2
+        x: 840
+        y: 322
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8940ea7bf48db7870800000000000000
+      internalID: 8681770543582413976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_17
+      rect:
+        serializedVersion: 2
+        x: 1073
+        y: 325
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1d13d57fb0f736e0800000000000000
+      internalID: -1857751616160850659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_18
+      rect:
+        serializedVersion: 2
+        x: 1207
+        y: 323
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a97a310100f4cae50800000000000000
+      internalID: 6821914397247776666
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_19
+      rect:
+        serializedVersion: 2
+        x: 1225
+        y: 334
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f35efec2c2d222850800000000000000
+      internalID: 6350688092301550911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_20
+      rect:
+        serializedVersion: 2
+        x: 279
+        y: 307
+        width: 6
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a2f802796b63d1e0800000000000000
+      internalID: -2174276094460890455
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_21
+      rect:
+        serializedVersion: 2
+        x: 284
+        y: 304
+        width: 8
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85df367c5943a8450800000000000000
+      internalID: 6091739263872007512
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_22
+      rect:
+        serializedVersion: 2
+        x: 1157
+        y: 307
+        width: 19
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ae9692bfffed0000800000000000000
+      internalID: 3923056189152934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_23
+      rect:
+        serializedVersion: 2
+        x: 1333
+        y: 311
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9917071b879592690800000000000000
+      internalID: -7626466119067340391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_24
+      rect:
+        serializedVersion: 2
+        x: 1336
+        y: 316
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38bcd6690a3c5ded0800000000000000
+      internalID: -2389788932764218493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_25
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 287
+        width: 8
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc120e3caceb0a9c0800000000000000
+      internalID: -3917921897733414453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_26
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 302
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00cbc4c501b684130800000000000000
+      internalID: 3551206024193817600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_27
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 296
+        width: 19
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba402824d5178f550800000000000000
+      internalID: 6194825932809831595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_28
+      rect:
+        serializedVersion: 2
+        x: 837
+        y: 296
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9e869132bae4f1b50800000000000000
+      internalID: 6566053278664714473
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_29
+      rect:
+        serializedVersion: 2
+        x: 1138
+        y: 300
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9cdae89a83ed97a30800000000000000
+      internalID: 4213643261326044617
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_30
+      rect:
+        serializedVersion: 2
+        x: 1301
+        y: 300
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 483c8697e3493e2b0800000000000000
+      internalID: -5556434519199267964
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_31
+      rect:
+        serializedVersion: 2
+        x: 898
+        y: 280
+        width: 6
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab1286847e5c354e0800000000000000
+      internalID: -1994032612852096582
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_32
+      rect:
+        serializedVersion: 2
+        x: 995
+        y: 255
+        width: 23
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a83bc9abfc570b940800000000000000
+      internalID: 5309873495719326602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_33
+      rect:
+        serializedVersion: 2
+        x: 376
+        y: 269
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aca6e56013386dbe0800000000000000
+      internalID: -1452829583196919094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_34
+      rect:
+        serializedVersion: 2
+        x: 1131
+        y: 269
+        width: 15
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c87ad5bc22844b590800000000000000
+      internalID: -7659417751972370548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_35
+      rect:
+        serializedVersion: 2
+        x: 404
+        y: 248
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20a81399e7405f790800000000000000
+      internalID: -7497081062905771518
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_36
+      rect:
+        serializedVersion: 2
+        x: 1550
+        y: 214
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1aa9ad1dcf6e0b10800000000000000
+      internalID: 1949618615454640670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_37
+      rect:
+        serializedVersion: 2
+        x: 1089
+        y: 64
+        width: 13
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 977c71f61a4cb38a0800000000000000
+      internalID: -6324245054079121543
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_38
+      rect:
+        serializedVersion: 2
+        x: 1550
+        y: 64
+        width: 16
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2342a2527a90d8a0800000000000000
+      internalID: -6282351664378526930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ST01_BG_LightWarm_39
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 24
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea4e3f8a611029100800000000000000
+      internalID: 113154137473148078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      ST01_BG_LightWarm_0: 8874017081104550904
+      ST01_BG_LightWarm_1: -7715917751958914160
+      ST01_BG_LightWarm_10: 7799757787504723178
+      ST01_BG_LightWarm_11: 5520680524266636576
+      ST01_BG_LightWarm_12: 1202650039800068411
+      ST01_BG_LightWarm_13: 3581654398085691677
+      ST01_BG_LightWarm_14: -7238599080253441541
+      ST01_BG_LightWarm_15: 81434540741352119
+      ST01_BG_LightWarm_16: 8681770543582413976
+      ST01_BG_LightWarm_17: -1857751616160850659
+      ST01_BG_LightWarm_18: 6821914397247776666
+      ST01_BG_LightWarm_19: 6350688092301550911
+      ST01_BG_LightWarm_2: 1370123964691082783
+      ST01_BG_LightWarm_20: -2174276094460890455
+      ST01_BG_LightWarm_21: 6091739263872007512
+      ST01_BG_LightWarm_22: 3923056189152934
+      ST01_BG_LightWarm_23: -7626466119067340391
+      ST01_BG_LightWarm_24: -2389788932764218493
+      ST01_BG_LightWarm_25: -3917921897733414453
+      ST01_BG_LightWarm_26: 3551206024193817600
+      ST01_BG_LightWarm_27: 6194825932809831595
+      ST01_BG_LightWarm_28: 6566053278664714473
+      ST01_BG_LightWarm_29: 4213643261326044617
+      ST01_BG_LightWarm_3: -852898711272317345
+      ST01_BG_LightWarm_30: -5556434519199267964
+      ST01_BG_LightWarm_31: -1994032612852096582
+      ST01_BG_LightWarm_32: 5309873495719326602
+      ST01_BG_LightWarm_33: -1452829583196919094
+      ST01_BG_LightWarm_34: -7659417751972370548
+      ST01_BG_LightWarm_35: -7497081062905771518
+      ST01_BG_LightWarm_36: 1949618615454640670
+      ST01_BG_LightWarm_37: -6324245054079121543
+      ST01_BG_LightWarm_38: -6282351664378526930
+      ST01_BG_LightWarm_39: 113154137473148078
+      ST01_BG_LightWarm_4: -117460061317315826
+      ST01_BG_LightWarm_5: 422525455355280847
+      ST01_BG_LightWarm_6: -7732521773209700755
+      ST01_BG_LightWarm_7: 1938316337164630686
+      ST01_BG_LightWarm_8: 4684990004452398963
+      ST01_BG_LightWarm_9: 5514977297466251703
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
