@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,12 +27,37 @@ namespace ContextStage
         [SerializeField] Button rerollButton;
         [SerializeField] Text rerollButtonText;
 
+        [Header("Figma Presentation")]
+        [SerializeField] RectTransform cardVisualRoot;
+        [SerializeField] GameObject cardDetailsRoot;
+        [SerializeField] GameObject grantedCardDetailsRoot;
+        [SerializeField] Image flipImage;
+        [SerializeField] Image grantedCardIconBackground;
+        [SerializeField] Image grantedCardIconImage;
+        [SerializeField] Image grantedCardArtworkImage;
+        [SerializeField] Text grantedCardAugmentNameText;
+        [SerializeField] Text grantedCardEffectText;
+        [SerializeField] CanvasGroup choiceCanvasGroup;
+        [SerializeField] CanvasGroup rerollCanvasGroup;
+        [SerializeField] AugmentHoverMotion cardHoverMotion;
+        [SerializeField] AugmentHoverMotion rerollHoverMotion;
+        [SerializeField] Image rerollButtonGraphic;
+        [SerializeField] Image rerollShadowGraphic;
+        [SerializeField] Sprite defaultCardSprite;
+        [SerializeField] Sprite rerollFrame1;
+        [SerializeField] Sprite rerollFrame2;
+        [SerializeField] Sprite rerollFrame3;
+
         int _slotIndex = -1;
         bool _modelAllowsSelection;
         int _rerollsRemaining;
+        bool _isGrantCard;
         bool _wired;
+        Coroutine _rerollRoutine;
 
         public int SlotIndex => _slotIndex;
+        public RectTransform RectTransform => (RectTransform)transform;
+        public CanvasGroup ChoiceCanvasGroup => choiceCanvasGroup;
         public event Action<int> SelectRequested;
         public event Action<int> RerollRequested;
 
@@ -43,6 +69,17 @@ namespace ContextStage
         void OnDestroy()
         {
             UnwireButtons();
+        }
+
+        void OnDisable()
+        {
+            if (_rerollRoutine != null)
+            {
+                StopCoroutine(_rerollRoutine);
+                _rerollRoutine = null;
+            }
+
+            ResetPresentation();
         }
 
         public void Configure(
@@ -74,6 +111,54 @@ namespace ContextStage
             WireButtons();
         }
 
+        public void ConfigureDesign(
+            RectTransform visualRoot,
+            GameObject detailsRoot,
+            Image cardFlipImage,
+            CanvasGroup group,
+            CanvasGroup rerollGroup,
+            AugmentHoverMotion cardHover,
+            AugmentHoverMotion rerollHover,
+            Image rerollGraphic,
+            Image rerollShadow,
+            Sprite cardSprite,
+            Sprite frame1,
+            Sprite frame2,
+            Sprite frame3)
+        {
+            cardVisualRoot = visualRoot;
+            cardDetailsRoot = detailsRoot;
+            flipImage = cardFlipImage;
+            choiceCanvasGroup = group;
+            rerollCanvasGroup = rerollGroup;
+            cardHoverMotion = cardHover;
+            rerollHoverMotion = rerollHover;
+            rerollButtonGraphic = rerollGraphic;
+            rerollShadowGraphic = rerollShadow;
+            defaultCardSprite = cardSprite;
+            rerollFrame1 = frame1;
+            rerollFrame2 = frame2;
+            rerollFrame3 = frame3;
+            ResetPresentation();
+        }
+
+        public void ConfigureGrantedCardDesign(
+            GameObject detailsRoot,
+            Image iconBackground,
+            Image icon,
+            Image artwork,
+            Text augmentName,
+            Text effectDescription)
+        {
+            grantedCardDetailsRoot = detailsRoot;
+            grantedCardIconBackground = iconBackground;
+            grantedCardIconImage = icon;
+            grantedCardArtworkImage = artwork;
+            grantedCardAugmentNameText = augmentName;
+            grantedCardEffectText = effectDescription;
+            ResetPresentation();
+        }
+
         public void Bind(AugmentChoiceViewModel model)
         {
             if (model == null)
@@ -86,11 +171,24 @@ namespace ContextStage
             _slotIndex = model.slotIndex;
             _modelAllowsSelection = model.canSelect;
             _rerollsRemaining = Mathf.Max(0, model.rerollsRemaining);
+            _isGrantCard = model.grantedCard != null;
 
             Color tierColor = model.tierColor;
             if (tierStrip != null) tierStrip.color = tierColor;
-            if (iconBackground != null) iconBackground.color = WithAlpha(tierColor, 0.28f);
-            if (cardBackground != null) cardBackground.color = new Color32(0x3E, 0x35, 0x46, 0xFF);
+            if (iconBackground != null)
+                iconBackground.color = defaultCardSprite != null
+                    ? Color.white
+                    : WithAlpha(tierColor, 0.28f);
+            if (cardBackground != null) cardBackground.color = Color.white;
+
+            if (flipImage != null)
+            {
+                flipImage.sprite = defaultCardSprite != null
+                    ? defaultCardSprite
+                    : flipImage.sprite;
+                flipImage.enabled = flipImage.sprite != null;
+            }
+            SetDetailsVisible(true);
 
             SetText(tierText, string.IsNullOrWhiteSpace(model.tierLabel) ? "AUGMENT" : model.tierLabel.ToUpperInvariant());
             SetText(nameText, model.displayName ?? "");
@@ -111,7 +209,28 @@ namespace ContextStage
                 iconPlaceholderText.text = GetInitial(model.displayName);
             }
 
+            if (grantedCardIconBackground != null)
+                grantedCardIconBackground.color = Color.white;
+            if (grantedCardIconImage != null)
+            {
+                grantedCardIconImage.sprite = model.icon;
+                grantedCardIconImage.color = Color.white;
+                grantedCardIconImage.enabled = _isGrantCard && model.icon != null;
+            }
+            if (grantedCardArtworkImage != null)
+            {
+                grantedCardArtworkImage.sprite = _isGrantCard
+                    ? model.grantedCard.artwork
+                    : null;
+                grantedCardArtworkImage.color = Color.white;
+                grantedCardArtworkImage.enabled =
+                    _isGrantCard && model.grantedCard.artwork != null;
+            }
+            SetText(grantedCardAugmentNameText, _isGrantCard ? model.displayName : "");
+            SetText(grantedCardEffectText, _isGrantCard ? model.description : "");
+
             SetInputEnabled(true);
+            ApplyRerollAvailability();
         }
 
         public void SetInputEnabled(bool enabled)
@@ -121,6 +240,11 @@ namespace ContextStage
 
             if (rerollButton != null)
                 rerollButton.interactable = enabled && _rerollsRemaining > 0 && _slotIndex >= 0;
+
+            cardHoverMotion?.SetInteractionEnabled(
+                enabled && _modelAllowsSelection && _slotIndex >= 0);
+            rerollHoverMotion?.SetInteractionEnabled(
+                enabled && _rerollsRemaining > 0 && _slotIndex >= 0);
         }
 
         public void Clear()
@@ -128,7 +252,69 @@ namespace ContextStage
             _slotIndex = -1;
             _modelAllowsSelection = false;
             _rerollsRemaining = 0;
+            _isGrantCard = false;
             gameObject.SetActive(false);
+        }
+
+        public void ResetPresentation()
+        {
+            cardHoverMotion?.ResetState();
+            rerollHoverMotion?.ResetState();
+
+            if (choiceCanvasGroup != null) choiceCanvasGroup.alpha = 1f;
+            if (rerollCanvasGroup != null) rerollCanvasGroup.alpha = 1f;
+            _isGrantCard = false;
+            SetDetailsVisible(true);
+            if (grantedCardDetailsRoot != null) grantedCardDetailsRoot.SetActive(false);
+            if (grantedCardArtworkImage != null)
+            {
+                grantedCardArtworkImage.sprite = null;
+                grantedCardArtworkImage.enabled = false;
+            }
+            if (grantedCardIconImage != null)
+            {
+                grantedCardIconImage.sprite = null;
+                grantedCardIconImage.enabled = false;
+            }
+            SetText(grantedCardAugmentNameText, "");
+            SetText(grantedCardEffectText, "");
+            if (flipImage != null)
+            {
+                flipImage.sprite = defaultCardSprite != null
+                    ? defaultCardSprite
+                    : cardBackground == null ? null : cardBackground.sprite;
+                flipImage.enabled = flipImage.sprite != null;
+            }
+        }
+
+        public bool PlayReroll(
+            AugmentChoiceViewModel model,
+            Action<bool> completed)
+        {
+            if (model == null || _rerollRoutine != null || !isActiveAndEnabled)
+                return false;
+
+            _rerollRoutine = StartCoroutine(PlayRerollRoutine(model, completed));
+            return true;
+        }
+
+        public void ShowSelectedTransitionFrame()
+        {
+            cardHoverMotion?.ResetState();
+            rerollHoverMotion?.ResetState();
+            SetInputEnabled(false);
+        }
+
+        public void SetVisualAlpha(float alpha)
+        {
+            if (choiceCanvasGroup != null)
+                choiceCanvasGroup.alpha = Mathf.Clamp01(alpha);
+        }
+
+        public void SetRerollAlpha(float alpha)
+        {
+            if (rerollCanvasGroup != null)
+                rerollCanvasGroup.alpha = Mathf.Clamp01(alpha);
         }
 
         void WireButtons()
@@ -157,9 +343,77 @@ namespace ContextStage
             if (_slotIndex >= 0 && _rerollsRemaining > 0) RerollRequested?.Invoke(_slotIndex);
         }
 
+        IEnumerator PlayRerollRoutine(
+            AugmentChoiceViewModel model,
+            Action<bool> completed)
+        {
+            SetInputEnabled(false);
+            cardHoverMotion?.ResetState();
+            rerollHoverMotion?.ResetState();
+            SetDetailsVisible(false);
+
+            Sprite[] frames =
+            {
+                rerollFrame1,
+                rerollFrame2,
+                rerollFrame3,
+                defaultCardSprite,
+                rerollFrame3,
+                rerollFrame2,
+                rerollFrame1
+            };
+            float[] durations = { 0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.05f };
+
+            for (int i = 0; i < frames.Length; i++)
+            {
+                if (flipImage != null)
+                {
+                    flipImage.sprite = frames[i] != null ? frames[i] : defaultCardSprite;
+                    flipImage.enabled = flipImage.sprite != null;
+                }
+                yield return WaitUnscaled(durations[i]);
+            }
+
+            _rerollRoutine = null;
+            Bind(model);
+            SetInputEnabled(false);
+            completed?.Invoke(true);
+        }
+
+        IEnumerator WaitUnscaled(float duration)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+
+        void ApplyRerollAvailability()
+        {
+            bool available = _rerollsRemaining > 0;
+            if (rerollButtonGraphic != null)
+                rerollButtonGraphic.color = available
+                    ? Color.white
+                    : new Color32(0x45, 0x45, 0x45, 0xFF);
+            if (rerollShadowGraphic != null)
+                rerollShadowGraphic.color = available
+                    ? Color.white
+                    : new Color32(0x45, 0x45, 0x45, 0xA0);
+        }
+
         static void SetText(Text target, string value)
         {
             if (target != null) target.text = value;
+        }
+
+        void SetDetailsVisible(bool visible)
+        {
+            if (cardDetailsRoot != null)
+                cardDetailsRoot.SetActive(visible && !_isGrantCard);
+            if (grantedCardDetailsRoot != null)
+                grantedCardDetailsRoot.SetActive(visible && _isGrantCard);
         }
 
         static string GetInitial(string value)

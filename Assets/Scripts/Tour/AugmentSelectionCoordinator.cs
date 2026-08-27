@@ -92,7 +92,8 @@ namespace ContextStage
                 subtitle = "The same Augment and tier will not appear again.",
                 ownedAugmentCount = run.ownedAugments?.Count ?? 0,
                 choices = new List<AugmentChoiceViewModel>(
-                    AugmentSelectionPopup.VisibleSlotCount)
+                    AugmentSelectionPopup.VisibleSlotCount),
+                ownedAugments = BuildOwnedAugmentModels(run)
             };
 
             var displayedDefinitions = new HashSet<string>(StringComparer.Ordinal);
@@ -118,15 +119,27 @@ namespace ContextStage
                 return;
             }
 
-            AugmentOffer offer = _currentOffers[slotIndex];
-            if (offer == null ||
-                !_manager.SelectAugment(offer.Definition.AugmentId, offer.TierData.Tier))
+            AugmentOffer selectedOffer = _currentOffers[slotIndex];
+            if (selectedOffer == null)
             {
                 _popup.ShowError("The Augment could not be selected.");
                 return;
             }
 
-            _popup.Hide();
+            if (!_popup.PlaySelection(slotIndex, completed =>
+                {
+                    if (!completed ||
+                        _manager == null ||
+                        !_manager.SelectAugment(
+                            selectedOffer.Definition.AugmentId,
+                            selectedOffer.TierData.Tier))
+                    {
+                        _popup.ShowError("The Augment could not be selected.");
+                    }
+                }))
+            {
+                _popup.ShowError("The Augment selection animation could not be started.");
+            }
         }
 
         void OnRerollRequested(int slotIndex)
@@ -157,7 +170,42 @@ namespace ContextStage
 
             _rerollsRemaining[slotIndex]--;
             _currentOffers[slotIndex] = TakeOffer(candidates, displayedDefinitions);
-            _popup.UpdateChoice(CreateViewModel(slotIndex));
+            _popup.PlayReroll(CreateViewModel(slotIndex));
+        }
+
+        List<AugmentOwnedItemViewModel> BuildOwnedAugmentModels(TourRunState run)
+        {
+            var models = new List<AugmentOwnedItemViewModel>();
+            if (run?.ownedAugments == null) return models;
+
+            for (int i = 0; i < run.ownedAugments.Count; i++)
+            {
+                OwnedAugmentState owned = run.ownedAugments[i];
+                if (owned == null ||
+                    !_catalog.TryGetDefinition(
+                        owned.definitionId,
+                        out AugmentDefinition definition) ||
+                    !definition.TryGetTierData(
+                        owned.tier,
+                        out AugmentTierData tierData))
+                {
+                    continue;
+                }
+
+                CardDefinition grantedCard = tierData.GrantedCard;
+                models.Add(new AugmentOwnedItemViewModel
+                {
+                    icon = definition.Icon != null
+                        ? definition.Icon
+                        : grantedCard?.Artwork,
+                    displayName = definition.DisplayName,
+                    description = grantedCard != null
+                        ? grantedCard.Description
+                        : tierData.Description
+                });
+            }
+
+            return models;
         }
 
         List<AugmentOffer> BuildAvailableOffers(TourRunState run)
@@ -250,17 +298,26 @@ namespace ContextStage
             return new AugmentChoiceViewModel
             {
                 slotIndex = slotIndex,
-                icon = offer.Definition.Icon != null
-                    ? offer.Definition.Icon
-                    : grantedCard?.Artwork,
+                icon = offer.Definition.Icon,
                 tierLabel = offer.TierData.Tier.ToString(),
                 tierColor = ResolveTierColor(offer.TierData.Tier),
                 displayName = offer.Definition.DisplayName,
-                description = grantedCard != null
-                    ? grantedCard.Description
-                    : offer.TierData.Description,
+                description = offer.TierData.Description,
+                grantedCard = CreateCardPreview(grantedCard),
                 rerollsRemaining = _rerollsRemaining[slotIndex],
                 canSelect = true
+            };
+        }
+
+        static AugmentCardPreviewViewModel CreateCardPreview(CardDefinition card)
+        {
+            if (card == null) return null;
+
+            return new AugmentCardPreviewViewModel
+            {
+                artwork = card.Artwork,
+                displayName = card.DisplayName,
+                description = card.Description
             };
         }
 

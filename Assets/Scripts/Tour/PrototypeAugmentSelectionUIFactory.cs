@@ -9,8 +9,25 @@ namespace ContextStage
     /// </summary>
     internal static class PrototypeAugmentSelectionUIFactory
     {
+        const string ArtPrefabResourcesPath = "UI/AugmentSelectionPopup";
+
         public static AugmentSelectionPopup Create(Transform parent)
         {
+            AugmentSelectionPopup artPrefab =
+                Resources.Load<AugmentSelectionPopup>(ArtPrefabResourcesPath);
+            if (artPrefab != null)
+            {
+                AugmentSelectionPopup instance =
+                    Object.Instantiate(artPrefab, parent, false);
+                instance.name = "AugmentSelectionPopup";
+                instance.Hide();
+                return instance;
+            }
+
+            Debug.LogError(
+                $"[PrototypeAugmentSelectionUIFactory] 최종 증강 UI 프리팹을 찾지 못했습니다: " +
+                $"Resources/{ArtPrefabResourcesPath}");
+
             var rootObject = new GameObject(
                 "AugmentSelectionPopup",
                 typeof(RectTransform),

@@ -4,6 +4,24 @@ using UnityEngine;
 
 namespace ContextStage
 {
+    [Serializable]
+    public sealed class AugmentCardPreviewViewModel
+    {
+        public Sprite artwork;
+        public string displayName = "";
+        public string description = "";
+
+        public AugmentCardPreviewViewModel Clone()
+        {
+            return new AugmentCardPreviewViewModel
+            {
+                artwork = artwork,
+                displayName = displayName,
+                description = description
+            };
+        }
+    }
+
     /// <summary>
     /// 증강 시스템이 화면에 전달하는 순수 표시 데이터다.
     /// 후보의 생성, 중복 검사, 리롤 소비, 효과 적용 규칙은 포함하지 않는다.
@@ -17,6 +35,7 @@ namespace ContextStage
         public Color tierColor = Color.white;
         public string displayName = "";
         public string description = "";
+        public AugmentCardPreviewViewModel grantedCard;
         public int rerollsRemaining;
         public bool canSelect = true;
 
@@ -30,8 +49,27 @@ namespace ContextStage
                 tierColor = tierColor,
                 displayName = displayName,
                 description = description,
+                grantedCard = grantedCard?.Clone(),
                 rerollsRemaining = Mathf.Max(0, rerollsRemaining),
                 canSelect = canSelect
+            };
+        }
+    }
+
+    [Serializable]
+    public sealed class AugmentOwnedItemViewModel
+    {
+        public Sprite icon;
+        public string displayName = "";
+        public string description = "";
+
+        public AugmentOwnedItemViewModel Clone()
+        {
+            return new AugmentOwnedItemViewModel
+            {
+                icon = icon,
+                displayName = displayName,
+                description = description
             };
         }
     }
@@ -47,5 +85,7 @@ namespace ContextStage
         public string subtitle = "Choose one Augment for the next performance.";
         public int ownedAugmentCount;
         public List<AugmentChoiceViewModel> choices = new List<AugmentChoiceViewModel>();
+        public List<AugmentOwnedItemViewModel> ownedAugments =
+            new List<AugmentOwnedItemViewModel>();
     }
 }
