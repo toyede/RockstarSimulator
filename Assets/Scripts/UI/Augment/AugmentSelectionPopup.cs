@@ -96,6 +96,30 @@ namespace ContextStage
             WireEvents();
         }
 
+        public void SetOwnedModalHost(Transform host)
+        {
+            if (host == null)
+            {
+                Debug.LogWarning("[AugmentSelectionPopup] 보유 증강 모달을 배치할 Canvas가 없습니다.", this);
+                return;
+            }
+
+            CloseOwnedModal();
+            ReparentOwnedModalObject(ownedModalBlocker, host);
+            ReparentOwnedModalObject(ownedModal, host);
+        }
+
+        public void ShowOwnedModal(IReadOnlyList<AugmentOwnedItemViewModel> models)
+        {
+            BindOwnedAugments(models);
+            OpenOwnedModal();
+        }
+
+        public void HideOwnedModal()
+        {
+            CloseOwnedModal();
+        }
+
         public void Show(AugmentSelectionScreenModel model)
         {
             if (model == null)
@@ -399,6 +423,12 @@ namespace ContextStage
         {
             if (ownedModal != null) ownedModal.SetActive(false);
             if (ownedModalBlocker != null) ownedModalBlocker.SetActive(false);
+        }
+
+        static void ReparentOwnedModalObject(GameObject target, Transform host)
+        {
+            if (target == null || target.transform.parent == host) return;
+            target.transform.SetParent(host, false);
         }
 
         void CaptureChoiceBasePositions()

@@ -23,6 +23,7 @@ namespace ContextStage
         Result,
         Reward,
         Completed,
-        Failed
+        Failed,
+        Travel
     }
 }

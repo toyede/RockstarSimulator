@@ -148,6 +148,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07642874503d84b4ab6c7da851f3f2fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.TourPrototypeUI
+  mapArt:
+    font: {fileID: 12800000, guid: 9907906d092ce9948ba06b3f3ac3808b, type: 3}
+    background: {fileID: -8158862986424793979, guid: 2eafda9308da4924c8b059ed5b221c85, type: 3}
+    ownedAugmentIcon: {fileID: 21300000, guid: 31aba8a2469f6464aa6a1f838476f269, type: 3}
+    pinNormal: {fileID: -336101196349715825, guid: 85d6b5f658964c647a0ee494e969f657, type: 3}
+    pinHover: {fileID: -4264924764372062400, guid: 7191222bcc5baad4bab06275e606cb67, type: 3}
+    mapDot: {fileID: 565629590121465018, guid: d85b0071190f3eb469b1583e9be6fa02, type: 3}
+    stageIcon: {fileID: 2811566671977975335, guid: 79081079011c1524b942a215f2645533, type: 3}
+    bossIcon: {fileID: 21300000, guid: 6216261fbcab62849b4d338b5abfa656, type: 3}
+    bus: {fileID: -6089182278918715204, guid: ff8dbc25f0593b44a882fdcc5e35af90, type: 3}
+    raccoon: {fileID: 21300000, guid: 0532a5b208ad77749b059c626952480e, type: 3}
+    rankS: {fileID: 21300000, guid: 10b8c1d6204dcf241a78829fa80854f5, type: 3}
+    rankA: {fileID: 21300000, guid: f2088f4b00e13074e887c24e3a3d19c5, type: 3}
+    rankB: {fileID: 21300000, guid: 18be004cbfc6c0e428b53911d0e93178, type: 3}
+    rankC: {fileID: 21300000, guid: 4c649006037748f4cad6c95cab09097b, type: 3}
+    rankD: {fileID: 21300000, guid: 7f04f62eb8a9c9742a1c00451338e06a, type: 3}
+    rankF: {fileID: 21300000, guid: 3f3c4102bda1d3645bd5b65d001c3980, type: 3}
 --- !u!4 &1070854820
 Transform:
   m_ObjectHideFlags: 0

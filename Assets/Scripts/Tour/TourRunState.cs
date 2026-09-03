@@ -121,6 +121,8 @@ namespace ContextStage
         public int seed;
         public RunPhase phase;
         public string currentNodeId;
+        public string travelFromNodeId;
+        public string travelToNodeId;
         public TourMapState map = new TourMapState();
         public DeckRunState deck = new DeckRunState();
         public List<OwnedAugmentState> ownedAugments = new List<OwnedAugmentState>();
@@ -128,6 +130,8 @@ namespace ContextStage
         public int totalScore;
 
         public RunNodeState CurrentNode => map == null ? null : map.FindNode(currentNodeId);
+        public RunNodeState TravelFromNode => map == null ? null : map.FindNode(travelFromNodeId);
+        public RunNodeState TravelToNode => map == null ? null : map.FindNode(travelToNodeId);
 
         public StageResult LatestStageResult
         {
@@ -136,6 +140,21 @@ namespace ContextStage
                 if (stageResults == null || stageResults.Count == 0) return null;
                 return stageResults[stageResults.Count - 1];
             }
+        }
+
+        public StageResult FindStageResult(string nodeId)
+        {
+            if (string.IsNullOrWhiteSpace(nodeId) || stageResults == null) return null;
+
+            for (int i = stageResults.Count - 1; i >= 0; i--)
+            {
+                StageResult result = stageResults[i];
+                if (result != null &&
+                    string.Equals(result.nodeId, nodeId, StringComparison.Ordinal))
+                    return result;
+            }
+
+            return null;
         }
 
         public bool HasAugment(string definitionId, AugmentTier tier)

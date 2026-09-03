@@ -15,6 +15,9 @@ namespace ContextStage
     {
         const string MainSceneName = "Main";
 
+        [Header("Figma Tour Map")]
+        [SerializeField] private TourMapArt mapArt = new TourMapArt();
+
         Text _titleText;
         Text _phaseText;
         Text _bodyText;
@@ -23,6 +26,7 @@ namespace ContextStage
         TourRunManager _manager;
         AugmentSelectionPopup _augmentPopup;
         AugmentSelectionCoordinator _augmentCoordinator;
+        TourMapScreen _mapScreen;
 
         void Awake()
         {
@@ -42,10 +46,14 @@ namespace ContextStage
         {
             if (_manager != null) _manager.StateChanged -= Refresh;
             _augmentCoordinator?.Unbind();
+            if (_augmentPopup != null) _augmentPopup.HideOwnedModal();
+            if (_mapScreen != null) _mapScreen.Hide();
         }
 
         void OnDestroy()
         {
+            if (_mapScreen != null)
+                _mapScreen.OwnedAugmentsRequested -= ShowOwnedAugments;
             _augmentCoordinator?.Dispose();
         }
 
@@ -105,17 +113,22 @@ namespace ContextStage
             layout.childForceExpandHeight = false;
 
             _augmentPopup = PrototypeAugmentSelectionUIFactory.Create(canvas.transform);
+            _augmentPopup.SetOwnedModalHost(canvas.transform);
             _augmentCoordinator = new AugmentSelectionCoordinator(_augmentPopup);
+            _mapScreen = TourMapScreen.Create(canvas.transform, mapArt);
+            _mapScreen.OwnedAugmentsRequested += ShowOwnedAugments;
+            _mapScreen.transform.SetSiblingIndex(1);
         }
 
         void Refresh()
         {
-            if (_mainPanel != null) _mainPanel.gameObject.SetActive(true);
             _augmentPopup?.Hide();
             ClearButtons();
 
             if (_manager == null || _manager.CurrentRun == null)
             {
+                _mapScreen?.Hide();
+                if (_mainPanel != null) _mainPanel.gameObject.SetActive(true);
                 SetHeader("NO ACTIVE TOUR", "NO RUN");
                 _bodyText.text = "Start a new tour from the Title scene.";
                 AddButton("RETURN TO TITLE", ReturnToTitle);
@@ -124,11 +137,18 @@ namespace ContextStage
 
             TourRunState run = _manager.CurrentRun;
 
+            if (run.phase == RunPhase.Map || run.phase == RunPhase.Travel)
+            {
+                if (_mainPanel != null) _mainPanel.gameObject.SetActive(false);
+                _mapScreen?.Show(_manager, run);
+                return;
+            }
+
+            _mapScreen?.Hide();
+            if (_mainPanel != null) _mainPanel.gameObject.SetActive(true);
+
             switch (run.phase)
             {
-                case RunPhase.Map:
-                    ShowMap(run);
-                    break;
                 case RunPhase.Dialogue:
                     ShowDialogue();
                     break;
@@ -150,28 +170,6 @@ namespace ContextStage
                     ShowFailed(run);
                     break;
             }
-        }
-
-        void ShowMap(TourRunState run)
-        {
-            SetHeader("TOUR MAP", run.phase.ToString());
-            _bodyText.text = "Select the next available performance.";
-
-            for (int i = 0; i < run.map.nodes.Count; i++)
-            {
-                RunNodeState node = run.map.nodes[i];
-                StageDefinition stage = _manager.FindStageDefinition(node.stageId);
-                string displayName = stage == null ? node.stageId : stage.DisplayName;
-                string prefix = node.nodeType == RunNodeType.ElitePerformance ? "ELITE" : $"STAGE {i + 1}";
-                string label = $"{prefix}  ·  {displayName}  [{node.status}]";
-                string selectedNodeId = node.nodeId;
-                Button button = AddButton(label, () => _manager.SelectNode(selectedNodeId));
-                button.interactable = node.status == RunNodeStatus.Available;
-                if (!button.interactable)
-                    button.GetComponent<Image>().color = new Color32(0x3E, 0x35, 0x46, 0xFF);
-            }
-
-            AddButton("ABANDON TOUR", ReturnToTitle, danger: true);
         }
 
         void ShowDialogue()
@@ -201,6 +199,15 @@ namespace ContextStage
         {
             if (_mainPanel != null) _mainPanel.gameObject.SetActive(false);
             _augmentCoordinator?.Show();
+        }
+
+        void ShowOwnedAugments()
+        {
+            TourRunState run = _manager == null ? null : _manager.CurrentRun;
+            if (run == null || run.phase != RunPhase.Map || _augmentPopup == null) return;
+
+            AugmentCatalog catalog = AugmentCatalog.LoadDefault();
+            _augmentPopup.ShowOwnedModal(AugmentOwnedViewModelBuilder.Build(run, catalog));
         }
 
         void ShowCompleted(TourRunState run)

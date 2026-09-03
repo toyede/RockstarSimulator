@@ -58,6 +58,8 @@ namespace ContextStage
                 seed = seed,
                 phase = RunPhase.Map,
                 currentNodeId = "",
+                travelFromNodeId = "",
+                travelToNodeId = "",
                 map = map,
                 deck = new DeckRunState(),
                 ownedAugments = new List<OwnedAugmentState>(),
@@ -153,6 +155,8 @@ namespace ContextStage
             {
                 currentNode.status = RunNodeStatus.Cleared;
                 run.currentNodeId = "";
+                run.travelFromNodeId = "";
+                run.travelToNodeId = "";
                 run.phase = RunPhase.Completed;
                 NotifyStateChanged();
                 return true;
@@ -247,6 +251,15 @@ namespace ContextStage
             RunNodeState currentNode = run.CurrentNode;
             if (currentNode == null) return false;
 
+            RunNodeState travelTarget = FindTravelTarget(run, currentNode);
+            if (travelTarget == null)
+            {
+                Debug.LogWarning(
+                    $"[TourRun] 이동할 다음 투어 노드를 찾을 수 없습니다: {currentNode.nodeId}",
+                    this);
+                return false;
+            }
+
             if (run.ownedAugments == null)
                 run.ownedAugments = new List<OwnedAugmentState>();
             run.ownedAugments.Add(new OwnedAugmentState(augmentId, tier));
@@ -266,15 +279,31 @@ namespace ContextStage
             }
 
             currentNode.status = RunNodeStatus.Cleared;
+            run.currentNodeId = "";
+            run.travelFromNodeId = currentNode.nodeId;
+            run.travelToNodeId = travelTarget.nodeId;
+            run.phase = RunPhase.Travel;
+            NotifyStateChanged();
+            return true;
+        }
 
-            for (int i = 0; i < currentNode.nextNodeIds.Count; i++)
+        public bool CompleteTravel()
+        {
+            if (!RequireRun(out TourRunState run) || run.phase != RunPhase.Travel) return false;
+
+            RunNodeState fromNode = run.TravelFromNode;
+            RunNodeState toNode = run.TravelToNode;
+            if (fromNode == null || toNode == null ||
+                fromNode.status != RunNodeStatus.Cleared ||
+                toNode.status != RunNodeStatus.Locked)
             {
-                RunNodeState nextNode = run.map.FindNode(currentNode.nextNodeIds[i]);
-                if (nextNode != null && nextNode.status == RunNodeStatus.Locked)
-                    nextNode.status = RunNodeStatus.Available;
+                Debug.LogWarning("[TourRun] 완료할 수 없는 지도 이동 상태입니다.", this);
+                return false;
             }
 
-            run.currentNodeId = "";
+            toNode.status = RunNodeStatus.Available;
+            run.travelFromNodeId = "";
+            run.travelToNodeId = "";
             run.phase = RunPhase.Map;
             NotifyStateChanged();
             return true;
@@ -294,6 +323,20 @@ namespace ContextStage
 
             Debug.LogWarning("[TourRun] 진행 중인 투어가 없습니다.", this);
             return false;
+        }
+
+        static RunNodeState FindTravelTarget(TourRunState run, RunNodeState currentNode)
+        {
+            if (run?.map == null || currentNode?.nextNodeIds == null) return null;
+
+            for (int i = 0; i < currentNode.nextNodeIds.Count; i++)
+            {
+                RunNodeState nextNode = run.map.FindNode(currentNode.nextNodeIds[i]);
+                if (nextNode != null && nextNode.status == RunNodeStatus.Locked)
+                    return nextNode;
+            }
+
+            return null;
         }
 
         void NotifyStateChanged() => StateChanged?.Invoke();

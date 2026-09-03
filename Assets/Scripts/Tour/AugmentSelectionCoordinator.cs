@@ -93,7 +93,7 @@ namespace ContextStage
                 ownedAugmentCount = run.ownedAugments?.Count ?? 0,
                 choices = new List<AugmentChoiceViewModel>(
                     AugmentSelectionPopup.VisibleSlotCount),
-                ownedAugments = BuildOwnedAugmentModels(run)
+                ownedAugments = AugmentOwnedViewModelBuilder.Build(run, _catalog)
             };
 
             var displayedDefinitions = new HashSet<string>(StringComparer.Ordinal);
@@ -171,49 +171,6 @@ namespace ContextStage
             _rerollsRemaining[slotIndex]--;
             _currentOffers[slotIndex] = TakeOffer(candidates, displayedDefinitions);
             _popup.PlayReroll(CreateViewModel(slotIndex));
-        }
-
-        List<AugmentOwnedItemViewModel> BuildOwnedAugmentModels(TourRunState run)
-        {
-            var models = new List<AugmentOwnedItemViewModel>();
-            if (run?.ownedAugments == null) return models;
-
-            for (int i = 0; i < run.ownedAugments.Count; i++)
-            {
-                OwnedAugmentState owned = run.ownedAugments[i];
-                if (owned == null ||
-                    !_catalog.TryGetDefinition(
-                        owned.definitionId,
-                        out AugmentDefinition definition) ||
-                    !definition.TryGetTierData(
-                        owned.tier,
-                        out AugmentTierData tierData))
-                {
-                    continue;
-                }
-
-                CardUpgradeData upgrade = tierData.CardUpgrade;
-                CardDefinition previewCard = tierData.GrantedCard != null
-                    ? tierData.GrantedCard
-                    : upgrade?.TargetCard;
-                models.Add(new AugmentOwnedItemViewModel
-                {
-                    icon = definition.Icon != null
-                        ? definition.Icon
-                        : upgrade?.Artwork != null
-                            ? upgrade.Artwork
-                            : previewCard?.Artwork,
-                    displayName = definition.DisplayName,
-                    description = tierData.GrantedCard != null
-                        ? tierData.GrantedCard.Description
-                        : upgrade != null &&
-                          !string.IsNullOrWhiteSpace(upgrade.DescriptionOverride)
-                            ? upgrade.DescriptionOverride
-                        : tierData.Description
-                });
-            }
-
-            return models;
         }
 
         List<AugmentOffer> BuildAvailableOffers(TourRunState run)

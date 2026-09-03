@@ -1867,7 +1867,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4e215f304159f934985dbc52d1a0f080, type: 2}
   - {fileID: 11400000, guid: da79655da691461489e86fdb6ad10fa3, type: 2}
   - {fileID: 11400000, guid: 62742a0602f88244cb85d94dee726c7b, type: 2}
-  - {fileID: 11400000, guid: 385b89591abb2714d8be9965c686032f, type: 2}
   - {fileID: 11400000, guid: adcb4ff305c113c4dbd7fc91a05a9d5e, type: 2}
   tourHubSceneName: TourHub
 --- !u!1660057539 &9223372036854775807
