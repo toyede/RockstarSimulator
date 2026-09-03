@@ -372,17 +372,88 @@ namespace ContextStage
             return null;
         }
 
-        /// <summary>버스가 서 있을 노드: 현재 노드 → 마지막으로 클리어한 노드 → 첫 노드.</summary>
+        /// <summary>
+        /// 버스가 서 있을 노드: 현재 노드 → 선택 가능한(Available) 노드 → 마지막으로 클리어한 노드 → 첫 노드.
+        /// (증강 선택 뒤 Travel 단계에서 이미 다음 노드까지 이동했으므로, Map 단계의 Available 노드에 버스가 서 있다)
+        /// </summary>
         static int ResolveBusIndex(TourRunState run)
         {
+            int available = -1;
             int last = 0;
             for (int i = 0; i < run.map.nodes.Count; i++)
             {
                 RunNodeStatus status = run.map.nodes[i].status;
                 if (status == RunNodeStatus.Current) return i;
+                if (status == RunNodeStatus.Available && available < 0) available = i;
                 if (status == RunNodeStatus.Cleared || status == RunNodeStatus.Failed) last = i;
             }
-            return last;
+            return available >= 0 ? available : last;
+        }
+
+        /// <summary>
+        /// Travel 단계(증강 선택 직후) 연출: travelFrom → travelTo 로 버스가 이동한 뒤 onComplete 를 부른다.
+        /// 호출자가 onComplete 에서 TourRunManager.CompleteTravel() 을 불러 Map 단계로 넘긴다.
+        /// </summary>
+        public void PlayTravel(TourRunState run, Action onComplete)
+        {
+            StopRoutines();
+            int from = FindNodeIndex(run, run.travelFromNodeId);
+            int to = FindNodeIndex(run, run.travelToNodeId);
+            if (from < 0 || to < 0)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            _busIndex = from;
+            PlaceBus(NodeLocalPosition(from));
+            _travelRoutine = StartCoroutine(TravelRoutine(to, onComplete));
+        }
+
+        static int FindNodeIndex(TourRunState run, string nodeId)
+        {
+            if (run?.map?.nodes == null || string.IsNullOrEmpty(nodeId)) return -1;
+            for (int i = 0; i < run.map.nodes.Count; i++)
+                if (string.Equals(run.map.nodes[i].nodeId, nodeId, StringComparison.Ordinal)) return i;
+            return -1;
+        }
+
+        IEnumerator TravelRoutine(int targetIndex, Action onComplete)
+        {
+            _traveling = true;
+            SetNodesInteractable(false);
+            if (config.TravelStartDelay > 0f)
+                yield return new WaitForSecondsRealtime(config.TravelStartDelay);
+
+            yield return MoveBusTo(targetIndex);
+
+            _traveling = false;
+            _travelRoutine = null;
+            onComplete?.Invoke();
+        }
+
+        IEnumerator MoveBusTo(int targetIndex)
+        {
+            int step = targetIndex > _busIndex ? 1 : -1;
+            while (_busIndex != targetIndex)
+            {
+                int next = _busIndex + step;
+                Vector2 from = NodeLocalPosition(_busIndex);
+                Vector2 to = NodeLocalPosition(next);
+                _busFacing = to.x >= from.x ? 1f : -1f;
+
+                float duration = Mathf.Max(0.1f, config.TravelSecondsPerSegment);
+                float elapsed = 0f;
+                while (elapsed < duration)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    PlaceBus(Vector2.Lerp(from, to, Mathf.Clamp01(elapsed / duration))); // Linear
+                    yield return null;
+                }
+
+                PlaceBus(to);
+                _busIndex = next;
+            }
         }
 
         void RebuildPath(int nodeCount)
@@ -440,28 +511,12 @@ namespace ContextStage
             _traveling = true;
             SetNodesInteractable(false);
 
-            if (config.TravelStartDelay > 0f)
-                yield return new WaitForSecondsRealtime(config.TravelStartDelay);
-
-            int step = target.Index > _busIndex ? 1 : -1;
-            while (_busIndex != target.Index)
+            // 버스가 이미 그 노드에 있으면(Travel 단계로 먼저 이동한 경우) 바로 도착 연출로 간다
+            if (_busIndex != target.Index)
             {
-                int next = _busIndex + step;
-                Vector2 from = NodeLocalPosition(_busIndex);
-                Vector2 to = NodeLocalPosition(next);
-                _busFacing = to.x >= from.x ? 1f : -1f;
-
-                float duration = Mathf.Max(0.1f, config.TravelSecondsPerSegment);
-                float elapsed = 0f;
-                while (elapsed < duration)
-                {
-                    elapsed += Time.unscaledDeltaTime;
-                    PlaceBus(Vector2.Lerp(from, to, Mathf.Clamp01(elapsed / duration))); // Linear
-                    yield return null;
-                }
-
-                PlaceBus(to);
-                _busIndex = next;
+                if (config.TravelStartDelay > 0f)
+                    yield return new WaitForSecondsRealtime(config.TravelStartDelay);
+                yield return MoveBusTo(target.Index);
             }
 
             _traveling = false;

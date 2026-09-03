@@ -139,6 +139,10 @@ namespace ContextStage
                 case RunPhase.Result:
                     manager.ConfirmResult();
                     break;
+
+                case RunPhase.Travel:
+                    manager.CompleteTravel();
+                    break;
             }
 
             Debug.Log($"[TourDebug] 투어 단계 자동 진행 → {manager.CurrentRun?.phase}");
