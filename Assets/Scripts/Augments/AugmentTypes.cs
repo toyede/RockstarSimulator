@@ -18,6 +18,12 @@ namespace ContextStage
         ComboBreakPreventionCount,
         GrantCard,
         MinimumHandSizeIncrease,
+        MinimumHandSizeDelta,
+        ComboGainPerSuccessfulCard,
+        PerformanceDurationMultiplier,
+        PerformanceScoreMultiplier,
+        PerfectClearScoreMultiplier,
+        CardUpgrade,
         RevealAudiencePreferences,
         PeriodicIdleDrawSeconds
     }

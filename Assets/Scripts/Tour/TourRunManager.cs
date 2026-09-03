@@ -222,6 +222,28 @@ namespace ContextStage
                 grantedCard = catalogCard;
             }
 
+            if (definition.EffectType == AugmentEffectType.CardUpgrade)
+            {
+                CardUpgradeData upgrade = tierData.CardUpgrade;
+                CardCatalog cardCatalog = CardCatalog.LoadDefault();
+                string cardCatalogError = string.Empty;
+                if (upgrade == null ||
+                    upgrade.TargetCard == null ||
+                    cardCatalog == null ||
+                    !cardCatalog.TryValidate(out cardCatalogError) ||
+                    !cardCatalog.TryGetCard(
+                        upgrade.TargetCard.Id,
+                        out _))
+                {
+                    Debug.LogWarning(
+                        $"[TourRun] 강화 대상 카드가 올바르게 등록되지 않았습니다: " +
+                        $"{augmentId}:{tier} " +
+                        $"({(upgrade?.TargetCard == null ? "missing target card" : cardCatalog == null ? CardCatalog.ResourcesPath : cardCatalogError)})",
+                        this);
+                    return false;
+                }
+            }
+
             RunNodeState currentNode = run.CurrentNode;
             if (currentNode == null) return false;
 

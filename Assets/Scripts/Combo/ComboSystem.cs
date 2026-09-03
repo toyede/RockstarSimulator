@@ -55,9 +55,10 @@ namespace ContextStage
         public ComboResolution ResolveCard(
             CardRole role,
             int rawScore,
-            bool isSpecialHit)
+            bool isSpecialHit,
+            bool countsAsPerformance = false)
         {
-            if (role == CardRole.Utility)
+            if (role == CardRole.Utility && !countsAsPerformance)
             {
                 return new ComboResolution(
                     _currentCombo,
@@ -83,7 +84,8 @@ namespace ContextStage
                 TryPreventComboLoss(previous);
 
             if (succeeded)
-                _currentCombo = previous + 1;
+                _currentCombo = previous +
+                    AugmentRuntime.Current.ComboGainPerSuccessfulCard;
             else if (failed && !comboLossPrevented)
                 _currentCombo = 0;
 

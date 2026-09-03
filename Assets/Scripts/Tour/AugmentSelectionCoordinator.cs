@@ -192,15 +192,23 @@ namespace ContextStage
                     continue;
                 }
 
-                CardDefinition grantedCard = tierData.GrantedCard;
+                CardUpgradeData upgrade = tierData.CardUpgrade;
+                CardDefinition previewCard = tierData.GrantedCard != null
+                    ? tierData.GrantedCard
+                    : upgrade?.TargetCard;
                 models.Add(new AugmentOwnedItemViewModel
                 {
                     icon = definition.Icon != null
                         ? definition.Icon
-                        : grantedCard?.Artwork,
+                        : upgrade?.Artwork != null
+                            ? upgrade.Artwork
+                            : previewCard?.Artwork,
                     displayName = definition.DisplayName,
-                    description = grantedCard != null
-                        ? grantedCard.Description
+                    description = tierData.GrantedCard != null
+                        ? tierData.GrantedCard.Description
+                        : upgrade != null &&
+                          !string.IsNullOrWhiteSpace(upgrade.DescriptionOverride)
+                            ? upgrade.DescriptionOverride
                         : tierData.Description
                 });
             }
@@ -294,7 +302,7 @@ namespace ContextStage
         AugmentChoiceViewModel CreateViewModel(int slotIndex)
         {
             AugmentOffer offer = _currentOffers[slotIndex];
-            CardDefinition grantedCard = offer.TierData.GrantedCard;
+            CardUpgradeData upgrade = offer.TierData.CardUpgrade;
             return new AugmentChoiceViewModel
             {
                 slotIndex = slotIndex,
@@ -303,21 +311,32 @@ namespace ContextStage
                 tierColor = ResolveTierColor(offer.TierData.Tier),
                 displayName = offer.Definition.DisplayName,
                 description = offer.TierData.Description,
-                grantedCard = CreateCardPreview(grantedCard),
+                grantedCard = CreateCardPreview(offer.TierData.GrantedCard, upgrade),
                 rerollsRemaining = _rerollsRemaining[slotIndex],
                 canSelect = true
             };
         }
 
-        static AugmentCardPreviewViewModel CreateCardPreview(CardDefinition card)
+        static AugmentCardPreviewViewModel CreateCardPreview(
+            CardDefinition grantedCard,
+            CardUpgradeData upgrade)
         {
+            CardDefinition card = grantedCard != null
+                ? grantedCard
+                : upgrade?.TargetCard;
             if (card == null) return null;
 
             return new AugmentCardPreviewViewModel
             {
-                artwork = card.Artwork,
-                displayName = card.DisplayName,
-                description = card.Description
+                artwork = upgrade?.Artwork != null ? upgrade.Artwork : card.Artwork,
+                displayName = upgrade != null &&
+                              !string.IsNullOrWhiteSpace(upgrade.DisplayNameOverride)
+                    ? upgrade.DisplayNameOverride
+                    : card.DisplayName,
+                description = upgrade != null &&
+                              !string.IsNullOrWhiteSpace(upgrade.DescriptionOverride)
+                    ? upgrade.DescriptionOverride
+                    : card.Description
             };
         }
 

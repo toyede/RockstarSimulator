@@ -83,6 +83,14 @@ namespace ContextStage
                             $"{definition.AugmentId}:{tier.Tier} has no granted card.";
                         return false;
                     }
+
+                    if (definition.EffectType == AugmentEffectType.CardUpgrade &&
+                        (tier.CardUpgrade == null || !tier.CardUpgrade.IsConfigured))
+                    {
+                        error =
+                            $"{definition.AugmentId}:{tier.Tier} has no card upgrade target.";
+                        return false;
+                    }
                 }
 
                 if (enabledTiers.Count == 0)

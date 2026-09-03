@@ -1,23 +1,70 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine.Serialization;
 using UnityEngine;
 
 namespace ContextStage
 {
     [Serializable]
+    public sealed class AugmentEffectValue
+    {
+        [SerializeField] AugmentEffectType effectType;
+        [SerializeField] float value;
+
+        public AugmentEffectType EffectType => effectType;
+        public float Value => value;
+    }
+
+    /// <summary>
+    /// 기존 카드의 기능과 표현을 런타임에 덧씌운다.
+    /// 카드 원본 프리팹은 바꾸지 않으므로, 추후 강화 일러스트를 이 데이터에만 연결할 수 있다.
+    /// </summary>
+    [Serializable]
+    public sealed class CardUpgradeData
+    {
+        [Header("Gameplay")]
+        [SerializeField] CardDefinition targetCard;
+        [SerializeField, Min(0)] int extraCardsAfterUse;
+        [SerializeField, Min(0), FormerlySerializedAs("audienceEngagementBonus")]
+        int audienceReactionBonus;
+
+        [Header("Optional Presentation")]
+        [SerializeField] Sprite artwork;
+        [SerializeField] string displayNameOverride = string.Empty;
+        [SerializeField, TextArea(2, 4)] string descriptionOverride = string.Empty;
+        [SerializeField] int presentationPriority;
+
+        public CardDefinition TargetCard => targetCard;
+        public int ExtraCardsAfterUse => Mathf.Max(0, extraCardsAfterUse);
+        public int AudienceReactionBonus => Mathf.Max(0, audienceReactionBonus);
+        public Sprite Artwork => artwork;
+        public string DisplayNameOverride => displayNameOverride ?? string.Empty;
+        public string DescriptionOverride => descriptionOverride ?? string.Empty;
+        public int PresentationPriority => presentationPriority;
+        public bool IsConfigured => targetCard != null;
+    }
+
+    [Serializable]
     public sealed class AugmentTierData
     {
         [SerializeField] AugmentTier tier;
         [SerializeField] bool enabled = true;
-        [SerializeField, Min(0f)] float value;
+        [SerializeField] float value;
         [SerializeField, TextArea(2, 4)] string description = string.Empty;
         [SerializeField] CardDefinition grantedCard;
+        [SerializeField] List<AugmentEffectValue> additionalEffects =
+            new List<AugmentEffectValue>();
+        [SerializeField] CardUpgradeData cardUpgrade = new CardUpgradeData();
 
         public AugmentTier Tier => tier;
         public bool Enabled => enabled;
-        public float Value => Mathf.Max(0f, value);
+        public float Value => value;
         public string Description => description ?? string.Empty;
         public CardDefinition GrantedCard => grantedCard;
+        public IReadOnlyList<AugmentEffectValue> AdditionalEffects =>
+            additionalEffects ?? (IReadOnlyList<AugmentEffectValue>)
+                Array.Empty<AugmentEffectValue>();
+        public CardUpgradeData CardUpgrade => cardUpgrade;
     }
 
     /// <summary>

@@ -40,7 +40,10 @@ namespace ContextStage
             StageDefinition stage = TourRunManager.Instance.CurrentStageDefinition;
             PerformanceTimerSystem timer = PerformanceTimerSystem.Instance;
             if (stage == null || timer == null) return;
-            timer.SetRuntimeStageSettings(stage.Duration, stage.TargetScore);
+            float duration =
+                stage.Duration *
+                AugmentRuntime.Current.PerformanceDurationMultiplier;
+            timer.SetRuntimeStageSettings(duration, stage.TargetScore);
         }
 
         bool HasTourPerformance()

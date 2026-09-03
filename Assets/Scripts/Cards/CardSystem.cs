@@ -116,7 +116,7 @@ namespace ContextStage
             if (config == null) return 0;
 
             return Mathf.Clamp(
-                config.MinimumHandSize + AugmentRuntime.Current.MinimumHandSizeBonus,
+                config.MinimumHandSize + AugmentRuntime.Current.MinimumHandSizeDelta,
                 1,
                 MaximumSupportedHandSize);
         }
@@ -157,6 +157,12 @@ namespace ContextStage
             {
                 var card = _hand[index];
                 int handCountBeforeUse = _hand.Count;
+                CardUpgradeModifiers cardUpgrade =
+                    AugmentRuntime.Current.ResolveCardUpgrade(card.Id);
+                bool countsAsPerformance =
+                    cardUpgrade.HasAudienceReactionBonus;
+                CardRuntimePresentation cardPresentation =
+                    CardRuntimePresentation.Resolve(card, cardUpgrade);
                 AudienceReactionProfile profile = card.AudienceReaction;
                 if (profile == null)
                 {
@@ -242,6 +248,7 @@ namespace ContextStage
                     !TryApplyGeneralAudienceReaction(
                         card,
                         profile,
+                        cardUpgrade.AudienceReactionBonus,
                         out gainedScore,
                         out positiveReactionCount,
                         out reactionAudienceCount))
@@ -274,9 +281,10 @@ namespace ContextStage
                     ? ComboSystem.Instance.ResolveCard(
                         card.Role,
                         rawScore,
-                        isSpecialHit)
+                        isSpecialHit,
+                        countsAsPerformance)
                     : new ComboResolution(0, 1f, isSpecialHit || rawScore > 0);
-                int comboScore = card.Role == CardRole.Utility
+                int comboScore = card.Role == CardRole.Utility && !countsAsPerformance
                     ? 0
                     : Mathf.RoundToInt(rawScore * combo.Multiplier);
                 int feverAudienceCount = audienceRoster.Members.Count;
@@ -301,7 +309,7 @@ namespace ContextStage
                 EventBus.Raise(new CardSelected
                 {
                     CardId = card.Id,
-                    DisplayName = card.DisplayName,
+                    DisplayName = cardPresentation.DisplayName,
                     HandIndex = index,
                     Judgement = feedback,
                     Delta = 0f,
@@ -312,7 +320,7 @@ namespace ContextStage
                 EventBus.Raise(new CardResolved
                 {
                     CardId = card.Id,
-                    DisplayName = card.DisplayName,
+                    DisplayName = cardPresentation.DisplayName,
                     HandIndex = index,
                     Role = card.Role,
                     TargetPreference = card.TargetPreference,
@@ -335,7 +343,10 @@ namespace ContextStage
                     FeverBonusScore = feverBonusScore
                 });
 
-                ResolveHandEffect(card, handCountBeforeUse);
+                ResolveHandEffect(
+                    card,
+                    handCountBeforeUse,
+                    cardUpgrade.ExtraCardsAfterUse);
                 RaiseHandChanged();
                 return true;
             }
@@ -348,6 +359,7 @@ namespace ContextStage
         bool TryApplyGeneralAudienceReaction(
             CardDefinition card,
             AudienceReactionProfile profile,
+            int audienceReactionBonus,
             out int gainedScore,
             out int positiveReactionCount,
             out int audienceCount)
@@ -362,10 +374,18 @@ namespace ContextStage
             {
                 AudienceReactionResult reaction =
                     AudienceReactionResolver.Resolve(profile, members[i]);
-                _audienceReactions.Add(reaction);
-                gainedScore += reaction.Value;
-                if (reaction.Value > 0) positiveReactionCount++;
+                int reactionValue = reaction.Value + audienceReactionBonus;
+                _audienceReactions.Add(new AudienceReactionResult(
+                    reaction.AudienceId,
+                    reactionValue));
+                gainedScore += reactionValue;
+                if (reactionValue > 0) positiveReactionCount++;
             }
+
+            float engagementMultiplier = audienceReactionBonus > 0 &&
+                profile.EngagementMultiplier <= 0f
+                ? 1f
+                : profile.EngagementMultiplier;
 
             for (int i = 0; i < _audienceReactions.Count; i++)
             {
@@ -374,7 +394,7 @@ namespace ContextStage
                         reaction.AudienceId,
                         card.Id,
                         reaction.Value,
-                        profile.EngagementMultiplier,
+                        engagementMultiplier,
                         out _))
                     continue;
 
@@ -413,7 +433,10 @@ namespace ContextStage
             return drawn;
         }
 
-        void ResolveHandEffect(CardDefinition card, int handCountBeforeUse)
+        void ResolveHandEffect(
+            CardDefinition card,
+            int handCountBeforeUse,
+            int extraCardsAfterUse)
         {
             if (card.Role != CardRole.Utility)
             {
@@ -424,11 +447,11 @@ namespace ContextStage
             switch (card.UtilityEffect)
             {
                 case UtilityCardEffect.Draw:
-                    DrawCards(card.DrawCount);
+                    DrawCards(card.DrawCount + extraCardsAfterUse);
                     break;
                 case UtilityCardEffect.Reroll:
                     _hand.Clear();
-                    DrawCards(handCountBeforeUse);
+                    DrawCards(handCountBeforeUse + extraCardsAfterUse);
                     break;
                 case UtilityCardEffect.ExtendPerformanceTime:
                     PerformanceTimer.ExtendDuration(
@@ -485,7 +508,7 @@ namespace ContextStage
             EventBus.Raise(new CardDrawn
             {
                 CardId = card.Id,
-                DisplayName = card.DisplayName,
+                DisplayName = CardRuntimePresentation.Resolve(card).DisplayName,
                 HandIndex = _hand.Count - 1,
                 IsEncoreBonus = false
             });

@@ -1,0 +1,103 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4170895280665012539
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2139342019172240441}
+  - component: {fileID: 7492478589413716385}
+  m_Layer: 0
+  m_Name: Augment_DrawAudienceBoost
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2139342019172240441
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4170895280665012539}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7492478589413716385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4170895280665012539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5898dee52167dc744bac1ddb23159f8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AugmentDefinition
+  augmentId: draw_audience_boost
+  displayName: "\uB4DC\uB85C\uC6B0 \uC751\uC6D0"
+  icon: {fileID: 0}
+  effectType: 12
+  tierOwnershipPolicy: 1
+  tiers:
+  - tier: 0
+    enabled: 1
+    value: 0
+    description: "\uB4DC\uB85C\uC6B0 \uC0AC\uC6A9 \uC2DC \uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C
+      +10 \uBC18\uC751 \uC810\uC218\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+    grantedCard: {fileID: 0}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 7367045592451404702, guid: 95559096d82545942969af721b09b38d, type: 3}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 10
+      artwork: {fileID: 0}
+      displayNameOverride: "\uB4DC\uB85C\uC6B0: \uC2A4\uD3EC\uD2B8\uB77C\uC774\uD2B8"
+      descriptionOverride: "\uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C +10 \uBC18\uC751
+        \uC810\uC218\uB97C \uBD80\uC5EC\uD558\uACE0, \uB371\uC5D0\uC11C \uCE74\uB4DC
+        2\uC7A5\uC744 \uD68D\uB4DD\uD55C\uB2E4."
+      presentationPriority: 2
+  - tier: 1
+    enabled: 1
+    value: 0
+    description: "\uB4DC\uB85C\uC6B0 \uC0AC\uC6A9 \uC2DC \uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C
+      +20 \uBC18\uC751 \uC810\uC218\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+    grantedCard: {fileID: 0}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 7367045592451404702, guid: 95559096d82545942969af721b09b38d, type: 3}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 20
+      artwork: {fileID: 0}
+      displayNameOverride: "\uB4DC\uB85C\uC6B0: \uC2A4\uD3EC\uD2B8\uB77C\uC774\uD2B8"
+      descriptionOverride: "\uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C +20 \uBC18\uC751
+        \uC810\uC218\uB97C \uBD80\uC5EC\uD558\uACE0, \uB371\uC5D0\uC11C \uCE74\uB4DC
+        2\uC7A5\uC744 \uD68D\uB4DD\uD55C\uB2E4."
+      presentationPriority: 2
+  - tier: 2
+    enabled: 1
+    value: 0
+    description: "\uB4DC\uB85C\uC6B0 \uC0AC\uC6A9 \uC2DC \uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C
+      +30 \uBC18\uC751 \uC810\uC218\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+    grantedCard: {fileID: 0}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 7367045592451404702, guid: 95559096d82545942969af721b09b38d, type: 3}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 30
+      artwork: {fileID: 0}
+      displayNameOverride: "\uB4DC\uB85C\uC6B0: \uC2A4\uD3EC\uD2B8\uB77C\uC774\uD2B8"
+      descriptionOverride: "\uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C +30 \uBC18\uC751
+        \uC810\uC218\uB97C \uBD80\uC5EC\uD558\uACE0, \uB371\uC5D0\uC11C \uCE74\uB4DC
+        2\uC7A5\uC744 \uD68D\uB4DD\uD55C\uB2E4."
+      presentationPriority: 2

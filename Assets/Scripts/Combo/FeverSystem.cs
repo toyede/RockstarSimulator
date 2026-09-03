@@ -92,12 +92,16 @@ namespace ContextStage
                 _startAfterCurrentCard ||
                 config == null ||
                 e.CurrentCombo <= e.PreviousCombo ||
-                e.CurrentCombo <= 0 ||
-                e.CurrentCombo % config.FeverComboInterval != 0)
+                e.CurrentCombo <= 0)
                 return;
 
+            int interval = Mathf.Max(1, config.FeverComboInterval);
+            int previousMilestone = e.PreviousCombo / interval;
+            int currentMilestone = e.CurrentCombo / interval;
+            if (currentMilestone <= previousMilestone) return;
+
             _startAfterCurrentCard = true;
-            _triggerCombo = e.CurrentCombo;
+            _triggerCombo = currentMilestone * interval;
         }
 
         void OnCardResolved(CardResolved e)

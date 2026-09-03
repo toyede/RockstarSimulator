@@ -76,14 +76,15 @@ namespace ContextStage
 
             gameObject.SetActive(true);
             _boundCard = card;
+            CardRuntimePresentation presentation = CardRuntimePresentation.Resolve(card);
             if (artwork != null)
             {
-                artwork.sprite = card.Artwork;
-                artwork.enabled = card.Artwork != null;
+                artwork.sprite = presentation.Artwork;
+                artwork.enabled = presentation.Artwork != null;
                 artwork.preserveAspect = true;
             }
-            if (titleText != null) titleText.text = card.DisplayName;
-            if (descriptionText != null) descriptionText.text = card.Description;
+            if (titleText != null) titleText.text = presentation.DisplayName;
+            if (descriptionText != null) descriptionText.text = presentation.Description;
             EnsureSpecialIdleVfx();
             _specialIdleVfx.Bind(background, card.Role == CardRole.Special);
             ApplyFeverVisual();

@@ -111,6 +111,11 @@ namespace ContextStage
             var gm = GameManager.Instance;
             if (gm == null) return;
 
+            // GameManager.GameOver()는 여기서 하이스코어를 먼저 제출한다.
+            // 따라서 제한시간을 끝까지 버틴 퍼펙트 클리어 보상은 그 전에 적용한다.
+            if (PerformanceScoreSystem.HasInstance)
+                PerformanceScoreSystem.Instance.ApplyTimedPerformanceFinalRewards();
+
             gm.GameOver(); // 시간 초과는 성공/실패 모두 공연 종료
         }
 

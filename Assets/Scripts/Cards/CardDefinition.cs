@@ -3,6 +3,47 @@ using UnityEngine;
 
 namespace ContextStage
 {
+    public readonly struct CardRuntimePresentation
+    {
+        public CardRuntimePresentation(
+            Sprite artwork,
+            string displayName,
+            string description)
+        {
+            Artwork = artwork;
+            DisplayName = displayName ?? string.Empty;
+            Description = description ?? string.Empty;
+        }
+
+        public Sprite Artwork { get; }
+        public string DisplayName { get; }
+        public string Description { get; }
+
+        public static CardRuntimePresentation Resolve(
+            CardDefinition card,
+            CardUpgradeModifiers upgrade)
+        {
+            if (card == null) return default;
+
+            return new CardRuntimePresentation(
+                upgrade.Artwork != null ? upgrade.Artwork : card.Artwork,
+                string.IsNullOrWhiteSpace(upgrade.DisplayNameOverride)
+                    ? card.DisplayName
+                    : upgrade.DisplayNameOverride,
+                string.IsNullOrWhiteSpace(upgrade.DescriptionOverride)
+                    ? card.Description
+                    : upgrade.DescriptionOverride);
+        }
+
+        public static CardRuntimePresentation Resolve(CardDefinition card)
+        {
+            CardUpgradeModifiers upgrade = card == null
+                ? default
+                : AugmentRuntime.Current.ResolveCardUpgrade(card.Id);
+            return Resolve(card, upgrade);
+        }
+    }
+
     public enum CardRole
     {
         Normal,
