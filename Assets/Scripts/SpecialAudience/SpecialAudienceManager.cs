@@ -253,6 +253,25 @@ namespace ContextStage
 
         // ---------------- 공개 메서드 ----------------
 
+        SpecialAudienceConfig _defaultConfig; // 씬에 지정된 원래 설정 (스테이지 주입 전)
+
+        /// <summary>
+        /// [스테이지 전용] 이 공연에서만 쓸 설정으로 바꾼다. null 이면 씬 기본 설정으로 되돌린다.
+        /// ScriptableObject 원본은 수정하지 않는다.
+        /// </summary>
+        public void SetRuntimeConfig(SpecialAudienceConfig runtimeConfig)
+        {
+            if (_defaultConfig == null) _defaultConfig = config;
+            config = runtimeConfig != null ? runtimeConfig : _defaultConfig;
+            _warnedMissingConfig = false;
+            if (config != null && !enabled) enabled = true;
+        }
+
+        /// <summary>[스테이지 전용] 공연 시작(Ready → Playing)에 자동으로 켤지. 룰이 없는 스테이지는 false.</summary>
+        public void SetAutoStart(bool value) => autoStart = value;
+
+        public bool AutoStart => autoStart;
+
         /// <summary>시스템을 켠다. 첫 등장까지 firstSpawnDelay 만큼 기다린다.</summary>
         public void StartSystem()
         {

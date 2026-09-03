@@ -108,6 +108,12 @@ namespace ContextStage
         /// </summary>
         static UIBlurBackdrop s_owner;
 
+        /// <summary>코드로 계층을 만들 때 셰이더를 직접 넣는다 (대화창 팩토리·프리팹 생성 메뉴용).</summary>
+        public void EditorAssignShader(Shader shader)
+        {
+            if (shader != null) blurShader = shader;
+        }
+
         Material _material;
         RenderTexture _capture;
         RenderTexture _blurA;

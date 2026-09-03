@@ -20,5 +20,7 @@ MonoBehaviour:
   duration: 120
   preDialogueId: intro_stage_05_boss
   rewardTableId: 
-  audiencePresetId: 
-  venueRuleIds: []
+  audiencePresetId: audience_stadium_final
+  venueRuleIds:
+  - special_audience_requests
+  - rival_crowd_challenge

@@ -413,6 +413,42 @@ namespace ContextStage
             return true;
         }
 
+        /// <summary>
+        /// [스테이지 전용] 스테이지 프리셋으로 내부 모델을 다시 만들고 관객을 초기화한다.
+        /// Playing 전(StageRuntimeDirector.Awake)에 한 번만 호출한다. 증강 보정은 프리셋 위에 합산된다.
+        /// 전역 Config 에셋은 수정하지 않으며, 로스터는 씬 종속이라 다음 스테이지에 남지 않는다.
+        /// </summary>
+        public bool ConfigureForStage(AudienceStagePreset preset)
+        {
+            if (preset == null || engagementConfig == null) return false;
+
+            AudienceEngagementRules engagement = preset.CreateEngagementRules(engagementConfig);
+            AugmentRuntimeModifiers modifiers = AugmentRuntime.Current;
+            AudienceFlowRules flow = preset.CreateFlowRules(
+                modifiers.InitialAudienceBonus,
+                modifiers.AudienceArrivalIntervalReduction);
+
+            if (!engagement.TryValidate(out string engagementError))
+            {
+                Debug.LogError(
+                    $"[AudienceRoster] Invalid stage preset '{preset.PresetId}': {engagementError}",
+                    preset);
+                return false;
+            }
+
+            if (!flow.TryValidate(out string flowError))
+            {
+                Debug.LogError(
+                    $"[AudienceRoster] Invalid stage preset '{preset.PresetId}': {flowError}",
+                    preset);
+                return false;
+            }
+
+            _model = new AudienceRosterModel(engagement, flow);
+            enabled = true;
+            return ResetRoster();
+        }
+
 #if UNITY_EDITOR
         void OnValidate()
         {

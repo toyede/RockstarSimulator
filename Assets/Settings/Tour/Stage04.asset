@@ -20,5 +20,7 @@ MonoBehaviour:
   duration: 120
   preDialogueId: intro_stage_04
   rewardTableId: reward_advanced
-  audiencePresetId: 
-  venueRuleIds: []
+  audiencePresetId: audience_arena_mainstream
+  venueRuleIds:
+  - special_audience_requests
+  - arena_adaptive_event

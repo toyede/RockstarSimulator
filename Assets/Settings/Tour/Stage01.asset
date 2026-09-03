@@ -20,5 +20,6 @@ MonoBehaviour:
   duration: 120
   preDialogueId: intro_stage_01
   rewardTableId: reward_basic
-  audiencePresetId: 
-  venueRuleIds: []
+  audiencePresetId: audience_alley_balanced
+  venueRuleIds:
+  - busking_walk_in

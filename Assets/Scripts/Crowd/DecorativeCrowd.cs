@@ -421,6 +421,33 @@ namespace ContextStage
             renderer.color = color;
         }
 
+        /// <summary>
+        /// [스테이지 전용] 장식 관객 스프라이트를 공연장 전용 세트로 바꾼다.
+        /// 개체는 그대로 두고 그림만 바꾸므로 배치·들썩임은 유지된다. 빈 목록이면 무시.
+        /// </summary>
+        public void ReplaceVariants(IReadOnlyList<Sprite> sprites)
+        {
+            if (sprites == null || sprites.Count == 0) return;
+
+            variants = new List<Sprite>(sprites.Count);
+            for (int i = 0; i < sprites.Count; i++)
+                if (sprites[i] != null) variants.Add(sprites[i]);
+            if (variants.Count == 0) return;
+
+            if (_decorations.Count == 0)
+            {
+                BuildDecorations();
+                return;
+            }
+
+            var random = new System.Random(seed);
+            for (int i = 0; i < _decorations.Count; i++)
+            {
+                SpriteRenderer renderer = _decorations[i].Renderer;
+                if (renderer != null) renderer.sprite = variants[random.Next(variants.Count)];
+            }
+        }
+
 #if UNITY_EDITOR
         void OnValidate()
         {
