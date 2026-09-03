@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75911b3309884714287f6685789f4839, type: 3}
+  m_Name: StageVisualCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.StageVisualCatalog
+  entries:
+  - stageId: stage_01
+    backgroundBase: {fileID: 21300000, guid: 363a8128fdf064343a35e1350a33cdd0, type: 3}
+    lightOverlays:
+    - {fileID: 21300000, guid: ebb25ef75ab781447bef4b2b4bacddf9, type: 3}
+    - {fileID: 21300000, guid: 16f0e7df8cc3a084d9c78772ca109e13, type: 3}
+    foregroundLeft: {fileID: 21300000, guid: dcfafa2f732dbea4181c1220d6ec6f0e, type: 3}
+    foregroundRight: {fileID: 21300000, guid: 8eed11930155c474ba1491eb8ccb18da, type: 3}
+    decorativeCrowdVariants: []
+    mapThumbnail: {fileID: 21300000, guid: 3ab583694521de24c80e8a28d13ccb40, type: 3}
+    ruleIcon: {fileID: 21300000, guid: d82f444518cb0a549bd624df96d9fe8b, type: 3}
+    ruleTitle: "\uACE8\uBAA9 \uBC84\uC2A4\uD0B9"
+    ruleBody: "\uC9C0\uB098\uAC00\uB358 \uAD00\uAC1D\uC740 \uAD00\uC2EC\uC774 \uC2DD\uC73C\uBA74
+      \uBC14\uB85C \uB5A0\uB0A9\uB2C8\uB2E4.\n\uBCF5\uC7A5\uACFC \uC0C1\uD0DC\uB97C
+      \uC0B4\uD3B4 \uB9DE\uB294 \uCE74\uB4DC\uB97C \uC0AC\uC6A9\uD558\uC138\uC694."
+  - stageId: stage_02
+    backgroundBase: {fileID: 21300000, guid: 1325e2fb55beaee4f824b090f6e701e9, type: 3}
+    lightOverlays: []
+    foregroundLeft: {fileID: 0}
+    foregroundRight: {fileID: 0}
+    decorativeCrowdVariants: []
+    mapThumbnail: {fileID: 21300000, guid: 8b68ed0826b197349a648fba7fdc6e26, type: 3}
+    ruleIcon: {fileID: 0}
+    ruleTitle: "\uB2E8\uACE8\uC758 \uC694\uCCAD"
+    ruleBody: "\uD2B9\uBCC4 \uAD00\uAC1D\uC740 \uC6D0\uD558\uB294 \uACF5\uC5F0\uC744
+      \uC9C1\uC811 \uC694\uAD6C\uD569\uB2C8\uB2E4.\n\uAC19\uC740 \uC131\uD5A5\uC758
+      Special \uCE74\uB4DC\uB97C \uAD00\uAC1D\uC5D0\uAC8C \uB4DC\uB86D\uD558\uC138\uC694."
+  - stageId: stage_03
+    backgroundBase: {fileID: 21300000, guid: 2697279beab1c7a4eb0c83513567faa4, type: 3}
+    lightOverlays: []
+    foregroundLeft: {fileID: 0}
+    foregroundRight: {fileID: 0}
+    decorativeCrowdVariants: []
+    mapThumbnail: {fileID: 21300000, guid: 31a76b1b8ef91c847940e8577b971297, type: 3}
+    ruleIcon: {fileID: 0}
+    ruleTitle: "\uAD00\uAC1D \uC7C1\uD0C8\uC804"
+    ruleBody: "\uC606 \uBB34\uB300\uAC00 \uC77C\uBD80 \uAD00\uAC1D\uC744 \uC720\uD639\uD569\uB2C8\uB2E4.\n\uACBD\uACE0\uB41C
+      \uAD00\uAC1D\uC758 \uD638\uC751\uB3C4\uB97C \uC62C\uB9AC\uAC70\uB098 Special
+      \uCE74\uB4DC\uB85C \uBD99\uC7A1\uC73C\uC138\uC694."
+  - stageId: stage_04
+    backgroundBase: {fileID: 21300000, guid: f0cd407445c1156429951a6c1ba2ca47, type: 3}
+    lightOverlays: []
+    foregroundLeft: {fileID: 0}
+    foregroundRight: {fileID: 0}
+    decorativeCrowdVariants: []
+    mapThumbnail: {fileID: 21300000, guid: 5b63f594709fb95498790ac5a705086d, type: 3}
+    ruleIcon: {fileID: 0}
+    ruleTitle: "\uC0DD\uBC29\uC1A1\uC758 \uBCC0\uC218"
+    ruleBody: "\uD604\uC7AC \uACF5\uC5F0 \uC131\uACFC\uC5D0 \uB530\uB77C \uC704\uAE30
+      \uB610\uB294 \uC9C0\uC6D0\uC774 \uD55C \uBC88 \uBC1C\uC0DD\uD569\uB2C8\uB2E4.\n\uACBD\uACE0\uB97C
+      \uD655\uC778\uD558\uACE0 \uCE74\uB4DC \uACC4\uD68D\uC744 \uBC14\uAFB8\uC138\uC694."
+  - stageId: stage_05_boss
+    backgroundBase: {fileID: 21300000, guid: b9a9d25b8a80a8e4eabb6392cbee4c7c, type: 3}
+    lightOverlays: []
+    foregroundLeft: {fileID: 0}
+    foregroundRight: {fileID: 0}
+    decorativeCrowdVariants: []
+    mapThumbnail: {fileID: 21300000, guid: ec3bbead60d9e664f95566d3a25837d9, type: 3}
+    ruleIcon: {fileID: 0}
+    ruleTitle: "\uB77C\uC774\uBC8C \uBC30\uD2C0"
+    ruleBody: "LUX//FAUNA\uAC00 \uD2B9\uC815 \uD32C\uCE35\uC744 \uBE7C\uC557\uC73C\uB824
+      \uD569\uB2C8\uB2E4.\n\uC608\uACE0\uB41C \uAD00\uAC1D\uC758 \uD638\uC751\uB3C4\uB97C
+      60 \uC774\uC0C1\uC73C\uB85C \uB9CC\uB4E4\uAC70\uB098 \uB300\uC751 Special \uCE74\uB4DC\uB97C
+      \uC131\uACF5\uC2DC\uD0A4\uC138\uC694."

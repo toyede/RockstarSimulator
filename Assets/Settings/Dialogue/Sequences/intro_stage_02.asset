@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6525ea3e323dc84dbc38cc118938d9b, type: 3}
+  m_Name: intro_stage_02
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.DialogueSequence
+  sequenceId: intro_stage_02
+  lines:
+  - speakerId: promoter
+    speakerName: "\uACF5\uC5F0 \uAE30\uD68D\uC790"
+    portrait: {fileID: 0}
+    emotionId: interested
+    text: "\uACE8\uBAA9\uC5D0\uC11C \uC0AC\uB78C\uC744 \uBA48\uCDB0 \uC138\uC6E0\uB2E4\uBA70?
+      \uC624\uB298 \uC624\uD504\uB2DD \uC790\uB9AC\uAC00 \uD558\uB098 \uBE44\uC5C8\uC5B4."
+    side: 1
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 0}
+    emotionId: excited
+    text: "\uB4DC\uB514\uC5B4 \uCC9C\uC7A5\uACFC \uC870\uBA85\uC774 \uC788\uB294
+      \uBB34\uB300\uB2E4!"
+    side: 0
+    sfxId: 
+  - speakerId: hedgehog
+    speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
+    portrait: {fileID: 0}
+    emotionId: wary
+    text: "\uC5EC\uAE34 \uB2E8\uACE8\uC774 \uB9CE\uC544. \uAC00\uB054 \uC6D0\uD558\uB294
+      \uAC78 \uB300\uB193\uACE0 \uC694\uAD6C\uD558\uB294 \uD32C\uB3C4 \uC788\uC5B4."
+    side: 0
+    sfxId: 
+  - speakerId: bandmate
+    speakerName: "\uBC34\uB4DC \uB3D9\uB8CC"
+    portrait: {fileID: 0}
+    emotionId: explain
+    text: "\uD2B9\uBCC4 \uAD00\uAC1D\uC758 \uC694\uCCAD\uACFC \uAC19\uC740 Special
+      \uCE74\uB4DC\uB97C \uADF8 \uAD00\uAC1D\uC5D0\uAC8C \uC9C1\uC811 \uAC74\uB124.
+      \uC2DC\uAC04 \uC548\uC5D0 \uB9D0\uC774\uC57C."
+    side: 0
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 0}
+    emotionId: confident
+    text: "\uD32C\uC774 \uC6D0\uD558\uB294 \uAC78 \uB9D0\uD574 \uC900\uB2E4\uACE0?
+      \uADF8\uAC74 \uB098\uB3C4 \uC54C\uC544\uB4E4\uC744 \uC218 \uC788\uC9C0!"
+    side: 0
+    sfxId: 

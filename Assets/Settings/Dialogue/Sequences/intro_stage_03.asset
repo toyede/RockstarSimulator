@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6525ea3e323dc84dbc38cc118938d9b, type: 3}
+  m_Name: intro_stage_03
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.DialogueSequence
+  sequenceId: intro_stage_03
+  lines:
+  - speakerId: promoter
+    speakerName: "\uACF5\uC5F0 \uAE30\uD68D\uC790"
+    portrait: {fileID: 0}
+    emotionId: hurried
+    text: "\uD398\uC2A4\uD2F0\uBC8C\uC740 \uB77C\uC774\uBE0C\uD640\uC774\uB791 \uB2EC\uB77C.
+      \uB9C8\uC74C\uC5D0 \uC548 \uB4E4\uBA74 \uAD00\uAC1D\uC740 \uBC14\uB85C \uC606
+      \uBB34\uB300\uB85C \uAC00 \uBC84\uB824."
+    side: 1
+    sfxId: 
+  - speakerId: rival
+    speakerName: LUX//FAUNA
+    portrait: {fileID: 0}
+    emotionId: sneer
+    text: "\uC791\uC740 \uACE8\uBAA9\uC758 \uD658\uD638\uAC00 \uC9C4\uC9DC \uC778\uAE30\uC778
+      \uC904 \uC54C\uC558\uB098 \uBD10?"
+    side: 1
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 0}
+    emotionId: angry
+    text: "\uC6B0\uB9AC \uAD00\uAC1D\uC740 \uC6B0\uB9AC \uACF5\uC5F0\uC744 \uC120\uD0DD\uD560
+      \uAC70\uC57C!"
+    side: 0
+    sfxId: 
+  - speakerId: hedgehog
+    speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
+    portrait: {fileID: 0}
+    emotionId: calm
+    text: "\uACBD\uACE0\uAC00 \uB728\uBA74 \uD45C\uC2DC\uB41C \uAD00\uAC1D\uBD80\uD130
+      \uBD10. \uD638\uC751\uB3C4\uB97C \uC62C\uB9AC\uAC70\uB098 Special \uCE74\uB4DC\uB85C
+      \uBD99\uC7A1\uC544."
+    side: 0
+    sfxId: 
+  - speakerId: bandmate
+    speakerName: "\uBC34\uB4DC \uB3D9\uB8CC"
+    portrait: {fileID: 0}
+    emotionId: resolve
+    text: "\uACC4\uD68D\uBCF4\uB2E4 \uAD00\uAC1D\uC774 \uBA3C\uC800\uC57C. \uD750\uB984\uC740
+      \uB2E4\uC2DC \uB9CC\uB4E4 \uC218 \uC788\uC5B4."
+    side: 0
+    sfxId: 

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f493defd189636d46b99f812a05328d9, type: 3}
+  m_Name: StageContentCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.StageContentCatalog
+  audiencePresets:
+  - {fileID: 11400000, guid: 1a1ea2a2ffef52e448187abdac42ca54, type: 2}
+  - {fileID: 11400000, guid: b25b4c0cf42ccd348996047579a88491, type: 2}
+  - {fileID: 11400000, guid: 35eab09f4c2865b4fae8466312759f49, type: 2}
+  - {fileID: 11400000, guid: 7687a37070abf074198ed18abbda8f6b, type: 2}
+  - {fileID: 11400000, guid: 1ff151b2ae8af7c439490fc2c1806bd6, type: 2}

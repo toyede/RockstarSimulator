@@ -127,6 +127,19 @@ namespace ContextStage
             return true;
         }
 
+        /// <summary>
+        /// [스테이지 전용] 이 공연의 위기 설정을 바꾸고 내부 상태를 초기화한다.
+        /// active 가 false 면 위기 시스템을 끈다 (Stage 1·2·Boss). stageConfig 가 null 이면 현재 설정을 유지한다.
+        /// ScriptableObject 원본은 수정하지 않는다.
+        /// </summary>
+        public void ConfigureForStage(AudienceCrisisConfig stageConfig, bool active)
+        {
+            CancelCrisis(false);
+            _wasPlaying = false;
+            if (stageConfig != null) config = stageConfig;
+            enabled = active && ValidateDependencies();
+        }
+
         void UpdateArmed()
         {
             if (config.UseAdaptiveTrigger)

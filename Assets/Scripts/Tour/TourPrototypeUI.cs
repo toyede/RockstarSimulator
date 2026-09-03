@@ -15,9 +15,6 @@ namespace ContextStage
     {
         const string MainSceneName = "Main";
 
-        [Header("Figma Tour Map")]
-        [SerializeField] private TourMapArt mapArt = new TourMapArt();
-
         Text _titleText;
         Text _phaseText;
         Text _bodyText;
@@ -26,7 +23,9 @@ namespace ContextStage
         TourRunManager _manager;
         AugmentSelectionPopup _augmentPopup;
         AugmentSelectionCoordinator _augmentCoordinator;
-        TourMapScreen _mapScreen;
+        Image _background;
+        TourMapView _mapView;
+        bool _dialoguePlaying;
 
         void Awake()
         {
@@ -46,23 +45,49 @@ namespace ContextStage
         {
             if (_manager != null) _manager.StateChanged -= Refresh;
             _augmentCoordinator?.Unbind();
-            if (_augmentPopup != null) _augmentPopup.HideOwnedModal();
-            if (_mapScreen != null) _mapScreen.Hide();
         }
 
         void OnDestroy()
         {
-            if (_mapScreen != null)
-                _mapScreen.OwnedAugmentsRequested -= ShowOwnedAugments;
             _augmentCoordinator?.Dispose();
+            if (_mapView != null)
+            {
+                _mapView.NodeSelected -= OnMapNodeSelected;
+                _mapView.ReturnToTitleRequested -= ReturnToTitle;
+            }
         }
 
         void BuildUI()
         {
             Canvas canvas = TourPrototypeUIFactory.CreateCanvas("TourPrototypeCanvas", 100);
-            TourPrototypeUIFactory.CreateFullscreenImage(
+            _background = TourPrototypeUIFactory.CreateFullscreenImage(
                 canvas.transform,
                 new Color32(0x16, 0x12, 0x1C, 0xFF));
+
+            // 아트 맵 화면: 씬에 배치된 TourMapView(Tools/Tour/Setup Tour Map Scene)를 우선 쓰고,
+            // 없으면 Resources/Tour/TourMapConfig 로 코드 생성한다
+            _mapView = FindFirstObjectByType<TourMapView>(FindObjectsInactive.Include);
+            if (_mapView == null)
+            {
+                TourMapConfig mapConfig = TourMapConfig.LoadDefault();
+                if (mapConfig != null && mapConfig.HasArt)
+                {
+                    var mapObject = new GameObject("TourMap", typeof(RectTransform));
+                    mapObject.transform.SetParent(canvas.transform, false);
+                    _mapView = mapObject.AddComponent<TourMapView>();
+                    DialogueCatalog dialogueCatalog = DialogueCatalog.LoadDefault();
+                    _mapView.Build(
+                        mapConfig,
+                        dialogueCatalog != null && dialogueCatalog.Style != null ? dialogueCatalog.Style.Font : null);
+                }
+            }
+
+            if (_mapView != null)
+            {
+                _mapView.NodeSelected += OnMapNodeSelected;
+                _mapView.ReturnToTitleRequested += ReturnToTitle;
+                _mapView.Hide();
+            }
 
             RectTransform panel = TourPrototypeUIFactory.CreatePanel(
                 canvas.transform,
@@ -113,22 +138,18 @@ namespace ContextStage
             layout.childForceExpandHeight = false;
 
             _augmentPopup = PrototypeAugmentSelectionUIFactory.Create(canvas.transform);
-            _augmentPopup.SetOwnedModalHost(canvas.transform);
             _augmentCoordinator = new AugmentSelectionCoordinator(_augmentPopup);
-            _mapScreen = TourMapScreen.Create(canvas.transform, mapArt);
-            _mapScreen.OwnedAugmentsRequested += ShowOwnedAugments;
-            _mapScreen.transform.SetSiblingIndex(1);
         }
 
         void Refresh()
         {
+            CancelStageDialogueIfLeft();
+            if (_mainPanel != null) _mainPanel.gameObject.SetActive(true);
             _augmentPopup?.Hide();
             ClearButtons();
 
             if (_manager == null || _manager.CurrentRun == null)
             {
-                _mapScreen?.Hide();
-                if (_mainPanel != null) _mainPanel.gameObject.SetActive(true);
                 SetHeader("NO ACTIVE TOUR", "NO RUN");
                 _bodyText.text = "Start a new tour from the Title scene.";
                 AddButton("RETURN TO TITLE", ReturnToTitle);
@@ -136,19 +157,19 @@ namespace ContextStage
             }
 
             TourRunState run = _manager.CurrentRun;
-
-            if (run.phase == RunPhase.Map || run.phase == RunPhase.Travel)
-            {
-                if (_mainPanel != null) _mainPanel.gameObject.SetActive(false);
-                _mapScreen?.Show(_manager, run);
-                return;
-            }
-
-            _mapScreen?.Hide();
-            if (_mainPanel != null) _mainPanel.gameObject.SetActive(true);
+            UpdateMapVisibility(run);
 
             switch (run.phase)
             {
+                case RunPhase.Map:
+                    if (_mapView != null)
+                    {
+                        // 아트 맵: 노드 클릭 → 버스 이동 → 핀 점멸 → OnMapNodeSelected
+                        if (_mainPanel != null) _mainPanel.gameObject.SetActive(false);
+                        _mapView.Show(run, _manager);
+                    }
+                    else ShowMap(run);
+                    break;
                 case RunPhase.Dialogue:
                     ShowDialogue();
                     break;
@@ -172,17 +193,102 @@ namespace ContextStage
             }
         }
 
+        /// <summary>맵은 Map·Dialogue 단계에만 보인다 (대화창은 맵 위에 블러로 뜬다).</summary>
+        void UpdateMapVisibility(TourRunState run)
+        {
+            if (_mapView == null) return;
+
+            bool showMap = run != null && (run.phase == RunPhase.Map || run.phase == RunPhase.Dialogue);
+            if (_background != null) _background.enabled = !showMap;
+            if (!showMap) _mapView.Hide();
+            else if (run.phase == RunPhase.Dialogue && !_mapView.gameObject.activeSelf) _mapView.Show(run, _manager);
+        }
+
+        void OnMapNodeSelected(string nodeId)
+        {
+            if (_manager == null) return;
+            _manager.SelectNode(nodeId);
+        }
+
+        void ShowMap(TourRunState run)
+        {
+            SetHeader("TOUR MAP", run.phase.ToString());
+            _bodyText.text = "Select the next available performance.";
+
+            for (int i = 0; i < run.map.nodes.Count; i++)
+            {
+                RunNodeState node = run.map.nodes[i];
+                StageDefinition stage = _manager.FindStageDefinition(node.stageId);
+                string displayName = stage == null ? node.stageId : stage.DisplayName;
+                string prefix = node.nodeType == RunNodeType.ElitePerformance ? "ELITE" : $"STAGE {i + 1}";
+                string label = $"{prefix}  ·  {displayName}  [{node.status}]";
+                string selectedNodeId = node.nodeId;
+                Button button = AddButton(label, () => _manager.SelectNode(selectedNodeId));
+                button.interactable = node.status == RunNodeStatus.Available;
+                if (!button.interactable)
+                    button.GetComponent<Image>().color = new Color32(0x3E, 0x35, 0x46, 0xFF);
+            }
+
+            AddButton("ABANDON TOUR", ReturnToTitle, danger: true);
+        }
+
         void ShowDialogue()
         {
             StageDefinition stage = _manager.CurrentStageDefinition;
             string displayName = stage == null ? "UNKNOWN STAGE" : stage.DisplayName;
             string dialogueId = stage == null ? "" : stage.PreDialogueId;
 
+            // 실제 대화 시퀀스(DialogueCatalog)가 있으면 대화창으로 진행한다.
+            if (!_dialoguePlaying && TryPlayStageDialogue(stage))
+            {
+                if (_mainPanel != null) _mainPanel.gameObject.SetActive(false);
+                return;
+            }
+
+            // 시퀀스가 없을 때의 임시 폴백 (Tools/Dialogue/Setup Dialogue Data 실행 전)
             SetHeader(displayName, RunPhase.Dialogue.ToString());
             _bodyText.text =
                 $"The band arrives at {displayName}.\n" +
                 $"Temporary dialogue: {dialogueId}";
             AddButton("CONTINUE TO PERFORMANCE", StartSelectedPerformance);
+        }
+
+        bool TryPlayStageDialogue(StageDefinition stage)
+        {
+            if (stage == null) return false;
+
+            var context = new DialoguePresentationContext
+            {
+                venueName = stage.DisplayName,
+                confirmLabel = "공연 시작",
+            };
+
+            if (StageVisualCatalog.TryResolve(stage.StageId, out StageVisualEntry visual))
+            {
+                context.backdrop = visual.backgroundBase;
+                context.ruleIcon = visual.ruleIcon;
+                context.ruleTitle = visual.ruleTitle;
+                context.ruleBody = visual.ruleBody;
+            }
+
+            if (!Dialogue.TryPlay(stage.PreDialogueId, context, OnStageDialogueFinished)) return false;
+            _dialoguePlaying = true;
+            return true;
+        }
+
+        void OnStageDialogueFinished()
+        {
+            _dialoguePlaying = false;
+            StartSelectedPerformance();
+        }
+
+        /// <summary>Dialogue 단계가 아닌데 대화창이 남아 있으면(디버그 진행 등) 조용히 닫는다.</summary>
+        void CancelStageDialogueIfLeft()
+        {
+            TourRunState run = _manager == null ? null : _manager.CurrentRun;
+            if (run != null && run.phase == RunPhase.Dialogue) return;
+            _dialoguePlaying = false;
+            Dialogue.HideImmediate();
         }
 
         void ShowResultFallback(TourRunState run)
@@ -199,15 +305,6 @@ namespace ContextStage
         {
             if (_mainPanel != null) _mainPanel.gameObject.SetActive(false);
             _augmentCoordinator?.Show();
-        }
-
-        void ShowOwnedAugments()
-        {
-            TourRunState run = _manager == null ? null : _manager.CurrentRun;
-            if (run == null || run.phase != RunPhase.Map || _augmentPopup == null) return;
-
-            AugmentCatalog catalog = AugmentCatalog.LoadDefault();
-            _augmentPopup.ShowOwnedModal(AugmentOwnedViewModelBuilder.Build(run, catalog));
         }
 
         void ShowCompleted(TourRunState run)

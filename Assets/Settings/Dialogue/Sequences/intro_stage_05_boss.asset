@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6525ea3e323dc84dbc38cc118938d9b, type: 3}
+  m_Name: intro_stage_05_boss
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.DialogueSequence
+  sequenceId: intro_stage_05_boss
+  lines:
+  - speakerId: rival
+    speakerName: LUX//FAUNA
+    portrait: {fileID: 0}
+    emotionId: confident
+    text: "\uC6B0\uB9AC\uB294 \uAD00\uAC1D \uB208\uCE58\uB97C \uBCF4\uC9C0 \uC54A\uC544.
+      \uAD00\uAC1D\uC774 \uC6B0\uB9AC\uB97C \uB530\uB77C\uC624\uAC8C \uB9CC\uB4E4\uC9C0."
+    side: 1
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 0}
+    emotionId: think
+    text: "\uB098\uB3C4 \uCC98\uC74C\uC5D4 \uADF8\uB807\uAC8C \uC0DD\uAC01\uD588\uC5B4.
+      \uC81C\uC77C \uD070 \uC18C\uB9AC\uB9CC \uB0B4\uBA74 \uB418\uB294 \uC904 \uC54C\uC558\uC9C0."
+    side: 0
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 0}
+    emotionId: smile
+    text: "\uD558\uC9C0\uB9CC \uAD00\uAC1D\uC740 \uBC30\uACBD\uC774 \uC544\uB2C8\uC57C.
+      \uAC01\uC790 \uB4E3\uACE0 \uC2F6\uC740 \uAC8C \uC788\uB294 \uC6B0\uB9AC \uACF5\uC5F0\uC758
+      \uC77C\uBD80\uB77C\uACE0."
+    side: 0
+    sfxId: 
+  - speakerId: hedgehog
+    speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
+    portrait: {fileID: 0}
+    emotionId: wary
+    text: "\uB77C\uC774\uBC8C\uC774 \uB178\uB9AC\uB294 \uD32C\uCE35\uC744 \uC804\uAD11\uD310\uC5D0
+      \uB744\uC6B8 \uAC70\uC57C. \uD45C\uC2DC\uB41C \uAD00\uAC1D\uBD80\uD130 \uC9C0\uCF1C."
+    side: 0
+    sfxId: 
+  - speakerId: bandmate
+    speakerName: "\uBC34\uB4DC \uB3D9\uB8CC"
+    portrait: {fileID: 0}
+    emotionId: resolve
+    text: "\uB9C8\uC9C0\uB9C9\uAE4C\uC9C0 \uAD00\uAC1D\uC758 \uBAA9\uC18C\uB9AC\uB97C
+      \uB193\uCE58\uC9C0 \uB9C8."
+    side: 0
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 0}
+    emotionId: shout
+    text: "Raccoon Roll, \uC2DC\uC791\uD558\uC790!"
+    side: 0
+    sfxId: 

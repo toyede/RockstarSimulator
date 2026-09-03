@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f47243b8b779fb7418df7abe23058935, type: 3}
+  m_Name: AudienceCrisis_Arena
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceCrisisConfig
+  encounterChance: 0.5
+  earliestPerformanceRatio: 0.3
+  latestPerformanceRatio: 0.6
+  randomSeed: 9187
+  useAdaptiveTrigger: 1
+  adaptiveEvaluationStartRatio: 0.2
+  adaptiveEvaluationEndRatio: 0.85
+  highPerformancePace: 1.15
+  lowPerformancePace: 0.75
+  highPerformanceEngagement: 70
+  adaptiveSustainDuration: 2.5
+  adaptiveCheckInterval: 0.5
+  adaptiveFallbackRatio: 0.55
+  fallbackCrisisPace: 0.95
+  comebackWarningDuration: 1.75
+  comebackAudienceCount: 2
+  comebackAudienceEngagement: 55
+  comebackEngagementBoost: 8
+  warningDuration: 6
+  minimumAudienceCount: 6
+  threatenedRatio: 0.33
+  maximumThreatenedCount: 4
+  minimumSurvivorCount: 3
+  retentionEngagement: 50
+  departureStagger: 0.08
+  departureSettleDuration: 0.55
+  successfulSpecialSaveCount: 1

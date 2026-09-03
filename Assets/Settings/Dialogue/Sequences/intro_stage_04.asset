@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6525ea3e323dc84dbc38cc118938d9b, type: 3}
+  m_Name: intro_stage_04
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.DialogueSequence
+  sequenceId: intro_stage_04
+  lines:
+  - speakerId: promoter
+    speakerName: "\uACF5\uC5F0 \uAE30\uD68D\uC790"
+    portrait: {fileID: 0}
+    emotionId: serious
+    text: "\uC624\uB298 \uACF5\uC5F0\uC740 \uC0DD\uBC29\uC1A1\uC774\uC57C. \uC798\uD558\uBA74
+      \uACAC\uC81C\uAC00 \uBAB0\uB9AC\uACE0, \uD754\uB4E4\uB9AC\uBA74 \uB2A6\uAC8C\uB77C\uB3C4
+      \uD32C\uB4E4\uC774 \uB3C4\uC6B0\uB7EC \uC62C \uAC70\uC57C."
+    side: 1
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 0}
+    emotionId: confused
+    text: "\uC798\uD574\uB3C4 \uC0AC\uAC74, \uBABB\uD574\uB3C4 \uC0AC\uAC74\uC774\uB77C\uACE0?"
+    side: 0
+    sfxId: 
+  - speakerId: hedgehog
+    speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
+    portrait: {fileID: 0}
+    emotionId: smile
+    text: "\uADF8\uB7EC\uB2C8\uAE4C \uD654\uBA74\uC744 \uBD10. \uBB34\uC2A8 \uC77C\uC774\uB4E0
+      \uBBF8\uB9AC \uC54C\uB824 \uC904 \uD14C\uB2C8 \uB300\uC751\uD558\uBA74 \uB3FC."
+    side: 0
+    sfxId: 
+  - speakerId: bandmate
+    speakerName: "\uBC34\uB4DC \uB3D9\uB8CC"
+    portrait: {fileID: 0}
+    emotionId: cheer
+    text: "\uC5EC\uAE30\uAE4C\uC9C0 \uC5BB\uC740 \uCE74\uB4DC\uC640 \uC99D\uAC15\uC744
+      \uC804\uBD80 \uC368 \uBCF4\uC790. \uC774 \uBB34\uB300\uB97C \uB118\uC73C\uBA74
+      \uC2A4\uD0C0\uB514\uC6C0\uC774\uC57C."
+    side: 0
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 0}
+    emotionId: resolve
+    text: "\uBCC0\uC218\uAE4C\uC9C0 \uC6B0\uB9AC \uACF5\uC5F0\uC758 \uC77C\uBD80\uB85C
+      \uB9CC\uB4E0\uB2E4!"
+    side: 0
+    sfxId: 

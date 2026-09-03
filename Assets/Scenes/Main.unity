@@ -12487,6 +12487,56 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 785568818}
   m_CullTransparentMesh: 1
+--- !u!1 &792725747
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 792725749}
+  - component: {fileID: 792725748}
+  m_Layer: 0
+  m_Name: Rule_SpecialAudienceRequests
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &792725748
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 792725747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb9de5007b2eeef4e85d9feb99445be4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.SpecialAudienceRequestsRule
+  ruleId: special_audience_requests
+  defaultConfig: {fileID: 11400000, guid: 6d1e59793e859944b9ffb628912832c7, type: 2}
+  stageOverrides:
+  - stage: {fileID: 11400000, guid: da79655da691461489e86fdb6ad10fa3, type: 2}
+    config: {fileID: 11400000, guid: bdd3766609cdf0449a22141e4c79bbe9, type: 2}
+  specialHitCount: 0
+--- !u!4 &792725749
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 792725747}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1193294014}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &831138395
 GameObject:
   m_ObjectHideFlags: 0
@@ -13969,6 +14019,66 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &1193294012
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1193294014}
+  - component: {fileID: 1193294013}
+  m_Layer: 0
+  m_Name: '[StageRuntime]'
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1193294013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1193294012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc08b9a05c5eb4049a552d7b36854ca5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.StageRuntimeDirector
+  fallbackStage: {fileID: 0}
+  audienceRoster: {fileID: 304657660}
+  specialAudience: {fileID: 1760673223}
+  crisisDirector: {fileID: 1592772199}
+  rules:
+  - {fileID: 1891609919}
+  - {fileID: 792725748}
+  - {fileID: 1776494764}
+  - {fileID: 1848333886}
+  - {fileID: 1382135862}
+  verboseLogs: 1
+--- !u!4 &1193294014
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1193294012}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1891609920}
+  - {fileID: 792725749}
+  - {fileID: 1776494765}
+  - {fileID: 1848333887}
+  - {fileID: 1382135864}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1205303916
 GameObject:
   m_ObjectHideFlags: 0
@@ -14897,6 +15007,89 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1382135861
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1382135864}
+  - component: {fileID: 1382135862}
+  - component: {fileID: 1382135863}
+  m_Layer: 0
+  m_Name: Rule_RivalCrowdChallenge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1382135862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1382135861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebd81dd690b58644394e76ff571f2520, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.RivalCrowdChallengeRule
+  ruleId: rival_crowd_challenge
+  rivalName: LUX//FAUNA
+  attacks:
+  - triggerTime: 30
+    targetMode: 0
+  - triggerTime: 65
+    targetMode: 1
+  - triggerTime: 100
+    targetMode: 2
+  warningDuration: 7
+  maxTargetsPerAttack: 2
+  minimumSurvivorCount: 1
+  safeEngagement: 60
+  departureStagger: 0.08
+  departureSettleDuration: 0.55
+  inputLockAfterAttack: 1
+  totalStolen: 0
+  totalDefended: 0
+  attacksResolved: 0
+--- !u!114 &1382135863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1382135861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca2d405e44ccc484bbbc0939627eb1c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.RivalAttackNoticeUI
+  font: {fileID: 11400000, guid: f9409ab9754d80b479fc0616c345236e, type: 2}
+  fontSize: 30
+  warningColor: {r: 0.9411765, g: 0.30980393, b: 0.47058824, a: 1}
+  successColor: {r: 0.1882353, g: 0.88235295, b: 0.7254902, a: 1}
+  failColor: {r: 0.9607843, g: 0.49019608, b: 0.2901961, a: 1}
+  resultHoldDuration: 1.6
+  topOffset: 150
+--- !u!4 &1382135864
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1382135861}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1193294014}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1401260089
 GameObject:
   m_ObjectHideFlags: 0
@@ -15680,6 +15873,8 @@ MonoBehaviour:
   hintText: {fileID: 1701468850}
   dragLayer: {fileID: 1309943766}
   cardInput: {fileID: 831138396}
+  minimumVisibleCardStep: 48
+  horizontalScreenMargin: 40
   useDissolveOnPlay: 1
   perfectEdgeColor: {r: 1, g: 0.81960785, b: 0.4, a: 1}
   goodEdgeColor: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 1}
@@ -16668,6 +16863,54 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.FeverSystem
   config: {fileID: 11400000, guid: 84d715220e53f6440a757b31f18c6269, type: 2}
+--- !u!1 &1776494763
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1776494765}
+  - component: {fileID: 1776494764}
+  m_Layer: 0
+  m_Name: Rule_FestivalNearbyConcert
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1776494764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1776494763}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e51f987324066c949979dcc69c588b5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CrisisEventRule
+  ruleId: festival_nearby_concert
+  config: {fileID: 11400000, guid: 4cc0664eb9442cf49825560132d8f8b3, type: 2}
+  retainedCount: 0
+  departedCount: 0
+--- !u!4 &1776494765
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1776494763}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1193294014}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1813335618
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16865,6 +17108,54 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 677778744}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1848333885
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1848333887}
+  - component: {fileID: 1848333886}
+  m_Layer: 0
+  m_Name: Rule_ArenaAdaptiveEvent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1848333886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848333885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e51f987324066c949979dcc69c588b5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CrisisEventRule
+  ruleId: arena_adaptive_event
+  config: {fileID: 11400000, guid: 932863a4cdd4e094c9ce3f7efbf4bdf5, type: 2}
+  retainedCount: 0
+  departedCount: 0
+--- !u!4 &1848333887
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1848333885}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1193294014}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1855429156
 GameObject:
@@ -17075,6 +17366,52 @@ MonoBehaviour:
   - {x: 0.5, y: -0.5, z: 0}
   - {x: 0.5, y: 0.5, z: 0}
   - {x: -0.5, y: 0.5, z: 0}
+--- !u!1 &1891609918
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1891609920}
+  - component: {fileID: 1891609919}
+  m_Layer: 0
+  m_Name: Rule_BuskingWalkIn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1891609919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1891609918}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40aaa7ac8e13a104e9090a8c14aa50af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.BuskingWalkInRule
+  ruleId: busking_walk_in
+  walkInCount: 0
+--- !u!4 &1891609920
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1891609918}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1193294014}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1894332256
 GameObject:
   m_ObjectHideFlags: 0
@@ -17280,6 +17617,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1939568795}
+  - component: {fileID: 1939568796}
   m_Layer: 0
   m_Name: Background
   m_TagString: Untagged
@@ -17353,6 +17691,26 @@ Transform:
   - {fileID: 2073683579}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1939568796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916085429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31a8a1571a42aa9448dec7bb6e87d11f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.StageBackgroundView
+  baseRenderer: {fileID: 2031363170}
+  defaultLightRenderer: {fileID: 2073683580}
+  decorativeCrowd: {fileID: 1466933571}
+  sortingLayer: Default
+  lightOverlaySortingOrder: 1
+  foregroundSortingOrder: 46
+  hideDefaultLightsWhenOverlaysExist: 1
+  previewStage: {fileID: 0}
 --- !u!1 &1966428201
 GameObject:
   m_ObjectHideFlags: 0
@@ -18242,13 +18600,41 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1000000000000006, guid: c935f002a4074328b2bf4a17563dd932, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8347210596432187653}
   m_SourcePrefab: {fileID: 100100000, guid: c935f002a4074328b2bf4a17563dd932, type: 3}
 --- !u!224 &8347210596432187651 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2000000000000001, guid: c935f002a4074328b2bf4a17563dd932, type: 3}
   m_PrefabInstance: {fileID: 8347210596432187650}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &8347210596432187652 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1000000000000006, guid: c935f002a4074328b2bf4a17563dd932, type: 3}
+  m_PrefabInstance: {fileID: 8347210596432187650}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8347210596432187653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8347210596432187652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31a8a1571a42aa9448dec7bb6e87d11f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.StageBackgroundView
+  baseRenderer: {fileID: 2031363170}
+  defaultLightRenderer: {fileID: 0}
+  decorativeCrowd: {fileID: 1466933571}
+  sortingLayer: Default
+  lightOverlaySortingOrder: 1
+  foregroundSortingOrder: 46
+  hideDefaultLightsWhenOverlaysExist: 1
+  previewStage: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -18282,3 +18668,4 @@ SceneRoots:
   - {fileID: 1034479901}
   - {fileID: 983559051}
   - {fileID: 1377890568}
+  - {fileID: 1193294014}

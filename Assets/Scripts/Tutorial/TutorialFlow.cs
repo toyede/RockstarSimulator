@@ -60,6 +60,11 @@ namespace ContextStage
         [SerializeField, Tooltip("공연 시작 후 튜토리얼이 뜨기까지의 여유(초). 시스템 초기화 대기")]
         float startDelay = 0.6f;
 
+        [SerializeField, Tooltip(
+            "투어 스테이지(StageRuntimeDirector 가 적용한 공연) 중에는 자동 실행하지 않는다. " +
+            "Stage 1 '골목 버스킹'이 관찰 학습 스테이지 역할을 하므로 관객 구성을 튜토리얼이 덮어쓰지 않게 한다")]
+        bool skipDuringTourStage = true;
+
         [Header("관객 몰입도 프리셋 (0~100)")]
         [SerializeField, Tooltip("지루(Calm) 상태로 만들 값")] float calmEngagement = 16f;
         [SerializeField, Tooltip("관심(Middle) 상태로 만들 값")] float middleEngagement = 52f;
@@ -219,8 +224,10 @@ namespace ContextStage
 
         void OnGameStateChanged(GameStateChanged e)
         {
-            // 첫 공연 자동 실행
+            // 첫 공연 자동 실행 (투어 스테이지 중에는 스테이지 룰이 관객 구성을 책임지므로 건너뛴다)
+            bool tourStageActive = skipDuringTourStage && StageRuntimeDirector.CurrentStage != null;
             if (autoRunOnFirstPlay &&
+                !tourStageActive &&
                 !_hasStartedThisScene &&
                 !IsRunning &&
                 e.Previous == GameState.Ready && e.Current == GameState.Playing)

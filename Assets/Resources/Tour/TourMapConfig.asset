@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d9956a165e392244be50d42693ad129, type: 3}
+  m_Name: TourMapConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.TourMapConfig
+  background: {fileID: 21300000, guid: a596efcc66ea228468eefd079e8457bd, type: 3}
+  pinNormal: {fileID: 21300000, guid: 85d6b5f658964c647a0ee494e969f657, type: 3}
+  pinHover: {fileID: 21300000, guid: 7191222bcc5baad4bab06275e606cb67, type: 3}
+  micIcon: {fileID: 21300000, guid: 79081079011c1524b942a215f2645533, type: 3}
+  bossIcon: {fileID: 21300000, guid: 6216261fbcab62849b4d338b5abfa656, type: 3}
+  dot: {fileID: 21300000, guid: d85b0071190f3eb469b1583e9be6fa02, type: 3}
+  bus: {fileID: 21300000, guid: ff8dbc25f0593b44a882fdcc5e35af90, type: 3}
+  raccoon: {fileID: 21300000, guid: 0532a5b208ad77749b059c626952480e, type: 3}
+  rankSprites:
+  - label: S
+    sprite: {fileID: 21300000, guid: 10b8c1d6204dcf241a78829fa80854f5, type: 3}
+  - label: A
+    sprite: {fileID: 21300000, guid: f2088f4b00e13074e887c24e3a3d19c5, type: 3}
+  - label: B
+    sprite: {fileID: 21300000, guid: 18be004cbfc6c0e428b53911d0e93178, type: 3}
+  - label: C
+    sprite: {fileID: 21300000, guid: 4c649006037748f4cad6c95cab09097b, type: 3}
+  - label: D
+    sprite: {fileID: 21300000, guid: 7f04f62eb8a9c9742a1c00451338e06a, type: 3}
+  - label: F
+    sprite: {fileID: 21300000, guid: 3f3c4102bda1d3645bd5b65d001c3980, type: 3}
+  nodePositions:
+  - {x: 0.245, y: 0.37}
+  - {x: 0.38, y: 0.71}
+  - {x: 0.535, y: 0.215}
+  - {x: 0.7, y: 0.335}
+  - {x: 0.85, y: 0.6}
+  referenceResolution: {x: 1920, y: 1080}
+  pixelScale: 5
+  busScale: 0.8
+  busOffset: {x: 5, y: -50}
+  raccoonSize: 150
+  raccoonOffset: {x: 65, y: 25}
+  rankSize: 90
+  rankOffset: {x: 78, y: 44}
+  visitedDotSize: 40
+  futureDotSize: 64
+  visitedDotColor: {r: 1, g: 1, b: 1, a: 1}
+  futureDotColor: {r: 0.85, g: 0.85, b: 0.9, a: 0.55}
+  lockedDotColor: {r: 0.85, g: 0.85, b: 0.9, a: 0.3}
+  dashSpacing: 26
+  dashSize: {x: 14, y: 5}
+  dashColor: {r: 1, g: 1, b: 1, a: 0.75}
+  frameInterval: 0.4
+  raccoonTiltDegrees: 30
+  bobPixels: 5
+  travelSecondsPerSegment: 3
+  travelStartDelay: 0.3
+  pinPopDuration: 0.2
+  pinBlinkInterval: 0.35
+  arrivalBlinkDuration: 1.6
+  flipBusByDirection: 0
