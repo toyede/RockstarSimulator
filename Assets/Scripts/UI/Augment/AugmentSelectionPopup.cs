@@ -38,6 +38,7 @@ namespace ContextStage
         bool _wired;
         bool _busy;
         Coroutine _selectionRoutine;
+        Text _ownedEmptyText;
         Vector2[] _choiceBasePositions = Array.Empty<Vector2>();
 
         public bool IsVisible => gameObject.activeSelf;
@@ -107,6 +108,18 @@ namespace ContextStage
             CloseOwnedModal();
             ReparentOwnedModalObject(ownedModalBlocker, host);
             ReparentOwnedModalObject(ownedModal, host);
+        }
+
+        /// <summary>다른 화면에서도 프리팹의 버튼 배치와 디자인을 그대로 사용한다.</summary>
+        public Button CreateOwnedListButton(Transform host)
+        {
+            if (host == null || ownedListButton == null) return null;
+
+            Button button = Instantiate(ownedListButton, host, false);
+            button.name = "MapOwnedAugmentListButton";
+            button.onClick = new Button.ButtonClickedEvent();
+            button.gameObject.SetActive(false);
+            return button;
         }
 
         public void ShowOwnedModal(IReadOnlyList<AugmentOwnedItemViewModel> models)
@@ -388,11 +401,13 @@ namespace ContextStage
         void BindOwnedAugments(IReadOnlyList<AugmentOwnedItemViewModel> models)
         {
             int modelCount = models?.Count ?? 0;
+            int visibleCount = 0;
             for (int i = 0; i < ownedRows.Length; i++)
             {
                 bool visible = i < modelCount && models[i] != null;
                 if (ownedRows[i] != null) ownedRows[i].SetActive(visible);
                 if (!visible) continue;
+                visibleCount++;
 
                 AugmentOwnedItemViewModel model = models[i];
                 if (i < ownedIcons.Length && ownedIcons[i] != null)
@@ -404,6 +419,29 @@ namespace ContextStage
                 if (i < ownedDescriptions.Length)
                     SetText(ownedDescriptions[i], model.description ?? "");
             }
+
+            if (visibleCount == 0) EnsureOwnedEmptyText();
+            if (_ownedEmptyText != null)
+                _ownedEmptyText.gameObject.SetActive(visibleCount == 0);
+        }
+
+        void EnsureOwnedEmptyText()
+        {
+            if (_ownedEmptyText != null || ownedModal == null ||
+                ownedNames.Length == 0 || ownedNames[0] == null) return;
+
+            // 기존 목록의 글꼴과 색을 재사용한다.
+            _ownedEmptyText = Instantiate(ownedNames[0], ownedModal.transform, false);
+            _ownedEmptyText.name = "OwnedAugmentEmptyText";
+            _ownedEmptyText.text = "아직 보유한 증강이 없습니다.";
+            _ownedEmptyText.alignment = TextAnchor.MiddleCenter;
+            _ownedEmptyText.raycastTarget = false;
+            RectTransform rect = _ownedEmptyText.rectTransform;
+            rect.anchorMin = new Vector2(0f, 0.5f);
+            rect.anchorMax = new Vector2(1f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(-128f, 80f);
         }
 
         void OpenOwnedModal()

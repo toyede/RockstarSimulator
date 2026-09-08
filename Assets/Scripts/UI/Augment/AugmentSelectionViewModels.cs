@@ -30,6 +30,7 @@ namespace ContextStage
     public sealed class AugmentChoiceViewModel
     {
         public int slotIndex;
+        public AugmentTier tier;
         public Sprite icon;
         public string tierLabel = "";
         public Color tierColor = Color.white;
@@ -44,6 +45,7 @@ namespace ContextStage
             return new AugmentChoiceViewModel
             {
                 slotIndex = slotIndex,
+                tier = tier,
                 icon = icon,
                 tierLabel = tierLabel,
                 tierColor = tierColor,

@@ -123,6 +123,7 @@ namespace ContextStage
             if (effect == null) effect = go.AddComponent<CardDissolveEffect>();
 
             _dissolvingViews.Add(view);
+            view.PlayUpgradeUseFlash();
             effect.SetEdgeColor(EdgeColorFor(judgement));
             effect.PlayDissolve(() => ReleaseDissolvedView(view));
         }
@@ -209,7 +210,7 @@ namespace ContextStage
                 if (effect != null) effect.ResetEffect();
                 dragHandler.enabled = true;
 
-                view.Bind(card);
+                view.Bind(card, i);
                 view.SetFeverVisual(_feverActive);
                 dragHandler.Bind(i, cardInput, dragLayer, parent as RectTransform);
                 _activeViews.Add(view);

@@ -48,7 +48,23 @@ namespace ContextStage
         [SerializeField] Sprite rerollFrame2;
         [SerializeField] Sprite rerollFrame3;
 
+        [Header("Tier Presentation")]
+        [SerializeField] TierCardArt silverCardArt = new TierCardArt();
+        [SerializeField] TierCardArt goldCardArt = new TierCardArt();
+        [SerializeField, Min(0.1f)] float rerollDurationMultiplier = 1.05f;
+
+        [Serializable]
+        public sealed class TierCardArt
+        {
+            public Sprite front;
+            public Sprite angled;
+            public Sprite edge;
+
+            public bool IsComplete => front != null && angled != null && edge != null;
+        }
+
         int _slotIndex = -1;
+        AugmentTier _tier;
         bool _modelAllowsSelection;
         int _rerollsRemaining;
         bool _isGrantCard;
@@ -159,6 +175,30 @@ namespace ContextStage
             ResetPresentation();
         }
 
+        public void ConfigureTierArt(TierCardArt silver, TierCardArt gold)
+        {
+            silverCardArt = silver;
+            goldCardArt = gold;
+            ResetPresentation();
+        }
+
+        TierCardArt ResolveTierArt(AugmentTier tier)
+        {
+            TierCardArt art = tier == AugmentTier.Silver ? silverCardArt
+                : tier == AugmentTier.Gold ? goldCardArt : null;
+            return art != null && art.IsComplete ? art : null;
+        }
+
+        Sprite GetFront(AugmentTier tier) => ResolveTierArt(tier)?.front ?? defaultCardSprite;
+
+        Sprite GetRerollFrame(AugmentTier tier, int pose)
+        {
+            TierCardArt art = ResolveTierArt(tier);
+            if (art != null) return pose == 2 ? art.edge : art.angled;
+            Sprite frame = pose == 1 ? rerollFrame1 : pose == 2 ? rerollFrame2 : rerollFrame3;
+            return frame != null ? frame : defaultCardSprite;
+        }
+
         public void Bind(AugmentChoiceViewModel model)
         {
             if (model == null)
@@ -169,6 +209,7 @@ namespace ContextStage
 
             gameObject.SetActive(true);
             _slotIndex = model.slotIndex;
+            _tier = model.tier;
             _modelAllowsSelection = model.canSelect;
             _rerollsRemaining = Mathf.Max(0, model.rerollsRemaining);
             _isGrantCard = model.grantedCard != null;
@@ -183,8 +224,9 @@ namespace ContextStage
 
             if (flipImage != null)
             {
-                flipImage.sprite = defaultCardSprite != null
-                    ? defaultCardSprite
+                Sprite front = GetFront(_tier);
+                flipImage.sprite = front != null
+                    ? front
                     : flipImage.sprite;
                 flipImage.enabled = flipImage.sprite != null;
             }
@@ -280,8 +322,9 @@ namespace ContextStage
             SetText(grantedCardEffectText, "");
             if (flipImage != null)
             {
-                flipImage.sprite = defaultCardSprite != null
-                    ? defaultCardSprite
+                Sprite front = GetFront(_tier);
+                flipImage.sprite = front != null
+                    ? front
                     : cardBackground == null ? null : cardBackground.sprite;
                 flipImage.enabled = flipImage.sprite != null;
             }
@@ -354,13 +397,13 @@ namespace ContextStage
 
             Sprite[] frames =
             {
-                rerollFrame1,
-                rerollFrame2,
-                rerollFrame3,
-                defaultCardSprite,
-                rerollFrame3,
-                rerollFrame2,
-                rerollFrame1
+                GetRerollFrame(_tier, 1),
+                GetRerollFrame(_tier, 2),
+                GetRerollFrame(_tier, 3),
+                GetFront(_tier),
+                GetRerollFrame(_tier, 3),
+                GetRerollFrame(_tier, 2),
+                GetRerollFrame(_tier, 1)
             };
             float[] durations = { 0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.02f, 0.05f };
 
@@ -371,8 +414,20 @@ namespace ContextStage
                     flipImage.sprite = frames[i] != null ? frames[i] : defaultCardSprite;
                     flipImage.enabled = flipImage.sprite != null;
                 }
-                yield return WaitUnscaled(durations[i]);
+                float duration = durations[i] * Mathf.Max(0.1f, rerollDurationMultiplier);
+                // 마지막 대기 안에 등급 공개 프레임을 포함해 총 시간을 늘리지 않는다.
+                if (i == frames.Length - 1)
+                    duration = Mathf.Max(0f, duration - Time.unscaledDeltaTime);
+                yield return WaitUnscaled(duration);
             }
+
+            // 새 등급은 내용이 공개되기 직전 한 프레임에만 보여준다.
+            if (flipImage != null)
+            {
+                flipImage.sprite = GetRerollFrame(model.tier, 1);
+                flipImage.enabled = flipImage.sprite != null;
+            }
+            yield return null;
 
             _rerollRoutine = null;
             Bind(model);

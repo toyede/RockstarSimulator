@@ -263,6 +263,7 @@ namespace ContextStage
             return new AugmentChoiceViewModel
             {
                 slotIndex = slotIndex,
+                tier = offer.TierData.Tier,
                 icon = offer.Definition.Icon,
                 tierLabel = offer.TierData.Tier.ToString(),
                 tierColor = ResolveTierColor(offer.TierData.Tier),
