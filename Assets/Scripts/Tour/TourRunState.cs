@@ -65,6 +65,9 @@ namespace ContextStage
         public string rank;
         public int maxCombo;
 
+        /// <summary>확정 공연 기록 (목표 점수·피버·관객·기믹). 디버그 결과 등에는 비어 있을 수 있다.</summary>
+        public PerformanceReport report;
+
         public StageResult() { }
 
         public StageResult(

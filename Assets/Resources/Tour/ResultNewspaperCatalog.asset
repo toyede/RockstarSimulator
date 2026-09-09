@@ -1,0 +1,124 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afb3f11806b88514aa94ec152bfb02f5, type: 3}
+  m_Name: ResultNewspaperCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.ResultNewspaperCatalog
+  skins:
+  - stageId: stage_01
+    paper: {fileID: 21300000, guid: b89181581e9cdb445a7881d57bc84519, type: 3}
+    paperName: "\uACE8\uBAA9\uC77C\uBCF4"
+    accent: {r: 0.40392157, g: 0.4, b: 0.2, a: 1}
+  - stageId: stage_02
+    paper: {fileID: 21300000, guid: 80e3780338b441841aeb5bad679587d4, type: 3}
+    paperName: "\uB3D9\uBB3C\uC911\uC559"
+    accent: {r: 0.7019608, g: 0.21960784, b: 0.19215687, a: 1}
+  - stageId: stage_03
+    paper: {fileID: 21300000, guid: 648a774e4fc70d24690b0ab18b852c46, type: 3}
+    paperName: Rolling Hairballs
+    accent: {r: 0.78431374, g: 0.1254902, b: 0.18039216, a: 1}
+  - stageId: stage_04
+    paper: {fileID: 21300000, guid: 94b839c9c0f6bb243895d9af65c4e2fa, type: 3}
+    paperName: Pitchfur
+    accent: {r: 0.5568628, g: 0.26666668, b: 0.6784314, a: 1}
+  - stageId: stage_05_boss
+    paper: {fileID: 21300000, guid: c3296cb275fb0aa40b50b155cabbc17a, type: 3}
+    paperName: The Animal Times
+    accent: {r: 0.8392157, g: 0.6039216, b: 0.11764706, a: 1}
+  rankIcons:
+  - label: S
+    icon: {fileID: 21300000, guid: 10b8c1d6204dcf241a78829fa80854f5, type: 3}
+  - label: A
+    icon: {fileID: 21300000, guid: f2088f4b00e13074e887c24e3a3d19c5, type: 3}
+  - label: B
+    icon: {fileID: 21300000, guid: 18be004cbfc6c0e428b53911d0e93178, type: 3}
+  - label: C
+    icon: {fileID: 21300000, guid: 4c649006037748f4cad6c95cab09097b, type: 3}
+  - label: D
+    icon: {fileID: 21300000, guid: 7f04f62eb8a9c9742a1c00451338e06a, type: 3}
+  - label: F
+    icon: {fileID: 21300000, guid: 3f3c4102bda1d3645bd5b65d001c3980, type: 3}
+  bandClear: {fileID: -6222744249770458211, guid: b9dfe51465165eb478f43a4248aa4e15, type: 3}
+  bandFail: {fileID: -2813555488557304217, guid: 6edc99307f72f0c428e6db78a99bb22f, type: 3}
+  bandSpriteScale: 3
+  headlineS: "\uC624\uB298 \uBC24\uC758 \uC8FC\uC778\uACF5, \uB108\uAD6C\uB9AC \uBC34\uB4DC!"
+  headlineA: "\uC3DF\uC544\uC9C0\uB294 \uD658\uD638\u2026 \uC81C\uB300\uB85C \uC774\uB984
+    \uC54C\uB838\uB2E4!"
+  headlineB: "\uAD00\uAC1D \uC0AC\uB85C\uC7A1\uC740 \uBB34\uB300, \uB2E4\uC74C \uACF5\uC5F0\uB3C4
+    \uAE30\uB300"
+  headlineC: "\uAC00\uB2A5\uC131 \uBCF4\uC5EC\uC900 \uB108\uAD6C\uB9AC \uBC34\uB4DC\uC758
+    \uD55C \uBB34\uB300"
+  headlineD: "\uCCAB \uAD00\uBB38 \uB118\uC5C8\uB2E4! \uB2E4\uC74C \uBB34\uB300 \uD5A5\uD558\uB294
+    \uBC34\uB4DC"
+  headlineFail: "\uC655\uAD00\uC740 \uD654\uB824\uD588\uC9C0\uB9CC, \uC624\uB298
+    \uACF5\uC5F0\uC740 \uC090\uAC71"
+  headlineBossWin: "\uB77C\uC774\uBC8C\uACFC\uC758 \uC815\uBA74 \uC2B9\uBD80, \uB108\uAD6C\uB9AC
+    \uBC34\uB4DC \uC6C3\uC5C8\uB2E4"
+  headlineBossLose: "\uB77C\uC774\uBC8C \uBB34\uB300\uC5D0 \uC870\uBA85\uC774\u2026
+    \uB108\uAD6C\uB9AC \uBC34\uB4DC\uB294 \uC7AC\uC815\uBE44"
+  comboSubtitleMin: 10
+  comboSubtitle: "\uCD5C\uACE0 {0}\uCF64\uBCF4, \uB04A\uC774\uC9C0 \uC54A\uB294 \uD638\uC751\uC73C\uB85C
+    \uACF5\uC5F0 \uC774\uB04C\uC5B4"
+  feverSubtitleMin: 2
+  feverSubtitle: "\uD53C\uBC84 {0}\uD68C \uBC1C\uB3D9\u2026 \uBB34\uB300\uB97C \uB2EC\uAD70
+    \uC5F0\uC18D \uACF5\uC5F0"
+  specialSubtitleMin: 2
+  specialSubtitle: "\uD2B9\uBCC4 \uAD00\uAC1D \uC694\uCCAD {0}\uD68C \uC131\uACF5,
+    \uAE4C\uB2E4\uB85C\uC6B4 \uD32C\uB3C4 \uB9CC\uC871"
+  crisisSubtitleMin: 1
+  crisisSubtitle: "\uC774\uD0C8 \uC704\uAE30\uC5D0\uC11C \uAD00\uAC1D {0}\uBA85 \uBD99\uC7A1\uC544"
+  defaultSubtitle: "\uBAA9\uD45C \uB2EC\uC131\uB960 {0}%\uB85C \uACF5\uC5F0\uC744
+    \uB9C8\uCCE4\uB2E4"
+  failSubtitle: "\uBAA9\uD45C\uAE4C\uC9C0 {0}\uC810 \uBD80\uC871\u2026 \uBC34\uB4DC\uB294
+    \uB2E4\uC74C \uBB34\uB300\uB97C \uAE30\uC57D\uD588\uB2E4"
+  bossWinSubtitle: "\uC0C1\uB300 \uD32C {0}\uBA85\uC774 \uB108\uAD6C\uB9AC \uBC34\uB4DC
+    \uCABD\uC73C\uB85C \uC790\uB9AC\uB97C \uC62E\uACBC\uB2E4"
+  bossWinSubtitleNoRecruit: "\uD328\uD134 {0}\uD68C \uC131\uACF5\uC73C\uB85C \uB77C\uC774\uBC8C
+    \uBB34\uB300\uB97C \uC7A0\uC7AC\uC6E0\uB2E4"
+  bossLoseSubtitle: "\uD328\uD134 {0}\uD68C \uC131\uACF5\uC5D0 \uADF8\uCCD0\u2026
+    \uB2E4\uC74C \uB300\uACB0\uC744 \uAE30\uC57D\uD588\uB2E4"
+  captionHigh: "\uD658\uD638 \uC18D\uC5D0 \uACF5\uC5F0\uC744 \uB9C8\uCE5C \uB108\uAD6C\uB9AC
+    \uBC34\uB4DC. \uC624\uB298 \uBC24\uC740 \uC774\uB4E4\uC758 \uAC83\uC774\uC5C8\uB2E4."
+  captionNormal: "\uACF5\uC5F0\uC744 \uB9C8\uCE5C \uB108\uAD6C\uB9AC \uBC34\uB4DC.
+    \uC655\uAD00\uB9CC\uD07C\uC740 \uB05D\uAE4C\uC9C0 \uC9C0\uCF30\uB2E4."
+  captionFail: "\uC090\uB6A4\uC5B4\uC9C4 \uC655\uAD00\uC744 \uACE0\uCCD0 \uC4F0\uB294
+    \uB108\uAD6C\uB9AC. \uB3D9\uB8CC\uB4E4\uC740 \uC870\uC6A9\uD788 \uC7A5\uBE44\uB97C
+    \uC815\uB9AC\uD588\uB2E4."
+  captionBossWin: "\uB77C\uC774\uBC8C\uC744 \uB4A4\uB85C\uD558\uACE0 \uC559\uCF54\uB974
+    \uBB34\uB300\uC5D0 \uC120 \uB108\uAD6C\uB9AC \uBC34\uB4DC."
+  captionBossLose: "\uC870\uBA85\uC740 \uB77C\uC774\uBC8C \uBB34\uB300\uB85C \uD5A5\uD588\uB2E4.
+    \uB108\uAD6C\uB9AC \uBC34\uB4DC\uB294 \uB2E4\uC74C\uC744 \uC900\uBE44\uD55C\uB2E4."
+  stampSuccess: "\uACF5\uC5F0 \uC131\uACF5"
+  stampFail: "\uACF5\uC5F0 \uC2E4\uD328"
+  stampBossWin: "\uB300\uACB0 \uC2B9\uB9AC"
+  stampBossLose: "\uB300\uACB0 \uD328\uBC30"
+  stampFailColor: {r: 0.38431373, g: 0.33333334, b: 0.39607844, a: 1}
+  buttonAugment: "\uC99D\uAC15 \uC120\uD0DD\uD558\uAE30 >"
+  buttonEnding: "\uD22C\uC5B4\uC758 \uACB0\uB9D0 \uBCF4\uAE30 >"
+  buttonFailed: "\uD22C\uC5B4 \uACB0\uACFC \uD655\uC778 >"
+  articleBuskingTitle: "\uAC70\uB9AC\uC758 \uBC1C\uAE38\uC774 \uBA48\uCDC4\uB2E4"
+  articleBuskingBody: "\uC9C0\uB098\uAC00\uB358 \uAD00\uAC1D {0}\uBA85\uC774 \uACF5\uC5F0
+    \uC911 \uD569\uB958"
+  articleSpecialTitle: "\uAE4C\uB2E4\uB85C\uC6B4 \uC190\uB2D8\uB3C4 \uACE0\uAC1C
+    \uB044\uB355\uC600\uB2E4"
+  articleSpecialBody: "\uD2B9\uBCC4 \uAD00\uAC1D \uC694\uCCAD {0} / {1}\uD68C \uC131\uACF5"
+  articleCrisisTitle: "\uC606 \uACF5\uC5F0\uC758 \uC720\uD639\uC5D0\uB3C4 \uC790\uB9AC\uB97C
+    \uC9C0\uD0A8 \uD32C\uB4E4"
+  articleCrisisBody: "\uC704\uAE30 \uB300\uC0C1 {1}\uBA85 \uC911 {0}\uBA85 \uBC29\uC5B4"
+  articleBossTitle: "\uB77C\uC774\uBC8C\uACFC\uC758 \uC815\uBA74 \uC2B9\uBD80"
+  articleBossBody: "\uD328\uD134 {0} / {1}\uD68C \uC131\uACF5 \xB7 \uC0C1\uB300 \uD32C
+    \uC601\uC785 {2}\uBA85 \xB7 \uBE7C\uC557\uAE34 \uD32C {3}\uBA85"
+  articleDefaultTitle: "\uACF5\uC5F0 \uD6C4\uAE30"
+  articleDefaultBody: "\uACF5\uC5F0 \uC911 \uCD5C\uB2E4 \uAD00\uAC1D {0}\uBA85"
+  outcomeDefeated: "\uB77C\uC774\uBC8C \uACA9\uD30C"
+  outcomeStreak: "\uC5F0\uC18D \uD328\uD134 \uC131\uACF5\uC73C\uB85C \uC2B9\uB9AC"
+  outcomeTimeOut: "\uC81C\uD55C \uC2DC\uAC04 \uC885\uB8CC \u2014 \uB77C\uC774\uBC8C\uC744
+    \uAEBE\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4"
