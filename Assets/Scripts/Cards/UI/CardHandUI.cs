@@ -41,6 +41,12 @@ namespace ContextStage
         HorizontalLayoutGroup _handLayout;
         float _baseHandSpacing;
         bool _capturedHandSpacing;
+        Coroutine _stowRoutine;
+        Vector2 _baseAnchoredPosition;
+        bool _capturedBasePosition;
+
+        /// <summary>연출 때문에 손패가 화면 아래로 내려가 있는지.</summary>
+        public bool IsStowed { get; private set; }
 
         public void Configure(
             Transform container,
@@ -78,6 +84,52 @@ namespace ContextStage
         }
 
         void OnHandChanged(HandChanged _) => Refresh();
+
+        // ---------------- 손패 하강 (보스 연출) ----------------
+
+        /// <summary>
+        /// [연출 전용] 손패 루트를 화면 아래로 내리거나(true) 제자리로 올린다(false).
+        /// 카드 입력은 CardInput.Locked 가 막고, 여기서는 위치만 움직인다. duration 0 이면 즉시.
+        /// </summary>
+        public void SetStowed(bool stowed, float duration, float distance)
+        {
+            var rect = transform as RectTransform;
+            if (rect == null) return;
+            if (!_capturedBasePosition)
+            {
+                _baseAnchoredPosition = rect.anchoredPosition;
+                _capturedBasePosition = true;
+            }
+
+            IsStowed = stowed;
+            Vector2 target = stowed
+                ? _baseAnchoredPosition + Vector2.down * Mathf.Max(0f, distance)
+                : _baseAnchoredPosition;
+
+            if (_stowRoutine != null) StopCoroutine(_stowRoutine);
+            if (duration <= 0f || !isActiveAndEnabled)
+            {
+                rect.anchoredPosition = target;
+                _stowRoutine = null;
+                return;
+            }
+            _stowRoutine = StartCoroutine(MoveHand(rect, target, duration));
+        }
+
+        System.Collections.IEnumerator MoveHand(RectTransform rect, Vector2 target, float duration)
+        {
+            Vector2 from = rect.anchoredPosition;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                rect.anchoredPosition = Vector2.Lerp(from, target, t);
+                yield return null;
+            }
+            rect.anchoredPosition = target;
+            _stowRoutine = null;
+        }
 
         void OnFeverStateChanged(FeverStateChanged e)
         {

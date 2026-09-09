@@ -50,6 +50,12 @@ namespace ContextStage
         public IReadOnlyList<StageRuleBehaviour> ActiveRules => _activeRules;
         public bool HasStage => Stage != null;
 
+        /// <summary>
+        /// 룰이 클리어 판정을 대신 정할 때 쓴다 (보스전: 체력 0 = 클리어, 시간 초과 = 실패).
+        /// null 이면 TourPerformanceBridge 가 기존 타이머 판정(목표 점수)을 쓴다. Ready·재적용 때 null 로 돌아간다.
+        /// </summary>
+        public bool? ClearVerdictOverride { get; set; }
+
         void Awake()
         {
             Active = this;
@@ -88,6 +94,7 @@ namespace ContextStage
             DeactivateAllRules();
             Stage = stage;
             Preset = null;
+            ClearVerdictOverride = null;
 
             ApplyAudiencePreset(stage);
             ApplyBaseline();
@@ -208,6 +215,7 @@ namespace ContextStage
                 // 씬 재로드 없이 다시 시작하는 경우(튜토리얼 종료 등): 룰 내부 상태를 새로 잡는다.
                 // 관객 로스터는 스스로 Ready 에서 스테이지 모델로 초기화한다.
                 DeactivateAllRules();
+                ClearVerdictOverride = null;
                 ApplyBaseline();
                 ActivateRules(Stage);
             }
@@ -283,6 +291,14 @@ namespace ContextStage
             specialAudience = special;
             crisisDirector = crisis;
             rules = ruleList ?? new List<StageRuleBehaviour>();
+        }
+
+        /// <summary>[에디터 셋업 전용] 룰 하나를 목록에 추가한다 (이미 있으면 무시).</summary>
+        public void EditorAddRule(StageRuleBehaviour rule)
+        {
+            if (rule == null) return;
+            if (rules == null) rules = new List<StageRuleBehaviour>();
+            if (!rules.Contains(rule)) rules.Add(rule);
         }
 #endif
     }

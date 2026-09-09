@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a88a7bd4cd78214c8ee65e8abfce864, type: 3}
+  m_Name: BossBattle
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.BossBattleConfig
+  rivalName: LUX//FAUNA
+  firstPatternDelay: 10
+  patternInterval: 12
+  peakPatternInterval: 8
+  patternWindow: 8
+  guestListEnhancedWindow: 6
+  retryDelay: 2
+  successDamageRatio: 0.12
+  failHealRatio: 0.05
+  peakTimeRatio: 0.5
+  streakToClear: 5
+  earlyClearBonusPerSecond: 40
+  rivalFanPool: 6
+  recruitOnSuccess: 1
+  recruitOnSuccessEnhanced: 2
+  recruitEngagement: 55
+  loseFanOnFail: 1
+  minimumSurvivors: 3
+  b2bCards: 1
+  b2bCardsEnhanced: 2
+  beatmatchCards: 2
+  beatmatchCardsEnhanced: 3
+  killSwitchBannedPreferences: 1
+  killSwitchBannedPreferencesEnhanced: 2
+  killSwitchPositives: 2
+  killSwitchPositivesEnhanced: 3

@@ -18,6 +18,35 @@ namespace ContextStageEditor
         const string MainScenePath = "Assets/Scenes/Main.unity";
         const string HubScenePath = "Assets/Scenes/TourHub.unity";
 
+        /// <summary>
+        /// Title 씬 런처의 스테이지 목록을 기존 Stage01~05 에셋 5개로 되돌린다 (에셋 값은 건드리지 않음).
+        /// Stage04 아트가 오기 전까지 임시로 5노드를 유지할 때 쓴다.
+        /// </summary>
+        [MenuItem("Tools/Tour/Restore Five Nodes", false, 1)]
+        public static void RestoreFiveNodes()
+        {
+            string originalScenePath = SceneManager.GetActiveScene().path;
+            string[] names = { "Stage01", "Stage02", "Stage03", "Stage04", "Stage05Boss" };
+            var stages = new List<StageDefinition>(names.Length);
+            foreach (string name in names)
+            {
+                var stage = AssetDatabase.LoadAssetAtPath<StageDefinition>($"{TourSettingsFolder}/{name}.asset");
+                if (stage == null)
+                {
+                    Debug.LogError($"[TourPrototypeSetup] {name}.asset 이 없습니다. Setup Prototype Loop 를 먼저 실행하세요.");
+                    return;
+                }
+                stages.Add(stage);
+            }
+
+            ConfigureTitleScene(stages);
+            AssetDatabase.SaveAssets();
+
+            if (!string.IsNullOrEmpty(originalScenePath) && System.IO.File.Exists(originalScenePath))
+                EditorSceneManager.OpenScene(originalScenePath, OpenSceneMode.Single);
+            Debug.Log("[TourPrototypeSetup] Title 런처 스테이지 5개로 복구했습니다.");
+        }
+
         [MenuItem("Tools/Tour/Setup Prototype Loop", false, 0)]
         public static void Setup()
         {

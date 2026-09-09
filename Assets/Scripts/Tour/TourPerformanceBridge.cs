@@ -81,7 +81,9 @@ namespace ContextStage
             if (node == null) return;
 
             int score = GameManager.HasInstance ? GameManager.Instance.Score : 0;
-            bool cleared = !PerformanceTimer.Failed;
+            // 스테이지 룰이 판정을 대신 정했으면(보스전) 그것을, 아니면 타이머 판정(목표 점수)을 쓴다
+            bool? verdict = StageRuntimeDirector.Active != null ? StageRuntimeDirector.Active.ClearVerdictOverride : null;
+            bool cleared = verdict ?? !PerformanceTimer.Failed;
             ScoreRankUI rankUI = FindFirstObjectByType<ScoreRankUI>();
             string rank = rankUI == null ? (cleared ? "CLEAR" : "F") : rankUI.CurrentRankLabel;
 

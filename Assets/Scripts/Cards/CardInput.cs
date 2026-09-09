@@ -15,8 +15,15 @@ namespace ContextStage
         public static System.Func<int, bool> UseFilter;
         public static event System.Action<int> UseBlocked;
 
+        /// <summary>
+        /// [연출 전용] true 인 동안 카드 사용·드래그 시작을 모두 막는다 (보스 연출 등).
+        /// UseFilter 와 독립이라 튜토리얼·KILL SWITCH 필터와 충돌하지 않는다. 연출 담당이 끝날 때 반드시 false 로 되돌린다.
+        /// </summary>
+        public static bool Locked;
+
         public bool CanUseCard(int handIndex)
         {
+            if (Locked) return false;
             if (!CardSystem.HasInstance || !GameManager.HasInstance) return false;
             if (UIManager.HasInstance && UIManager.Instance.AnyPopupOpen) return false;
             if (handIndex < 0 || handIndex >= CardSystem.Instance.HandCount) return false;
