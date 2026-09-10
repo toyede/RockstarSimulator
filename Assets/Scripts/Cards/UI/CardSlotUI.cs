@@ -28,6 +28,7 @@ namespace ContextStage
         Color _descriptionBaseColor = Color.white;
         Color _roleBaseColor = Color.white;
         SpecialCardIdleVFX _specialIdleVfx;
+        CardUpgradeVFX _upgradeVfx;
 
         void Awake()
         {
@@ -66,7 +67,7 @@ namespace ContextStage
             CaptureBaseTextColors();
         }
 
-        public void Bind(CardDefinition card)
+        public void Bind(CardDefinition card, int handIndex = 0)
         {
             if (card == null)
             {
@@ -76,7 +77,8 @@ namespace ContextStage
 
             gameObject.SetActive(true);
             _boundCard = card;
-            CardRuntimePresentation presentation = CardRuntimePresentation.Resolve(card);
+            CardUpgradeModifiers upgrade = AugmentRuntime.Current.ResolveCardUpgrade(card.Id);
+            CardRuntimePresentation presentation = CardRuntimePresentation.Resolve(card, upgrade);
             if (artwork != null)
             {
                 artwork.sprite = presentation.Artwork;
@@ -87,7 +89,30 @@ namespace ContextStage
             if (descriptionText != null) descriptionText.text = presentation.Description;
             EnsureSpecialIdleVfx();
             _specialIdleVfx.Bind(background, card.Role == CardRole.Special);
+            bool upgraded = !string.IsNullOrEmpty(upgrade.TargetCardId) &&
+                card.Role == CardRole.Utility &&
+                (card.UtilityEffect == UtilityCardEffect.Draw || card.UtilityEffect == UtilityCardEffect.Reroll);
+            if (upgraded && _upgradeVfx == null)
+            {
+                var effectObject = new GameObject("CardUpgradeVFX", typeof(RectTransform),
+                    typeof(CanvasRenderer), typeof(CardUpgradeVFX));
+                effectObject.transform.SetParent(transform, false);
+                _upgradeVfx = effectObject.GetComponent<CardUpgradeVFX>();
+                RectTransform rect = _upgradeVfx.rectTransform;
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = rect.offsetMax = Vector2.zero;
+                // 그림 위, 텍스트 아래에 표시한다.
+                if (artwork != null && artwork.transform.parent == transform)
+                    rect.SetSiblingIndex(artwork.transform.GetSiblingIndex() + 1);
+            }
+            if (_upgradeVfx != null) _upgradeVfx.Bind(upgraded, handIndex, upgrade.Tier);
             ApplyFeverVisual();
+        }
+
+        public void PlayUpgradeUseFlash()
+        {
+            if (_upgradeVfx != null) _upgradeVfx.PlayUseFlash();
         }
 
         public void SetFeverVisual(bool active)
@@ -101,6 +126,7 @@ namespace ContextStage
             _feverVisual = false;
             _boundCard = null;
             if (_specialIdleVfx != null) _specialIdleVfx.SetActive(false);
+            if (_upgradeVfx != null) _upgradeVfx.StopEffect();
         }
 
         void ApplyFeverVisual()

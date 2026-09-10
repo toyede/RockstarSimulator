@@ -39,6 +39,7 @@ namespace ContextStage
         Image _background;
         TourMapView _mapView;
         TourMapScreen _mapScreen;
+        Button _mapOwnedButton;
         bool _dialoguePlaying;
         string _travelKey = string.Empty;
 
@@ -63,12 +64,18 @@ namespace ContextStage
             if (_manager != null) _manager.StateChanged -= Refresh;
             _augmentCoordinator?.Unbind();
             if (_augmentPopup != null) _augmentPopup.HideOwnedModal();
+            if (_mapOwnedButton != null) _mapOwnedButton.gameObject.SetActive(false);
             if (_mapScreen != null) _mapScreen.Hide();
             if (_mapView != null) _mapView.Hide();
         }
 
         void OnDestroy()
         {
+            if (_mapOwnedButton != null)
+            {
+                _mapOwnedButton.onClick.RemoveListener(ShowOwnedAugments);
+                Destroy(_mapOwnedButton.gameObject);
+            }
             if (_mapScreen != null)
                 _mapScreen.OwnedAugmentsRequested -= ShowOwnedAugments;
             _augmentCoordinator?.Dispose();
@@ -148,6 +155,13 @@ namespace ContextStage
             _augmentPopup.SetOwnedModalHost(canvas.transform);
             _augmentCoordinator = new AugmentSelectionCoordinator(_augmentPopup);
 
+            if (UsingSceneMap)
+            {
+                _mapOwnedButton = _augmentPopup.CreateOwnedListButton(canvas.transform);
+                if (_mapOwnedButton != null)
+                    _mapOwnedButton.onClick.AddListener(ShowOwnedAugments);
+            }
+
             // 씬 맵을 쓰지 않을 때만 Figma 맵 화면을 만든다 (두 지도가 겹치지 않게)
             if (!UsingSceneMap)
             {
@@ -162,6 +176,7 @@ namespace ContextStage
             CancelStageDialogueIfLeft();
             _augmentPopup?.Hide();
             ClearButtons();
+            RefreshMapOwnedButton();
 
             if (_manager == null || _manager.CurrentRun == null)
             {
@@ -224,6 +239,22 @@ namespace ContextStage
                     ShowFailed(run);
                     break;
             }
+        }
+
+        // 노드를 누른 뒤 도착 연출이 끝날 때까지도 Map 단계이므로 IsBusy를 함께 확인한다.
+        void LateUpdate() => RefreshMapOwnedButton();
+
+        void RefreshMapOwnedButton()
+        {
+            if (_mapOwnedButton == null) return;
+            TourRunState run = _manager == null ? null : _manager.CurrentRun;
+            bool visible = run != null && (run.phase == RunPhase.Map || run.phase == RunPhase.Travel);
+            if (_mapOwnedButton.gameObject.activeSelf != visible)
+                _mapOwnedButton.gameObject.SetActive(visible);
+
+            bool interactable = visible && run.phase == RunPhase.Map && _mapView != null && !_mapView.IsBusy;
+            if (_mapOwnedButton.interactable != interactable)
+                _mapOwnedButton.interactable = interactable;
         }
 
         /// <summary>
@@ -376,6 +407,7 @@ namespace ContextStage
         {
             TourRunState run = _manager == null ? null : _manager.CurrentRun;
             if (run == null || run.phase != RunPhase.Map || _augmentPopup == null) return;
+            if (_mapView != null && _mapView.IsBusy) return;
 
             AugmentCatalog catalog = AugmentCatalog.LoadDefault();
             _augmentPopup.ShowOwnedModal(AugmentOwnedViewModelBuilder.Build(run, catalog));

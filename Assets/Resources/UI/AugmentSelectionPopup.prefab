@@ -2210,6 +2210,15 @@ MonoBehaviour:
   rerollFrame1: {fileID: -4784745283488212400, guid: d7648352282362048a4b7f88fb395e9d, type: 3}
   rerollFrame2: {fileID: 5853114617353407702, guid: c1f96fcdba0c6064ca5290f8a81a14f2, type: 3}
   rerollFrame3: {fileID: 5798594902204546868, guid: d65ed725c5453ee4082b8d65da8e60b6, type: 3}
+  silverCardArt:
+    front: {fileID: 2258090939201068411, guid: e3578434a3e13a045abf24050f046a8b, type: 3}
+    angled: {fileID: -3462913670320780292, guid: cb6d619090834c34cae173304b3a27d1, type: 3}
+    edge: {fileID: 1594484536658702120, guid: 6429d6efb3c5b724886ae5b84e9e710b, type: 3}
+  goldCardArt:
+    front: {fileID: 2258090939201068411, guid: 70d1dc7eb9e6b8f4b802c32e524f7712, type: 3}
+    angled: {fileID: -3462913670320780292, guid: e10e4a94b2de08346940b668623d0775, type: 3}
+    edge: {fileID: 1594484536658702120, guid: cace8ee449a4e5841b80586bdee53a80, type: 3}
+  rerollDurationMultiplier: 1.05
 --- !u!1 &3071391070323768601
 GameObject:
   m_ObjectHideFlags: 0
@@ -4841,6 +4850,15 @@ MonoBehaviour:
   rerollFrame1: {fileID: -4784745283488212400, guid: d7648352282362048a4b7f88fb395e9d, type: 3}
   rerollFrame2: {fileID: 5853114617353407702, guid: c1f96fcdba0c6064ca5290f8a81a14f2, type: 3}
   rerollFrame3: {fileID: 5798594902204546868, guid: d65ed725c5453ee4082b8d65da8e60b6, type: 3}
+  silverCardArt:
+    front: {fileID: 2258090939201068411, guid: e3578434a3e13a045abf24050f046a8b, type: 3}
+    angled: {fileID: -3462913670320780292, guid: cb6d619090834c34cae173304b3a27d1, type: 3}
+    edge: {fileID: 1594484536658702120, guid: 6429d6efb3c5b724886ae5b84e9e710b, type: 3}
+  goldCardArt:
+    front: {fileID: 2258090939201068411, guid: 70d1dc7eb9e6b8f4b802c32e524f7712, type: 3}
+    angled: {fileID: -3462913670320780292, guid: e10e4a94b2de08346940b668623d0775, type: 3}
+    edge: {fileID: 1594484536658702120, guid: cace8ee449a4e5841b80586bdee53a80, type: 3}
+  rerollDurationMultiplier: 1.05
 --- !u!1 &6535358177422347052
 GameObject:
   m_ObjectHideFlags: 0
@@ -6215,6 +6233,15 @@ MonoBehaviour:
   rerollFrame1: {fileID: -4784745283488212400, guid: d7648352282362048a4b7f88fb395e9d, type: 3}
   rerollFrame2: {fileID: 5853114617353407702, guid: c1f96fcdba0c6064ca5290f8a81a14f2, type: 3}
   rerollFrame3: {fileID: 5798594902204546868, guid: d65ed725c5453ee4082b8d65da8e60b6, type: 3}
+  silverCardArt:
+    front: {fileID: 2258090939201068411, guid: e3578434a3e13a045abf24050f046a8b, type: 3}
+    angled: {fileID: -3462913670320780292, guid: cb6d619090834c34cae173304b3a27d1, type: 3}
+    edge: {fileID: 1594484536658702120, guid: 6429d6efb3c5b724886ae5b84e9e710b, type: 3}
+  goldCardArt:
+    front: {fileID: 2258090939201068411, guid: 70d1dc7eb9e6b8f4b802c32e524f7712, type: 3}
+    angled: {fileID: -3462913670320780292, guid: e10e4a94b2de08346940b668623d0775, type: 3}
+    edge: {fileID: 1594484536658702120, guid: cace8ee449a4e5841b80586bdee53a80, type: 3}
+  rerollDurationMultiplier: 1.05
 --- !u!1 &8120996299901819765
 GameObject:
   m_ObjectHideFlags: 0

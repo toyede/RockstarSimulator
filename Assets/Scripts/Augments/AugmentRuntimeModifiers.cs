@@ -62,6 +62,7 @@ namespace ContextStage
             string displayName = string.Empty;
             string description = string.Empty;
             int presentationPriority = int.MinValue;
+            AugmentTier highestTier = AugmentTier.Bronze;
             bool found = false;
 
             for (int i = 0; i < CardUpgrades.Count; i++)
@@ -71,6 +72,7 @@ namespace ContextStage
                     continue;
 
                 found = true;
+                if (upgrade.Tier > highestTier) highestTier = upgrade.Tier;
                 extraCards += upgrade.ExtraCardsAfterUse;
                 audienceReactionBonus += upgrade.AudienceReactionBonus;
 
@@ -92,7 +94,8 @@ namespace ContextStage
                     artwork,
                     displayName,
                     description,
-                    presentationPriority)
+                    presentationPriority,
+                    highestTier)
                 : default;
         }
     }
@@ -106,7 +109,8 @@ namespace ContextStage
             Sprite artwork,
             string displayNameOverride,
             string descriptionOverride,
-            int presentationPriority)
+            int presentationPriority,
+            AugmentTier tier)
         {
             TargetCardId = targetCardId ?? string.Empty;
             ExtraCardsAfterUse = Mathf.Max(0, extraCardsAfterUse);
@@ -115,9 +119,11 @@ namespace ContextStage
             DisplayNameOverride = displayNameOverride ?? string.Empty;
             DescriptionOverride = descriptionOverride ?? string.Empty;
             PresentationPriority = presentationPriority;
+            Tier = tier;
         }
 
         public string TargetCardId { get; }
+        public AugmentTier Tier { get; }
         public int ExtraCardsAfterUse { get; }
         public int AudienceReactionBonus { get; }
         public bool HasAudienceReactionBonus => AudienceReactionBonus > 0;
@@ -317,7 +323,8 @@ namespace ContextStage
                             upgrade.Artwork,
                             upgrade.DisplayNameOverride,
                             upgrade.DescriptionOverride,
-                            upgrade.PresentationPriority));
+                            upgrade.PresentationPriority,
+                            tierData.Tier));
                     }
                     break;
                 case AugmentEffectType.RevealAudiencePreferences:

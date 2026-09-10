@@ -11,6 +11,7 @@ namespace ContextStageEditor
     public static class AugmentSelectionArtSetup
     {
         const string SpriteFolder = "Assets/Sprites/0823_art";
+        const string TierSpriteFolder = "Assets/Sprites/0903/0903";
         const string PrefabFolder = "Assets/Resources/UI";
         const string PrefabPath = PrefabFolder + "/AugmentSelectionPopup.prefab";
         const string FontPath = "Assets/Font/DungGeunMo.ttf";
@@ -21,6 +22,8 @@ namespace ContextStageEditor
         [MenuItem("Tools/Tour/Setup Augment Selection Art", false, 30)]
         public static void Setup()
         {
+            AugmentChoiceView.TierCardArt silver = LoadTierArt("silver_card");
+            AugmentChoiceView.TierCardArt gold = LoadTierArt("gold_card");
             EnsureFolder(PrefabFolder);
             ConfigureModalTexture();
             ConfigureCardListTexture();
@@ -88,6 +91,7 @@ namespace ContextStageEditor
                         cardFrame3,
                         reroll,
                         rerollShadow);
+                    choices[i].ConfigureTierArt(silver, gold);
                 }
 
                 Button ownedListButton = CreateOwnedListButton(
@@ -132,6 +136,62 @@ namespace ContextStageEditor
             {
                 UnityEngine.Object.DestroyImmediate(root);
             }
+        }
+
+        [MenuItem("Tools/Tour/Update Augment Tier Art", false, 34)]
+        public static void UpdateTierArt()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new InvalidOperationException("증강 등급 아트 연결은 Edit Mode에서 실행하세요.");
+
+            AugmentChoiceView.TierCardArt silver = LoadTierArt("silver_card");
+            AugmentChoiceView.TierCardArt gold = LoadTierArt("gold_card");
+            GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                AugmentChoiceView[] choices = root.GetComponentsInChildren<AugmentChoiceView>(true);
+                if (choices.Length != AugmentSelectionPopup.VisibleSlotCount)
+                    throw new InvalidOperationException("증강 프리팹의 후보 슬롯 수가 예상과 다릅니다.");
+
+                // 기존 배치와 참조를 유지하고 등급별 아트 필드만 갱신한다.
+                foreach (AugmentChoiceView choice in choices)
+                {
+                    var serialized = new SerializedObject(choice);
+                    AssignTierArt(serialized.FindProperty("silverCardArt"), silver);
+                    AssignTierArt(serialized.FindProperty("goldCardArt"), gold);
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                }
+
+                if (PrefabUtility.SaveAsPrefabAsset(root, PrefabPath) == null)
+                    throw new InvalidOperationException("증강 등급 아트 프리팹 저장에 실패했습니다.");
+                Debug.Log($"[AugmentSelectionArtSetup] {choices.Length}개 슬롯에 실버·골드 아트를 연결했습니다.");
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        static void AssignTierArt(SerializedProperty property, AugmentChoiceView.TierCardArt art)
+        {
+            property.FindPropertyRelative("front").objectReferenceValue = art.front;
+            property.FindPropertyRelative("angled").objectReferenceValue = art.angled;
+            property.FindPropertyRelative("edge").objectReferenceValue = art.edge;
+        }
+
+        static AugmentChoiceView.TierCardArt LoadTierArt(string folder)
+        {
+            Sprite Load(string file) => AssetDatabase.LoadAllAssetsAtPath($"{TierSpriteFolder}/{folder}/{file}")
+                .OfType<Sprite>().FirstOrDefault();
+            var art = new AugmentChoiceView.TierCardArt
+            {
+                front = Load("gold_card_flip_0000.png"),
+                angled = Load("gold_card_ani_0001.png"),
+                edge = Load("gold_card_ani_0002.png")
+            };
+            if (!art.IsComplete)
+                throw new MissingReferenceException($"증강 {folder}의 정면 또는 회전 스프라이트가 없습니다.");
+            return art;
         }
 
         [MenuItem("Tools/Tour/Preview Augment Selection Art", false, 31)]
@@ -194,10 +254,10 @@ namespace ContextStageEditor
                 previewGrantedCard));
             model.choices.Add(CreatePreviewChoice(
                 "사전 홍보",
-                "공연 시작 시 일반 관객이 1명 추가된다."));
+                "공연 시작 시 일반 관객이 1명 추가된다.", tier: AugmentTier.Silver));
             model.choices.Add(CreatePreviewChoice(
                 "동료 커버",
-                "공연마다 콤보 끊김을 1회 방지한다."));
+                "공연마다 콤보 끊김을 1회 방지한다.", tier: AugmentTier.Gold));
             model.ownedAugments.Add(new AugmentOwnedItemViewModel
             {
                 displayName = "앙코르",
@@ -214,6 +274,8 @@ namespace ContextStageEditor
                 if (slotIndex < 0 || slotIndex >= model.choices.Count) return;
                 AugmentChoiceViewModel rerolled = model.choices[slotIndex].Clone();
                 rerolled.slotIndex = slotIndex;
+                rerolled.tier = (AugmentTier)(((int)rerolled.tier + 1) % 3);
+                rerolled.tierLabel = rerolled.tier.ToString();
                 rerolled.displayName += " · 리롤";
                 rerolled.rerollsRemaining = 0;
                 popup.PlayReroll(rerolled);
@@ -272,7 +334,8 @@ namespace ContextStageEditor
         static AugmentChoiceViewModel CreatePreviewChoice(
             string displayName,
             string description,
-            CardDefinition grantedCard = null)
+            CardDefinition grantedCard = null,
+            AugmentTier tier = AugmentTier.Bronze)
         {
             return new AugmentChoiceViewModel
             {
@@ -286,8 +349,11 @@ namespace ContextStageEditor
                         displayName = grantedCard.DisplayName,
                         description = grantedCard.Description
                     },
-                tierLabel = "Bronze",
-                tierColor = new Color32(0xCD, 0x7F, 0x32, 0xFF),
+                tier = tier,
+                tierLabel = tier.ToString(),
+                tierColor = tier == AugmentTier.Silver ? new Color32(0xC0, 0xC0, 0xC0, 0xFF)
+                    : tier == AugmentTier.Gold ? new Color32(0xFF, 0xD7, 0x00, 0xFF)
+                    : new Color32(0xCD, 0x7F, 0x32, 0xFF),
                 rerollsRemaining = 1,
                 canSelect = true
             };
