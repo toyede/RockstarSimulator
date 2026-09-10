@@ -127,22 +127,27 @@ namespace ContextStage.EditorTools
             foreach (string label in new[] { "S", "A", "B", "C", "D", "F" })
                 catalog.EditorSetRankIcon(label, AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Sprites/UI/Rank/{label}.png"));
 
-            catalog.EditorSetBandSprites(
-                FirstSubSprite("Assets/Sprites/UI/raccoon_clear (2).png"),
-                FirstSubSprite("Assets/Sprites/UI/raccoon_gameover.png"));
+            catalog.EditorSetBandFrames(
+                SubSprites("Assets/Sprites/UI/raccoon_clear (2).png"),
+                SubSprites("Assets/Sprites/UI/raccoon_gameover.png"));
 
             EditorUtility.SetDirty(catalog);
             return catalog;
         }
 
-        static Sprite FirstSubSprite(string path)
+        /// <summary>스프라이트 시트의 프레임을 이름순으로. Single 이면 그 하나.</summary>
+        static List<Sprite> SubSprites(string path)
         {
-            Sprite first = null;
+            var frames = new List<Sprite>();
             foreach (Object asset in AssetDatabase.LoadAllAssetRepresentationsAtPath(path))
+                if (asset is Sprite sprite) frames.Add(sprite);
+            frames.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+            if (frames.Count == 0)
             {
-                if (asset is Sprite sprite && (first == null || string.CompareOrdinal(sprite.name, first.name) < 0)) first = sprite;
+                Sprite single = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+                if (single != null) frames.Add(single);
             }
-            return first != null ? first : AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            return frames;
         }
 
         // ---------------- 3. 씬 ----------------
@@ -236,7 +241,8 @@ namespace ContextStage.EditorTools
             paperImage.preserveAspect = true;
 
             // 제호 정보 (헤드라인 띠 오른쪽 끝)
-            TMP_Text mastheadInfo = Text(paper, "MastheadInfo", font, 18f, TextAlignmentOptions.MidlineRight, Secondary, new Vector2(546f, 170f), new Vector2(240f, 84f));
+            // 픽셀 폰트라 20px 아래로 내리면 깨져 보인다. 긴 공연장 이름은 줄바꿈으로 받는다
+            TMP_Text mastheadInfo = Text(paper, "MastheadInfo", font, 22f, TextAlignmentOptions.MidlineRight, Secondary, new Vector2(536f, 168f), new Vector2(260f, 96f));
 
             // 헤드라인 그룹 (헤드라인 띠 = 지면 y 250~350 → 로컬 120~220, 아래 가로줄이 120)
             RectTransform headlineRoot = Group(paper, "Headline", out CanvasGroup headlineGroup);
@@ -250,19 +256,26 @@ namespace ContextStage.EditorTools
             // 사진 그룹 (왼쪽 프레임, 지면 y 385~650 → 로컬 85~−180 안쪽)
             RectTransform photoRoot = Group(paper, "Photo", out CanvasGroup photoGroup);
             RectTransform frame = Rect(photoRoot, "Frame", new Vector2(-266f, -38f), new Vector2(770f, 236f));
-            frame.gameObject.AddComponent<RectMask2D>();
             var frameImage = frame.gameObject.AddComponent<Image>();
             frameImage.color = new Color(0.72f, 0.76f, 0.73f, 1f);
             frameImage.raycastTarget = false;
+            // RectMask2D 는 회전을 무시하고 축 정렬로 자르므로 기울어진 지면에서는 Mask(스텐실)를 쓴다
+            var mask = frame.gameObject.AddComponent<Mask>();
+            mask.showMaskGraphic = true;
             RectTransform bgRect = Rect(frame, "Background", new Vector2(0f, 20f), new Vector2(770f, 433f));
             var photoBackground = bgRect.gameObject.AddComponent<Image>();
             photoBackground.raycastTarget = false;
             photoBackground.preserveAspect = true;
-            RectTransform bandRect = Rect(frame, "Band", new Vector2(-150f, -50f), new Vector2(300f, 240f));
+            RectTransform bandRect = Rect(frame, "Band", new Vector2(-190f, 6f), new Vector2(330f, 220f));
             var bandImage = bandRect.gameObject.AddComponent<Image>();
             bandImage.raycastTarget = false;
             bandImage.preserveAspect = true;
-            TMP_Text caption = Text(photoRoot, "Caption", font, 22f, TextAlignmentOptions.MidlineLeft, Secondary, new Vector2(-266f, -178f), new Vector2(770f, 30f));
+            // 사진 설명은 사진 안쪽 하단 띠에 (스킨마다 테두리·통계 칸 위치가 달라 바깥에 두면 줄과 겹친다)
+            RectTransform captionStrip = Rect(frame, "CaptionStrip", new Vector2(0f, -102f), new Vector2(770f, 32f));
+            var stripImage = captionStrip.gameObject.AddComponent<Image>();
+            stripImage.color = new Color(0.1f, 0.07f, 0.12f, 0.62f);
+            stripImage.raycastTarget = false;
+            TMP_Text caption = Text(captionStrip, "Caption", font, 22f, TextAlignmentOptions.MidlineLeft, new Color32(0xEE, 0xE6, 0xF0, 0xFF), new Vector2(8f, 0f), new Vector2(740f, 32f));
             caption.overflowMode = TextOverflowModes.Ellipsis;
 
             // 성적 그룹 (오른쪽 칸 490×235, 중심 x 419)
@@ -283,13 +296,17 @@ namespace ContextStage.EditorTools
             // 기록 · 기사 · 버튼 그룹
             RectTransform recordsRoot = Group(paper, "Records", out CanvasGroup recordsGroup);
             // 통계 칸 (지면 y 685~765). 칸 왼쪽 60px 는 스킨의 발바닥 아이콘 자리라 비운다
-            TMP_Text statCombo = Text(recordsRoot, "StatCombo", font, 30f, TextAlignmentOptions.Center, Ink, new Vector2(-428f, -255f), new Vector2(340f, 60f));
-            TMP_Text statFever = Text(recordsRoot, "StatFever", font, 30f, TextAlignmentOptions.Center, Ink, new Vector2(24f, -255f), new Vector2(350f, 60f));
-            TMP_Text statAudience = Text(recordsRoot, "StatAudience", font, 30f, TextAlignmentOptions.Center, Ink, new Vector2(478f, -255f), new Vector2(350f, 60f));
+            // 스킨 장식이 칸 왼쪽(발바닥)이나 가운데(❖)에 있어 오른쪽 절반에 두 줄(라벨/값)로 쓴다
+            TMP_Text statCombo = Text(recordsRoot, "StatCombo", font, 24f, TextAlignmentOptions.Center, Ink, new Vector2(-353f, -255f), new Vector2(210f, 76f));
+            TMP_Text statFever = Text(recordsRoot, "StatFever", font, 24f, TextAlignmentOptions.Center, Ink, new Vector2(100f, -255f), new Vector2(210f, 76f));
+            TMP_Text statAudience = Text(recordsRoot, "StatAudience", font, 24f, TextAlignmentOptions.Center, Ink, new Vector2(556f, -255f), new Vector2(210f, 76f));
+            statCombo.richText = statFever.richText = statAudience.richText = true;
             // 기사란 (지면 y 780~840 → 로컬 −310~−370, 테두리 있는 스킨은 안쪽 −318~−362)
-            TMP_Text articleTitle = Text(recordsRoot, "ArticleTitle", font, 26f, TextAlignmentOptions.MidlineLeft, Ink, new Vector2(-250f, -331f), new Vector2(800f, 30f));
+            // 테두리 있는 스킨의 안쪽(−328~−362)에 제목 한 줄 + 본문 한 줄
+            TMP_Text articleTitle = Text(recordsRoot, "ArticleTitle", font, 24f, TextAlignmentOptions.MidlineLeft, Ink, new Vector2(-250f, -336f), new Vector2(800f, 28f));
             articleTitle.fontStyle = FontStyles.Bold;
-            TMP_Text articleBody = Text(recordsRoot, "ArticleBody", font, 22f, TextAlignmentOptions.TopLeft, Secondary, new Vector2(-250f, -370f), new Vector2(800f, 50f));
+            TMP_Text articleBody = Text(recordsRoot, "ArticleBody", font, 22f, TextAlignmentOptions.MidlineLeft, Secondary, new Vector2(-250f, -361f), new Vector2(800f, 26f));
+            articleBody.overflowMode = TextOverflowModes.Ellipsis;
 
             RectTransform buttonRect = Rect(recordsRoot, "PrimaryButton", new Vector2(470f, -340f), new Vector2(360f, 58f));
             var buttonImage = buttonRect.gameObject.AddComponent<Image>();
@@ -360,7 +377,8 @@ namespace ContextStage.EditorTools
         {
             RectTransform rect = Rect(parent, name, Vector2.zero, Vector2.zero);
             group = rect.gameObject.AddComponent<CanvasGroup>();
-            group.blocksRaycasts = false;
+            // blocksRaycasts 를 끄면 자식 버튼까지 클릭을 못 받는다 (페이드 전용 그룹이라도 켜 둔다)
+            group.blocksRaycasts = true;
             group.interactable = true;
             return rect;
         }

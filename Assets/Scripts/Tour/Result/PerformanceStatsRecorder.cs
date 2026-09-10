@@ -20,6 +20,8 @@ namespace ContextStage
         [SerializeField] int crisisCount;
         [SerializeField] int crisisThreatened;
         [SerializeField] int crisisRetained;
+        [SerializeField] int stageEventsSucceeded;
+        [SerializeField] int stageEventsTotal;
         [SerializeField] BossOutcome bossOutcome;
 
         bool _feverActive;
@@ -36,6 +38,7 @@ namespace ContextStage
             EventBus.Subscribe<SpecialHitLanded>(OnSpecialHit);
             EventBus.Subscribe<SpecialAudienceEnded>(OnSpecialEnded);
             EventBus.Subscribe<AudienceCrisisResolved>(OnCrisisResolved);
+            EventBus.Subscribe<StageEventResolved>(OnStageEventResolved);
             EventBus.Subscribe<BossDefeated>(OnBossDefeated);
         }
 
@@ -48,6 +51,7 @@ namespace ContextStage
             EventBus.Unsubscribe<SpecialHitLanded>(OnSpecialHit);
             EventBus.Unsubscribe<SpecialAudienceEnded>(OnSpecialEnded);
             EventBus.Unsubscribe<AudienceCrisisResolved>(OnCrisisResolved);
+            EventBus.Unsubscribe<StageEventResolved>(OnStageEventResolved);
             EventBus.Unsubscribe<BossDefeated>(OnBossDefeated);
         }
 
@@ -62,6 +66,8 @@ namespace ContextStage
             crisisCount = 0;
             crisisThreatened = 0;
             crisisRetained = 0;
+            stageEventsSucceeded = 0;
+            stageEventsTotal = 0;
             bossOutcome = BossOutcome.None;
             _feverActive = false;
         }
@@ -100,6 +106,12 @@ namespace ContextStage
             crisisRetained += e.RetainedCount;
         }
 
+        void OnStageEventResolved(StageEventResolved e)
+        {
+            stageEventsTotal++;
+            if (e.Success) stageEventsSucceeded++;
+        }
+
         void OnBossDefeated(BossDefeated e) => bossOutcome = e.ByStreak ? BossOutcome.StreakWin : BossOutcome.Defeated;
 
         // ---------------- 확정 ----------------
@@ -120,6 +132,8 @@ namespace ContextStage
                 crisisCount = crisisCount,
                 crisisThreatened = crisisThreatened,
                 crisisRetained = crisisRetained,
+                stageEventsSucceeded = stageEventsSucceeded,
+                stageEventsTotal = stageEventsTotal,
             };
 
             if (AudienceRosterSystem.HasInstance)

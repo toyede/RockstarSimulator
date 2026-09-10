@@ -204,6 +204,42 @@ namespace ContextStage
         public HeatStage CurrentStage => _stage;
         public bool IsFlashing => _flashing;
 
+        [Header("정전 (스테이지 이벤트가 SetBlackout 으로 켠다)")]
+        [SerializeField, Tooltip("정전 중 Global Light 색 (짙은 남색). 배경만 희미하게 남긴다")]
+        Color blackoutGlobalColor = new Color(0.16f, 0.2f, 0.4f, 1f);
+        [SerializeField, Range(0f, 1f), Tooltip("정전 중 Global Light 강도")]
+        float blackoutGlobalIntensity = 0.22f;
+        [SerializeField, Tooltip("비상등 색 (오른쪽 무대 조명이 맡는다)")]
+        Color emergencyLightColor = new Color(1f, 0.16f, 0.1f, 1f);
+        [SerializeField, Range(0f, 2f), Tooltip("비상등 강도")]
+        float emergencyLightIntensity = 0.45f;
+        [SerializeField, Tooltip("비상등 좌우 스윕 각도(도)")] float emergencySweepDegrees = 30f;
+        [SerializeField, Tooltip("비상등 스윕 속도")] float emergencySweepSpeed = 1.5f;
+        [SerializeField, Min(0.01f), Tooltip("정전 진입·복구 보간 시간(초)")] float blackoutFadeDuration = 0.25f;
+
+        bool _blackout;
+        float _blackoutBlend;
+        Quaternion _rightBlackoutBaseRotation;
+        bool _rightBlackoutBaseCaptured;
+
+        /// <summary>정전 상태인지 (보간 중 포함).</summary>
+        public bool IsBlackout => _blackout || _blackoutBlend > 0f;
+
+        /// <summary>
+        /// [스테이지 이벤트 전용] 정전: Global 을 짙은 남색으로 낮추고 왼쪽 조명을 끄며 오른쪽 조명을 비상등으로 스윕한다.
+        /// 끄면 프리셋으로 자연스럽게 돌아온다. 캐릭터 실루엣은 BlackoutPresentation 이 스프라이트 색으로 만든다.
+        /// </summary>
+        public void SetBlackout(bool on)
+        {
+            if (_blackout == on) return;
+            _blackout = on;
+            if (on && rightStageLight != null && !_rightBlackoutBaseCaptured)
+            {
+                _rightBlackoutBaseRotation = rightStageLight.transform.localRotation;
+                _rightBlackoutBaseCaptured = true;
+            }
+        }
+
         float FlashTotal => Mathf.Max(0.0001f, flashInDuration + flashHoldDuration + flashOutDuration);
 
         void Awake()
@@ -506,6 +542,10 @@ namespace ContextStage
             float pulseSpeed = Mathf.Lerp(_from.pulseSpeed, _to.pulseSpeed, blend);
             float pulseAmplitude = Mathf.Lerp(_from.pulseAmplitude, _to.pulseAmplitude, blend);
 
+            // --- 정전 보간 (0 = 평소, 1 = 정전) ---
+            _blackoutBlend = Mathf.MoveTowards(_blackoutBlend, _blackout ? 1f : 0f, Time.deltaTime / blackoutFadeDuration);
+            float dark = _blackoutBlend;
+
             // --- Global: 단계 값 + (플래시 중이면) 덮어쓰기. 펄스는 넣지 않는다(UI 가독성) ---
             if (globalLight != null)
             {
@@ -523,13 +563,40 @@ namespace ContextStage
                     intensity = Mathf.Lerp(globalIntensity, flashPeakIntensity, k);
                 }
 
+                if (dark > 0f)
+                {
+                    color = Color.Lerp(color, blackoutGlobalColor, dark);
+                    intensity = Mathf.Lerp(intensity, blackoutGlobalIntensity, dark);
+                }
+
                 globalLight.color = color;
                 globalLight.intensity = intensity;
             }
 
             // --- 좌우 무대 조명: 강도만 펄스. 오른쪽은 위상을 어긋나게 한다 ---
-            ApplyStageLight(leftStageLight, stageColor, baseIntensity, pulseSpeed, pulseAmplitude, 0f);
-            ApplyStageLight(rightStageLight, stageColor, baseIntensity, pulseSpeed, pulseAmplitude, rightPulsePhaseOffset);
+            // 정전 중: 왼쪽은 꺼지고 오른쪽은 붉은 비상등으로 좌우 스윕
+            ApplyStageLight(leftStageLight, stageColor, baseIntensity * (1f - dark), pulseSpeed, pulseAmplitude * (1f - dark), 0f);
+            ApplyStageLight(
+                rightStageLight,
+                Color.Lerp(stageColor, emergencyLightColor, dark),
+                Mathf.Lerp(baseIntensity, emergencyLightIntensity, dark),
+                pulseSpeed,
+                pulseAmplitude * (1f - dark),
+                rightPulsePhaseOffset);
+
+            if (rightStageLight != null && _rightBlackoutBaseCaptured)
+            {
+                if (dark > 0f)
+                {
+                    float sweep = Mathf.Sin(Time.time * emergencySweepSpeed) * emergencySweepDegrees * dark;
+                    rightStageLight.transform.localRotation = _rightBlackoutBaseRotation * Quaternion.Euler(0f, 0f, sweep);
+                }
+                else
+                {
+                    rightStageLight.transform.localRotation = _rightBlackoutBaseRotation;
+                    _rightBlackoutBaseCaptured = false;
+                }
+            }
         }
 
         void ApplyStageLight(Light2D light, Color color, float baseIntensity, float speed, float amplitude, float phase)

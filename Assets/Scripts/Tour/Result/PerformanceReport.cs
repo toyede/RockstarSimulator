@@ -46,6 +46,10 @@ namespace ContextStage
         public int crisisThreatened;
         public int crisisRetained;
 
+        [Header("기믹 이벤트 (성공 / 전체)")]
+        public int stageEventsSucceeded;
+        public int stageEventsTotal;
+
         [Header("보스전")]
         public BossOutcome bossOutcome;
         public int bossPatternsSucceeded;
@@ -55,6 +59,7 @@ namespace ContextStage
 
         public bool HasSpecialAudience => specialEnded > 0;
         public bool HasCrisis => crisisCount > 0;
+        public bool HasStageEvents => stageEventsTotal > 0;
         public bool HasBoss => isBoss && bossOutcome != BossOutcome.None;
 
         /// <summary>목표 대비 달성 비율 (1.0 = 목표 정확히 달성).</summary>

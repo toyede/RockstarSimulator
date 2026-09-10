@@ -30,6 +30,9 @@ namespace ContextStage
         /// <summary>[튜토리얼 전용] 현재 테두리가 표시된 대상. 없으면 null.</summary>
         public AudienceMemberActor RevealedActor => _revealed ? _hoveredActor : null;
 
+        /// <summary>[연출 전용] false 인 동안 호버로 성향을 볼 수 없다 (정전). 연출이 끝나면 반드시 true 로.</summary>
+        public bool RevealAllowed { get; set; } = true;
+
         void Awake()
         {
             if (presenter == null)
@@ -138,6 +141,8 @@ namespace ContextStage
 
         bool CanInspectAudience()
         {
+            if (!RevealAllowed) return false;
+
             if (!GameJamKit.GameManager.HasInstance ||
                 !GameJamKit.GameManager.Instance.IsPlaying)
                 return false;

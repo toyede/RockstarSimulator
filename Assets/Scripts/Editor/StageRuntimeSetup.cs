@@ -37,6 +37,13 @@ namespace ContextStage.EditorTools
         const string RuleFestival = "festival_nearby_concert";
         const string RuleArena = "arena_adaptive_event";
         const string RuleRival = "rival_crowd_challenge";
+        const string RuleBoss = "boss_battle";
+        const string RuleRain = "festival_rain_shower";
+        const string RuleFlag = "festival_flag_wave";
+        const string RuleScreen = "arena_big_screen";
+        const string RuleVip = "arena_vip_entrance";
+        const string RuleBlackout = "arena_blackout";
+        const string RuleContested = "stadium_contested_fan";
 
         struct StageSpec
         {
@@ -71,23 +78,23 @@ namespace ContextStage.EditorTools
             new StageSpec
             {
                 assetName = "Stage03", stageId = "stage_03", presetId = "audience_festival_mixed",
-                ruleIds = new[] { RuleSpecial, RuleFestival },
+                ruleIds = new[] { RuleSpecial, RuleFestival, RuleRain, RuleFlag },
                 spriteFolder = "ST03_Festival", spritePrefix = "ST03",
-                ruleTitle = "관객 쟁탈전",
-                ruleBody = "옆 무대가 일부 관객을 유혹합니다.\n경고된 관객의 호응도를 올리거나 Special 카드로 붙잡으세요.",
+                ruleTitle = "축제의 변수",
+                ruleBody = "옆 무대의 유혹, 소나기, 깃발 웨이브가 찾아옵니다.\n경고를 읽고 CHILL 카드로 우산을, 콤보로 웨이브를 만드세요.",
             },
             new StageSpec
             {
                 assetName = "Stage04", stageId = "stage_04", presetId = "audience_arena_mainstream",
-                ruleIds = new[] { RuleSpecial, RuleArena },
+                ruleIds = new[] { RuleSpecial, RuleArena, RuleScreen, RuleBlackout },
                 spriteFolder = "ST04_Arena", spritePrefix = "ST04",
-                ruleTitle = "생방송의 변수",
-                ruleBody = "현재 공연 성과에 따라 위기 또는 지원이 한 번 발생합니다.\n경고를 확인하고 카드 계획을 바꾸세요.",
+                ruleTitle = "생방송 사고",
+                ruleBody = "카메라 큐시트 순서대로 카드를 내고, 정전 중에는 관객을 기억해 Miss 없이 버티세요.\n정전 보너스 없이는 목표 점수에 닿기 어렵습니다.",
             },
             new StageSpec
             {
                 assetName = "Stage05Boss", stageId = "stage_05_boss", presetId = "audience_stadium_final",
-                ruleIds = new[] { RuleSpecial, RuleRival },
+                ruleIds = new[] { RuleSpecial, RuleBoss, RuleContested },
                 spriteFolder = "ST05_BossStadium", spritePrefix = "ST05",
                 ruleTitle = "라이벌 배틀",
                 ruleBody = "LUX//FAUNA가 특정 팬층을 빼앗으려 합니다.\n예고된 관객의 호응도를 60 이상으로 만들거나 대응 Special 카드를 성공시키세요.",
@@ -479,6 +486,39 @@ namespace ContextStage.EditorTools
             notice.EditorSetFont(ProjectFontTool.TmpFont);
             EditorUtility.SetDirty(notice);
             rules.Add(rival);
+
+            // 기믹 이벤트 (Stage 3·4 에 집중, Stage 5 는 가볍게 하나). 수치는 각 Rule_* 인스펙터
+            var rain = EnsureRule<RainShowerRule>(root, "Rule_FestivalRainShower", RuleRain);
+            rain.EditorConfigure("소나기", new[] { 45f }, 12f);
+            rules.Add(rain);
+            var flag = EnsureRule<FlagWaveRule>(root, "Rule_FestivalFlagWave", RuleFlag);
+            flag.EditorConfigure("깃발 웨이브", new float[0], 4f);
+            rules.Add(flag);
+            var screen = EnsureRule<BigScreenRule>(root, "Rule_ArenaBigScreen", RuleScreen);
+            screen.EditorConfigure("큐시트", new[] { 40f, 80f }, 12f);
+            rules.Add(screen);
+            var blackout = EnsureRule<ArenaBlackoutRule>(root, "Rule_ArenaBlackout", RuleBlackout);
+            blackout.EditorConfigure("정전", new[] { 58f, 100f }, 8f);
+            EnsureComponent<BlackoutPresentation>(blackout.gameObject);
+            rules.Add(blackout);
+            // 게스트(VIP) 입장은 보류 — 컴포넌트는 남겨 두되 Stage 4 룰 목록에는 넣지 않는다
+            var vip = EnsureRule<VipEntranceRule>(root, "Rule_ArenaVipEntrance", RuleVip);
+            vip.EditorConfigure("VIP석 입장", new float[0], 15f);
+            rules.Add(vip);
+            var contested = EnsureRule<ContestedFanRule>(root, "Rule_StadiumContestedFan", RuleContested);
+            contested.EditorConfigure("스탠딩석 팬 쟁탈", new[] { 35f, 85f }, 6f);
+            rules.Add(contested);
+            var eventNotice = EnsureComponent<StageEventNoticeUI>(root);
+            eventNotice.EditorSetFont(ProjectFontTool.TmpFont);
+            EditorUtility.SetDirty(eventNotice);
+
+            // 보스 룰은 Tools/Tour/Setup Boss Battle 이 만든다. 있으면 디렉터 목록에 유지
+            Transform bossChild = root.transform.Find("Rule_BossBattle");
+            if (bossChild != null)
+            {
+                var boss = bossChild.GetComponent<BossBattleRule>();
+                if (boss != null) rules.Add(boss);
+            }
 
             director.EditorConfigure(roster, special, crisis, rules);
             EditorUtility.SetDirty(director);

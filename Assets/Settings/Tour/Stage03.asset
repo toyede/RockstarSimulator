@@ -24,3 +24,5 @@ MonoBehaviour:
   venueRuleIds:
   - special_audience_requests
   - festival_nearby_concert
+  - festival_rain_shower
+  - festival_flag_wave

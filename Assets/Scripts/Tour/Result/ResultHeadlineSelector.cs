@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ContextStage
@@ -21,7 +22,8 @@ namespace ContextStage
         public string headline;
         public string subtitle;
         public Sprite photoBackground;
-        public Sprite bandSprite;
+        public IReadOnlyList<Sprite> bandFrames;
+        public float bandFrameInterval = 0.4f;
         public float bandSpriteScale = 3f;
         public string caption;
 
@@ -85,6 +87,7 @@ namespace ContextStage
                 rankIcon = catalog != null ? catalog.RankIconFor(rank) : null,
                 nextAction = nextAction,
                 bandSpriteScale = catalog != null ? catalog.BandSpriteScale : 3f,
+                bandFrameInterval = catalog != null ? catalog.BandFrameInterval : 0.4f,
             };
 
             if (StageVisualCatalog.TryResolve(result.stageId, out StageVisualEntry visual) && visual != null)
@@ -136,14 +139,14 @@ namespace ContextStage
             }
 
             p.stampColor = success ? accent : catalog.StampFailColor;
-            p.bandSprite = success ? catalog.BandClear : catalog.BandFail;
+            p.bandFrames = success ? catalog.BandClearFrames : catalog.BandFailFrames;
 
-            // ---------------- 요약 기록 ----------------
-            p.statCombo = $"최고 콤보  {report.maxCombo}";
-            p.statFever = $"피버  {report.feverCount}회";
+            // ---------------- 요약 기록 (라벨 / 값 두 줄) ----------------
+            p.statCombo = Stat("최고 콤보", report.maxCombo.ToString());
+            p.statFever = Stat("피버", $"{report.feverCount}회");
             p.statAudience = report.audienceCapacity > 0
-                ? $"남은 관객  {report.audienceRemaining} / 정원 {report.audienceCapacity}"
-                : $"남은 관객  {report.audienceRemaining}";
+                ? Stat("남은 관객 / 정원", $"{report.audienceRemaining} / {report.audienceCapacity}")
+                : Stat("남은 관객", report.audienceRemaining.ToString());
 
             // ---------------- 기믹 기사 (스테이지에 맞는 것 하나) ----------------
             if (isBoss && report.HasBoss)
@@ -172,6 +175,8 @@ namespace ContextStage
                 p.articleTitle = catalog.ArticleDefaultTitle;
                 p.articleBody = string.Format(catalog.ArticleDefaultBody, report.audiencePeak);
             }
+            if (report.HasStageEvents)
+                p.articleBody += $" · 기믹 이벤트 {report.stageEventsSucceeded} / {report.stageEventsTotal}회 성공";
 
             // ---------------- 버튼 ----------------
             switch (nextAction)
@@ -183,6 +188,9 @@ namespace ContextStage
 
             return p;
         }
+
+        /// <summary>통계 칸 한 줄: 작은 라벨 위, 큰 값 아래. 폰트를 줄이지 않고 두 줄로 칸에 맞춘다.</summary>
+        static string Stat(string label, string value) => $"<size=22>{label}</size>\n<size=34>{value}</size>";
 
         /// <summary>대표 기록 하나만 고른다. 우선순위: 콤보 → 피버 → 특별 관객 → 위기 방어 → (기본) 달성률.</summary>
         static string PickRecordSubtitle(PerformanceReport r, int percent, ResultNewspaperCatalog c, bool allowDefault = true)

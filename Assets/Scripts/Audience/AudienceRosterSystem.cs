@@ -62,7 +62,7 @@ namespace ContextStage
             // (TrySetEngagement/TryChangeEngagement 수동 호출은 계속 동작한다)
             if (!SuppressEngagementDecay &&
                 !IsFeverActive &&
-                _model.ApplyNaturalDecay(Time.deltaTime, _changes, _removed))
+                _model.ApplyNaturalDecay(Time.deltaTime * Mathf.Max(0f, EngagementDecayMultiplier), _changes, _removed))
             {
                 for (int i = 0; i < _changes.Count; i++)
                 {
@@ -103,6 +103,9 @@ namespace ContextStage
 
         /// <summary>[튜토리얼 전용] true인 동안 관객 개별 몰입도 자연 감소를 멈춘다. 평소에는 false.</summary>
         public bool SuppressEngagementDecay { get; set; }
+
+        /// <summary>[스테이지 이벤트 전용] 자연 감소 배율. 평소 1. 이벤트가 끝날 때 반드시 1 로 되돌린다.</summary>
+        public float EngagementDecayMultiplier { get; set; } = 1f;
 
         static bool IsFeverActive =>
             FeverSystem.HasInstance && FeverSystem.Instance.IsActive;

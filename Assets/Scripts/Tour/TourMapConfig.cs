@@ -80,12 +80,18 @@ namespace ContextStage
         float travelSecondsPerSegment = 3f;
         [SerializeField, Min(0f), Tooltip("클릭 후 출발까지 지연(초). 피그마 300ms")]
         float travelStartDelay = 0.3f;
-        [SerializeField, Min(0.01f), Tooltip("도착 핀이 튀어나오는 시간(초). 피그마 200ms Ease out")]
+        [SerializeField, Min(0.01f), Tooltip("도착 핀이 작은 크기에서 튀어나오는 시간(초). 피그마 200ms Ease out")]
         float pinPopDuration = 0.2f;
-        [SerializeField, Min(0.05f), Tooltip("도착 핀 점멸 간격(초). 피그마 100ms + 300ms")]
+        [SerializeField, Range(0f, 1f), Tooltip("도착 핀이 등장을 시작하는 크기 배율")]
+        float pinPopStartScale = 0.3f;
+        [SerializeField, Min(0.05f), Tooltip("(예전 점멸 간격 — 지금은 쓰지 않는다)")]
         float pinBlinkInterval = 0.35f;
-        [SerializeField, Min(0f), Tooltip("도착 핀이 점멸하는 총 시간(초). 끝나면 대화로 넘어간다")]
+        [SerializeField, Min(0f), Tooltip("도착 핀 등장 후 대화로 넘어가기까지 대기(초)")]
         float arrivalBlinkDuration = 1.6f;
+        [SerializeField, Min(1f), Tooltip("마우스를 올린 노드의 핀·아이콘 크기 배율. 평소에는 1")]
+        float pinHoverScale = 1.25f;
+        [SerializeField, Min(0.01f), Tooltip("호버 크기 전환 시간(초)")]
+        float pinHoverDuration = 0.12f;
         [SerializeField, Tooltip("이동 방향에 따라 버스를 좌우 반전할지")]
         bool flipBusByDirection = false;
 
@@ -120,8 +126,11 @@ namespace ContextStage
         public float TravelSecondsPerSegment => travelSecondsPerSegment;
         public float TravelStartDelay => travelStartDelay;
         public float PinPopDuration => pinPopDuration;
+        public float PinPopStartScale => pinPopStartScale;
         public float PinBlinkInterval => pinBlinkInterval;
         public float ArrivalBlinkDuration => arrivalBlinkDuration;
+        public float PinHoverScale => pinHoverScale;
+        public float PinHoverDuration => pinHoverDuration;
         public bool FlipBusByDirection => flipBusByDirection;
 
         public static TourMapConfig LoadDefault() => Resources.Load<TourMapConfig>(ResourcesPath);

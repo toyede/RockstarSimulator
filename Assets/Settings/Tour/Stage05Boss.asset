@@ -24,3 +24,4 @@ MonoBehaviour:
   venueRuleIds:
   - special_audience_requests
   - boss_battle
+  - stadium_contested_fan

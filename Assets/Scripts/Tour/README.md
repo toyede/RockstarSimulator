@@ -26,7 +26,8 @@ TourRunManager: Map → Dialogue → Performance → Result → Reward → Map �
 - 지도(`bg_map_select`) 위에 노드를 점으로 찍고 노드 사이를 빗금(경로 방향으로 회전한 점)으로 잇는다
 - 노드 상태: 클리어 = 핀 + 마이크 + 랭크 글자 / 현재 = 활성 핀 / 다음 = 클릭 가능한 회색 점 / 잠김 = 흐린 점. 보스 노드는 마이크 대신 보스 아이콘
 - 너구리 얼굴은 좌 30° ↔ 우 30° 두 프레임을 `frameInterval`(0.4초)마다 교대, 버스는 살짝 들썩인다
-- 다음 노드 클릭 → `travelStartDelay` 뒤 버스가 빗금을 따라 이동(`travelSecondsPerSegment`, Linear) → 도착 핀이 튀어나와(`pinPopDuration`) `arrivalBlinkDuration` 동안 점멸 → `NodeSelected` → `TourRunManager.SelectNode` → 대화창(이전 화면 블러)
+- 다음 노드 클릭 → `travelStartDelay` 뒤 버스가 빗금을 따라 이동(`travelSecondsPerSegment`, Linear) → 도착 핀과 아이콘이 `pinPopStartScale`(0.3배)에서 1배로 한 번 커지며 등장(`pinPopDuration`) → `arrivalBlinkDuration` 동안 가만히 → `NodeSelected` → `TourRunManager.SelectNode` → 대화창(이전 화면 블러)
+- 핀은 평소 1배로 정지해 있고, 마우스를 올린 노드만 핀·아이콘이 `pinHoverScale`(1.25배)로 커졌다가 벗어나면 돌아온다 (`pinHoverDuration`). 점멸은 없다. 핀이 숨겨진 다음 노드는 점이 커진다
 - 좌하단 "< 타이틀로". 좌상단 "보유 증강 확인하기" 는 증강 담당 몫이라 비워 두었다
 
 노드 좌표(정규화)·배율·간격·시간은 전부 `TourMapConfig.asset` 인스펙터에서 조절한다. 코드에는 수치가 없다.

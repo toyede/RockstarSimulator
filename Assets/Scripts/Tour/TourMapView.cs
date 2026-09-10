@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace ContextStage
@@ -40,8 +41,19 @@ namespace ContextStage
             [NonSerialized] public int Index;
             [NonSerialized] public bool IsBoss;
             [NonSerialized] public RunNodeStatus Status;
+            [NonSerialized] public bool Hovered;
+            [NonSerialized] public float Scale = 1f;
+            [NonSerialized] public Coroutine HoverRoutine;
 
             public bool IsComplete => root != null && dot != null && pinRoot != null && pin != null && button != null;
+        }
+
+        /// <summary>노드 루트에 붙어 마우스 진입·이탈을 뷰에 알린다 (씬 오브젝트에도 런타임에 붙는다).</summary>
+        sealed class NodeHoverRelay : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+        {
+            public Action<bool> Changed;
+            public void OnPointerEnter(PointerEventData eventData) => Changed?.Invoke(true);
+            public void OnPointerExit(PointerEventData eventData) => Changed?.Invoke(false);
         }
 
         /// <summary>버스가 도착해 핀 점멸까지 끝났을 때. 인자는 nodeId.</summary>
@@ -135,6 +147,7 @@ namespace ContextStage
                 if (slot.button == null) continue;
                 NodeSlot captured = slot;
                 slot.button.onClick.AddListener(() => OnNodeClicked(captured));
+                AttachHover(slot);
             }
 
             if (busImage != null) _busImageBase = busImage.anchoredPosition;
@@ -276,6 +289,7 @@ namespace ContextStage
                 NodeSlot slot = CreateNodeObjects(nodeSlots.Count);
                 NodeSlot captured = slot;
                 slot.button.onClick.AddListener(() => OnNodeClicked(captured));
+                AttachHover(slot);
                 nodeSlots.Add(slot);
             }
 
@@ -298,7 +312,11 @@ namespace ContextStage
                     node.icon.sprite = node.IsBoss ? config.BossIcon : config.MicIcon;
                     node.icon.enabled = node.icon.sprite != null;
                 }
-                if (node.pinRoot != null) node.pinRoot.localScale = Vector3.one;
+                // 평소에는 작은(1배) 상태로 가만히. 커지는 것은 호버와 도착 등장뿐
+                if (node.HoverRoutine != null) StopCoroutine(node.HoverRoutine);
+                node.HoverRoutine = null;
+                node.Hovered = false;
+                ApplyNodeScale(node, 1f);
 
                 switch (state.status)
                 {
@@ -351,6 +369,65 @@ namespace ContextStage
         {
             if (node.button != null) node.button.interactable = value;
         }
+
+        // ---------------- 호버 · 크기 ----------------
+
+        void AttachHover(NodeSlot slot)
+        {
+            if (slot.root == null) return;
+            NodeHoverRelay relay = slot.root.GetComponent<NodeHoverRelay>();
+            if (relay == null) relay = slot.root.gameObject.AddComponent<NodeHoverRelay>();
+            NodeSlot captured = slot;
+            relay.Changed = hovered => SetHover(captured, hovered);
+        }
+
+        /// <summary>마우스가 노드 위에 있을 때만 핀(과 아이콘)이 커지고, 벗어나면 1배로 돌아온다.</summary>
+        void SetHover(NodeSlot node, bool hovered)
+        {
+            if (config == null) return;
+            node.Hovered = hovered;
+            if (_arrivalRoutine != null && node.Status == RunNodeStatus.Current) return; // 도착 등장 연출이 끝난 뒤에 반영된다
+            if (node.HoverRoutine != null) StopCoroutine(node.HoverRoutine);
+            node.HoverRoutine = StartCoroutine(TweenNodeScale(node, hovered ? config.PinHoverScale : 1f, config.PinHoverDuration));
+        }
+
+        IEnumerator TweenNodeScale(NodeSlot node, float target, float duration)
+        {
+            float from = node.Scale;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
+                ApplyNodeScale(node, Mathf.Lerp(from, target, 1f - (1f - t) * (1f - t)));
+                yield return null;
+            }
+            ApplyNodeScale(node, target);
+            node.HoverRoutine = null;
+        }
+
+        /// <summary>핀과 아이콘을 함께 키운다. 핀이 숨겨진 노드(다음 노드)는 점을 키운다.</summary>
+        static void ApplyNodeScale(NodeSlot node, float scale)
+        {
+            node.Scale = scale;
+            Vector3 s = Vector3.one * scale;
+            bool pinVisible = node.pinRoot != null && node.pinRoot.gameObject.activeSelf;
+            if (node.pinRoot != null) node.pinRoot.localScale = s;
+            // 아이콘이 씬에서 핀 밖에 놓였더라도 같이 커지도록
+            if (node.icon != null && (node.pinRoot == null || !node.icon.transform.IsChildOf(node.pinRoot)))
+                node.icon.rectTransform.localScale = s;
+            if (node.dot != null) node.dot.rectTransform.localScale = pinVisible ? Vector3.one : s;
+        }
+
+        /// <summary>[디버그·테스트] 호버 상태를 코드로 넣는다.</summary>
+        public void DebugSetHover(int index, bool hovered)
+        {
+            if (index < 0 || index >= nodeSlots.Count) return;
+            SetHover(nodeSlots[index], hovered);
+        }
+
+        /// <summary>[디버그·테스트] 노드의 현재 크기 배율.</summary>
+        public float DebugNodeScale(int index) => index >= 0 && index < nodeSlots.Count ? nodeSlots[index].Scale : -1f;
 
         void SetRank(NodeSlot node, string label)
         {
@@ -524,39 +601,33 @@ namespace ContextStage
             _arrivalRoutine = StartCoroutine(ArrivalBlink(target));
         }
 
+        /// <summary>도착: 핀(과 아이콘)이 작은 크기에서 한 번 커지며 등장한 뒤 가만히 있다가 대화로 넘어간다. 점멸은 없다.</summary>
         IEnumerator ArrivalBlink(NodeSlot node)
         {
             SetDot(node, config.VisitedDotSize, config.VisitedDotColor);
             SetPin(node, true, config.PinHover);
+            node.Status = RunNodeStatus.Current;
 
-            // 튀어나오기 (Ease out)
+            // 튀어나오기 (Ease out): 작은 크기 → 1배
             float pop = Mathf.Max(0.01f, config.PinPopDuration);
+            float start = Mathf.Clamp01(config.PinPopStartScale);
             float elapsed = 0f;
+            ApplyNodeScale(node, start);
             while (elapsed < pop)
             {
                 elapsed += Time.unscaledDeltaTime;
                 float t = Mathf.Clamp01(elapsed / pop);
                 float eased = 1f - (1f - t) * (1f - t);
-                if (node.pinRoot != null) node.pinRoot.localScale = Vector3.one * Mathf.Lerp(0.4f, 1f, eased);
+                ApplyNodeScale(node, Mathf.Lerp(start, 1f, eased));
                 yield return null;
             }
-            if (node.pinRoot != null) node.pinRoot.localScale = Vector3.one;
+            ApplyNodeScale(node, 1f);
 
-            // 점멸: 활성 핀 ↔ 기본 핀
-            float total = config.ArrivalBlinkDuration;
-            float interval = Mathf.Max(0.05f, config.PinBlinkInterval);
-            float blinked = 0f;
-            bool active = true;
-            while (blinked < total)
-            {
-                yield return new WaitForSecondsRealtime(interval);
-                blinked += interval;
-                active = !active;
-                if (node.pin != null) node.pin.sprite = active ? config.PinHover : config.PinNormal;
-            }
-            if (node.pin != null) node.pin.sprite = config.PinHover;
+            // 등장 후 잠시 머문다 (마우스가 올라와 있으면 그때 호버 크기로)
+            if (config.ArrivalBlinkDuration > 0f) yield return new WaitForSecondsRealtime(config.ArrivalBlinkDuration);
 
             _arrivalRoutine = null;
+            if (node.Hovered) SetHover(node, true);
             NodeSelected?.Invoke(node.NodeId);
         }
 

@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Arena Headliner
   nodeType: 0
   isBoss: 0
-  targetScore: 9500
+  targetScore: 11000
   duration: 120
   preDialogueId: intro_stage_04
   rewardTableId: reward_advanced
@@ -24,3 +24,5 @@ MonoBehaviour:
   venueRuleIds:
   - special_audience_requests
   - arena_adaptive_event
+  - arena_big_screen
+  - arena_blackout

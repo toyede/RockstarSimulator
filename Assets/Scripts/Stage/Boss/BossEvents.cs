@@ -78,6 +78,8 @@ namespace ContextStage
         public string PatternId { get; }
         public string Title { get; }
         public bool Success { get; }
+
+        /// <summary>지금까지 성공한 패턴 수 (누적).</summary>
         public int Streak { get; }
 
         /// <summary>보스 체력 변화 (성공이면 음수, 실패면 양수).</summary>
@@ -92,7 +94,7 @@ namespace ContextStage
     {
     }
 
-    /// <summary>보스 격파 (체력 0 또는 연속 성공). 공연은 이 직후 종료된다.</summary>
+    /// <summary>보스 격파 (체력 0). 공연은 격파 연출 뒤 종료된다. ByStreak 는 예전 규칙용으로 항상 false.</summary>
     public readonly struct BossDefeated
     {
         public BossDefeated(bool byStreak, float remainingSeconds, int bonusScore)

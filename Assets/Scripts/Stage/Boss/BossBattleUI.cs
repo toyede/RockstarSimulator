@@ -22,6 +22,7 @@ namespace ContextStage
         [SerializeField, Min(0f)] float resultHoldDuration = 1.6f;
         [SerializeField, Min(0f), Tooltip("체력 바가 목표값을 따라가는 속도")] float fillLerpSpeed = 6f;
         [SerializeField, Tooltip("상단에서의 위치(px, 1080 기준)")] float topOffset = 96f;
+        [SerializeField, Min(1), Tooltip("패턴 성공 점 개수 (= BossBattleConfig.patternsToClear)")] int successDots = 8;
 
         Canvas _canvas;
         Image _barBack;
@@ -161,8 +162,8 @@ namespace ContextStage
                 _patternTitle.text = $"{e.Title}  성공!";
                 _patternTitle.color = successColor;
                 _patternBody.text = e.FansMoved > 0
-                    ? $"상대 팬 {e.FansMoved}명 합류 · 연속 {e.Streak}"
-                    : $"만석! 연속 {e.Streak}";
+                    ? $"상대 팬 {e.FansMoved}명 합류 · 패턴 성공 {e.Streak}/{successDots}"
+                    : $"만석! 패턴 성공 {e.Streak}/{successDots}";
             }
             else
             {
@@ -187,11 +188,18 @@ namespace ContextStage
             _patternPanel.gameObject.SetActive(false);
             _targetFill = 0f;
             _percentText.text = "0%";
-            ShowBig(e.ByStreak ? "5연속 성공! 앙코르 무대 확보!" : "앙코르 무대 확보!", successColor, 4f);
+            ShowBig("라이벌 격파! 앙코르 무대 확보!", successColor, 4f);
         }
 
         void OnGameStateChanged(GameStateChanged e)
         {
+            // 공연이 끝나면(결과창이 뜨기 전) 체력 바를 치운다. 격파 자막은 종료 전 연출 중에 이미 보여줬다
+            if (e.Current == GameState.GameOver)
+            {
+                _patternActive = false;
+                if (_canvas != null) _canvas.gameObject.SetActive(false);
+                return;
+            }
             if (e.Current != GameState.Ready) return;
             _patternActive = false;
             _targetFill = 1f;
@@ -296,14 +304,15 @@ namespace ContextStage
             SetRect(_timeText.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -6f), new Vector2(160f, 28f));
             _timeText.text = "";
 
-            // 연속 성공 점 5개
-            _streakDots = new Image[5];
+            // 패턴 성공 점 (patternsToClear 개, 가운데 정렬)
+            _streakDots = new Image[Mathf.Max(1, successDots)];
+            float dotsStart = -(_streakDots.Length - 1) * 13f;
             for (int i = 0; i < _streakDots.Length; i++)
             {
                 var dot = new GameObject($"Streak_{i}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
                 var dotRect = dot.GetComponent<RectTransform>();
                 dotRect.SetParent(bar, false);
-                SetRect(dotRect, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2((i - 2) * 26f, -6f), new Vector2(16f, 16f));
+                SetRect(dotRect, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(dotsStart + i * 26f, -6f), new Vector2(16f, 16f));
                 _streakDots[i] = dot.GetComponent<Image>();
                 _streakDots[i].color = new Color(1f, 1f, 1f, 0.25f);
                 _streakDots[i].raycastTarget = false;
@@ -379,10 +388,11 @@ namespace ContextStage
 
 #if UNITY_EDITOR
         /// <summary>[에디터 셋업 전용]</summary>
-        public void EditorConfigure(TMP_FontAsset fontAsset, string name)
+        public void EditorConfigure(TMP_FontAsset fontAsset, string name, int dots = 8)
         {
             font = fontAsset;
             if (!string.IsNullOrEmpty(name)) rivalName = name;
+            successDots = Mathf.Max(1, dots);
         }
 #endif
     }

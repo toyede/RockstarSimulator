@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.BossBattleConfig
   rivalName: LUX//FAUNA
   firstPatternDelay: 10
-  patternInterval: 12
-  peakPatternInterval: 8
+  patternInterval: 6
+  peakPatternInterval: 5
   patternWindow: 8
   guestListEnhancedWindow: 6
   retryDelay: 2
-  successDamageRatio: 0.12
   failHealRatio: 0.05
   peakTimeRatio: 0.5
-  streakToClear: 5
+  healthMultiplier: 3
+  patternsToClear: 8
   earlyClearBonusPerSecond: 40
   rivalFanPool: 6
   recruitOnSuccess: 1

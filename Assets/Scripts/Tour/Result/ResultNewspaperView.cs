@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using GameJamKit;
 using TMPro;
 using UnityEngine;
@@ -73,6 +74,7 @@ namespace ContextStage
         [SerializeField, Tooltip("도장 찍힐 때 재생 (비우면 없음)")] string stampSoundId = "";
 
         Coroutine _routine;
+        Coroutine _bandRoutine;
         Action _onPrimary;
         bool _complete;
         Vector2[] _scoreBasePositions;
@@ -95,9 +97,12 @@ namespace ContextStage
             Fill(data);
 
             if (_routine != null) StopCoroutine(_routine);
+            if (_bandRoutine != null) StopCoroutine(_bandRoutine);
             root.SetActive(true);
             _complete = false;
             _routine = StartCoroutine(Entrance());
+            if (bandImage != null && data.bandFrames != null && data.bandFrames.Count > 1)
+                _bandRoutine = StartCoroutine(AnimateBand(data.bandFrames, data.bandFrameInterval));
         }
 
         public void Hide()
@@ -107,8 +112,30 @@ namespace ContextStage
                 StopCoroutine(_routine);
                 _routine = null;
             }
+            if (_bandRoutine != null)
+            {
+                StopCoroutine(_bandRoutine);
+                _bandRoutine = null;
+            }
             _onPrimary = null;
             if (root != null) root.SetActive(false);
+        }
+
+        /// <summary>밴드 포즈 프레임을 교대로 보여준다 (2프레임 애니메이션).</summary>
+        IEnumerator AnimateBand(IReadOnlyList<Sprite> frames, float interval)
+        {
+            int index = 0;
+            while (true)
+            {
+                float elapsed = 0f;
+                while (elapsed < interval)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    yield return null;
+                }
+                index = (index + 1) % frames.Count;
+                if (frames[index] != null) bandImage.sprite = frames[index];
+            }
         }
 
         // ---------------- 내용 ----------------
@@ -134,9 +161,10 @@ namespace ContextStage
             }
             if (bandImage != null)
             {
-                bandImage.sprite = d.bandSprite;
-                bandImage.enabled = d.bandSprite != null;
-                if (d.bandSprite != null)
+                Sprite first = d.bandFrames != null && d.bandFrames.Count > 0 ? d.bandFrames[0] : null;
+                bandImage.sprite = first;
+                bandImage.enabled = first != null;
+                if (first != null)
                 {
                     bandImage.SetNativeSize();
                     bandImage.rectTransform.sizeDelta *= d.bandSpriteScale;
@@ -163,7 +191,7 @@ namespace ContextStage
             Set(statFever, d.statFever);
             Set(statAudience, d.statAudience);
             Set(articleTitle, d.articleTitle);
-            Set(articleBody, string.IsNullOrEmpty(d.outcomeLine) ? d.articleBody : $"{d.articleBody}\n{d.outcomeLine}");
+            Set(articleBody, string.IsNullOrEmpty(d.outcomeLine) ? d.articleBody : $"{d.articleBody}  ·  {d.outcomeLine}");
             Set(primaryLabel, d.buttonLabel);
         }
 
@@ -306,6 +334,11 @@ namespace ContextStage
                 stamp.localRotation = Quaternion.Euler(0f, 0f, stampTilt);
             }
             if (skipCatcher != null) skipCatcher.gameObject.SetActive(false);
+            if (recordsGroup != null)
+            {
+                recordsGroup.blocksRaycasts = true;   // 버튼이 클릭을 받으려면 조상 그룹이 레이캐스트를 막지 않아야 한다
+                recordsGroup.interactable = true;
+            }
             if (primaryButton != null) primaryButton.interactable = true;
         }
 

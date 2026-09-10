@@ -8,11 +8,11 @@ namespace ContextStage
     /// <summary>
     /// 보스전 (boss_battle). 월드 스타디움에서 LUX//FAUNA 와 앙코르 무대를 두고 겨룬다.
     ///
-    ///   체력   = 목표 점수. 카드 점수가 그대로 피해 (체력 = 목표 + 회복 − 점수 − 패턴 피해)
+    ///   체력   = 목표 점수 × healthMultiplier(3). 점수가 그대로 피해 (체력 = 최대 + 회복 − 점수)
     ///   패턴   = B2B · GUEST LIST · BEATMATCH · KILL SWITCH (+ PEAK TIME 에서 DROP)
-    ///   성공   = 체력 12% 피해 + 상대 팬 합류 / 실패 = 체력 5% 회복 + 우리 팬 이탈
-    ///   PEAK   = 체력 50% 이하: 강화 패턴, 간격 8초, 진입 즉시 DROP
-    ///   클리어 = 체력 0 또는 5연속 성공 → 즉시 종료 (남은 초 × 보너스 점수). 시간 초과 = 실패
+    ///   성공   = 최대 체력 / patternsToClear 만큼 점수 가산 + 상대 팬 합류 / 실패 = 체력 5% 회복 + 우리 팬 이탈
+    ///   PEAK   = 체력 50% 이하: 강화 패턴, 간격 단축, 진입 즉시 DROP
+    ///   클리어 = 체력 0 → 즉시 종료 (남은 초 × 보너스 점수). 시간 초과 = 실패
     ///
     /// 점수는 GameManager 가, 관객은 AudienceRosterSystem 이 담당하고 이 룰은 판정과 이동만 한다.
     /// 클리어 판정은 StageRuntimeDirector.ClearVerdictOverride 로 TourPerformanceBridge 에 넘긴다.
@@ -41,12 +41,11 @@ namespace ContextStage
         DropPattern _drop;
         System.Random _random;
 
-        float _damage;      // 패턴 피해 누적
+        float _damage;      // 디버그 피해 누적 (F7)
         float _healed;      // 실패 회복 누적
         float _lastHealth = -1f;
         float _remaining;
         float _nextPatternAt;
-        int _streak;
         int _rivalFans;
         bool _peakTime;
         bool _defeated;
@@ -59,9 +58,12 @@ namespace ContextStage
         public bool IsLeadIn => _pending != null;
         public bool IsPeakTime => _peakTime;
         public bool IsDefeated => _defeated;
-        public int Streak => _streak;
+
+        /// <summary>지금까지 성공한 패턴 수 (예전 연속 성공 대신).</summary>
+        public int Streak => patternsSucceeded;
         public int RivalFansWaiting => _rivalFans;
-        public float MaxHealth => Mathf.Max(1, PerformanceTimer.TargetScore);
+        /// <summary>최대 체력 = 목표 점수 × 배율. 카드 점수만으로는 다 깎기 힘들고 패턴 성공(체력/8)이 필요하다.</summary>
+        public float MaxHealth => Mathf.Max(1f, PerformanceTimer.TargetScore * (config != null ? config.HealthMultiplier : 1f));
         public float CurrentHealth => Mathf.Clamp(MaxHealth + _healed - _damage - CurrentScore, 0f, MaxHealth + _healed);
         public float HealthNormalized => Mathf.Clamp01(CurrentHealth / MaxHealth);
         public int PatternsResolved => patternsResolved;
@@ -85,7 +87,6 @@ namespace ContextStage
             _damage = 0f;
             _healed = 0f;
             _lastHealth = -1f;
-            _streak = 0;
             _rivalFans = config.RivalFanPool;
             _peakTime = false;
             _defeated = false;
@@ -285,30 +286,24 @@ namespace ContextStage
             if (success)
             {
                 patternsSucceeded++;
-                _streak++;
-                float damage = MaxHealth * config.SuccessDamageRatio;
-                _damage += damage;
-                healthDelta = -damage;
+                // 피해 = 점수 가산. 체력은 점수로만 깎이므로 카드 점수와 같은 경로를 탄다
+                int gain = Mathf.RoundToInt(MaxHealth * config.SuccessDamageRatio);
+                if (gain > 0 && GameManager.HasInstance) GameManager.Instance.AddScore(gain);
+                healthDelta = -gain;
                 moved = RecruitRivalFans(pattern);
             }
             else
             {
-                _streak = 0;
                 float heal = MaxHealth * config.FailHealRatio;
                 _healed += heal;
                 healthDelta = heal;
                 moved = LoseOurFans();
             }
 
-            Debug.Log($"[Boss] 패턴 {(success ? "성공" : "실패")}: {pattern.Title} · 체력 {HealthNormalized:P0} · 연속 {_streak} · 팬 이동 {moved}", this);
-            EventBus.Raise(new BossPatternResolved(pattern.Id, pattern.Title, success, _streak, healthDelta, moved));
+            Debug.Log($"[Boss] 패턴 {(success ? "성공" : "실패")}: {pattern.Title} · 체력 {HealthNormalized:P0} · 성공 {patternsSucceeded}/{config.PatternsToClear} · 팬 이동 {moved}", this);
+            EventBus.Raise(new BossPatternResolved(pattern.Id, pattern.Title, success, patternsSucceeded, healthDelta, moved));
             PublishHealth();
 
-            if (success && _streak >= config.StreakToClear)
-            {
-                Defeat(byStreak: true);
-                return;
-            }
             if (CurrentHealth <= 0f)
             {
                 Defeat(byStreak: false);
@@ -409,7 +404,7 @@ namespace ContextStage
             if (bonus > 0 && GameManager.HasInstance) GameManager.Instance.AddScore(bonus);
 
             if (StageRuntimeDirector.Active != null) StageRuntimeDirector.Active.ClearVerdictOverride = true;
-            Debug.Log($"[Boss] 격파! {(byStreak ? "5연속 성공" : "체력 0")} · 남은 {remaining:0.0}s · 보너스 {bonus:N0}", this);
+            Debug.Log($"[Boss] 격파! 체력 0 (패턴 성공 {patternsSucceeded}) · 남은 {remaining:0.0}s · 보너스 {bonus:N0}", this);
             EventBus.Raise(new BossHealthChanged(0f, MaxHealth, -_lastHealth, _peakTime));
             EventBus.Raise(new BossDefeated(byStreak, remaining, bonus));
 

@@ -59,9 +59,10 @@ namespace ContextStage.EditorTools
 
             var serialized = new SerializedObject(stage);
             SerializedProperty rules = serialized.FindProperty("venueRuleIds");
-            rules.arraySize = 2;
+            rules.arraySize = 3;
             rules.GetArrayElementAtIndex(0).stringValue = "special_audience_requests";
             rules.GetArrayElementAtIndex(1).stringValue = RuleId;
+            rules.GetArrayElementAtIndex(2).stringValue = "stadium_contested_fan";
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(stage);
         }
@@ -98,7 +99,7 @@ namespace ContextStage.EditorTools
             EditorUtility.SetDirty(rule);
 
             var ui = EnsureComponent<BossBattleUI>(ruleObject);
-            ui.EditorConfigure(ProjectFontTool.TmpFont, config.RivalName);
+            ui.EditorConfigure(ProjectFontTool.TmpFont, config.RivalName, config.PatternsToClear);
             EditorUtility.SetDirty(ui);
 
             var placeholder = EnsureComponent<RivalStagePlaceholder>(ruleObject);

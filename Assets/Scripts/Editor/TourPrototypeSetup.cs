@@ -58,7 +58,7 @@ namespace ContextStageEditor
                 CreateOrUpdateStage("Stage01", "stage_01", "Alley Busking", RunNodeType.Performance, false, 5000, 120f, "intro_stage_01", "reward_basic"),
                 CreateOrUpdateStage("Stage02", "stage_02", "Basement Live Hall", RunNodeType.Performance, false, 6500, 120f, "intro_stage_02", "reward_basic"),
                 CreateOrUpdateStage("Stage03", "stage_03", "Rock Festival", RunNodeType.Performance, false, 8000, 120f, "intro_stage_03", "reward_advanced"),
-                CreateOrUpdateStage("Stage04", "stage_04", "Arena Headliner", RunNodeType.Performance, false, 9500, 120f, "intro_stage_04", "reward_advanced"),
+                CreateOrUpdateStage("Stage04", "stage_04", "Arena Headliner", RunNodeType.Performance, false, 11000, 120f, "intro_stage_04", "reward_advanced"),
                 CreateOrUpdateStage("Stage05Boss", "stage_05_boss", "World Stadium Rival Battle", RunNodeType.ElitePerformance, true, 12000, 120f, "intro_stage_05_boss", "")
             };
 

@@ -46,8 +46,13 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 7f04f62eb8a9c9742a1c00451338e06a, type: 3}
   - label: F
     icon: {fileID: 21300000, guid: 3f3c4102bda1d3645bd5b65d001c3980, type: 3}
-  bandClear: {fileID: -6222744249770458211, guid: b9dfe51465165eb478f43a4248aa4e15, type: 3}
-  bandFail: {fileID: -2813555488557304217, guid: 6edc99307f72f0c428e6db78a99bb22f, type: 3}
+  bandClearFrames:
+  - {fileID: -6222744249770458211, guid: b9dfe51465165eb478f43a4248aa4e15, type: 3}
+  - {fileID: -1199923372840186361, guid: b9dfe51465165eb478f43a4248aa4e15, type: 3}
+  bandFailFrames:
+  - {fileID: -2813555488557304217, guid: 6edc99307f72f0c428e6db78a99bb22f, type: 3}
+  - {fileID: -2068278672531384334, guid: 6edc99307f72f0c428e6db78a99bb22f, type: 3}
+  bandFrameInterval: 0.4
   bandSpriteScale: 3
   headlineS: "\uC624\uB298 \uBC24\uC758 \uC8FC\uC778\uACF5, \uB108\uAD6C\uB9AC \uBC34\uB4DC!"
   headlineA: "\uC3DF\uC544\uC9C0\uB294 \uD658\uD638\u2026 \uC81C\uB300\uB85C \uC774\uB984

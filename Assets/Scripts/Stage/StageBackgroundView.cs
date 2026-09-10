@@ -36,11 +36,19 @@ namespace ContextStage
         int foregroundSortingOrder = 46;
         [SerializeField] bool hideDefaultLightsWhenOverlaysExist = true;
 
+        [Header("씬 소품 세트")]
+        [SerializeField, Tooltip("Background/[StageSets]. 자식 StageSet 중 stageId 가 맞는 것을 켠다. 세트가 없는 스테이지는 카탈로그로 런타임 생성")]
+        Transform stageSetsRoot;
+
         [Header("미리보기 / 폴백")]
         [SerializeField, Tooltip("투어 없이 Main 을 실행할 때 보여줄 스테이지. 비우면 기존 배경 유지")]
         StageDefinition previewStage;
 
         readonly List<SpriteRenderer> _spawned = new List<SpriteRenderer>();
+        StageSet _activeSet;
+
+        /// <summary>지금 켜진 씬 소품 세트 (없으면 null). 소품 애니메이션을 걸 때 여기서 Props 를 얻는다.</summary>
+        public StageSet ActiveSet => _activeSet;
         Sprite _originalBaseSprite;
         bool _originalLightEnabled = true;
         bool _cachedOriginal;
@@ -85,6 +93,7 @@ namespace ContextStage
         public void Restore()
         {
             ClearSpawned();
+            ActivateStageSet(null);
             if (_cachedOriginal)
             {
                 if (baseRenderer != null) baseRenderer.sprite = _originalBaseSprite;
@@ -101,28 +110,39 @@ namespace ContextStage
             if (baseRenderer != null && entry.backgroundBase != null)
                 baseRenderer.sprite = entry.backgroundBase;
 
-            Transform overlayParent = baseRenderer != null ? baseRenderer.transform : transform;
-            int overlayCount = 0;
-            if (entry.lightOverlays != null)
+            // 씬에 소품 세트가 있으면 그것을 켜고(위치·크기는 씬에서 조절), 없을 때만 카탈로그로 생성한다
+            StageSet set = ActivateStageSet(entry.stageId);
+            if (set != null)
             {
-                for (int i = 0; i < entry.lightOverlays.Count; i++)
-                {
-                    Sprite sprite = entry.lightOverlays[i];
-                    if (sprite == null) continue;
-
-                    SpriteRenderer overlay = SpawnRenderer($"StageLight_{i:00}", overlayParent, sprite,
-                        lightOverlaySortingOrder + i);
-                    overlay.transform.localPosition = Vector3.zero;
-                    overlay.transform.localScale = Vector3.one;
-                    overlayCount++;
-                }
+                if (baseRenderer != null && set.BaseBackgroundOverride != null) baseRenderer.sprite = set.BaseBackgroundOverride;
+                if (defaultLightRenderer != null)
+                    defaultLightRenderer.enabled = !(hideDefaultLightsWhenOverlaysExist && set.HasLights);
             }
+            else
+            {
+                Transform overlayParent = baseRenderer != null ? baseRenderer.transform : transform;
+                int overlayCount = 0;
+                if (entry.lightOverlays != null)
+                {
+                    for (int i = 0; i < entry.lightOverlays.Count; i++)
+                    {
+                        Sprite sprite = entry.lightOverlays[i];
+                        if (sprite == null) continue;
 
-            if (defaultLightRenderer != null)
-                defaultLightRenderer.enabled = !(hideDefaultLightsWhenOverlaysExist && overlayCount > 0);
+                        SpriteRenderer overlay = SpawnRenderer($"StageLight_{i:00}", overlayParent, sprite,
+                            lightOverlaySortingOrder + i);
+                        overlay.transform.localPosition = Vector3.zero;
+                        overlay.transform.localScale = Vector3.one;
+                        overlayCount++;
+                    }
+                }
 
-            PlaceForeground(entry.foregroundLeft, "StageForeground_Left", left: true);
-            PlaceForeground(entry.foregroundRight, "StageForeground_Right", left: false);
+                if (defaultLightRenderer != null)
+                    defaultLightRenderer.enabled = !(hideDefaultLightsWhenOverlaysExist && overlayCount > 0);
+
+                PlaceForeground(entry.foregroundLeft, "StageForeground_Left", left: true);
+                PlaceForeground(entry.foregroundRight, "StageForeground_Right", left: false);
+            }
 
             if (decorativeCrowd != null &&
                 entry.decorativeCrowdVariants != null &&
@@ -130,6 +150,24 @@ namespace ContextStage
             {
                 decorativeCrowd.ReplaceVariants(entry.decorativeCrowdVariants);
             }
+        }
+
+        /// <summary>stageId 가 맞는 세트만 켜고 나머지는 끈다. null 이면 전부 끈다. 켠 세트를 돌려준다 (없으면 null).</summary>
+        StageSet ActivateStageSet(string stageId)
+        {
+            _activeSet = null;
+            if (stageSetsRoot == null) return null;
+
+            StageSet[] sets = stageSetsRoot.GetComponentsInChildren<StageSet>(true);
+            for (int i = 0; i < sets.Length; i++)
+            {
+                StageSet set = sets[i];
+                if (set == null) continue;
+                bool match = !string.IsNullOrEmpty(stageId) && set.StageId == stageId;
+                set.gameObject.SetActive(match);
+                if (match) _activeSet = set;
+            }
+            return _activeSet;
         }
 
         void PlaceForeground(Sprite sprite, string name, bool left)
@@ -195,6 +233,15 @@ namespace ContextStage
             defaultLightRenderer = lights;
             decorativeCrowd = crowd;
         }
+
+        /// <summary>[에디터 셋업 전용] 씬 소품 세트 루트 연결.</summary>
+        public void EditorSetStageSetsRoot(Transform root) => stageSetsRoot = root;
+
+        /// <summary>[에디터 셋업 전용] 소품 세트를 만들 때 런타임과 같은 기준점을 쓰기 위해 노출.</summary>
+        public SpriteRenderer EditorBaseRenderer => baseRenderer;
+        public int EditorLightOverlaySortingOrder => lightOverlaySortingOrder;
+        public int EditorForegroundSortingOrder => foregroundSortingOrder;
+        public string EditorSortingLayer => sortingLayer;
 #endif
     }
 }

@@ -35,9 +35,10 @@ namespace ContextStage
         [Header("등급 아이콘 (기존 랭크 에셋 재사용)")]
         [SerializeField] List<RankIcon> rankIcons = new List<RankIcon>();
 
-        [Header("사진 — 밴드 포즈 (현재는 너구리 1종씩)")]
-        [SerializeField] Sprite bandClear;
-        [SerializeField] Sprite bandFail;
+        [Header("사진 — 밴드 포즈 (프레임 순서대로 교대, 현재는 너구리 2프레임)")]
+        [SerializeField] List<Sprite> bandClearFrames = new List<Sprite>();
+        [SerializeField] List<Sprite> bandFailFrames = new List<Sprite>();
+        [SerializeField, Min(0.05f)] float bandFrameInterval = 0.4f;
         [SerializeField, Min(0.5f)] float bandSpriteScale = 3f;
 
         [Header("헤드라인 — 일반 공연 (등급별)")]
@@ -104,8 +105,9 @@ namespace ContextStage
         [SerializeField] string outcomeTimeOut = "제한 시간 종료 — 라이벌을 꺾지 못했습니다";
 
         public IReadOnlyList<Skin> Skins => skins;
-        public Sprite BandClear => bandClear;
-        public Sprite BandFail => bandFail;
+        public IReadOnlyList<Sprite> BandClearFrames => bandClearFrames;
+        public IReadOnlyList<Sprite> BandFailFrames => bandFailFrames;
+        public float BandFrameInterval => bandFrameInterval;
         public float BandSpriteScale => bandSpriteScale;
         public string HeadlineFail => headlineFail;
         public string HeadlineBossWin => headlineBossWin;
@@ -212,10 +214,10 @@ namespace ContextStage
         }
 
         /// <summary>[에디터 셋업 전용] 비어 있을 때만 채운다.</summary>
-        public void EditorSetBandSprites(Sprite clear, Sprite fail)
+        public void EditorSetBandFrames(List<Sprite> clear, List<Sprite> fail)
         {
-            if (bandClear == null) bandClear = clear;
-            if (bandFail == null) bandFail = fail;
+            if (bandClearFrames.Count == 0 && clear != null) bandClearFrames.AddRange(clear);
+            if (bandFailFrames.Count == 0 && fail != null) bandFailFrames.AddRange(fail);
         }
 #endif
     }

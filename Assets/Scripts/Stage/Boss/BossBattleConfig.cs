@@ -20,11 +20,11 @@ namespace ContextStage
         [SerializeField, Min(1f), Tooltip("PEAK TIME GUEST LIST 요청 시간(초)")] float guestListEnhancedWindow = 6f;
         [SerializeField, Min(0f), Tooltip("시작 가능한 패턴이 없을 때 재시도 간격(초)")] float retryDelay = 2f;
 
-        [Header("체력")]
-        [SerializeField, Range(0.01f, 1f), Tooltip("패턴 성공 시 최대 체력 대비 피해")] float successDamageRatio = 0.12f;
+        [Header("체력 (= 목표 점수 × 배율. 카드 점수와 패턴 성공 점수가 그대로 피해)")]
+        [SerializeField, Min(1f), Tooltip("최대 체력 = 스테이지 목표 점수 × 이 값. 카드만으로는 깎기 힘들게 크게 둔다")] float healthMultiplier = 3f;
+        [SerializeField, Min(1), Tooltip("패턴 성공 이만큼이면 체력이 다한다. 성공 1회 = 최대 체력 / 이 값 만큼 점수 가산")] int patternsToClear = 8;
         [SerializeField, Range(0f, 1f), Tooltip("패턴 실패 시 최대 체력 대비 회복")] float failHealRatio = 0.05f;
         [SerializeField, Range(0.05f, 0.95f), Tooltip("이 비율 이하가 되면 PEAK TIME")] float peakTimeRatio = 0.5f;
-        [SerializeField, Min(1), Tooltip("이만큼 연속 성공하면 즉시 격파")] int streakToClear = 5;
         [SerializeField, Min(0), Tooltip("조기 격파 시 남은 초당 가산 점수")] int earlyClearBonusPerSecond = 40;
 
         [Header("관객 이동")]
@@ -66,10 +66,13 @@ namespace ContextStage
         public float PatternWindow => patternWindow;
         public float GuestListEnhancedWindow => guestListEnhancedWindow;
         public float RetryDelay => retryDelay;
-        public float SuccessDamageRatio => successDamageRatio;
+        public float HealthMultiplier => healthMultiplier;
+        public int PatternsToClear => patternsToClear;
+
+        /// <summary>패턴 성공 1회가 깎는 체력 비율 (= 1 / patternsToClear).</summary>
+        public float SuccessDamageRatio => 1f / Mathf.Max(1, patternsToClear);
         public float FailHealRatio => failHealRatio;
         public float PeakTimeRatio => peakTimeRatio;
-        public int StreakToClear => streakToClear;
         public int EarlyClearBonusPerSecond => earlyClearBonusPerSecond;
         public int RivalFanPool => rivalFanPool;
         public int RecruitOnSuccess => recruitOnSuccess;

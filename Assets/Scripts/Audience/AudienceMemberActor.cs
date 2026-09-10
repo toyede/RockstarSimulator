@@ -157,6 +157,9 @@ namespace ContextStage
         public AudienceId BoundId => _boundId;
         public AudienceSnapshot Snapshot => _snapshot;
         public bool IsBound => _boundId.IsValid;
+
+        /// <summary>캐릭터 본체 렌더러. 정전 실루엣 등 연출이 색을 덮어쓸 때 쓴다 (되돌리는 것은 연출 담당 책임).</summary>
+        public SpriteRenderer CharacterRenderer => characterRenderer;
         public AudienceReactionPopup ReactionPopup => reactionPopup;
         public AudienceReactionVFX ReactionVFX => reactionVFX;
         public Vector3 LayoutLocalPosition => _layoutPosition;
@@ -634,8 +637,14 @@ namespace ContextStage
                 1f);
 
             Color color = _characterColor;
+            // 정전 실루엣: 연출 담당이 정적 블렌드를 올리면 전 관객이 같은 검정으로 (색은 매 프레임 여기서 쓰므로 여기서 섞는다)
+            if (SilhouetteBlend > 0f) color = Color.Lerp(color, SilhouetteColor, Mathf.Clamp01(SilhouetteBlend));
             color.a *= _visibility;
             characterRenderer.color = color;
         }
+
+        /// <summary>[연출 전용] 0 = 평소, 1 = 완전 실루엣. BlackoutPresentation 이 올리고 끝나면 0 으로 되돌린다.</summary>
+        public static float SilhouetteBlend { get; set; }
+        public static Color SilhouetteColor { get; set; } = new Color(0.02f, 0.02f, 0.04f, 1f);
     }
 }
