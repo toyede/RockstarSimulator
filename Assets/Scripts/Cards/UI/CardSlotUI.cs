@@ -12,6 +12,9 @@ namespace ContextStage
         [SerializeField] Text titleText;
         [SerializeField] Text descriptionText;
         [SerializeField] Text roleText;
+        [SerializeField] Sprite upgradeFrameSprite;
+
+        public Sprite UpgradeFrameSprite => upgradeFrameSprite;
 
         [Header("Fever Visual")]
         [SerializeField] Color feverBackgroundColor =
@@ -28,7 +31,7 @@ namespace ContextStage
         Color _descriptionBaseColor = Color.white;
         Color _roleBaseColor = Color.white;
         SpecialCardIdleVFX _specialIdleVfx;
-        CardUpgradeVFX _upgradeVfx;
+        CardUpgradeFrame _upgradeFrame;
 
         void Awake()
         {
@@ -92,27 +95,16 @@ namespace ContextStage
             bool upgraded = !string.IsNullOrEmpty(upgrade.TargetCardId) &&
                 card.Role == CardRole.Utility &&
                 (card.UtilityEffect == UtilityCardEffect.Draw || card.UtilityEffect == UtilityCardEffect.Reroll);
-            if (upgraded && _upgradeVfx == null)
-            {
-                var effectObject = new GameObject("CardUpgradeVFX", typeof(RectTransform),
-                    typeof(CanvasRenderer), typeof(CardUpgradeVFX));
-                effectObject.transform.SetParent(transform, false);
-                _upgradeVfx = effectObject.GetComponent<CardUpgradeVFX>();
-                RectTransform rect = _upgradeVfx.rectTransform;
-                rect.anchorMin = Vector2.zero;
-                rect.anchorMax = Vector2.one;
-                rect.offsetMin = rect.offsetMax = Vector2.zero;
-                // 그림 위, 텍스트 아래에 표시한다.
-                if (artwork != null && artwork.transform.parent == transform)
-                    rect.SetSiblingIndex(artwork.transform.GetSiblingIndex() + 1);
-            }
-            if (_upgradeVfx != null) _upgradeVfx.Bind(upgraded, handIndex, upgrade.Tier);
+            // 비강화 상태에서도 미리 생성해 디졸브의 재사용 대상 목록에 포함시킨다.
+            if (_upgradeFrame == null && upgradeFrameSprite != null)
+                _upgradeFrame = CardUpgradeFrame.Create(artwork);
+            if (_upgradeFrame != null) _upgradeFrame.Bind(artwork, upgradeFrameSprite, upgraded);
             ApplyFeverVisual();
         }
 
         public void PlayUpgradeUseFlash()
         {
-            if (_upgradeVfx != null) _upgradeVfx.PlayUseFlash();
+            // 회전 VFX와 사용 순간 발광은 정적 프레임을 사용하는 동안 쉬어 둔다.
         }
 
         public void SetFeverVisual(bool active)
@@ -126,7 +118,7 @@ namespace ContextStage
             _feverVisual = false;
             _boundCard = null;
             if (_specialIdleVfx != null) _specialIdleVfx.SetActive(false);
-            if (_upgradeVfx != null) _upgradeVfx.StopEffect();
+            if (_upgradeFrame != null) _upgradeFrame.enabled = false;
         }
 
         void ApplyFeverVisual()

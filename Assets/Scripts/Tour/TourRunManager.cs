@@ -185,6 +185,12 @@ namespace ContextStage
                 return false;
             }
 
+            if (run.HasConflictingCardUpgrade(augmentId))
+            {
+                Debug.LogWarning($"[TourRun] 같은 카드 계열의 강화를 이미 보유하고 있습니다: {augmentId}:{tier}", this);
+                return false;
+            }
+
             if (run.HasAugment(augmentId, tier))
             {
                 Debug.LogWarning($"[TourRun] 이미 보유한 증강입니다: {augmentId}:{tier}", this);

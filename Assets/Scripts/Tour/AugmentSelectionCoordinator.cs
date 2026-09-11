@@ -181,6 +181,7 @@ namespace ContextStage
             {
                 AugmentDefinition definition = definitions[definitionIndex];
                 if (definition == null) continue;
+                if (run.HasConflictingCardUpgrade(definition.AugmentId)) continue;
                 if (definition.TierOwnershipPolicy ==
                         AugmentTierOwnershipPolicy.OneTierPerRun &&
                     run.HasAugmentDefinition(definition.AugmentId))
@@ -287,6 +288,8 @@ namespace ContextStage
             return new AugmentCardPreviewViewModel
             {
                 artwork = upgrade?.Artwork != null ? upgrade.Artwork : card.Artwork,
+                upgradeFrame = upgrade?.TargetCard == null ? null :
+                    card.GetComponent<CardSlotUI>()?.UpgradeFrameSprite,
                 displayName = upgrade != null &&
                               !string.IsNullOrWhiteSpace(upgrade.DisplayNameOverride)
                     ? upgrade.DisplayNameOverride

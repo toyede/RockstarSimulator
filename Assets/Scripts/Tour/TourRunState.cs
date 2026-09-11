@@ -175,6 +175,22 @@ namespace ContextStage
             return false;
         }
 
+        // 같은 카드의 수량 강화와 응원 강화는 등급에 관계없이 한 번만 선택한다.
+        public bool HasConflictingCardUpgrade(string definitionId)
+        {
+            switch (definitionId)
+            {
+                case "draw_plus":
+                case "draw_audience_boost":
+                    return HasAugmentDefinition("draw_plus") || HasAugmentDefinition("draw_audience_boost");
+                case "reroll_plus":
+                case "reroll_audience_boost":
+                    return HasAugmentDefinition("reroll_plus") || HasAugmentDefinition("reroll_audience_boost");
+                default:
+                    return false;
+            }
+        }
+
         public bool HasAugmentDefinition(string definitionId)
         {
             if (string.IsNullOrWhiteSpace(definitionId) || ownedAugments == null)

@@ -99,7 +99,7 @@ PrefabInstance:
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: artwork
       value: 
-      objectReference: {fileID: 355165383344409119, guid: 27959a373de84cc44a0e4d3c9b399528, type: 3}
+      objectReference: {fileID: 6246281609867253163, guid: b86b6f12f45793f4590ed8cfdba468ea, type: 3}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: drawCount
       value: 0

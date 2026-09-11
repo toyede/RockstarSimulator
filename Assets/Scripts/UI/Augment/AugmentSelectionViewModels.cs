@@ -8,6 +8,7 @@ namespace ContextStage
     public sealed class AugmentCardPreviewViewModel
     {
         public Sprite artwork;
+        public Sprite upgradeFrame;
         public string displayName = "";
         public string description = "";
 
@@ -16,6 +17,7 @@ namespace ContextStage
             return new AugmentCardPreviewViewModel
             {
                 artwork = artwork,
+                upgradeFrame = upgradeFrame,
                 displayName = displayName,
                 description = description
             };

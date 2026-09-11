@@ -60,8 +60,8 @@ MonoBehaviour:
     cardUpgrade:
       targetCard: {fileID: 7367045592451404702, guid: 95559096d82545942969af721b09b38d, type: 3}
       extraCardsAfterUse: 1
-      audienceEngagementBonus: 0
-      artwork: {fileID: 0}
+      audienceReactionBonus: 0
+      artwork: {fileID: 4698205968176037372, guid: 028a2cb1d8e8b3a46a94d36c1d8e9ecc, type: 3}
       displayNameOverride: "\uB4DC\uB85C\uC6B0+"
       descriptionOverride: "\uB371\uC5D0\uC11C \uCE74\uB4DC 3\uC7A5\uC744 \uD68D\uB4DD\uD55C\uB2E4."
       presentationPriority: 1

@@ -35,6 +35,7 @@ namespace ContextStage
         [SerializeField] Image grantedCardIconBackground;
         [SerializeField] Image grantedCardIconImage;
         [SerializeField] Image grantedCardArtworkImage;
+        CardUpgradeFrame _upgradeFrame;
         [SerializeField] Text grantedCardAugmentNameText;
         [SerializeField] Text grantedCardEffectText;
         [SerializeField] CanvasGroup choiceCanvasGroup;
@@ -267,6 +268,10 @@ namespace ContextStage
                 grantedCardArtworkImage.color = Color.white;
                 grantedCardArtworkImage.enabled =
                     _isGrantCard && model.grantedCard.artwork != null;
+                if (_upgradeFrame == null && model.grantedCard?.upgradeFrame != null)
+                    _upgradeFrame = CardUpgradeFrame.Create(grantedCardArtworkImage);
+                if (_upgradeFrame != null)
+                    _upgradeFrame.Bind(grantedCardArtworkImage, model.grantedCard?.upgradeFrame, _isGrantCard);
             }
             SetText(grantedCardAugmentNameText, _isGrantCard ? model.displayName : "");
             SetText(grantedCardEffectText, _isGrantCard ? model.description : "");
@@ -300,6 +305,7 @@ namespace ContextStage
 
         public void ResetPresentation()
         {
+            if (_upgradeFrame != null) _upgradeFrame.enabled = false;
             cardHoverMotion?.ResetState();
             rerollHoverMotion?.ResetState();
 
