@@ -45,21 +45,27 @@ Stage 4 목표 점수는 11,000 으로 올려 두었다 — 정전 보너스(1,6
 
 | 파일 | 역할 |
 |---|---|
-| `BossBattleConfig` | 수치 전부. `Settings/Tour/RuleConfigs/BossBattle.asset` |
-| `BossBattleRule` | 체력(= 목표 점수 × `healthMultiplier` 3, 점수가 그대로 피해 — 카드만으로는 다 깎기 힘들다) · 패턴 스케줄(10초 첫 예고, 종료 후 6초, PEAK TIME 5초) · 성공 = 최대 체력 / `patternsToClear`(8) 만큼 점수 가산 + 상대 팬 합류 / 실패 5% 회복 + 우리 팬 이탈 · 체력 50% 이하 PEAK TIME(강화 패턴, 진입 즉시 DROP) · 체력 0 이면 즉시 격파(남은 초 × 40점), 연속 성공 클리어는 없음 · 클리어 판정을 `StageRuntimeDirector.ClearVerdictOverride` 로 브리지에 전달 |
-| `BossPattern` | B2B(덱의 Normal/Special 지목 카드 사용) · GUEST LIST(손패 Special 로 상대 팬 영입) · BEATMATCH(콤보 유지 + 카드 N장) · KILL SWITCH(성향 봉인, 양수 반응 N번) · DROP(피버 진입, PEAK TIME 전용) |
-| `BossBattleUI` | 상단 체력 바 · 패턴 성공 점(8개) · 패턴 예고/카운트다운/진행도 · PEAK TIME/격파 자막. 런타임 자체 생성 |
-| `RivalStagePlaceholder` | 라이벌 단상·듀오·전광판(라이벌 무대 구역)·대기 팬(스탠딩석 구역)을 Square 로 표현. 아트가 오면 스프라이트 교체 |
-| `BossArenaLayout` | 3화면 배치(백지). 우리 무대 x=0 은 그대로, 왼쪽에 관객 스탠딩석(x=−19.2)·라이벌 무대(x=−38.4) Square 구역. 구역 폭 = 배경 아트 1920px/PPU 100. `standingBackground`/`rivalBackground` 에 스프라이트를 넣으면 Square 대신 사용 |
-| `BossCameraDirector` | Main Camera x 만 구역 사이로 팬(SmoothStep). 자유 스크롤 없음, 해제·종료 시 즉시 홈 |
-| `BossStagePresentation` | 연출 담당. 패턴 예고·격파 때 **카드 잠금(`CardInput.Locked`) + 공연 타이머·호응·관객 몰입도 감소 정지 → 검은 틴트 + 손패 하강(`CardHandUI.SetStowed`) → 라이벌 무대로 팬 → 체류 → 복귀 → 해제**. 보스전 동안 랭크·점수·시간 HUD 를 숨기고(CanvasGroup) 남은 시간은 체력 바 아래에 표시. 시간·틴트·거리는 `BossBattleConfig` "연출" 항목 |
-| `Editor/BossBattleSetup` | `Tools/Tour/Setup Boss Battle`: 설정 에셋 · Stage05Boss 룰 ID · Main 씬 `[StageRuntime]/Rule_BossBattle` (룰·UI·플레이스홀더·3화면 연출 컴포넌트) |
+기획: `Docs/BOSS_STAGE_REDESIGN_KO.md` (v2, 관객 쟁탈전). **체력 없음.** 라이벌 팬 수만큼 주기적으로 점수가 깎이고, 시간 종료 시 점수 ≥ 목표면 승리(타이머 판정 그대로, 랭크도 그대로).
 
-패턴 흐름: 예고(`BossPatternAnnounced`, 연출 약 3.8초, 타이머 정지) → 복귀 후 창 시작(`BossPatternStarted`) → 판정. 격파는 `BossDefeated` → 라이벌 무대 소등 연출 → GameOver.
+| 파일 | 역할 |
+|---|---|
+| `BossBattleConfig` | 수치 전부. `Settings/Tour/RuleConfigs/BossBattle.asset` — 라이벌 팬 14, 드레인 4초마다 팬당 12점(8초부터), 패턴 첫 10초·간격 10초(REVENGE 7초)·창 8초, 성공 팬 +2(강화 +3, DROP +3)·보너스 목표 6%(DROP 10%), 실패 팬 −1, REVENGE 진입 ≤6 / 해제 ≥9 |
+| `BossBattleRule` | 팬 = 우리 관객(로스터) + 라이벌 팬. 드레인 틱(`PerformanceTimer.Elapsed` 기준이라 예고 연출 중엔 멈추고 엿보기 중엔 흐름) · 패턴 스케줄 · 성공/실패 팬 이동(`StealFans`/`LoseOurFans`) · 자연 이탈은 라이벌로 건너감 · REVENGE 진입/해제. 승패 판정은 하지 않는다 |
+| `BossPattern` | B2B(덱의 Normal/Special 지목 카드 사용) · GUEST LIST(손패 Special 로 요청 성공) · BEATMATCH(콤보 유지 + 카드 N장) · KILL SWITCH(성향 봉인, 양수 반응 N번) · DROP(피버 진입, REVENGE 전용) |
+| `BossBattleUI` | 상단 **팬 쟁탈 바**(라이벌 | 우리, 인원) · 다음 감소 카운트다운 · 감소 팝업(−N) · 패턴 예고/카운트다운/진행도 · "REVENGE TIME!" 자막. 랭크·점수·시간 HUD 는 그대로 보인다 |
+| `RivalStagePlaceholder` | 라이벌 무대(단상·듀오·LED)와 그 앞에 줄지어 선 라이벌 팬을 Square 로. 팬 수는 룰과 동기화, 이동은 걸어서(우리 ↔ 라이벌) |
+| `BossArenaLayout` | 2화면 배치(백지): 라이벌 무대(x=−19.2) | 우리 무대(x=0). `rivalBackground` 에 스프라이트를 넣으면 Square 대신 사용 |
+| `BossCameraDirector` | Main Camera x 만 구역 사이로 팬(SmoothStep). 해제·종료 시 즉시 홈 |
+| `BossStagePresentation` | 연출 담당. **예고**: 카드 잠금 + 타이머·호응·몰입도 감소 정지 → 틴트 + 손패 하강 → 라이벌 무대 왕복 → 해제. **엿보기 버튼**(화면 왼쪽 "< 라이벌 무대"): 같은 연출이지만 타이머·드레인은 멈추지 않는다, 버튼을 다시 눌러 복귀, 패턴 중엔 비활성 |
+| `Editor/BossBattleSetup` | `Tools/Tour/Setup Boss Battle`: 설정 에셋 · Stage05Boss 룰 ID · Main 씬 `[StageRuntime]/Rule_BossBattle` |
 
-디버그: `F5` 기믹 이벤트 즉시 시작, 보스 룰 활성 중 `F6` 라이벌 무대 왕복 미리보기, `F7` 체력 −25%, `F8` 다음 패턴 즉시, `F9` 현재 패턴 성공.
+패턴 흐름: 예고(`BossPatternAnnounced`, 연출 약 3.8초, 타이머 정지) → 복귀 후 창 시작(`BossPatternStarted`) → 판정(`BossPatternResolved`, 팬 이동 `BossFanMoved`). 팬 분포는 `BossFanBalanceChanged`, 드레인은 `BossDrainCountdown`/`BossDrainApplied`.
 
-노드 5개 유지: `Tools/Tour/Restore Five Nodes` (Title 런처의 스테이지 목록만 Stage01~05 로 되돌린다. Stage04 아트가 오면 `StageVisualCatalog` 의 stage_04 배경만 교체).
+디버그: `F4` 드레인 즉시, `F5` 기믹 이벤트 즉시 시작, 보스 룰 활성 중 `F6` 라이벌 무대 왕복 미리보기, `F7` 라이벌 팬 −2, `F8` 다음 패턴 즉시, `F9` 현재 패턴 성공.
+
+노드 5개 유지: `Tools/Tour/Restore Five Nodes` (Title 런처의 스테이지 목록만 Stage01~05 로 되돌린다).
+
+배경: 스테이지 1~3 은 `Sprites/0910_art/배경` 의 v2 아트 (`Tools/Tour/Apply 0910 Art` 가 카탈로그·[StageSets] 를 갱신). 파일명 `stage4_background_v2` 가 스테이지 3 이다. 스테이지 4·5 는 아직 이전 배경 — 아트가 오면 `StageVisualCatalog` 의 해당 배경만 교체하고 `Setup Stage Sets` 를 다시 돌린다.
 
 ## 셋업
 
@@ -77,7 +83,7 @@ Tools/Tour/Fix Stage Sprite Import  Sprites/Stages 를 Single · Point · Mipmap
 - `SpecialAudienceManager.SetRuntimeConfig(config)` / `SetAutoStart(bool)`
 - `NearbyConcertCrisisDirector.ConfigureForStage(config, active)`
 - `DecorativeCrowd.ReplaceVariants(sprites)`
-- `TutorialFlow.skipDuringTourStage` — 투어 스테이지 중에는 튜토리얼 자동 실행 안 함
+- `TutorialFlow.skipDuringTourStage` — 투어에서는 첫 스테이지 첫 플레이만 튜토리얼 자동 실행 (에디터·개발 빌드는 항상, `Scripts/Tutorial/README.md` §0)
 
 ## 투어 없이 Main 을 직접 실행할 때
 

@@ -65,15 +65,17 @@ namespace ContextStage
             if (f10) AdvanceTourStep();
 
 #if ENABLE_INPUT_SYSTEM
+            if (keyboard.f4Key.wasPressedThisFrame) BossDebug(rule => rule.DebugDrainNow());
             if (keyboard.f5Key.wasPressedThisFrame) StageEventRule.DebugTriggerFirstIdle();
             if (keyboard.f6Key.wasPressedThisFrame) BossDebug(rule => rule.DebugPreviewCinematic());
-            if (keyboard.f7Key.wasPressedThisFrame) BossDebug(rule => rule.DebugDamage(0.25f));
+            if (keyboard.f7Key.wasPressedThisFrame) BossDebug(rule => rule.DebugStealFans(2));
             if (keyboard.f8Key.wasPressedThisFrame) BossDebug(rule => rule.DebugStartPatternNow());
             if (keyboard.f9Key.wasPressedThisFrame) BossDebug(rule => rule.DebugSucceedPattern());
 #else
+            if (Input.GetKeyDown(KeyCode.F4)) BossDebug(rule => rule.DebugDrainNow());
             if (Input.GetKeyDown(KeyCode.F5)) StageEventRule.DebugTriggerFirstIdle();
             if (Input.GetKeyDown(KeyCode.F6)) BossDebug(rule => rule.DebugPreviewCinematic());
-            if (Input.GetKeyDown(KeyCode.F7)) BossDebug(rule => rule.DebugDamage(0.25f));
+            if (Input.GetKeyDown(KeyCode.F7)) BossDebug(rule => rule.DebugStealFans(2));
             if (Input.GetKeyDown(KeyCode.F8)) BossDebug(rule => rule.DebugStartPatternNow());
             if (Input.GetKeyDown(KeyCode.F9)) BossDebug(rule => rule.DebugSucceedPattern());
 #endif
@@ -210,7 +212,7 @@ namespace ContextStage
             {
                 BossBattleRule boss = FindFirstObjectByType<BossBattleRule>();
                 string bossLine = boss != null && boss.IsActive
-                    ? $"\nBOSS {Mathf.CeilToInt(boss.HealthNormalized * 100f)}%  F6: 연출 미리보기  F7: −25%  F8: 패턴 즉시  F9: 패턴 성공"
+                    ? $"\nBOSS 라이벌 팬 {boss.RivalFans} / 우리 {boss.OurFans}{(boss.IsRevenge ? "  REVENGE" : "")}  F4: 드레인  F6: 연출  F7: 팬 −2  F8: 패턴 즉시  F9: 패턴 성공"
                     : "";
                 return $"[DEBUG] {stageName} · {phase}  |  Home: 클리어  Shift+Home: S랭크  Delete: 실패  End: 현재 점수 종료  F5: 기믹 이벤트 즉시" + bossLine;
             }

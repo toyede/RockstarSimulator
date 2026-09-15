@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: audience_stadium_final
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceStagePreset
   presetId: audience_stadium_final
-  initialAudienceCount: 12
-  maximumAudienceCount: 12
+  initialAudienceCount: 6
+  maximumAudienceCount: 20
   chillWeight: 1
   singalongWeight: 1
   moshWeight: 1
   initialEngagementMin: 45
   initialEngagementMax: 60
-  naturalDecayPerSecond: 1.25
+  naturalDecayPerSecond: 0.8
   arrivalCheckInterval: 0
   arrivalChance: 0
   randomSeed: 4861

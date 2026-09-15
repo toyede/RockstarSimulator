@@ -92,6 +92,16 @@ namespace ContextStage
         float pinHoverScale = 1.25f;
         [SerializeField, Min(0.01f), Tooltip("호버 크기 전환 시간(초)")]
         float pinHoverDuration = 0.12f;
+
+        [Header("도입 확대 → 결승 축소 연출")]
+        [SerializeField, Min(1f), Tooltip("보스 노드가 열리기 전까지 맵을 이만큼 확대해 왼쪽 위 섬들만 보여준다")]
+        float introZoomScale = 1.55f;
+        [SerializeField, Tooltip("확대 상태에서 화면 가운데에 올 지점 (정규화 0~1, 왼쪽 아래 원점)")]
+        Vector2 introZoomCenter = new Vector2(0.31f, 0.64f);
+        [SerializeField, Min(0.1f), Tooltip("보스 노드가 열릴 때 전체 맵으로 축소되는 시간(초)")]
+        float zoomOutDuration = 2f;
+        [SerializeField, Min(0.05f), Tooltip("결승 무대로 가는 점선이 나타나는 시간(초)")]
+        float pathRevealDuration = 0.6f;
         [SerializeField, Tooltip("이동 방향에 따라 버스를 좌우 반전할지")]
         bool flipBusByDirection = false;
 
@@ -131,6 +141,10 @@ namespace ContextStage
         public float ArrivalBlinkDuration => arrivalBlinkDuration;
         public float PinHoverScale => pinHoverScale;
         public float PinHoverDuration => pinHoverDuration;
+        public float IntroZoomScale => introZoomScale;
+        public Vector2 IntroZoomCenter => introZoomCenter;
+        public float ZoomOutDuration => zoomOutDuration;
+        public float PathRevealDuration => pathRevealDuration;
         public bool FlipBusByDirection => flipBusByDirection;
 
         public static TourMapConfig LoadDefault() => Resources.Load<TourMapConfig>(ResourcesPath);
@@ -171,6 +185,13 @@ namespace ContextStage
             if (bus == null) bus = busSprite;
             if (raccoon == null) raccoon = raccoonSprite;
             if ((rankSprites == null || rankSprites.Count == 0) && ranks != null) rankSprites = ranks;
+        }
+
+        /// <summary>[에디터 셋업 전용] 새 맵 아트 적용: 배경과 노드 좌표를 덮어쓴다.</summary>
+        public void EditorSetMap(Sprite bg, List<Vector2> positions)
+        {
+            if (bg != null) background = bg;
+            if (positions != null && positions.Count > 0) nodePositions = new List<Vector2>(positions);
         }
 #endif
     }

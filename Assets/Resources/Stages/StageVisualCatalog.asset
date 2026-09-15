@@ -14,10 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.StageVisualCatalog
   entries:
   - stageId: stage_01
-    backgroundBase: {fileID: 21300000, guid: 363a8128fdf064343a35e1350a33cdd0, type: 3}
-    lightOverlays:
-    - {fileID: 21300000, guid: ebb25ef75ab781447bef4b2b4bacddf9, type: 3}
-    - {fileID: 21300000, guid: 16f0e7df8cc3a084d9c78772ca109e13, type: 3}
+    backgroundBase: {fileID: 21300000, guid: 125905636846f784cbc04800048ae8cc, type: 3}
+    lightOverlays: []
     foregroundLeft: {fileID: 21300000, guid: dcfafa2f732dbea4181c1220d6ec6f0e, type: 3}
     foregroundRight: {fileID: 21300000, guid: 8eed11930155c474ba1491eb8ccb18da, type: 3}
     decorativeCrowdVariants: []
@@ -28,8 +26,9 @@ MonoBehaviour:
       \uBC14\uB85C \uB5A0\uB0A9\uB2C8\uB2E4.\n\uBCF5\uC7A5\uACFC \uC0C1\uD0DC\uB97C
       \uC0B4\uD3B4 \uB9DE\uB294 \uCE74\uB4DC\uB97C \uC0AC\uC6A9\uD558\uC138\uC694."
   - stageId: stage_02
-    backgroundBase: {fileID: 21300000, guid: 1325e2fb55beaee4f824b090f6e701e9, type: 3}
-    lightOverlays: []
+    backgroundBase: {fileID: 21300000, guid: 8f8c3bb3827ec0840bb46e642d9fe6c3, type: 3}
+    lightOverlays:
+    - {fileID: 21300000, guid: e3c7fd4b770bfa9438ec1ea6692c2f2a, type: 3}
     foregroundLeft: {fileID: 0}
     foregroundRight: {fileID: 0}
     decorativeCrowdVariants: []
@@ -40,8 +39,9 @@ MonoBehaviour:
       \uC9C1\uC811 \uC694\uAD6C\uD569\uB2C8\uB2E4.\n\uAC19\uC740 \uC131\uD5A5\uC758
       Special \uCE74\uB4DC\uB97C \uAD00\uAC1D\uC5D0\uAC8C \uB4DC\uB86D\uD558\uC138\uC694."
   - stageId: stage_03
-    backgroundBase: {fileID: 21300000, guid: 2697279beab1c7a4eb0c83513567faa4, type: 3}
-    lightOverlays: []
+    backgroundBase: {fileID: 21300000, guid: 05b0e91f7e92c8b4a9a6390158d00777, type: 3}
+    lightOverlays:
+    - {fileID: 21300000, guid: 14be8168e745e2343b85fcf4a7dbb3c0, type: 3}
     foregroundLeft: {fileID: 0}
     foregroundRight: {fileID: 0}
     decorativeCrowdVariants: []

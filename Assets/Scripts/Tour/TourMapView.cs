@@ -44,6 +44,7 @@ namespace ContextStage
             [NonSerialized] public bool Hovered;
             [NonSerialized] public float Scale = 1f;
             [NonSerialized] public Coroutine HoverRoutine;
+            [NonSerialized] public bool Revealed;   // 이동 직후 핀이 이미 등장했는가 (클릭 때 다시 팝하지 않는다)
 
             public bool IsComplete => root != null && dot != null && pinRoot != null && pin != null && button != null;
         }
@@ -67,6 +68,7 @@ namespace ContextStage
 
         [Header("씬 오브젝트 (Tools/Tour/Setup Tour Map Scene 이 채운다)")]
         [SerializeField] Image mapBackground;
+        [SerializeField, Tooltip("배경·빗금·노드·버스를 묶는 컨테이너. 도입 확대와 결승 축소는 이것을 스케일한다 (없으면 확대 연출 없음)")] RectTransform mapContent;
         [SerializeField, Tooltip("빗금이 런타임에 이 아래에 깔린다")] RectTransform pathRoot;
         [SerializeField] RectTransform nodeRoot;
         [SerializeField] List<NodeSlot> nodeSlots = new List<NodeSlot>();
@@ -81,10 +83,18 @@ namespace ContextStage
         float _busFacing = 1f;
 
         readonly List<Image> _dashes = new List<Image>();
+        readonly List<int> _dashSegments = new List<int>();
 
         int _busIndex;
         bool _traveling;
         bool _bound;
+        bool _zoomedIn;
+        Coroutine _zoomRoutine;
+
+        /// <summary>확대·축소 대상. 씬에 MapContent 가 없으면 루트(연출 없음).</summary>
+        RectTransform ZoomRoot => mapContent != null ? mapContent : _root;
+
+        public bool IsZoomedIn => _zoomedIn;
         Coroutine _travelRoutine;
         Coroutine _arrivalRoutine;
         float _frameTimer;
@@ -114,14 +124,21 @@ namespace ContextStage
             _root = (RectTransform)transform;
             Stretch(_root);
 
-            mapBackground = CreateImage(_root, "MapBackground", config.Background, Color.white);
+            // 배경·빗금·노드·버스는 MapContent 아래 — 확대/축소는 이 컨테이너만 스케일한다
+            mapContent = CreateRect(_root, "MapContent");
+            mapContent.anchorMin = mapContent.anchorMax = new Vector2(0.5f, 0.5f);
+            mapContent.pivot = new Vector2(0.5f, 0.5f);
+            mapContent.sizeDelta = config.ReferenceResolution;
+            mapContent.anchoredPosition = Vector2.zero;
+
+            mapBackground = CreateImage(mapContent, "MapBackground", config.Background, Color.white);
             Stretch(mapBackground.rectTransform);
             mapBackground.preserveAspect = false;
             mapBackground.raycastTarget = false;
 
-            pathRoot = CreateRect(_root, "Path");
+            pathRoot = CreateRect(mapContent, "Path");
             Stretch(pathRoot);
-            nodeRoot = CreateRect(_root, "Nodes");
+            nodeRoot = CreateRect(mapContent, "Nodes");
             Stretch(nodeRoot);
 
             nodeSlots.Clear();
@@ -212,7 +229,7 @@ namespace ContextStage
         {
             float scale = config.PixelScale;
 
-            busRoot = CreateRect(_root, "Bus");
+            busRoot = CreateRect(ZoomRoot, "Bus");
             busRoot.anchorMin = busRoot.anchorMax = new Vector2(0.5f, 0.5f);
             busRoot.sizeDelta = Vector2.zero;
 
@@ -269,10 +286,21 @@ namespace ContextStage
 
             EnsureNodes(run.map.nodes.Count);
             RefreshNodes(run);
-            RebuildPath(run.map.nodes.Count);
+
+            // 보스(마지막) 노드가 열리기 전까지는 왼쪽 위 섬들만 보이게 확대해 두고, 결승 점선도 숨긴다
+            bool finalOpen = IsFinalNodeOpen(run);
+            ApplyZoom(zoomedIn: !finalOpen, instant: true);
+            RebuildPath(run.map.nodes.Count, includeFinalSegment: finalOpen);
 
             _busIndex = ResolveBusIndex(run);
             PlaceBus(NodeLocalPosition(_busIndex));
+        }
+
+        static bool IsFinalNodeOpen(TourRunState run)
+        {
+            if (run?.map?.nodes == null || run.map.nodes.Count == 0) return true;
+            RunNodeState last = run.map.nodes[run.map.nodes.Count - 1];
+            return last.status != RunNodeStatus.Locked;
         }
 
         public void Hide()
@@ -337,18 +365,22 @@ namespace ContextStage
 
                     case RunNodeStatus.Available:
                         SetDot(node, config.FutureDotSize, config.FutureDotColor);
-                        SetPin(node, false, config.PinNormal);
+                        // 이동 직후 이미 등장한 핀은 그대로 보여 둔다
+                        SetPin(node, node.Revealed, config.PinHover);
                         SetRank(node, null);
                         SetInteractable(node, true);
                         break;
 
                     default: // Locked
+                        node.Revealed = false;
                         SetDot(node, config.FutureDotSize, config.LockedDotColor);
                         SetPin(node, false, config.PinNormal);
                         SetRank(node, null);
                         SetInteractable(node, false);
                         break;
                 }
+                if (state.status == RunNodeStatus.Cleared || state.status == RunNodeStatus.Failed || state.status == RunNodeStatus.Current)
+                    node.Revealed = false;
             }
         }
 
@@ -502,11 +534,124 @@ namespace ContextStage
             if (config.TravelStartDelay > 0f)
                 yield return new WaitForSecondsRealtime(config.TravelStartDelay);
 
+            // 결승(마지막) 노드로 가는 이동: 맵이 천천히 전체로 축소되고, 점선이 생긴 뒤 버스가 출발한다
+            bool toFinal = targetIndex == nodeSlots.Count - 1;
+            if (toFinal && _zoomedIn)
+            {
+                yield return ZoomRoutine(zoomedIn: false, config.ZoomOutDuration);
+                RebuildPath(nodeSlots.Count, includeFinalSegment: true);
+                yield return RevealPathSegment(nodeSlots.Count - 2, config.PathRevealDuration);
+            }
+
             yield return MoveBusTo(targetIndex);
+
+            // 도착: 핀(과 아이콘)이 작은 크기에서 한 번 커지며 바로 등장한다 (클릭을 기다리지 않는다)
+            if (targetIndex >= 0 && targetIndex < nodeSlots.Count)
+                yield return RevealPin(nodeSlots[targetIndex]);
 
             _traveling = false;
             _travelRoutine = null;
             onComplete?.Invoke();
+        }
+
+        /// <summary>도착 노드의 핀을 팝으로 등장시키고 Revealed 로 표시한다.</summary>
+        IEnumerator RevealPin(NodeSlot node)
+        {
+            SetPin(node, true, config.PinHover);
+            node.Revealed = true;
+            yield return PopNode(node);
+        }
+
+        IEnumerator PopNode(NodeSlot node)
+        {
+            float pop = Mathf.Max(0.01f, config.PinPopDuration);
+            float start = Mathf.Clamp01(config.PinPopStartScale);
+            float elapsed = 0f;
+            ApplyNodeScale(node, start);
+            while (elapsed < pop)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / pop);
+                float eased = 1f - (1f - t) * (1f - t);
+                ApplyNodeScale(node, Mathf.Lerp(start, 1f, eased));
+                yield return null;
+            }
+            ApplyNodeScale(node, 1f);
+        }
+
+        // ---------------- 확대 · 축소 ----------------
+
+        Vector2 ZoomOffset(float scale)
+        {
+            Vector2 size = config.ReferenceResolution;
+            Vector2 center = config.IntroZoomCenter;
+            return new Vector2(-(center.x - 0.5f) * size.x * scale, -(center.y - 0.5f) * size.y * scale);
+        }
+
+        void ApplyZoom(bool zoomedIn, bool instant)
+        {
+            if (_zoomRoutine != null)
+            {
+                StopCoroutine(_zoomRoutine);
+                _zoomRoutine = null;
+            }
+            _zoomedIn = zoomedIn;
+            if (mapContent == null) return; // 컨테이너가 없으면 확대 연출 없음
+            if (instant)
+            {
+                float s = zoomedIn ? config.IntroZoomScale : 1f;
+                mapContent.localScale = Vector3.one * s;
+                mapContent.anchoredPosition = zoomedIn ? ZoomOffset(s) : Vector2.zero;
+                return;
+            }
+            _zoomRoutine = StartCoroutine(ZoomRoutine(zoomedIn, config.ZoomOutDuration));
+        }
+
+        IEnumerator ZoomRoutine(bool zoomedIn, float duration)
+        {
+            _zoomedIn = zoomedIn;
+            if (mapContent == null) yield break;
+            float fromScale = mapContent.localScale.x;
+            Vector2 fromPos = mapContent.anchoredPosition;
+            float toScale = zoomedIn ? config.IntroZoomScale : 1f;
+            Vector2 toPos = zoomedIn ? ZoomOffset(toScale) : Vector2.zero;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                mapContent.localScale = Vector3.one * Mathf.Lerp(fromScale, toScale, t);
+                mapContent.anchoredPosition = Vector2.Lerp(fromPos, toPos, t);
+                yield return null;
+            }
+            mapContent.localScale = Vector3.one * toScale;
+            mapContent.anchoredPosition = toPos;
+            _zoomRoutine = null;
+        }
+
+        /// <summary>특정 구간의 빗금을 투명에서 서서히 나타낸다.</summary>
+        IEnumerator RevealPathSegment(int segment, float duration)
+        {
+            var targets = new List<Image>();
+            for (int i = 0; i < _dashes.Count; i++)
+                if (_dashSegments[i] == segment && _dashes[i] != null) targets.Add(_dashes[i]);
+            Color color = config.DashColor;
+            for (int i = 0; i < targets.Count; i++) targets[i].color = new Color(color.r, color.g, color.b, 0f);
+
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                for (int i = 0; i < targets.Count; i++)
+                {
+                    // 시작 쪽부터 순서대로 켜진다
+                    float local = Mathf.Clamp01(t * targets.Count - i);
+                    if (targets[i] != null) targets[i].color = new Color(color.r, color.g, color.b, color.a * local);
+                }
+                yield return null;
+            }
+            for (int i = 0; i < targets.Count; i++) if (targets[i] != null) targets[i].color = color;
         }
 
         IEnumerator MoveBusTo(int targetIndex)
@@ -533,14 +678,16 @@ namespace ContextStage
             }
         }
 
-        void RebuildPath(int nodeCount)
+        void RebuildPath(int nodeCount, bool includeFinalSegment = true)
         {
             for (int i = 0; i < _dashes.Count; i++)
                 if (_dashes[i] != null) Destroy(_dashes[i].gameObject);
             _dashes.Clear();
+            _dashSegments.Clear();
             if (pathRoot == null) return;
 
-            for (int i = 0; i < nodeCount - 1; i++)
+            int segments = includeFinalSegment ? nodeCount - 1 : nodeCount - 2;
+            for (int i = 0; i < segments; i++)
             {
                 Vector2 from = NodeLocalPosition(i);
                 Vector2 to = NodeLocalPosition(i + 1);
@@ -557,6 +704,7 @@ namespace ContextStage
                     dash.rectTransform.localRotation = Quaternion.Euler(0f, 0f, angle); // 경로 방향 빗금
                     dash.raycastTarget = false;
                     _dashes.Add(dash);
+                    _dashSegments.Add(i);
                 }
             }
         }
@@ -605,26 +753,22 @@ namespace ContextStage
         IEnumerator ArrivalBlink(NodeSlot node)
         {
             SetDot(node, config.VisitedDotSize, config.VisitedDotColor);
+            bool alreadyRevealed = node.Revealed;
             SetPin(node, true, config.PinHover);
             node.Status = RunNodeStatus.Current;
 
-            // 튀어나오기 (Ease out): 작은 크기 → 1배
-            float pop = Mathf.Max(0.01f, config.PinPopDuration);
-            float start = Mathf.Clamp01(config.PinPopStartScale);
-            float elapsed = 0f;
-            ApplyNodeScale(node, start);
-            while (elapsed < pop)
+            if (alreadyRevealed)
             {
-                elapsed += Time.unscaledDeltaTime;
-                float t = Mathf.Clamp01(elapsed / pop);
-                float eased = 1f - (1f - t) * (1f - t);
-                ApplyNodeScale(node, Mathf.Lerp(start, 1f, eased));
-                yield return null;
+                // 이동 직후 이미 등장한 핀: 다시 팝하지 않고 짧게 머문 뒤 넘어간다
+                ApplyNodeScale(node, 1f);
+                yield return new WaitForSecondsRealtime(0.35f);
             }
-            ApplyNodeScale(node, 1f);
-
-            // 등장 후 잠시 머문다 (마우스가 올라와 있으면 그때 호버 크기로)
-            if (config.ArrivalBlinkDuration > 0f) yield return new WaitForSecondsRealtime(config.ArrivalBlinkDuration);
+            else
+            {
+                yield return PopNode(node);
+                // 등장 후 잠시 머문다 (마우스가 올라와 있으면 그때 호버 크기로)
+                if (config.ArrivalBlinkDuration > 0f) yield return new WaitForSecondsRealtime(config.ArrivalBlinkDuration);
+            }
 
             _arrivalRoutine = null;
             if (node.Hovered) SetHover(node, true);
@@ -641,8 +785,10 @@ namespace ContextStage
         {
             if (_travelRoutine != null) StopCoroutine(_travelRoutine);
             if (_arrivalRoutine != null) StopCoroutine(_arrivalRoutine);
+            if (_zoomRoutine != null) StopCoroutine(_zoomRoutine);
             _travelRoutine = null;
             _arrivalRoutine = null;
+            _zoomRoutine = null;
             _traveling = false;
         }
 

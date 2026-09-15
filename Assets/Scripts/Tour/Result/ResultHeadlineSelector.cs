@@ -82,7 +82,7 @@ namespace ContextStage
                 score = result.score,
                 targetScore = target,
                 achievedPercent = percent,
-                showRank = !isBoss,
+                showRank = true, // 보스전도 점수/목표 랭크를 그대로 쓴다 (관객 쟁탈전 v2)
                 rankLabel = rank,
                 rankIcon = catalog != null ? catalog.RankIconFor(rank) : null,
                 nextAction = nextAction,
@@ -154,6 +154,7 @@ namespace ContextStage
                 p.articleTitle = catalog.ArticleBossTitle;
                 p.articleBody = string.Format(catalog.ArticleBossBody,
                     report.bossPatternsSucceeded, report.bossPatternsResolved, report.bossFansRecruited, report.bossFansLost);
+                if (report.bossDrainTotal > 0) p.articleBody += $" · 라이벌 응원에 깎인 점수 {report.bossDrainTotal:N0}";
             }
             else if (report.HasCrisis)
             {
@@ -209,7 +210,9 @@ namespace ContextStage
                 case BossOutcome.Defeated: return c.OutcomeDefeated;
                 case BossOutcome.StreakWin: return c.OutcomeStreak;
                 case BossOutcome.TimeOut: return c.OutcomeTimeOut;
-                default: return success ? c.OutcomeDefeated : c.OutcomeTimeOut;
+                case BossOutcome.Won: return c.OutcomeWon;
+                case BossOutcome.Lost: return c.OutcomeLost;
+                default: return success ? c.OutcomeWon : c.OutcomeLost;
             }
         }
     }

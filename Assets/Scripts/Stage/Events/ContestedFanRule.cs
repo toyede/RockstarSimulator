@@ -29,7 +29,7 @@ namespace ContextStage
         protected override bool CanBegin()
         {
             if (!base.CanBegin()) return false;
-            if (_boss != null && _boss.IsActive && (_boss.IsPatternActive || _boss.IsLeadIn || _boss.IsDefeated)) return false;
+            if (_boss != null && _boss.IsActive && (_boss.IsPatternActive || _boss.IsLeadIn)) return false;
             return true;
         }
 
@@ -50,8 +50,14 @@ namespace ContextStage
         protected override string OnEventEnd(bool success)
         {
             if (!success) return $"{PreferenceLabel(_preference)} 팬은 라이벌 무대로 갔습니다.";
-            AudienceRosterSystem roster = Context.AudienceRoster;
-            bool joined = roster != null && roster.TryAdd(_preference, joinEngagement, AudienceJoinReason.RuntimeCommand, out _);
+            // 보스전이면 라이벌 팬 수에서 빼 와야 총원이 맞는다
+            bool joined;
+            if (_boss != null && _boss.IsActive) joined = _boss.StealFans(1, _preference) > 0;
+            else
+            {
+                AudienceRosterSystem roster = Context.AudienceRoster;
+                joined = roster != null && roster.TryAdd(_preference, joinEngagement, AudienceJoinReason.RuntimeCommand, out _);
+            }
             return joined
                 ? $"{PreferenceLabel(_preference)} 팬이 우리 무대로 넘어왔습니다!"
                 : $"{PreferenceLabel(_preference)} 팬이 환호했지만 만석입니다.";

@@ -7,12 +7,16 @@ namespace ContextStage
     public enum BossOutcome
     {
         None = 0,
-        /// <summary>체력 0 으로 격파</summary>
+        /// <summary>(예전 체력제) 체력 0 으로 격파</summary>
         Defeated = 1,
-        /// <summary>연속 패턴 성공으로 승리</summary>
+        /// <summary>(예전 체력제) 연속 패턴 성공으로 승리</summary>
         StreakWin = 2,
-        /// <summary>제한 시간 종료 — 꺾지 못함</summary>
+        /// <summary>(예전 체력제) 제한 시간 종료 — 꺾지 못함</summary>
         TimeOut = 3,
+        /// <summary>시간 종료 시 점수 ≥ 목표 — 대결 승리</summary>
+        Won = 4,
+        /// <summary>시간 종료 시 점수 &lt; 목표 — 대결 패배</summary>
+        Lost = 5,
     }
 
     /// <summary>
@@ -56,6 +60,7 @@ namespace ContextStage
         public int bossPatternsResolved;
         public int bossFansRecruited;
         public int bossFansLost;
+        public int bossDrainTotal;
 
         public bool HasSpecialAudience => specialEnded > 0;
         public bool HasCrisis => crisisCount > 0;

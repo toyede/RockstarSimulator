@@ -23,14 +23,21 @@ TourRunManager: Map → Dialogue → Performance → Result → Reward → Map �
 
 ## 맵 선택 화면 (TourMapView)
 
-- 지도(`bg_map_select`) 위에 노드를 점으로 찍고 노드 사이를 빗금(경로 방향으로 회전한 점)으로 잇는다
+- 지도(`0910_art/배경/map_background_v2`) 위에 노드를 점으로 찍고 노드 사이를 빗금(경로 방향으로 회전한 점)으로 잇는다. 배경·경로·노드·버스는 전부 `MapContent`(1920×1080, 중앙 기준) 아래에 있고, 축소 연출은 이 오브젝트 하나의 scale/position 만 움직인다
+- 노드 배치: 1 왼쪽 작은 섬 마을 · 2 큰 섬 위쪽 마을 · 3 큰 섬 아래 도시 · 4 도시 섬 · 5 우하단 스타디움 돔
 - 노드 상태: 클리어 = 핀 + 마이크 + 랭크 글자 / 현재 = 활성 핀 / 다음 = 클릭 가능한 회색 점 / 잠김 = 흐린 점. 보스 노드는 마이크 대신 보스 아이콘
 - 너구리 얼굴은 좌 30° ↔ 우 30° 두 프레임을 `frameInterval`(0.4초)마다 교대, 버스는 살짝 들썩인다
 - 다음 노드 클릭 → `travelStartDelay` 뒤 버스가 빗금을 따라 이동(`travelSecondsPerSegment`, Linear) → 도착 핀과 아이콘이 `pinPopStartScale`(0.3배)에서 1배로 한 번 커지며 등장(`pinPopDuration`) → `arrivalBlinkDuration` 동안 가만히 → `NodeSelected` → `TourRunManager.SelectNode` → 대화창(이전 화면 블러)
+- 핀은 버스가 도착한 뒤에야 나타난다(`NodeSlot.Revealed`). 이미 열려 있던 노드로 다시 돌아온 화면(Reward 뒤 Map 등)에서는 팝 없이 바로 보인다
 - 핀은 평소 1배로 정지해 있고, 마우스를 올린 노드만 핀·아이콘이 `pinHoverScale`(1.25배)로 커졌다가 벗어나면 돌아온다 (`pinHoverDuration`). 점멸은 없다. 핀이 숨겨진 다음 노드는 점이 커진다
+- **결승 축소 연출**: 마지막 노드가 아직 잠겨 있는 동안은 `introZoomScale`(1.55배)·`introZoomCenter`(0.31, 0.64) 로 좌상단 3개 섬만 보이고, 마지막 노드로 가는 빗금은 그리지 않는다. 4번 클리어 → Travel 에서 `zoomOutDuration`(2초) 동안 천천히 전체 지도로 축소 → 5번으로 가는 빗금이 `pathRevealDuration` 동안 순서대로 나타남 → 버스 이동 → 핀 팝. 이후 맵은 계속 전체 지도
 - 좌하단 "< 타이틀로". 좌상단 "보유 증강 확인하기" 는 증강 담당 몫이라 비워 두었다
 
-노드 좌표(정규화)·배율·간격·시간은 전부 `TourMapConfig.asset` 인스펙터에서 조절한다. 코드에는 수치가 없다.
+노드 좌표(정규화)·배율·간격·시간·축소 수치는 전부 `TourMapConfig.asset` 인스펙터에서 조절한다. 코드에는 수치가 없다.
+
+## 대화창 초상화
+
+`Settings/Dialogue/Sequences/*.asset` 의 각 줄에 `portrait` 가 있으면 화자 위치(너구리 = 왼쪽, 나머지 = 오른쪽)에 뜬다. 스프라이트가 있는 화자는 너구리·고슴도치·LUX//FAUNA 셋 (`0910_art/스탠딩일러`). TourHub 씬 `PortraitLeft`/`PortraitRight` 는 좌·우 하단 앵커, 560×640, preserveAspect — 위치·크기는 인스펙터에서 고친다.
 
 ## 결과창 (신문)
 
@@ -50,6 +57,9 @@ Tools/Tour/Setup Prototype Loop   StageDefinition 5개 · TourHub 씬 · Title �
 Tools/Tour/Setup Stage Runtime    스테이지 프리셋·룰·카탈로그 (Scripts/Stage/README.md)
 Tools/Tour/Setup Tour Map         0823_art 임포트 교정 + TourMapConfig 생성 (있으면 유지)
 Tools/Tour/Fix Tour Art Import    맵·대화 아트만 Single · Point · Mipmap Off 로 교정 (2_* 증강 아트는 건드리지 않음)
+Tools/Tour/Apply 0910 Art         0910_art 임포트 교정(배경 4096) + 맵 배경 v2·노드 5개 좌표·MapContent 재구성 + 초상화 슬롯 + 스테이지 1~3 배경 교체 + [StageSets] 재생성
 ```
+
+`Apply 0910 Art` 는 이미 실행돼 있다. 새 아트가 오면 `Editor/TourMapArtSetup.cs` 의 경로·`NodePositions` 만 바꾸고 다시 실행한다 (TourHub·Main 씬을 함께 저장한다). `stage4_background_v2` 파일명은 **스테이지 3** 의 배경이다 (아트 파일명 기준).
 
 큰 텍스처 첫 임포트는 Pipeline CLI 의 30초 제한에 걸릴 수 있다. 에디터에서는 계속 진행되므로 끝난 뒤 다시 실행하면 된다.

@@ -7,30 +7,32 @@ using UnityEngine.UI;
 namespace ContextStage
 {
     /// <summary>
-    /// 보스 체력 바 + 패턴 예고. 상단 중앙, 기존 위기 경고와 같은 자리에서 런타임에 스스로 만든다.
-    /// EventBus 만 구독한다 (룰 참조 없음). 예고 중에는 붉게 점멸하고 PEAK TIME 에는 색이 바뀐다.
+    /// 보스전 HUD: 상단 팬 쟁탈 바(라이벌 | 우리) + 드레인 카운트다운·감소 팝업 + 패턴 예고/진행 + REVENGE TIME! 자막.
+    /// 런타임에 스스로 만들고 EventBus 만 구독한다 (룰 참조 없음). 랭크·점수·시간 HUD 는 그대로 보인다.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class BossBattleUI : MonoBehaviour
     {
         [SerializeField, Tooltip("한글 폰트. 비우면 DialogueCatalog 스타일 폰트")] TMP_FontAsset font;
         [SerializeField] string rivalName = "LUX//FAUNA";
-        [SerializeField] Color healthColor = new Color32(0xF0, 0x4F, 0x78, 0xFF);
-        [SerializeField] Color peakColor = new Color32(0xB0, 0x3C, 0xFF, 0xFF);
+        [SerializeField] string ourName = "RACCOON ROLL";
+        [SerializeField] Color rivalColor = new Color32(0xF0, 0x4F, 0x78, 0xFF);
+        [SerializeField] Color ourColor = new Color32(0x30, 0xE1, 0xB9, 0xFF);
+        [SerializeField] Color revengeColor = new Color32(0xB0, 0x3C, 0xFF, 0xFF);
         [SerializeField] Color warningColor = new Color32(0xEA, 0x4F, 0x36, 0xFF);
         [SerializeField] Color successColor = new Color32(0x30, 0xE1, 0xB9, 0xFF);
         [SerializeField, Min(0f)] float resultHoldDuration = 1.6f;
-        [SerializeField, Min(0f), Tooltip("체력 바가 목표값을 따라가는 속도")] float fillLerpSpeed = 6f;
-        [SerializeField, Tooltip("상단에서의 위치(px, 1080 기준)")] float topOffset = 96f;
-        [SerializeField, Min(1), Tooltip("패턴 성공 점 개수 (= BossBattleConfig.patternsToClear)")] int successDots = 8;
+        [SerializeField, Min(0f), Tooltip("바가 목표값을 따라가는 속도")] float fillLerpSpeed = 6f;
+        [SerializeField, Tooltip("상단에서의 위치(px, 1080 기준). 점수·랭크 HUD 아래")] float topOffset = 118f;
 
         Canvas _canvas;
         Image _barBack;
-        Image _barFill;
-        TMP_Text _nameText;
-        TMP_Text _percentText;
-        TMP_Text _peakText;
-        Image[] _streakDots;
+        Image _rivalFill;
+        TMP_Text _rivalText;
+        TMP_Text _ourText;
+        TMP_Text _revengeTag;
+        TMP_Text _drainText;
+        TMP_Text _drainPopup;
         RectTransform _patternPanel;
         Image _patternBackground;
         TMP_Text _patternTitle;
@@ -38,85 +40,123 @@ namespace ContextStage
         TMP_Text _patternProgress;
         TMP_Text _patternTimer;
         TMP_Text _bigText;
-        TMP_Text _timeText;
 
-        float _targetFill = 1f;
+        float _targetRivalRatio = 1f;
         bool _patternActive;
-        bool _peak;
+        bool _revenge;
         Coroutine _hideRoutine;
+        Coroutine _popupRoutine;
 
         void OnEnable()
         {
-            EventBus.Subscribe<BossHealthChanged>(OnHealth);
+            EventBus.Subscribe<BossFanBalanceChanged>(OnBalance);
+            EventBus.Subscribe<BossDrainCountdown>(OnDrainCountdown);
+            EventBus.Subscribe<BossDrainApplied>(OnDrainApplied);
+            EventBus.Subscribe<BossRevengeChanged>(OnRevenge);
             EventBus.Subscribe<BossPatternAnnounced>(OnPatternAnnounced);
             EventBus.Subscribe<BossPatternStarted>(OnPatternStarted);
             EventBus.Subscribe<BossPatternProgress>(OnPatternProgress);
             EventBus.Subscribe<BossPatternResolved>(OnPatternResolved);
-            EventBus.Subscribe<BossPeakTimeEntered>(OnPeakTime);
-            EventBus.Subscribe<BossDefeated>(OnDefeated);
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
         }
 
         void OnDisable()
         {
-            EventBus.Unsubscribe<BossHealthChanged>(OnHealth);
+            EventBus.Unsubscribe<BossFanBalanceChanged>(OnBalance);
+            EventBus.Unsubscribe<BossDrainCountdown>(OnDrainCountdown);
+            EventBus.Unsubscribe<BossDrainApplied>(OnDrainApplied);
+            EventBus.Unsubscribe<BossRevengeChanged>(OnRevenge);
             EventBus.Unsubscribe<BossPatternAnnounced>(OnPatternAnnounced);
             EventBus.Unsubscribe<BossPatternStarted>(OnPatternStarted);
             EventBus.Unsubscribe<BossPatternProgress>(OnPatternProgress);
             EventBus.Unsubscribe<BossPatternResolved>(OnPatternResolved);
-            EventBus.Unsubscribe<BossPeakTimeEntered>(OnPeakTime);
-            EventBus.Unsubscribe<BossDefeated>(OnDefeated);
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
             if (_canvas != null) _canvas.gameObject.SetActive(false);
         }
 
         void Update()
         {
-            if (_barFill == null) return;
+            if (_rivalFill == null) return;
 
-            _barFill.fillAmount = fillLerpSpeed <= 0f
-                ? _targetFill
-                : Mathf.MoveTowards(_barFill.fillAmount, _targetFill, fillLerpSpeed * Time.unscaledDeltaTime);
-
-            // 남은 공연 시간 (기존 시간 HUD 는 보스전 동안 숨긴다)
-            if (_timeText != null)
-            {
-                float remaining = Mathf.Max(0f, PerformanceTimer.Duration - PerformanceTimer.Elapsed);
-                int total = Mathf.CeilToInt(remaining);
-                _timeText.text = $"{total / 60}:{total % 60:00}";
-                _timeText.color = remaining <= 15f ? warningColor : new Color(1f, 1f, 1f, 0.85f);
-            }
+            _rivalFill.fillAmount = fillLerpSpeed <= 0f
+                ? _targetRivalRatio
+                : Mathf.MoveTowards(_rivalFill.fillAmount, _targetRivalRatio, fillLerpSpeed * Time.unscaledDeltaTime);
 
             if (_patternActive && _patternBackground != null)
             {
                 float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 8f);
-                Color color = Color.Lerp(new Color(0.08f, 0.05f, 0.1f, 0.92f), warningColor * 0.7f, pulse * 0.6f);
-                color.a = 0.92f;
-                _patternBackground.color = color;
-                _barBack.color = Color.Lerp(new Color(0.1f, 0.08f, 0.12f, 0.95f), warningColor, pulse * 0.35f);
+                if (_panelStyledFromTutorial)
+                {
+                    // 튜토리얼 패널 모양을 빌린 경우 배경은 그대로 두고 제목만 맥동
+                    _patternTitle.color = Color.Lerp(_revenge ? revengeColor : warningColor, Color.white, pulse * 0.35f);
+                }
+                else
+                {
+                    Color color = Color.Lerp(new Color(0.08f, 0.05f, 0.1f, 0.92f), warningColor * 0.7f, pulse * 0.6f);
+                    color.a = 0.92f;
+                    _patternBackground.color = color;
+                }
             }
         }
 
         // ---------------- 이벤트 ----------------
 
-        void OnHealth(BossHealthChanged e)
+        void OnBalance(BossFanBalanceChanged e)
         {
             EnsureView();
             _canvas.gameObject.SetActive(true);
-            _targetFill = e.Normalized;
-            _percentText.text = $"{Mathf.CeilToInt(e.Normalized * 100f)}%";
-            _peak = e.PeakTime;
-            _barFill.color = _peak ? peakColor : healthColor;
-            _peakText.gameObject.SetActive(_peak);
+            _targetRivalRatio = e.RivalRatio;
+            _rivalText.text = $"{rivalName}  {e.Rival}";
+            _ourText.text = $"{e.Ours}  {ourName}";
+            _revenge = e.Revenge;
+            _rivalFill.color = _revenge ? revengeColor : rivalColor;
+            _revengeTag.gameObject.SetActive(_revenge);
         }
 
-        void OnPeakTime(BossPeakTimeEntered e)
+        void OnDrainCountdown(BossDrainCountdown e)
+        {
+            if (_drainText == null) return;
+            _drainText.text = e.Active
+                ? $"다음 감소  −{e.Amount:N0}  {e.Remaining:0.0}s"
+                : "라이벌 팬 없음 · 감소 정지";
+            _drainText.color = e.Active && e.Remaining < 1f ? warningColor : new Color(1f, 1f, 1f, 0.85f);
+        }
+
+        void OnDrainApplied(BossDrainApplied e)
         {
             EnsureView();
-            _peak = true;
-            _barFill.color = peakColor;
-            _peakText.gameObject.SetActive(true);
-            ShowBig("PEAK TIME", peakColor, 1.4f);
+            if (e.Amount <= 0) return;
+            _drainPopup.text = $"−{e.Amount:N0}";
+            _drainPopup.gameObject.SetActive(true);
+            if (_popupRoutine != null) StopCoroutine(_popupRoutine);
+            _popupRoutine = StartCoroutine(DrainPopup());
+        }
+
+        IEnumerator DrainPopup()
+        {
+            RectTransform rect = _drainPopup.rectTransform;
+            Vector2 basePos = new Vector2(0f, -topOffset - 60f);
+            float elapsed = 0f;
+            const float duration = 0.8f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                rect.anchoredPosition = basePos + new Vector2(0f, -30f * t);
+                _drainPopup.color = new Color(warningColor.r, warningColor.g, warningColor.b, 1f - t * t);
+                yield return null;
+            }
+            _drainPopup.gameObject.SetActive(false);
+            _popupRoutine = null;
+        }
+
+        void OnRevenge(BossRevengeChanged e)
+        {
+            EnsureView();
+            _revenge = e.Active;
+            _revengeTag.gameObject.SetActive(_revenge);
+            _rivalFill.color = _revenge ? revengeColor : rivalColor;
+            if (e.Active) ShowBig("REVENGE TIME!", revengeColor, 1.6f);
         }
 
         void OnPatternAnnounced(BossPatternAnnounced e)
@@ -125,7 +165,7 @@ namespace ContextStage
             StopHide();
             _patternPanel.gameObject.SetActive(false);
             string title = e.Enhanced ? $"{e.Title}  ▲" : e.Title;
-            ShowBig(title, _peak ? peakColor : warningColor, Mathf.Max(0.5f, e.DisplaySeconds));
+            ShowBig(title, _revenge ? revengeColor : warningColor, Mathf.Max(0.5f, e.DisplaySeconds));
         }
 
         void OnPatternStarted(BossPatternStarted e)
@@ -136,7 +176,7 @@ namespace ContextStage
             _patternActive = true;
             _patternPanel.gameObject.SetActive(true);
             _patternTitle.text = e.Enhanced ? $"{e.Title}  ▲" : e.Title;
-            _patternTitle.color = _peak ? peakColor : warningColor;
+            _patternTitle.color = _revenge ? revengeColor : warningColor;
             _patternBody.text = e.Instruction;
             _patternProgress.text = "";
             _patternTimer.text = $"{e.Duration:0.0}s";
@@ -154,67 +194,41 @@ namespace ContextStage
         {
             EnsureView();
             _patternActive = false;
-            _barBack.color = new Color(0.1f, 0.08f, 0.12f, 0.95f);
-            _patternBackground.color = new Color(0.08f, 0.05f, 0.1f, 0.92f);
+            if (!_panelStyledFromTutorial) _patternBackground.color = new Color(0.08f, 0.05f, 0.1f, 0.92f);
 
             if (e.Success)
             {
                 _patternTitle.text = $"{e.Title}  성공!";
                 _patternTitle.color = successColor;
                 _patternBody.text = e.FansMoved > 0
-                    ? $"상대 팬 {e.FansMoved}명 합류 · 패턴 성공 {e.Streak}/{successDots}"
-                    : $"만석! 패턴 성공 {e.Streak}/{successDots}";
+                    ? $"라이벌 팬 {e.FansMoved}명이 우리 무대로 · 보너스 +{e.BonusScore:N0}"
+                    : $"만석! 보너스 +{e.BonusScore:N0}";
             }
             else
             {
                 _patternTitle.text = $"{e.Title}  실패";
                 _patternTitle.color = warningColor;
                 _patternBody.text = e.FansMoved > 0
-                    ? $"우리 팬 {e.FansMoved}명이 라이벌 무대로… 보스 회복"
-                    : "보스 회복";
+                    ? $"우리 팬 {e.FansMoved}명이 라이벌 무대로… 감소가 커집니다"
+                    : "기회를 놓쳤습니다";
             }
             _patternProgress.text = "";
             _patternTimer.text = "";
-            UpdateStreak(e.Streak);
 
             StopHide();
             _hideRoutine = StartCoroutine(HidePatternAfter(resultHoldDuration));
         }
 
-        void OnDefeated(BossDefeated e)
-        {
-            EnsureView();
-            _patternActive = false;
-            _patternPanel.gameObject.SetActive(false);
-            _targetFill = 0f;
-            _percentText.text = "0%";
-            ShowBig("라이벌 격파! 앙코르 무대 확보!", successColor, 4f);
-        }
-
         void OnGameStateChanged(GameStateChanged e)
         {
-            // 공연이 끝나면(결과창이 뜨기 전) 체력 바를 치운다. 격파 자막은 종료 전 연출 중에 이미 보여줬다
-            if (e.Current == GameState.GameOver)
-            {
-                _patternActive = false;
-                if (_canvas != null) _canvas.gameObject.SetActive(false);
-                return;
-            }
-            if (e.Current != GameState.Ready) return;
+            if (e.Current != GameState.GameOver && e.Current != GameState.Ready) return;
             _patternActive = false;
-            _targetFill = 1f;
-            _peak = false;
+            _targetRivalRatio = 1f;
+            _revenge = false;
             if (_canvas != null) _canvas.gameObject.SetActive(false);
         }
 
         // ---------------- 표시 ----------------
-
-        void UpdateStreak(int streak)
-        {
-            if (_streakDots == null) return;
-            for (int i = 0; i < _streakDots.Length; i++)
-                _streakDots[i].color = i < streak ? successColor : new Color(1f, 1f, 1f, 0.25f);
-        }
 
         void ShowBig(string text, Color color, float hold)
         {
@@ -265,61 +279,49 @@ namespace ContextStage
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
 
-            // 체력 바
-            RectTransform bar = CreateRect(canvasObject.transform, "HealthBar", new Vector2(0.5f, 1f), new Vector2(0f, -topOffset), new Vector2(900f, 30f));
+            // 팬 쟁탈 바: 배경(우리 색) 위에 라이벌 색이 왼쪽에서 차오른다
+            RectTransform bar = CreateRect(canvasObject.transform, "FanBar", new Vector2(0.5f, 1f), new Vector2(0f, -topOffset), new Vector2(900f, 26f));
             _barBack = bar.gameObject.AddComponent<Image>();
-            _barBack.color = new Color(0.1f, 0.08f, 0.12f, 0.95f);
+            _barBack.sprite = CreateSolidSprite();
+            _barBack.color = ourColor;
             _barBack.raycastTarget = false;
 
-            var fillObject = new GameObject("Fill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var fillObject = new GameObject("RivalFill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             var fillRect = fillObject.GetComponent<RectTransform>();
             fillRect.SetParent(bar, false);
             fillRect.anchorMin = Vector2.zero;
             fillRect.anchorMax = Vector2.one;
-            fillRect.offsetMin = new Vector2(4f, 4f);
-            fillRect.offsetMax = new Vector2(-4f, -4f);
-            _barFill = fillObject.GetComponent<Image>();
-            _barFill.sprite = CreateSolidSprite();
-            _barFill.type = Image.Type.Filled;
-            _barFill.fillMethod = Image.FillMethod.Horizontal;
-            _barFill.fillOrigin = 0;
-            _barFill.fillAmount = 1f;
-            _barFill.color = healthColor;
-            _barFill.raycastTarget = false;
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
+            _rivalFill = fillObject.GetComponent<Image>();
+            _rivalFill.sprite = CreateSolidSprite();
+            _rivalFill.type = Image.Type.Filled;
+            _rivalFill.fillMethod = Image.FillMethod.Horizontal;
+            _rivalFill.fillOrigin = 0;
+            _rivalFill.fillAmount = 1f;
+            _rivalFill.color = rivalColor;
+            _rivalFill.raycastTarget = false;
 
-            _nameText = CreateText(bar, "Name", resolvedFont, 24f, TextAlignmentOptions.MidlineLeft, Color.white);
-            SetRect(_nameText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(0f, 6f), new Vector2(500f, 30f));
-            _nameText.text = rivalName;
+            _rivalText = CreateText(bar, "Rival", resolvedFont, 24f, TextAlignmentOptions.MidlineLeft, Color.white);
+            SetRect(_rivalText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(0f, 6f), new Vector2(420f, 30f));
+            _ourText = CreateText(bar, "Ours", resolvedFont, 24f, TextAlignmentOptions.MidlineRight, Color.white);
+            SetRect(_ourText.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 0f), new Vector2(0f, 6f), new Vector2(420f, 30f));
+            _revengeTag = CreateText(bar, "Revenge", resolvedFont, 20f, TextAlignmentOptions.Center, revengeColor);
+            SetRect(_revengeTag.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 0f), new Vector2(0f, 6f), new Vector2(300f, 30f));
+            _revengeTag.text = "REVENGE TIME!";
+            _revengeTag.gameObject.SetActive(false);
 
-            _percentText = CreateText(bar, "Percent", resolvedFont, 22f, TextAlignmentOptions.MidlineRight, Color.white);
-            SetRect(_percentText.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 0f), new Vector2(0f, 6f), new Vector2(200f, 30f));
-            _percentText.text = "100%";
+            _drainText = CreateText(bar, "Drain", resolvedFont, 20f, TextAlignmentOptions.Center, new Color(1f, 1f, 1f, 0.85f));
+            SetRect(_drainText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(600f, 28f));
+            _drainText.text = "";
 
-            _peakText = CreateText(bar, "Peak", resolvedFont, 20f, TextAlignmentOptions.Center, peakColor);
-            SetRect(_peakText.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 0f), new Vector2(0f, 6f), new Vector2(300f, 30f));
-            _peakText.text = "PEAK TIME";
-            _peakText.gameObject.SetActive(false);
-
-            _timeText = CreateText(bar, "Time", resolvedFont, 22f, TextAlignmentOptions.MidlineRight, new Color(1f, 1f, 1f, 0.85f));
-            SetRect(_timeText.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, -6f), new Vector2(160f, 28f));
-            _timeText.text = "";
-
-            // 패턴 성공 점 (patternsToClear 개, 가운데 정렬)
-            _streakDots = new Image[Mathf.Max(1, successDots)];
-            float dotsStart = -(_streakDots.Length - 1) * 13f;
-            for (int i = 0; i < _streakDots.Length; i++)
-            {
-                var dot = new GameObject($"Streak_{i}", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                var dotRect = dot.GetComponent<RectTransform>();
-                dotRect.SetParent(bar, false);
-                SetRect(dotRect, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(dotsStart + i * 26f, -6f), new Vector2(16f, 16f));
-                _streakDots[i] = dot.GetComponent<Image>();
-                _streakDots[i].color = new Color(1f, 1f, 1f, 0.25f);
-                _streakDots[i].raycastTarget = false;
-            }
+            _drainPopup = CreateText(canvasObject.transform, "DrainPopup", resolvedFont, 44f, TextAlignmentOptions.Center, warningColor);
+            SetRect(_drainPopup.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -topOffset - 60f), new Vector2(400f, 60f));
+            _drainPopup.fontStyle = FontStyles.Bold;
+            _drainPopup.gameObject.SetActive(false);
 
             // 패턴 패널
-            _patternPanel = CreateRect(canvasObject.transform, "Pattern", new Vector2(0.5f, 1f), new Vector2(0f, -topOffset - 78f), new Vector2(1000f, 118f));
+            _patternPanel = CreateRect(canvasObject.transform, "Pattern", new Vector2(0.5f, 1f), new Vector2(0f, -topOffset - 96f), new Vector2(1000f, 118f));
             _patternBackground = _patternPanel.gameObject.AddComponent<Image>();
             _patternBackground.color = new Color(0.08f, 0.05f, 0.1f, 0.92f);
             _patternBackground.raycastTarget = false;
@@ -333,14 +335,53 @@ namespace ContextStage
             _patternProgress = CreateText(_patternPanel, "Progress", resolvedFont, 24f, TextAlignmentOptions.MidlineLeft, Color.white);
             SetRect(_patternProgress.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 8f), new Vector2(-40f, 30f));
             _patternPanel.gameObject.SetActive(false);
+            ApplyTutorialPanelStyle();
 
-            // 큰 자막 (PEAK TIME · 격파)
+            // 큰 자막 (예고 · REVENGE)
             _bigText = CreateText(canvasObject.transform, "Big", resolvedFont, 56f, TextAlignmentOptions.Center, successColor);
             SetRect(_bigText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 120f), new Vector2(1400f, 90f));
             _bigText.outlineWidth = 0.25f;
             _bigText.outlineColor = new Color32(0x16, 0x12, 0x1C, 0xFF);
             _bigText.gameObject.SetActive(false);
         }
+
+        /// <summary>패턴 경고 패널을 튜토리얼 메시지 패널과 같은 모양(배경 스프라이트·색·테두리·글자 크기)으로 맞춘다.</summary>
+        void ApplyTutorialPanelStyle()
+        {
+            TutorialOverlayUI tutorial = FindFirstObjectByType<TutorialOverlayUI>(FindObjectsInactive.Include);
+            Image source = tutorial != null ? tutorial.PanelImage : null;
+            if (source == null) return;
+
+            _patternBackground.sprite = source.sprite;
+            _patternBackground.type = source.type;
+            _patternBackground.pixelsPerUnitMultiplier = source.pixelsPerUnitMultiplier;
+            _patternBackground.color = source.color;
+            _panelStyledFromTutorial = true;
+
+            Outline outline = source.GetComponent<Outline>();
+            if (outline != null)
+            {
+                Outline copy = _patternPanel.gameObject.AddComponent<Outline>();
+                copy.effectColor = outline.effectColor;
+                copy.effectDistance = outline.effectDistance;
+                copy.useGraphicAlpha = outline.useGraphicAlpha;
+            }
+
+            Shadow shadow = source.GetComponent<Shadow>();
+            if (shadow != null && !(shadow is Outline))
+            {
+                Shadow copy = _patternPanel.gameObject.AddComponent<Shadow>();
+                copy.effectColor = shadow.effectColor;
+                copy.effectDistance = shadow.effectDistance;
+            }
+
+            _patternTitle.fontSize = tutorial.TitleFontSize;
+            _patternBody.fontSize = tutorial.BodyFontSize;
+            _patternProgress.fontSize = tutorial.BodyFontSize;
+            _patternTimer.fontSize = tutorial.BodyFontSize + 2;
+        }
+
+        bool _panelStyledFromTutorial;
 
         static RectTransform CreateRect(Transform parent, string name, Vector2 anchor, Vector2 position, Vector2 size)
         {
@@ -388,11 +429,10 @@ namespace ContextStage
 
 #if UNITY_EDITOR
         /// <summary>[에디터 셋업 전용]</summary>
-        public void EditorConfigure(TMP_FontAsset fontAsset, string name, int dots = 8)
+        public void EditorConfigure(TMP_FontAsset fontAsset, string name, int unused = 0)
         {
             font = fontAsset;
             if (!string.IsNullOrEmpty(name)) rivalName = name;
-            successDots = Mathf.Max(1, dots);
         }
 #endif
     }

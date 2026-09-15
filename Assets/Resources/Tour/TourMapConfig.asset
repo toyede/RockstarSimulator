@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d9956a165e392244be50d42693ad129, type: 3}
   m_Name: TourMapConfig
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.TourMapConfig
-  background: {fileID: 21300000, guid: a596efcc66ea228468eefd079e8457bd, type: 3}
+  background: {fileID: 21300000, guid: 9ff32c25f8b60e549b3cc565ed4b94b8, type: 3}
   pinNormal: {fileID: 21300000, guid: 85d6b5f658964c647a0ee494e969f657, type: 3}
   pinHover: {fileID: 21300000, guid: 7191222bcc5baad4bab06275e606cb67, type: 3}
   micIcon: {fileID: 21300000, guid: 79081079011c1524b942a215f2645533, type: 3}
@@ -34,11 +34,11 @@ MonoBehaviour:
   - label: F
     sprite: {fileID: 21300000, guid: 3f3c4102bda1d3645bd5b65d001c3980, type: 3}
   nodePositions:
-  - {x: 0.245, y: 0.37}
-  - {x: 0.38, y: 0.71}
-  - {x: 0.535, y: 0.215}
-  - {x: 0.7, y: 0.335}
-  - {x: 0.85, y: 0.6}
+  - {x: 0.15, y: 0.565}
+  - {x: 0.26, y: 0.787}
+  - {x: 0.36, y: 0.476}
+  - {x: 0.575, y: 0.707}
+  - {x: 0.795, y: 0.262}
   referenceResolution: {x: 1920, y: 1080}
   pixelScale: 5
   busScale: 0.8
@@ -61,6 +61,13 @@ MonoBehaviour:
   travelSecondsPerSegment: 3
   travelStartDelay: 0.3
   pinPopDuration: 0.2
+  pinPopStartScale: 0.3
   pinBlinkInterval: 0.35
   arrivalBlinkDuration: 1.6
+  pinHoverScale: 1.25
+  pinHoverDuration: 0.12
+  introZoomScale: 1.55
+  introZoomCenter: {x: 0.31, y: 0.64}
+  zoomOutDuration: 2
+  pathRevealDuration: 0.6
   flipBusByDirection: 0

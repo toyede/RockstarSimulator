@@ -99,7 +99,7 @@ namespace ContextStage.EditorTools
             EditorUtility.SetDirty(rule);
 
             var ui = EnsureComponent<BossBattleUI>(ruleObject);
-            ui.EditorConfigure(ProjectFontTool.TmpFont, config.RivalName, config.PatternsToClear);
+            ui.EditorConfigure(ProjectFontTool.TmpFont, config.RivalName);
             EditorUtility.SetDirty(ui);
 
             var placeholder = EnsureComponent<RivalStagePlaceholder>(ruleObject);

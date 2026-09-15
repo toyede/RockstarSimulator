@@ -103,6 +103,8 @@ namespace ContextStage
         [SerializeField] string outcomeDefeated = "라이벌 격파";
         [SerializeField] string outcomeStreak = "연속 패턴 성공으로 승리";
         [SerializeField] string outcomeTimeOut = "제한 시간 종료 — 라이벌을 꺾지 못했습니다";
+        [SerializeField] string outcomeWon = "제한 시간 종료 — 목표를 넘겨 앙코르 무대 확보";
+        [SerializeField] string outcomeLost = "제한 시간 종료 — 라이벌의 앙코르";
 
         public IReadOnlyList<Skin> Skins => skins;
         public IReadOnlyList<Sprite> BandClearFrames => bandClearFrames;
@@ -151,6 +153,8 @@ namespace ContextStage
         public string OutcomeDefeated => outcomeDefeated;
         public string OutcomeStreak => outcomeStreak;
         public string OutcomeTimeOut => outcomeTimeOut;
+        public string OutcomeWon => outcomeWon;
+        public string OutcomeLost => outcomeLost;
 
         public static ResultNewspaperCatalog LoadDefault() => Resources.Load<ResultNewspaperCatalog>(ResourcesPath);
 
