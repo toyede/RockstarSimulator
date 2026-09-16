@@ -28,7 +28,8 @@ TourRunManager: Map → Dialogue → Performance → Result → Reward → Map �
 - 노드 상태: 클리어 = 핀 + 마이크 + 랭크 글자 / 현재 = 활성 핀 / 다음 = 클릭 가능한 회색 점 / 잠김 = 흐린 점. 보스 노드는 마이크 대신 보스 아이콘
 - 너구리 얼굴은 좌 30° ↔ 우 30° 두 프레임을 `frameInterval`(0.4초)마다 교대, 버스는 살짝 들썩인다
 - 다음 노드 클릭 → `travelStartDelay` 뒤 버스가 빗금을 따라 이동(`travelSecondsPerSegment`, Linear) → 도착 핀과 아이콘이 `pinPopStartScale`(0.3배)에서 1배로 한 번 커지며 등장(`pinPopDuration`) → `arrivalBlinkDuration` 동안 가만히 → `NodeSelected` → `TourRunManager.SelectNode` → 대화창(이전 화면 블러)
-- 핀은 버스가 도착한 뒤에야 나타난다(`NodeSlot.Revealed`). 이미 열려 있던 노드로 다시 돌아온 화면(Reward 뒤 Map 등)에서는 팝 없이 바로 보인다
+- 핀은 버스가 도착한 뒤에야 나타난다(`NodeSlot.Revealed`). 맵이 열렸을 때 버스가 이미 열린 노드 위에 서 있으면(투어 시작 노드 1, 허브 복귀) 클릭을 기다리지 않고 `travelStartDelay` 뒤 바로 팝한다. 이미 등장한 핀을 클릭하면 다시 팝하지 않고 0.35초 머문 뒤 대화로 간다. 팝 도중 호버는 팝이 끝난 뒤 반영된다
+- 팝·호버 트윈은 프레임 시간을 1/30초로 상한을 둔다 (씬 로드·핀 활성화 직후의 긴 프레임 하나가 0.2초 팝을 삼키지 않게). `TourMapView.TraceEnabled = true` 로 이동·도착·팝·호버 타이밍을 콘솔에 남길 수 있다 (E2E 용)
 - 핀은 평소 1배로 정지해 있고, 마우스를 올린 노드만 핀·아이콘이 `pinHoverScale`(1.25배)로 커졌다가 벗어나면 돌아온다 (`pinHoverDuration`). 점멸은 없다. 핀이 숨겨진 다음 노드는 점이 커진다
 - **결승 축소 연출**: 마지막 노드가 아직 잠겨 있는 동안은 `introZoomScale`(1.55배)·`introZoomCenter`(0.31, 0.64) 로 좌상단 3개 섬만 보이고, 마지막 노드로 가는 빗금은 그리지 않는다. 4번 클리어 → Travel 에서 `zoomOutDuration`(2초) 동안 천천히 전체 지도로 축소 → 5번으로 가는 빗금이 `pathRevealDuration` 동안 순서대로 나타남 → 버스 이동 → 핀 팝. 이후 맵은 계속 전체 지도
 - 좌하단 "< 타이틀로". 좌상단 "보유 증강 확인하기" 는 증강 담당 몫이라 비워 두었다

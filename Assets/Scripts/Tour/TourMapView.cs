@@ -97,11 +97,20 @@ namespace ContextStage
         public bool IsZoomedIn => _zoomedIn;
         Coroutine _travelRoutine;
         Coroutine _arrivalRoutine;
+        Coroutine _revealRoutine;   // 맵이 열릴 때 버스가 이미 서 있는 노드의 핀 팝 (입력을 막지 않는다)
+        NodeSlot _revealNode;
         float _frameTimer;
         bool _frameToggle;
 
         public bool IsBusy => _traveling || _arrivalRoutine != null;
         public int BusNodeIndex => _busIndex;
+
+        /// <summary>[디버그] 이동·도착·팝 타이밍을 콘솔에 남긴다 (프레임·실시간).</summary>
+        public static bool TraceEnabled;
+        void Trace(string message)
+        {
+            if (TraceEnabled) Debug.Log($"[TourMap f{Time.frameCount} t{Time.realtimeSinceStartup:0.000}] {message}", this);
+        }
         public TourMapConfig Config => config;
 
         /// <summary>씬에 배치된 오브젝트를 쓰는지 (false 면 코드 생성 폴백).</summary>
@@ -281,6 +290,7 @@ namespace ContextStage
         {
             gameObject.SetActive(true);
             if (!_bound) BindSceneObjects();
+            Trace($"show: phase {(run == null ? "null" : run.phase.ToString())}");
             StopRoutines();
             if (run == null || run.map == null || config == null) return;
 
@@ -294,6 +304,26 @@ namespace ContextStage
 
             _busIndex = ResolveBusIndex(run);
             PlaceBus(NodeLocalPosition(_busIndex));
+
+            // 버스가 이미 열린 노드 위에 서 있는데 핀이 아직 안 나왔으면(투어 시작·허브 복귀) 클릭을 기다리지 않고 바로 팝
+            if (_busIndex >= 0 && _busIndex < nodeSlots.Count)
+            {
+                NodeSlot at = nodeSlots[_busIndex];
+                if (at.Status == RunNodeStatus.Available && !at.Revealed)
+                    _revealRoutine = StartCoroutine(RevealOnShow(at));
+            }
+        }
+
+        IEnumerator RevealOnShow(NodeSlot node)
+        {
+            _revealNode = node;
+            if (config.TravelStartDelay > 0f)
+                yield return new WaitForSecondsRealtime(config.TravelStartDelay);
+            Trace($"show: bus already at node {node.Index} → pop");
+            yield return RevealPin(node);
+            _revealRoutine = null;
+            _revealNode = null;
+            if (node.Hovered) SetHover(node, true); // 팝 중에 올라온 마우스는 끝난 뒤 반영
         }
 
         static bool IsFinalNodeOpen(TourRunState run)
@@ -418,7 +448,9 @@ namespace ContextStage
         {
             if (config == null) return;
             node.Hovered = hovered;
+            Trace($"hover: node {node.Index} {(hovered ? "enter" : "exit")} scale {node.Scale:0.00} arrival={_arrivalRoutine != null}");
             if (_arrivalRoutine != null && node.Status == RunNodeStatus.Current) return; // 도착 등장 연출이 끝난 뒤에 반영된다
+            if (_revealRoutine != null && _revealNode == node) return;                   // 등장 팝 중에는 팝이 이긴다
             if (node.HoverRoutine != null) StopCoroutine(node.HoverRoutine);
             node.HoverRoutine = StartCoroutine(TweenNodeScale(node, hovered ? config.PinHoverScale : 1f, config.PinHoverDuration));
         }
@@ -429,7 +461,7 @@ namespace ContextStage
             float elapsed = 0f;
             while (elapsed < duration)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += AnimDelta;
                 float t = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
                 ApplyNodeScale(node, Mathf.Lerp(from, target, 1f - (1f - t) * (1f - t)));
                 yield return null;
@@ -437,6 +469,9 @@ namespace ContextStage
             ApplyNodeScale(node, target);
             node.HoverRoutine = null;
         }
+
+        /// <summary>짧은 연출용 프레임 시간. 씬 로드·핀 활성화 직후의 긴 프레임 하나가 0.2초짜리 팝을 통째로 삼키지 않게 상한을 둔다.</summary>
+        static float AnimDelta => Mathf.Min(Time.unscaledDeltaTime, 1f / 30f);
 
         /// <summary>핀과 아이콘을 함께 키운다. 핀이 숨겨진 노드(다음 노드)는 점을 키운다.</summary>
         static void ApplyNodeScale(NodeSlot node, float scale)
@@ -543,7 +578,9 @@ namespace ContextStage
                 yield return RevealPathSegment(nodeSlots.Count - 2, config.PathRevealDuration);
             }
 
+            Trace($"travel: bus start → node {targetIndex}");
             yield return MoveBusTo(targetIndex);
+            Trace($"travel: bus arrived at node {targetIndex}");
 
             // 도착: 핀(과 아이콘)이 작은 크기에서 한 번 커지며 바로 등장한다 (클릭을 기다리지 않는다)
             if (targetIndex >= 0 && targetIndex < nodeSlots.Count)
@@ -551,6 +588,7 @@ namespace ContextStage
 
             _traveling = false;
             _travelRoutine = null;
+            Trace("travel: complete → onComplete");
             onComplete?.Invoke();
         }
 
@@ -568,15 +606,18 @@ namespace ContextStage
             float start = Mathf.Clamp01(config.PinPopStartScale);
             float elapsed = 0f;
             ApplyNodeScale(node, start);
+            Trace($"pop: start node {node.Index} scale {start:0.00} pinActive={node.pinRoot != null && node.pinRoot.gameObject.activeInHierarchy}");
+            yield return null; // 핀이 켜진 프레임(오브젝트 활성화·캔버스 재구성)은 작은 크기로 한 번 그리고 시작
             while (elapsed < pop)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += AnimDelta;
                 float t = Mathf.Clamp01(elapsed / pop);
                 float eased = 1f - (1f - t) * (1f - t);
                 ApplyNodeScale(node, Mathf.Lerp(start, 1f, eased));
                 yield return null;
             }
             ApplyNodeScale(node, 1f);
+            Trace($"pop: end node {node.Index}");
         }
 
         // ---------------- 확대 · 축소 ----------------
@@ -714,7 +755,18 @@ namespace ContextStage
         void OnNodeClicked(NodeSlot node)
         {
             if (IsBusy || node.Status != RunNodeStatus.Available) return;
+            StopReveal();
             _travelRoutine = StartCoroutine(TravelAndSelect(node));
+        }
+
+        /// <summary>맵 표시 직후의 등장 팝을 끊는다 (핀은 1배로 두고 Revealed 는 유지).</summary>
+        void StopReveal()
+        {
+            if (_revealRoutine == null) return;
+            StopCoroutine(_revealRoutine);
+            if (_revealNode != null) ApplyNodeScale(_revealNode, 1f);
+            _revealRoutine = null;
+            _revealNode = null;
         }
 
         /// <summary>노드 클릭과 같은 동작을 코드로 일으킨다 (디버그·자동 테스트용).</summary>
@@ -725,6 +777,7 @@ namespace ContextStage
                 NodeSlot node = nodeSlots[i];
                 if (!string.Equals(node.NodeId, nodeId, StringComparison.Ordinal)) continue;
                 if (IsBusy || node.Status != RunNodeStatus.Available) return false;
+                StopReveal();
                 _travelRoutine = StartCoroutine(TravelAndSelect(node));
                 return true;
             }
@@ -754,6 +807,7 @@ namespace ContextStage
         {
             SetDot(node, config.VisitedDotSize, config.VisitedDotColor);
             bool alreadyRevealed = node.Revealed;
+            Trace($"arrival: node {node.Index} alreadyRevealed={alreadyRevealed}");
             SetPin(node, true, config.PinHover);
             node.Status = RunNodeStatus.Current;
 
@@ -783,9 +837,12 @@ namespace ContextStage
 
         void StopRoutines()
         {
+            if (_travelRoutine != null || _arrivalRoutine != null || _zoomRoutine != null)
+                Trace($"stop routines: travel={_travelRoutine != null} arrival={_arrivalRoutine != null} zoom={_zoomRoutine != null}");
             if (_travelRoutine != null) StopCoroutine(_travelRoutine);
             if (_arrivalRoutine != null) StopCoroutine(_arrivalRoutine);
             if (_zoomRoutine != null) StopCoroutine(_zoomRoutine);
+            StopReveal();
             _travelRoutine = null;
             _arrivalRoutine = null;
             _zoomRoutine = null;
