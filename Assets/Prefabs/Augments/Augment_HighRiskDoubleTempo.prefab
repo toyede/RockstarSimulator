@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AugmentDefinition
   augmentId: high_risk_double_tempo
   displayName: "\uBB34\uBAA8\uD55C \uD15C\uD3EC"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: df82e9dfd0a2ab146ad5b8c63229a758, type: 3}
   effectType: 7
   tierOwnershipPolicy: 1
   tiers:
@@ -63,7 +63,7 @@ MonoBehaviour:
     cardUpgrade:
       targetCard: {fileID: 0}
       extraCardsAfterUse: 0
-      audienceEngagementBonus: 0
+      audienceReactionBonus: 0
       artwork: {fileID: 0}
       displayNameOverride: 
       descriptionOverride: 

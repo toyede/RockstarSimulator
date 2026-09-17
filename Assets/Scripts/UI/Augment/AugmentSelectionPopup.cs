@@ -26,6 +26,7 @@ namespace ContextStage
             new AugmentChoiceView[VisibleSlotCount];
 
         [Header("Owned Augments")]
+        [SerializeField] private AugmentBadgeArt badgeArt = new AugmentBadgeArt();
         [SerializeField] Button ownedListButton;
         [SerializeField] GameObject ownedModalBlocker;
         [SerializeField] GameObject ownedModal;
@@ -95,6 +96,13 @@ namespace ContextStage
             ownedNames = names ?? Array.Empty<Text>();
             ownedDescriptions = descriptions ?? Array.Empty<Text>();
             WireEvents();
+        }
+
+        public void ConfigureBadgeArt(AugmentBadgeArt art)
+        {
+            badgeArt = art ?? new AugmentBadgeArt();
+            foreach (AugmentChoiceView choice in choiceViews)
+                if (choice != null) choice.ConfigureBadgeArt(badgeArt);
         }
 
         public void SetOwnedModalHost(Transform host)
@@ -412,8 +420,9 @@ namespace ContextStage
                 AugmentOwnedItemViewModel model = models[i];
                 if (i < ownedIcons.Length && ownedIcons[i] != null)
                 {
-                    ownedIcons[i].sprite = model.icon;
-                    ownedIcons[i].enabled = model.icon != null;
+                    UnityEngine.UI.Image background = ownedIcons[i].transform.parent
+                        .GetComponent<UnityEngine.UI.Image>();
+                    badgeArt.Apply(background, ownedIcons[i], model.tier, model.icon);
                 }
                 if (i < ownedNames.Length) SetText(ownedNames[i], model.displayName ?? "");
                 if (i < ownedDescriptions.Length)

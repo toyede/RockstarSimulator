@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AugmentDefinition
   augmentId: reroll_plus
   displayName: "\uB9AC\uB864 \uAC15\uD654"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 73a1e0ce1d4ae11458e4e7ab4dbc1145, type: 3}
   effectType: 12
   tierOwnershipPolicy: 1
   tiers:
@@ -60,7 +60,7 @@ MonoBehaviour:
     cardUpgrade:
       targetCard: {fileID: 8033426421027984200, guid: 157aaabf7eeda9b44866321b7f3cbbba, type: 3}
       extraCardsAfterUse: 1
-      audienceEngagementBonus: 0
+      audienceReactionBonus: 0
       artwork: {fileID: 0}
       displayNameOverride: "\uB9AC\uB864+"
       descriptionOverride: "\uD604\uC7AC \uC190\uD328\uB97C \uB2E4\uC2DC \uBF51\uACE0

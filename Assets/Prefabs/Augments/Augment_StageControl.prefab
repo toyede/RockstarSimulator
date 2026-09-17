@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AugmentDefinition
   augmentId: stage_control
   displayName: "\uBB34\uB300 \uC7A5\uC545"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: de1d9ba60df1acf43b32ed1f61b8adc2, type: 3}
   effectType: 5
   tierOwnershipPolicy: 0
   tiers:
@@ -56,15 +56,42 @@ MonoBehaviour:
     description: "\uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C \uACE0\uC815 +10 \uD638\uC751\uC744
       \uC801\uC6A9\uD55C\uB2E4."
     grantedCard: {fileID: 236553137938645503, guid: 54d81209681d98e4995013fee31aa20e, type: 3}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 0}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 0
+      artwork: {fileID: 0}
+      displayNameOverride: 
+      descriptionOverride: 
+      presentationPriority: 0
   - tier: 1
     enabled: 1
     value: 0
     description: "\uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C \uACE0\uC815 +20 \uD638\uC751\uC744
       \uC801\uC6A9\uD55C\uB2E4."
     grantedCard: {fileID: 536865612095869564, guid: 446ec7a1137d4c641940498dedba8795, type: 3}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 0}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 0
+      artwork: {fileID: 0}
+      displayNameOverride: 
+      descriptionOverride: 
+      presentationPriority: 0
   - tier: 2
     enabled: 1
     value: 0
     description: "\uBAA8\uB4E0 \uAD00\uAC1D\uC5D0\uAC8C \uACE0\uC815 +30 \uD638\uC751\uC744
       \uC801\uC6A9\uD55C\uB2E4."
     grantedCard: {fileID: 4327399814536729102, guid: 889f5135f4250a84fad9e842a4f14d1e, type: 3}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 0}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 0
+      artwork: {fileID: 0}
+      displayNameOverride: 
+      descriptionOverride: 
+      presentationPriority: 0

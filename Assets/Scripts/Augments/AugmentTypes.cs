@@ -11,21 +11,22 @@ namespace ContextStage
 
     public enum AugmentEffectType
     {
-        FeverDurationSeconds,
-        PerformanceDurationSeconds,
-        InitialAudienceCount,
-        AudienceArrivalIntervalReductionSeconds,
-        ComboBreakPreventionCount,
-        GrantCard,
-        MinimumHandSizeIncrease,
-        MinimumHandSizeDelta,
-        ComboGainPerSuccessfulCard,
-        PerformanceDurationMultiplier,
-        PerformanceScoreMultiplier,
-        PerfectClearScoreMultiplier,
-        CardUpgrade,
-        RevealAudiencePreferences,
-        PeriodicIdleDrawSeconds
+        // 프리팹에 저장되는 번호이므로 기존 값을 변경하지 않는다.
+        FeverDurationSeconds = 0,
+        PerformanceDurationSeconds = 1,
+        InitialAudienceCount = 2,
+        AudienceArrivalIntervalReductionSeconds = 3,
+        ComboBreakPreventionCount = 4,
+        GrantCard = 5,
+        MinimumHandSizeIncrease = 6,
+        MinimumHandSizeDelta = 7,
+        ComboGainPerSuccessfulCard = 8,
+        PerformanceDurationMultiplier = 9,
+        PerformanceScoreMultiplier = 10,
+        PerfectClearScoreMultiplier = 11,
+        CardUpgrade = 12,
+        RevealAudiencePreferences = 13,
+        PeriodicIdleDrawSeconds = 14
     }
 
     public enum AugmentTierOwnershipPolicy

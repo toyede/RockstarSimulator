@@ -35,7 +35,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5303055440971603158, guid: c1e1a34a304711c4e8fe9433b22a996a, type: 3}
       propertyPath: displayName
-      value: "\uBB34\uB300 \uC7A5\uC545 \xB7 \uC2E4\uBC84"
+      value: "\uBB34\uB300 \uC7A5\uC545"
       objectReference: {fileID: 0}
     - target: {fileID: 5303055440971603158, guid: c1e1a34a304711c4e8fe9433b22a996a, type: 3}
       propertyPath: audienceReaction.fixedReactionValue

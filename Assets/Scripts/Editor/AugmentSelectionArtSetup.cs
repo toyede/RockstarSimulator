@@ -12,6 +12,7 @@ namespace ContextStageEditor
     {
         const string SpriteFolder = "Assets/Sprites/0823_art";
         const string TierSpriteFolder = "Assets/Sprites/0903/0903";
+        const string BadgeSpriteFolder = "Assets/Sprites/0910_art/증강아이콘";
         const string PrefabFolder = "Assets/Resources/UI";
         const string PrefabPath = PrefabFolder + "/AugmentSelectionPopup.prefab";
         const string FontPath = "Assets/Font/DungGeunMo.ttf";
@@ -124,6 +125,7 @@ namespace ContextStageEditor
                     icons,
                     names,
                     descriptions);
+                popup.ConfigureBadgeArt(LoadBadgeArt());
 
                 GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
                 if (saved == null)
@@ -170,6 +172,90 @@ namespace ContextStageEditor
             {
                 PrefabUtility.UnloadPrefabContents(root);
             }
+        }
+
+        [MenuItem("Tools/Tour/Update Augment Badges", false, 35)]
+        public static void UpdateBadges()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new InvalidOperationException("증강 배지 연결은 Edit Mode에서 실행하세요.");
+
+            AugmentCatalog catalog = AugmentCatalog.LoadDefault();
+            if (catalog == null || !catalog.TryValidate(out _))
+                throw new InvalidOperationException("증강 카탈로그를 확인하세요.");
+
+            AugmentBadgeArt art = LoadBadgeArt();
+            // 누락된 아이콘이 있으면 저장 전에 중단한다.
+            foreach (AugmentDefinition definition in catalog.Definitions)
+                LoadCategoryIcon(definition.EffectType);
+
+            foreach (AugmentDefinition definition in catalog.Definitions)
+            {
+                AssignCategoryIcon(definition);
+                PrefabUtility.SavePrefabAsset(definition.gameObject, out bool saved);
+                if (!saved) throw new InvalidOperationException(definition.AugmentId);
+            }
+
+            GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                root.GetComponent<AugmentSelectionPopup>().ConfigureBadgeArt(art);
+                if (PrefabUtility.SaveAsPrefabAsset(root, PrefabPath) == null)
+                    throw new InvalidOperationException("증강 배지 프리팹 저장에 실패했습니다.");
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        public static void AssignCategoryIcon(AugmentDefinition definition)
+        {
+            var serialized = new SerializedObject(definition);
+            serialized.FindProperty("icon").objectReferenceValue =
+                LoadCategoryIcon(definition.EffectType);
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static Sprite LoadCategoryIcon(AugmentEffectType effect)
+        {
+            string category;
+            switch (effect)
+            {
+                case AugmentEffectType.GrantCard:
+                    category = "add";
+                    break;
+                case AugmentEffectType.CardUpgrade:
+                    category = "upgrade";
+                    break;
+                case AugmentEffectType.MinimumHandSizeDelta:
+                case AugmentEffectType.PerformanceDurationMultiplier:
+                case AugmentEffectType.PerfectClearScoreMultiplier:
+                    category = "highrisk";
+                    break;
+                case AugmentEffectType.FeverDurationSeconds:
+                case AugmentEffectType.InitialAudienceCount:
+                case AugmentEffectType.AudienceArrivalIntervalReductionSeconds:
+                case AugmentEffectType.ComboBreakPreventionCount:
+                case AugmentEffectType.MinimumHandSizeIncrease:
+                case AugmentEffectType.RevealAudiencePreferences:
+                case AugmentEffectType.PeriodicIdleDrawSeconds:
+                    category = "util";
+                    break;
+                default:
+                    throw new InvalidOperationException($"증강 아이콘 분류가 없습니다: {effect}");
+            }
+            return LoadBadgeSprite("icon_" + category);
+        }
+
+        static AugmentBadgeArt LoadBadgeArt() => new AugmentBadgeArt(
+            LoadBadgeSprite("bronze"), LoadBadgeSprite("silver"), LoadBadgeSprite("gold"));
+
+        static Sprite LoadBadgeSprite(string name)
+        {
+            Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"{BadgeSpriteFolder}/{name}.png");
+            if (sprite == null) throw new MissingReferenceException($"증강 배지 이미지 누락: {name}");
+            return sprite;
         }
 
         static void AssignTierArt(SerializedProperty property, AugmentChoiceView.TierCardArt art)
@@ -260,11 +346,15 @@ namespace ContextStageEditor
                 "공연마다 콤보 끊김을 1회 방지한다.", tier: AugmentTier.Gold));
             model.ownedAugments.Add(new AugmentOwnedItemViewModel
             {
+                tier = AugmentTier.Silver,
+                icon = LoadBadgeSprite("icon_add"),
                 displayName = "앙코르",
                 description = "매 덱 묶음에 공연 시간을 연장하는 앙코르 카드를 추가한다."
             });
             model.ownedAugments.Add(new AugmentOwnedItemViewModel
             {
+                tier = AugmentTier.Gold,
+                icon = LoadBadgeSprite("icon_add"),
                 displayName = "무대 장악",
                 description = "매 덱 묶음에 무대 장악 카드를 추가한다."
             });
@@ -339,6 +429,8 @@ namespace ContextStageEditor
         {
             return new AugmentChoiceViewModel
             {
+                icon = AugmentCatalog.LoadDefault()?.Definitions
+                    .FirstOrDefault(definition => definition.DisplayName == displayName)?.Icon,
                 displayName = displayName,
                 description = description,
                 grantedCard = grantedCard == null

@@ -35,7 +35,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7086148565589252510, guid: 6e7f2d9eeb597c344a4cf68b36eb9714, type: 3}
       propertyPath: displayName
-      value: "\uC559\uCF54\uB974 \xB7 \uC2E4\uBC84"
+      value: "\uC559\uCF54\uB974"
       objectReference: {fileID: 0}
     - target: {fileID: 7086148565589252510, guid: 6e7f2d9eeb597c344a4cf68b36eb9714, type: 3}
       propertyPath: performanceTimeBonusSeconds

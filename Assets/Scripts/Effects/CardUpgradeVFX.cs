@@ -3,13 +3,13 @@ using UnityEngine.UI;
 
 namespace ContextStage
 {
-    /// <summary>증강 등급 색으로 카드 둘레를 시계 방향으로 도는 강화 테두리.</summary>
+    /// <summary>증강으로 획득한 카드의 등급 색으로 그림 둘레를 시계 방향으로 도는 테두리.</summary>
     [DisallowMultipleComponent]
     public sealed class CardUpgradeVFX : MaskableGraphic
     {
-        [SerializeField] Color bronzeColor = new Color32(0xCD, 0x80, 0x42, 0xFF);
-        [SerializeField] Color silverColor = new Color32(0xC4, 0xCF, 0xDE, 0xFF);
-        [SerializeField] Color goldColor = new Color32(0xFF, 0xC5, 0x38, 0xFF);
+        [SerializeField] Color bronzeColor = new Color32(0xCD, 0x7F, 0x32, 0xFF);
+        [SerializeField] Color silverColor = new Color32(0xC0, 0xC0, 0xC0, 0xFF);
+        [SerializeField] Color goldColor = new Color32(0xFF, 0xD7, 0x00, 0xFF);
         [SerializeField, Min(1f)] float borderWidth = 4f;
         [SerializeField, Range(1f, 3f)] float movingWidthMultiplier = 2f;
         [SerializeField, Min(0.1f)] float rotationPeriod = 2.5f;
@@ -22,11 +22,26 @@ namespace ContextStage
         float _useStarted;
         float _clock;
         Color _tierColor;
+        UnityEngine.UI.Image _artwork;
 
-        public void Bind(bool active, int handIndex, AugmentTier tier)
+        public static CardUpgradeVFX Create(UnityEngine.UI.Image artwork)
         {
+            if (artwork == null) return null;
+            var go = new GameObject("GrantedCardVFX", typeof(RectTransform), typeof(CanvasRenderer));
+            go.transform.SetParent(artwork.transform, false);
+            var effect = go.AddComponent<CardUpgradeVFX>();
+            effect.raycastTarget = false;
+            effect.enabled = false;
+            effect.rectTransform.anchorMin = effect.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            effect.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            return effect;
+        }
+
+        public void Bind(UnityEngine.UI.Image artwork, bool active, int handIndex, AugmentTier tier)
+        {
+            _artwork = artwork;
             raycastTarget = false;
-            _active = active;
+            _active = active && artwork != null && artwork.sprite != null;
             _using = false;
             _tierColor = tier == AugmentTier.Gold ? goldColor :
                 tier == AugmentTier.Silver ? silverColor : bronzeColor;
@@ -34,7 +49,8 @@ namespace ContextStage
             _phaseOffset = handIndex * 0.73f;
             _clock = Time.unscaledTime + _phaseOffset;
             color = Color.white;
-            enabled = active;
+            enabled = _active;
+            if (_active) FitToArtwork();
             SetVerticesDirty();
         }
 
@@ -56,6 +72,11 @@ namespace ContextStage
         void Update()
         {
             if (!_active) return;
+            if (_artwork == null || _artwork.sprite == null)
+            {
+                StopEffect();
+                return;
+            }
             if (_using && Time.unscaledTime - _useStarted >= useFlashDuration)
             {
                 StopEffect();
@@ -63,6 +84,29 @@ namespace ContextStage
             }
             _clock = Time.unscaledTime + _phaseOffset;
             SetVerticesDirty();
+        }
+
+        void LateUpdate()
+        {
+            if (_active) FitToArtwork();
+        }
+
+        void FitToArtwork()
+        {
+            Rect display = _artwork.GetPixelAdjustedRect();
+            if (_artwork.preserveAspect)
+            {
+                Vector2 pixels = _artwork.sprite.rect.size;
+                float scale = Mathf.Min(display.width / pixels.x, display.height / pixels.y);
+                Vector2 size = pixels * scale;
+                Vector2 padding = display.size - size;
+                display.position += Vector2.Scale(padding, _artwork.rectTransform.pivot);
+                display.size = size;
+            }
+
+            // preserveAspect로 생기는 여백을 제외하고 실제 그림 외곽에 맞춘다.
+            rectTransform.sizeDelta = display.size;
+            rectTransform.anchoredPosition = display.center - _artwork.rectTransform.rect.center;
         }
 
         protected override void OnDisable()

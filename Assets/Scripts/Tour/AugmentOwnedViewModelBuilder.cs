@@ -31,6 +31,7 @@ namespace ContextStage
                     : upgrade?.TargetCard;
                 models.Add(new AugmentOwnedItemViewModel
                 {
+                    tier = owned.tier,
                     icon = definition.Icon != null
                         ? definition.Icon
                         : upgrade?.Artwork != null

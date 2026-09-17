@@ -32,6 +32,7 @@ namespace ContextStage
         Color _roleBaseColor = Color.white;
         SpecialCardIdleVFX _specialIdleVfx;
         CardUpgradeFrame _upgradeFrame;
+        CardUpgradeVFX _grantedCardVfx;
 
         void Awake()
         {
@@ -90,21 +91,30 @@ namespace ContextStage
             }
             if (titleText != null) titleText.text = presentation.DisplayName;
             if (descriptionText != null) descriptionText.text = presentation.Description;
-            EnsureSpecialIdleVfx();
-            _specialIdleVfx.Bind(background, card.Role == CardRole.Special);
-            bool upgraded = !string.IsNullOrEmpty(upgrade.TargetCardId) &&
-                card.Role == CardRole.Utility &&
+            bool usesUpgradeFrame = card.Role == CardRole.Utility &&
                 (card.UtilityEffect == UtilityCardEffect.Draw || card.UtilityEffect == UtilityCardEffect.Reroll);
+            bool upgraded = usesUpgradeFrame && !string.IsNullOrEmpty(upgrade.TargetCardId);
+            DeckRunState deck = TourRunManager.HasInstance
+                ? TourRunManager.Instance.CurrentRun?.deck : null;
+            AugmentTier grantedTier = default;
+            bool granted = !usesUpgradeFrame && deck != null &&
+                deck.TryGetGrantedCardTier(card.Id, out grantedTier);
+            EnsureSpecialIdleVfx();
+            _specialIdleVfx.Bind(background, card.Role == CardRole.Special && !granted);
             // 비강화 상태에서도 미리 생성해 디졸브의 재사용 대상 목록에 포함시킨다.
             if (_upgradeFrame == null && upgradeFrameSprite != null)
                 _upgradeFrame = CardUpgradeFrame.Create(artwork);
             if (_upgradeFrame != null) _upgradeFrame.Bind(artwork, upgradeFrameSprite, upgraded);
+            if (granted && _grantedCardVfx == null)
+                _grantedCardVfx = CardUpgradeVFX.Create(artwork);
+            if (_grantedCardVfx != null)
+                _grantedCardVfx.Bind(artwork, granted, handIndex, grantedTier);
             ApplyFeverVisual();
         }
 
         public void PlayUpgradeUseFlash()
         {
-            // 회전 VFX와 사용 순간 발광은 정적 프레임을 사용하는 동안 쉬어 둔다.
+            if (_grantedCardVfx != null) _grantedCardVfx.PlayUseFlash();
         }
 
         public void SetFeverVisual(bool active)
@@ -119,6 +129,7 @@ namespace ContextStage
             _boundCard = null;
             if (_specialIdleVfx != null) _specialIdleVfx.SetActive(false);
             if (_upgradeFrame != null) _upgradeFrame.enabled = false;
+            if (_grantedCardVfx != null) _grantedCardVfx.StopEffect();
         }
 
         void ApplyFeverVisual()

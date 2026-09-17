@@ -179,21 +179,21 @@ namespace ContextStageEditor
                     encoreBase.gameObject,
                     "Card_Encore_Bronze",
                     "encore_bronze",
-                    "앙코르 · 브론즈",
+                    "앙코르",
                     5f,
                     new Color32(0xCD, 0x7F, 0x32, 0xFF)),
                 CreateEncoreTierIfMissing(
                     encoreBase.gameObject,
                     "Card_Encore_Silver",
                     "encore_silver",
-                    "앙코르 · 실버",
+                    "앙코르",
                     7f,
                     new Color32(0xC0, 0xC0, 0xC0, 0xFF)),
                 CreateEncoreTierIfMissing(
                     encoreBase.gameObject,
                     "Card_Encore_Gold",
                     "encore_gold",
-                    "앙코르 · 골드",
+                    "앙코르",
                     10f,
                     new Color32(0xFF, 0xD7, 0x00, 0xFF))
             };
@@ -309,21 +309,21 @@ namespace ContextStageEditor
                     stageControlBase.gameObject,
                     "Card_StageControl_Bronze",
                     "stage_control_bronze",
-                    "무대 장악 · 브론즈",
+                    "무대 장악",
                     10,
                     new Color32(0xCD, 0x7F, 0x32, 0xFF)),
                 CreateStageControlTierIfMissing(
                     stageControlBase.gameObject,
                     "Card_StageControl_Silver",
                     "stage_control_silver",
-                    "무대 장악 · 실버",
+                    "무대 장악",
                     20,
                     new Color32(0xC0, 0xC0, 0xC0, 0xFF)),
                 CreateStageControlTierIfMissing(
                     stageControlBase.gameObject,
                     "Card_StageControl_Gold",
                     "stage_control_gold",
-                    "무대 장악 · 골드",
+                    "무대 장악",
                     30,
                     new Color32(0xFF, 0xD7, 0x00, 0xFF))
             };
@@ -659,6 +659,7 @@ namespace ContextStageEditor
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            AugmentSelectionArtSetup.AssignCategoryIcon(definition);
             EditorUtility.SetDirty(definition);
         }
 

@@ -63,6 +63,7 @@ namespace ContextStage
     [Serializable]
     public sealed class AugmentOwnedItemViewModel
     {
+        public AugmentTier tier;
         public Sprite icon;
         public string displayName = "";
         public string description = "";
@@ -71,6 +72,7 @@ namespace ContextStage
         {
             return new AugmentOwnedItemViewModel
             {
+                tier = tier,
                 icon = icon,
                 displayName = displayName,
                 description = description

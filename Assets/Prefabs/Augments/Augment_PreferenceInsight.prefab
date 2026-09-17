@@ -46,8 +46,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AugmentDefinition
   augmentId: preference_insight
   displayName: "\uCDE8\uD5A5 \uAC04\uD30C"
-  icon: {fileID: 0}
-  effectType: 7
+  icon: {fileID: 21300000, guid: 4c2fd258ee359e3459511493361860e9, type: 3}
+  effectType: 13
   tierOwnershipPolicy: 0
   tiers:
   - tier: 0
@@ -55,14 +55,41 @@ MonoBehaviour:
     value: 0
     description: 
     grantedCard: {fileID: 0}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 0}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 0
+      artwork: {fileID: 0}
+      displayNameOverride: 
+      descriptionOverride: 
+      presentationPriority: 0
   - tier: 1
     enabled: 0
     value: 0
     description: 
     grantedCard: {fileID: 0}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 0}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 0
+      artwork: {fileID: 0}
+      displayNameOverride: 
+      descriptionOverride: 
+      presentationPriority: 0
   - tier: 2
     enabled: 1
     value: 1
     description: "\uBAA8\uB4E0 \uC77C\uBC18 \uAD00\uAC1D\uC758 \uCDE8\uD5A5 \uD14C\uB450\uB9AC\uAC00
       \uD56D\uC0C1 \uD45C\uC2DC\uB41C\uB2E4."
     grantedCard: {fileID: 0}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 0}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 0
+      artwork: {fileID: 0}
+      displayNameOverride: 
+      descriptionOverride: 
+      presentationPriority: 0

@@ -46,8 +46,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AugmentDefinition
   augmentId: breathing_room
   displayName: "\uC228 \uACE0\uB974\uAE30"
-  icon: {fileID: 0}
-  effectType: 8
+  icon: {fileID: 21300000, guid: 4c2fd258ee359e3459511493361860e9, type: 3}
+  effectType: 14
   tierOwnershipPolicy: 1
   tiers:
   - tier: 0
@@ -58,6 +58,15 @@ MonoBehaviour:
       \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC73C\uBA74 \uAC19\uC740 \uC8FC\uAE30\uB85C
       \uBC18\uBCF5\uD55C\uB2E4."
     grantedCard: {fileID: 0}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 0}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 0
+      artwork: {fileID: 0}
+      displayNameOverride: 
+      descriptionOverride: 
+      presentationPriority: 0
   - tier: 1
     enabled: 1
     value: 4
@@ -66,6 +75,15 @@ MonoBehaviour:
       \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC73C\uBA74 \uAC19\uC740 \uC8FC\uAE30\uB85C
       \uBC18\uBCF5\uD55C\uB2E4."
     grantedCard: {fileID: 0}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 0}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 0
+      artwork: {fileID: 0}
+      displayNameOverride: 
+      descriptionOverride: 
+      presentationPriority: 0
   - tier: 2
     enabled: 1
     value: 3
@@ -74,3 +92,12 @@ MonoBehaviour:
       \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uC73C\uBA74 \uAC19\uC740 \uC8FC\uAE30\uB85C
       \uBC18\uBCF5\uD55C\uB2E4."
     grantedCard: {fileID: 0}
+    additionalEffects: []
+    cardUpgrade:
+      targetCard: {fileID: 0}
+      extraCardsAfterUse: 0
+      audienceReactionBonus: 0
+      artwork: {fileID: 0}
+      displayNameOverride: 
+      descriptionOverride: 
+      presentationPriority: 0

@@ -50,6 +50,7 @@ namespace ContextStage
         [SerializeField] Sprite rerollFrame3;
 
         [Header("Tier Presentation")]
+        [SerializeField] private AugmentBadgeArt badgeArt = new AugmentBadgeArt();
         [SerializeField] TierCardArt silverCardArt = new TierCardArt();
         [SerializeField] TierCardArt goldCardArt = new TierCardArt();
         [SerializeField, Min(0.1f)] float rerollDurationMultiplier = 1.05f;
@@ -183,6 +184,11 @@ namespace ContextStage
             ResetPresentation();
         }
 
+        public void ConfigureBadgeArt(AugmentBadgeArt art)
+        {
+            badgeArt = art ?? new AugmentBadgeArt();
+        }
+
         TierCardArt ResolveTierArt(AugmentTier tier)
         {
             TierCardArt art = tier == AugmentTier.Silver ? silverCardArt
@@ -239,12 +245,7 @@ namespace ContextStage
             SetText(selectButtonText, "SELECT");
             SetText(rerollButtonText, $"REROLL  ({_rerollsRemaining})");
 
-            if (iconImage != null)
-            {
-                iconImage.sprite = model.icon;
-                iconImage.color = Color.white;
-                iconImage.enabled = model.icon != null;
-            }
+            badgeArt.Apply(iconBackground, iconImage, model.tier, model.icon);
 
             if (iconPlaceholderText != null)
             {
@@ -254,12 +255,8 @@ namespace ContextStage
 
             if (grantedCardIconBackground != null)
                 grantedCardIconBackground.color = Color.white;
-            if (grantedCardIconImage != null)
-            {
-                grantedCardIconImage.sprite = model.icon;
-                grantedCardIconImage.color = Color.white;
-                grantedCardIconImage.enabled = _isGrantCard && model.icon != null;
-            }
+            badgeArt.Apply(grantedCardIconBackground, grantedCardIconImage,
+                model.tier, _isGrantCard ? model.icon : null);
             if (grantedCardArtworkImage != null)
             {
                 grantedCardArtworkImage.sprite = _isGrantCard

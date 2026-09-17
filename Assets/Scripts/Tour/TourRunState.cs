@@ -34,6 +34,24 @@ namespace ContextStage
     {
         public List<RunCardState> addedCards = new List<RunCardState>();
 
+        public bool TryGetGrantedCardTier(string cardId, out AugmentTier tier)
+        {
+            tier = default;
+            if (string.IsNullOrWhiteSpace(cardId) || addedCards == null) return false;
+
+            for (int i = 0; i < addedCards.Count; i++)
+            {
+                RunCardState card = addedCards[i];
+                if (card == null || string.IsNullOrWhiteSpace(card.sourceAugmentId) ||
+                    !string.Equals(card.cardId, cardId, StringComparison.Ordinal)) continue;
+
+                tier = card.sourceTier;
+                return true;
+            }
+
+            return false;
+        }
+
         public bool HasCardFromAugment(string augmentId, AugmentTier tier)
         {
             if (string.IsNullOrWhiteSpace(augmentId) || addedCards == null)
