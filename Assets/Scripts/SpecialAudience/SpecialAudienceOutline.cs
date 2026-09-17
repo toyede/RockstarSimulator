@@ -21,6 +21,11 @@ namespace ContextStage
         static readonly int OutlineWidthId = Shader.PropertyToID("_OutlineWidth");
         static readonly int OutlineAlphaCutoffId = Shader.PropertyToID("_OutlineAlphaCutoff");
         static readonly int SpriteUvRectId = Shader.PropertyToID("_SpriteUVRect");
+        static readonly int BodyMaskId = Shader.PropertyToID("_BodyMask");
+        static readonly int BodyMaskEnabledId = Shader.PropertyToID("_UseBodyMask");
+        static readonly int BodyMaskTransformId = Shader.PropertyToID("_BodyMaskUVTransform");
+        static readonly int BodyMaskRectId = Shader.PropertyToID("_BodyMaskUVRect");
+        static readonly int BodyMaskSizeId = Shader.PropertyToID("_BodyMaskSize");
 
         const string ShaderName = "ContextStage/Special Audience Outline";
 
@@ -143,14 +148,10 @@ namespace ContextStage
 
             Texture texture = sprite.texture;
             Rect textureRect = sprite.textureRect;
-            if (_mode == AudienceOutlineMode.Occluded)
+            if (!_regionsLoaded)
             {
-                if (!_regionsLoaded)
-                {
-                    _regions = Resources.Load<AudienceOutlineRegions>(AudienceOutlineRegions.ResourcesPath);
-                    _regionsLoaded = true;
-                }
-                if (_regions != null) textureRect = _regions.GetTextureRect(sprite);
+                _regions = Resources.Load<AudienceOutlineRegions>(AudienceOutlineRegions.ResourcesPath);
+                _regionsLoaded = true;
             }
             Vector4 uvRect = new Vector4(
                 textureRect.xMin / texture.width,
@@ -167,6 +168,23 @@ namespace ContextStage
             _properties.SetFloat(OutlineAlphaCutoffId,
                 _mode == AudienceOutlineMode.Occluded ? 0.5f : 0f);
             _properties.SetVector(SpriteUvRectId, uvRect);
+            _properties.SetFloat(BodyMaskEnabledId, 0f);
+            if (_regions != null && _regions.TryGetMask(sprite, out var entry))
+            {
+                // Tight Mesh의 잘린 텍스처 위치를 원래 슬라이스 좌표로 복원한다.
+                Vector2 origin = textureRect.min - sprite.textureRectOffset + entry.sourcePixelRect.min;
+                Vector2 scale = new Vector2(
+                    entry.maskUvRect.width * texture.width / entry.sourcePixelRect.width,
+                    entry.maskUvRect.height * texture.height / entry.sourcePixelRect.height);
+                _properties.SetTexture(BodyMaskId, entry.mask);
+                _properties.SetVector(BodyMaskSizeId, new Vector4(entry.mask.width * 8, entry.mask.height, 0, 0));
+                _properties.SetVector(BodyMaskTransformId, new Vector4(scale.x, scale.y,
+                    entry.maskUvRect.x - origin.x / texture.width * scale.x,
+                    entry.maskUvRect.y - origin.y / texture.height * scale.y));
+                _properties.SetVector(BodyMaskRectId, new Vector4(entry.maskUvRect.xMin,
+                    entry.maskUvRect.yMin, entry.maskUvRect.xMax, entry.maskUvRect.yMax));
+                _properties.SetFloat(BodyMaskEnabledId, 1f);
+            }
             _outlineRenderer.SetPropertyBlock(_properties);
         }
 

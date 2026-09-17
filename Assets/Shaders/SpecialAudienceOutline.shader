@@ -7,6 +7,11 @@ Shader "ContextStage/Special Audience Outline"
         _OutlineWidth ("Outline Width (Pixels)", Range(0, 8)) = 2
         _OutlineAlphaCutoff ("Outline Alpha Cutoff", Range(0, 1)) = 0
         _SpriteUVRect ("Sprite UV Rect", Vector) = (0, 0, 1, 1)
+        [PerRendererData] _BodyMask ("Body Selection Mask", 2D) = "white" {}
+        _UseBodyMask ("Use Body Mask", Float) = 0
+        _BodyMaskUVTransform ("Body Mask UV Transform", Vector) = (1, 1, 0, 0)
+        _BodyMaskUVRect ("Body Mask UV Rect", Vector) = (0, 0, 1, 1)
+        _BodyMaskSize ("Unpacked Body Mask Size", Vector) = (1, 1, 0, 0)
     }
 
     SubShader
@@ -30,6 +35,7 @@ Shader "ContextStage/Special Audience Outline"
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
+            #pragma target 3.5
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Core2D.hlsl"
 
@@ -47,6 +53,7 @@ Shader "ContextStage/Special Audience Outline"
 
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
+            TEXTURE2D(_BodyMask);
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _OutlineColor;
@@ -54,6 +61,10 @@ Shader "ContextStage/Special Audience Outline"
                 float _OutlineAlphaCutoff;
                 float4 _SpriteUVRect;
                 float4 _MainTex_TexelSize;
+                float _UseBodyMask;
+                float4 _BodyMaskUVTransform;
+                float4 _BodyMaskUVRect;
+                float4 _BodyMaskSize;
             CBUFFER_END
 
             Varyings Vert(Attributes input)
@@ -72,6 +83,17 @@ Shader "ContextStage/Special Audience Outline"
                 float2 insideMax = step(uv, _SpriteUVRect.zw);
                 float inside = insideMin.x * insideMin.y * insideMax.x * insideMax.y;
                 float alpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv).a;
+                if (_UseBodyMask > 0.5)
+                {
+                    float2 maskUV = uv * _BodyMaskUVTransform.xy + _BodyMaskUVTransform.zw;
+                    float2 maskMin = step(_BodyMaskUVRect.xy, maskUV);
+                    float2 maskMax = step(maskUV, _BodyMaskUVRect.zw);
+                    // R8 한 픽셀에 가로 8개의 선택 비트를 저장한다. 보간/손실 압축은 사용하지 않는다.
+                    uint2 at = (uint2)clamp(floor(maskUV * _BodyMaskSize.xy), 0, _BodyMaskSize.xy - 1);
+                    uint bits = (uint)round(LOAD_TEXTURE2D(_BodyMask, int2(at.x >> 3, at.y)).r * 255.0);
+                    float selected = (bits >> (at.x & 7)) & 1;
+                    alpha *= selected * maskMin.x * maskMin.y * maskMax.x * maskMax.y;
+                }
                 // 상시 표시에서는 반투명 애니메이션 잔상을 별도 테두리로 만들지 않는다.
                 if (_OutlineAlphaCutoff > 0)
                     alpha = step(_OutlineAlphaCutoff, alpha);
