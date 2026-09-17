@@ -1,0 +1,225 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 659692efe064de0479b85b12d02fa083, type: 3}
+  m_Name: AudienceOutlineRegions
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.AudienceOutlineRegions
+  entries:
+  - sprite: {fileID: -4713275540099755886, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 44
+    maximumPixelY: 269
+  - sprite: {fileID: 546576799176942714, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 43.5
+    maximumPixelY: 360
+  - sprite: {fileID: -1639274324840352357, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 44
+    maximumPixelY: 360
+  - sprite: {fileID: -1560438332647043930, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 45.5
+    maximumPixelY: 360
+  - sprite: {fileID: 8563879031468113303, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 45
+    maximumPixelY: 360
+  - sprite: {fileID: 673194238935625085, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 44
+    maximumPixelY: 360
+  - sprite: {fileID: 2350978571650226965, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 145
+    maximumPixelY: 360
+  - sprite: {fileID: 2752394559665616592, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 143.5
+    maximumPixelY: 360
+  - sprite: {fileID: 1830206305926935000, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 146.5
+    maximumPixelY: 360
+  - sprite: {fileID: 3302563792443649990, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 143.5
+    maximumPixelY: 360
+  - sprite: {fileID: -4138831168812847656, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 145.5
+    maximumPixelY: 360
+  - sprite: {fileID: 6780576065520979774, guid: 4964cced1666b34419bf5df8c3be3327, type: 3}
+    minimumPixelY: 145
+    maximumPixelY: 360
+  - sprite: {fileID: -2559149062271156692, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+    minimumPixelY: 0
+    maximumPixelY: 232.5
+  - sprite: {fileID: 6991749734028575685, guid: 635978d2d0b27c9408ca2366d5b57451, type: 3}
+    minimumPixelY: 0
+    maximumPixelY: 142.5
+  - sprite: {fileID: 2585241307572618425, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+    minimumPixelY: 0
+    maximumPixelY: 235
+  - sprite: {fileID: -1544953762621544245, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+    minimumPixelY: 13.5
+    maximumPixelY: 360
+  - sprite: {fileID: 7125033286477112498, guid: 69c44f06f28c3604bb8fe85e68558962, type: 3}
+    minimumPixelY: 0
+    maximumPixelY: 258.5
+  - sprite: {fileID: 6788707596200242121, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 46
+    maximumPixelY: 270.5
+  - sprite: {fileID: -4243185524474100834, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 45
+    maximumPixelY: 360
+  - sprite: {fileID: 611881554653099459, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 45.5
+    maximumPixelY: 360
+  - sprite: {fileID: 6302676560335007016, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 47
+    maximumPixelY: 360
+  - sprite: {fileID: 6816297101545727344, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 47
+    maximumPixelY: 360
+  - sprite: {fileID: -5011562826930955722, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 46
+    maximumPixelY: 360
+  - sprite: {fileID: 5712335728499741797, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 146.5
+    maximumPixelY: 360
+  - sprite: {fileID: 2496094500064733172, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 145
+    maximumPixelY: 360
+  - sprite: {fileID: -1601338608872977268, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 148
+    maximumPixelY: 360
+  - sprite: {fileID: -5063915761154080482, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 145
+    maximumPixelY: 360
+  - sprite: {fileID: -1794767345737476641, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 147
+    maximumPixelY: 360
+  - sprite: {fileID: 6884914987781290248, guid: 71acd83c8a4d83a47afc44c6884828e8, type: 3}
+    minimumPixelY: 146.5
+    maximumPixelY: 360
+  - sprite: {fileID: -5894982981222568275, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 34
+    maximumPixelY: 260.5
+  - sprite: {fileID: -496774123043242152, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 34
+    maximumPixelY: 360
+  - sprite: {fileID: -636676571430001461, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 34.5
+    maximumPixelY: 360
+  - sprite: {fileID: -2925042506964647936, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 36
+    maximumPixelY: 360
+  - sprite: {fileID: -4506390818044516820, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 35
+    maximumPixelY: 360
+  - sprite: {fileID: -5844683886017729731, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 33.5
+    maximumPixelY: 360
+  - sprite: {fileID: 8144799804104416683, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 135
+    maximumPixelY: 360
+  - sprite: {fileID: 1046992293834931304, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 135
+    maximumPixelY: 360
+  - sprite: {fileID: 8357548773157061846, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 137
+    maximumPixelY: 360
+  - sprite: {fileID: 4078870155194291117, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 134.5
+    maximumPixelY: 360
+  - sprite: {fileID: 2764264788476422400, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 137
+    maximumPixelY: 360
+  - sprite: {fileID: 8577410891951426802, guid: 817115ce654e98b4381b797b6a756dcc, type: 3}
+    minimumPixelY: 135.5
+    maximumPixelY: 360
+  - sprite: {fileID: 6384267189345525655, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+    minimumPixelY: 0
+    maximumPixelY: 235
+  - sprite: {fileID: -1903234446246202100, guid: aef64512b0b157e4fa92cea0cd005daf, type: 3}
+    minimumPixelY: 13.5
+    maximumPixelY: 360
+  - sprite: {fileID: -592648010345447631, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 43
+    maximumPixelY: 268
+  - sprite: {fileID: -3239843061333340598, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 42.5
+    maximumPixelY: 360
+  - sprite: {fileID: -8863787830029622894, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 42.5
+    maximumPixelY: 360
+  - sprite: {fileID: -2134544536803193052, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 44.5
+    maximumPixelY: 360
+  - sprite: {fileID: 2959051512313556743, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 44.5
+    maximumPixelY: 360
+  - sprite: {fileID: 6451700747763081481, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 44
+    maximumPixelY: 360
+  - sprite: {fileID: 8575351631592370505, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 143.5
+    maximumPixelY: 360
+  - sprite: {fileID: 1555751723001296071, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 141
+    maximumPixelY: 360
+  - sprite: {fileID: 2577456842011929071, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 145
+    maximumPixelY: 360
+  - sprite: {fileID: 3228145811633413451, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 142
+    maximumPixelY: 360
+  - sprite: {fileID: -7845271805191976972, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 143
+    maximumPixelY: 360
+  - sprite: {fileID: 2312009316051844041, guid: b4e204998c42029498e37a48a6c0d03d, type: 3}
+    minimumPixelY: 143
+    maximumPixelY: 360
+  - sprite: {fileID: -4225744379324525482, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+    minimumPixelY: 0
+    maximumPixelY: 235
+  - sprite: {fileID: 6210459059534120924, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+    minimumPixelY: 13.5
+    maximumPixelY: 360
+  - sprite: {fileID: 3416197369043162864, guid: b93d42358dc423847a26d5892b0dc7f4, type: 3}
+    minimumPixelY: 0
+    maximumPixelY: 125.5
+  - sprite: {fileID: -7262188466506062600, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 43.5
+    maximumPixelY: 269
+  - sprite: {fileID: 8033394806404095055, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 43
+    maximumPixelY: 360
+  - sprite: {fileID: 4942026421116193988, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 44.5
+    maximumPixelY: 218.5
+  - sprite: {fileID: -3689510812035962366, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 45.5
+    maximumPixelY: 360
+  - sprite: {fileID: -5434033072002480199, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 45
+    maximumPixelY: 360
+  - sprite: {fileID: -6663518011824953718, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 44
+    maximumPixelY: 360
+  - sprite: {fileID: -7181015315064668439, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 144.5
+    maximumPixelY: 360
+  - sprite: {fileID: -5560960449289983077, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 143
+    maximumPixelY: 360
+  - sprite: {fileID: 8722939414960219202, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 146
+    maximumPixelY: 360
+  - sprite: {fileID: 3044780415011310416, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 143
+    maximumPixelY: 360
+  - sprite: {fileID: 3136788115258949689, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 145
+    maximumPixelY: 360
+  - sprite: {fileID: -3798071601511432312, guid: db40c86a7a18e8f47a884ef6159516d5, type: 3}
+    minimumPixelY: 144.5
+    maximumPixelY: 360

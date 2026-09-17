@@ -5,6 +5,7 @@ Shader "ContextStage/Special Audience Outline"
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
         _OutlineColor ("Outline Color", Color) = (1, 1, 1, 1)
         _OutlineWidth ("Outline Width (Pixels)", Range(0, 8)) = 2
+        _OutlineAlphaCutoff ("Outline Alpha Cutoff", Range(0, 1)) = 0
         _SpriteUVRect ("Sprite UV Rect", Vector) = (0, 0, 1, 1)
     }
 
@@ -30,7 +31,7 @@ Shader "ContextStage/Special Audience Outline"
             #pragma vertex Vert
             #pragma fragment Frag
 
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Core2D.hlsl"
 
             struct Attributes
             {
@@ -50,6 +51,7 @@ Shader "ContextStage/Special Audience Outline"
             CBUFFER_START(UnityPerMaterial)
                 float4 _OutlineColor;
                 float _OutlineWidth;
+                float _OutlineAlphaCutoff;
                 float4 _SpriteUVRect;
                 float4 _MainTex_TexelSize;
             CBUFFER_END
@@ -57,6 +59,8 @@ Shader "ContextStage/Special Audience Outline"
             Varyings Vert(Attributes input)
             {
                 Varyings output;
+                SetUpSpriteInstanceProperties();
+                input.positionOS.xyz = UnityFlipSprite(input.positionOS.xyz, unity_SpriteProps.xy);
                 output.positionHCS = TransformObjectToHClip(input.positionOS.xyz);
                 output.uv = input.uv;
                 return output;
@@ -67,7 +71,11 @@ Shader "ContextStage/Special Audience Outline"
                 float2 insideMin = step(_SpriteUVRect.xy, uv);
                 float2 insideMax = step(uv, _SpriteUVRect.zw);
                 float inside = insideMin.x * insideMin.y * insideMax.x * insideMax.y;
-                return SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv).a * inside;
+                float alpha = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv).a;
+                // 상시 표시에서는 반투명 애니메이션 잔상을 별도 테두리로 만들지 않는다.
+                if (_OutlineAlphaCutoff > 0)
+                    alpha = step(_OutlineAlphaCutoff, alpha);
+                return alpha * inside;
             }
 
             half4 Frag(Varyings input) : SV_Target

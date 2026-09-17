@@ -11,7 +11,7 @@ namespace ContextStage
     /// </summary>
     public sealed class CardSystem : MonoSingleton<CardSystem>
     {
-        const int MaximumSupportedHandSize = 4;
+        const int MaximumBaseHandSize = 4;
 
         [SerializeField] CardDeckConfig config;
         [SerializeField] AudienceRosterSystem audienceRoster;
@@ -34,6 +34,8 @@ namespace ContextStage
         public IReadOnlyList<CardDefinition> Hand => _hand;
         public int HandCount => _hand.Count;
         public int MinimumHandSize => _minimumHandSize;
+        public int MaximumHandSize => config != null ? config.MaximumHandSize : 0;
+        public bool IsHandFull => HandCount >= MaximumHandSize;
         public int BonusCardCount => Mathf.Max(0, HandCount - MinimumHandSize);
         public int PreparedDeckCount => _deck != null ? _deck.PreparedBatchCount : 0;
         public int CurrentDeckRemaining => _deck != null ? _deck.CurrentRemaining : 0;
@@ -118,14 +120,16 @@ namespace ContextStage
             return Mathf.Clamp(
                 config.MinimumHandSize + AugmentRuntime.Current.MinimumHandSizeDelta,
                 1,
-                MaximumSupportedHandSize);
+                MaximumBaseHandSize);
         }
 
         /// <summary>손패를 지정한 카드로 강제 교체한다. 덱은 건드리지 않는다. (튜토리얼 등 고정 손패용)</summary>
         public void SetHand(IReadOnlyList<CardDefinition> cards)
         {
             _hand.Clear();
-            if (cards != null) _hand.AddRange(cards);
+            if (cards != null)
+                for (int i = 0; i < cards.Count && !IsHandFull; i++)
+                    _hand.Add(cards[i]);
             RaiseHandChanged();
         }
 
@@ -483,6 +487,8 @@ namespace ContextStage
 
         bool DrawOne()
         {
+            // 상한에서 덱을 소모하거나 CardDrawn 이벤트를 발행하지 않는다.
+            if (IsHandFull) return false;
             if (_deck == null)
             {
                 if (!_warnedInvalidPool)

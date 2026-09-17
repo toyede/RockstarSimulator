@@ -183,7 +183,8 @@ namespace ContextStage
             if (_actors.TryGetValue(e.Current.Id, out AudienceMemberActor actor))
             {
                 actor.ApplySnapshot(e.Current);
-                ApplyPersistentPreferenceReveal(actor);
+                // 상태 갱신이 호버로 켠 테두리까지 끄지 않도록 상시 표시만 갱신한다.
+                if (_revealAllPreferences) ApplyPersistentPreferenceReveal(actor);
             }
         }
 
@@ -363,7 +364,8 @@ namespace ContextStage
             actor.SetPreferenceReveal(
                 true,
                 _preferenceRevealConfig.GetColor(actor.Snapshot.Preference),
-                _preferenceRevealConfig.OutlineThickness);
+                _preferenceRevealConfig.OutlineThickness,
+                AudienceOutlineMode.Occluded);
         }
 
         void Relayout()

@@ -25,11 +25,13 @@ namespace ContextStage
         [SerializeField, Min(1)] int generatedDeckSize = 10;
         [SerializeField, Range(2, 4)] int preparedDeckCount = 2;
         [SerializeField, Range(1, 4)] int minimumHandSize = 3;
+        [SerializeField, Min(4)] private int maximumHandSize = 10;
 
         public IReadOnlyList<CardPoolEntry> CardPool => cardPool;
         public int GeneratedDeckSize => Mathf.Max(1, generatedDeckSize);
         public int PreparedDeckCount => Mathf.Clamp(preparedDeckCount, 2, 4);
         public int MinimumHandSize => Mathf.Clamp(minimumHandSize, 1, 4);
+        public int MaximumHandSize => Mathf.Max(4, maximumHandSize);
 
         public bool HasUsableCards
         {

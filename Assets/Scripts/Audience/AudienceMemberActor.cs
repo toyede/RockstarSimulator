@@ -388,7 +388,8 @@ namespace ContextStage
         public void SetPreferenceReveal(
             bool visible,
             Color color,
-            float outlineThickness)
+            float outlineThickness,
+            AudienceOutlineMode mode = AudienceOutlineMode.HoverOverlay)
         {
             if (preferenceOutline == null) return;
 
@@ -397,7 +398,8 @@ namespace ContextStage
                 preferenceOutline.Configure(
                     characterRenderer,
                     color,
-                    outlineThickness);
+                    outlineThickness,
+                    mode);
             }
 
             preferenceOutline.SetVisible(visible);

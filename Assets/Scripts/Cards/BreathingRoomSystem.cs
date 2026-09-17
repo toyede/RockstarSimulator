@@ -36,7 +36,8 @@ namespace ContextStage
                 !GameManager.Instance.IsPlaying)
                 return;
 
-            if (TutorialFlow.IsRunning)
+            if (TutorialFlow.IsRunning || !CardSystem.HasInstance ||
+                CardSystem.Instance.IsHandFull)
             {
                 _elapsedSeconds = 0f;
                 return;
@@ -48,6 +49,11 @@ namespace ContextStage
                 _elapsedSeconds -= _intervalSeconds;
                 if (CardSystem.HasInstance)
                     CardSystem.Instance.AddCards(1);
+                if (CardSystem.Instance.IsHandFull)
+                {
+                    _elapsedSeconds = 0f;
+                    break;
+                }
             }
         }
 
