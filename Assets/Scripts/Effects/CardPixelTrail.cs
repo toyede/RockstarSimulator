@@ -11,11 +11,11 @@ namespace ContextStage
     [DisallowMultipleComponent]
     public sealed class CardPixelTrail : MonoBehaviour
     {
-        [SerializeField, Min(1f)] float sampleDistance = 9f;
-        [SerializeField, Min(0.01f)] float lifetime = 0.28f;
-        [SerializeField, Min(1f)] float headSize = 10f;
-        [SerializeField, Min(1f)] float tailSize = 3f;
-        [SerializeField, Range(4, 64)] int maximumPixels = 28;
+        [SerializeField, Min(1f)] float sampleDistance = 7f;
+        [SerializeField, Min(0.01f)] float lifetime = 0.6f;
+        [SerializeField, Min(1f)] float headSize = 16f;
+        [SerializeField, Min(1f)] float tailSize = 5f;
+        [SerializeField, Range(4, 96)] int maximumPixels = 56;
 
         PixelTrailGraphic _graphic;
         RectTransform _dragLayer;

@@ -146,6 +146,12 @@ namespace ContextStage
         RectTransform _arrowRect;
         Vector2 _arrowBasePosition;
         Sprite _generatedArrow;
+
+        [Header("화살표 위치")]
+        [SerializeField, Tooltip("줄이 끝날 때마다 화살표를 마지막 글자 옆으로 옮긴다. 끄면 씬에 둔 위치 고정")]
+        bool arrowFollowsText = true;
+        [SerializeField, Tooltip("마지막 글자 기준선 오른쪽 아래에서의 오프셋(px)")]
+        Vector2 arrowTextGap = new Vector2(22f, 4f);
         bool _completeInvoked;
         bool _listenersBound;
 
@@ -359,8 +365,7 @@ namespace ContextStage
             if (bodyText == null || !typewriter || !isActiveAndEnabled)
             {
                 if (bodyText != null) bodyText.text = text;
-                _state = State.LineComplete;
-                if (arrowImage != null) arrowImage.enabled = true;
+                OnLineComplete();
                 return;
             }
 
@@ -388,8 +393,7 @@ namespace ContextStage
 
             bodyText.text = text;
             _typingRoutine = null;
-            _state = State.LineComplete;
-            if (arrowImage != null) arrowImage.enabled = true;
+            OnLineComplete();
         }
 
         void CompleteLineInstantly()
@@ -397,8 +401,33 @@ namespace ContextStage
             StopTyping();
             if (bodyText != null && _sequence != null && _lineIndex >= 0 && _lineIndex < LineCount)
                 bodyText.text = _sequence.Lines[_lineIndex].text ?? string.Empty;
+            OnLineComplete();
+        }
+
+        /// <summary>한 줄이 다 찍혔다. 화살표를 켜고, 마지막 글자 바로 오른쪽 아래에 붙인다 (본문 길이와 상관없이 잘 보이도록).</summary>
+        void OnLineComplete()
+        {
             _state = State.LineComplete;
-            if (arrowImage != null) arrowImage.enabled = true;
+            if (arrowImage == null) return;
+            arrowImage.enabled = true;
+            if (!arrowFollowsText || bodyText == null) return;
+            if (_arrowRect == null) CacheArrow();
+            if (_arrowRect == null) return;
+
+            bodyText.ForceMeshUpdate();
+            TMP_TextInfo info = bodyText.textInfo;
+            int last = -1;
+            for (int i = info.characterCount - 1; i >= 0; i--)
+            {
+                if (info.characterInfo[i].isVisible) { last = i; break; }
+            }
+            if (last < 0) return;
+
+            TMP_CharacterInfo ch = info.characterInfo[last];
+            Vector3 world = bodyText.transform.TransformPoint(new Vector3(ch.bottomRight.x, ch.baseLine, 0f));
+            _arrowRect.position = world;
+            _arrowRect.anchoredPosition += arrowTextGap;
+            _arrowBasePosition = _arrowRect.anchoredPosition;
         }
 
         void EndLines()

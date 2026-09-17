@@ -35,6 +35,8 @@ Tools/Dialogue/Create Dialogue Panel Prefab          Resources/Dialogue/Dialogue
 `Resources/Dialogue/DialoguePanel.prefab` 의 배치와 `DialogueStyle.asset` 의 색·폰트·화살표 스프라이트만 바꾸면 된다.
 코드는 오브젝트 참조(`DialoguePanel` 인스펙터)만 알고 있다. 초상화는 `DialogueLine.portrait` 에 스프라이트를 넣으면 좌/우에 뜬다.
 
-- 화살표: `DialogueStyle.arrowSprite` 가 비어 있으면 12×8 픽셀 삼각형을 런타임에 만든다. `arrowStepMotion` 을 켜면 계단식으로 튄다.
+- 초상화: `Rewrite Default Sequences` 가 화자 이름으로 `0910_art/스탠딩일러/{raccoon|hedgehog|lux_fauna}_standing` 을 자동 연결한다. 너구리는 왼쪽, 나머지는 오른쪽. 스프라이트가 없는 화자는 초상화 없이 진행
+- 캐릭터 말투: 너구리 = 주인공, 어리숙하고 소심하지만 점점 성장 (봇치) / 고슴도치 = 드러머, 열정적인 옛 친구 (류지) / LUX//FAUNA = 생성형 AI 로봇 같은 말투의 완벽주의자 라이벌
+- 화살표: `DialogueStyle.arrowSprite` 가 비어 있으면 12×8 픽셀 삼각형을 런타임에 만든다. `arrowStepMotion` 을 켜면 계단식으로 튄다. `arrowFollowsText` 가 켜져 있으면 줄이 다 찍힌 뒤 마지막 글자 오른쪽(`arrowTextGap`)에 붙고, 꺼지면 고정 위치
 - 타이핑: `typingInterval`(자모당 간격), `punctuationDelay`(문장 부호 뒤 정지), `typingSoundId`(SoundLibrary ID).
 - DungGeunMo 에는 `▶` 글리프가 없다. 특수 기호는 ASCII(`>>`)를 쓰거나 폰트 폴백을 추가할 것.

@@ -6,19 +6,17 @@ using UnityEngine;
 namespace ContextStage
 {
     /// <summary>
-    /// 보스전 (boss_battle). 월드 스타디움에서 LUX//FAUNA 와 앙코르 무대를 두고 겨룬다.
+    /// 보스전 「관객 쟁탈전」 (boss_battle). Docs/BOSS_STAGE_REDESIGN_KO.md v2.
     ///
-    ///   체력   = 목표 점수 × healthMultiplier(3). 점수가 그대로 피해 (체력 = 최대 + 회복 − 점수)
-    ///   패턴   = B2B · GUEST LIST · BEATMATCH · KILL SWITCH (+ PEAK TIME 에서 DROP)
-    ///   성공   = 최대 체력 / patternsToClear 만큼 점수 가산 + 상대 팬 합류 / 실패 = 체력 5% 회복 + 우리 팬 이탈
-    ///   PEAK   = 체력 50% 이하: 강화 패턴, 간격 단축, 진입 즉시 DROP
-    ///   클리어 = 체력 0 → 즉시 종료 (남은 초 × 보너스 점수). 시간 초과 = 실패
+    ///   팬     = 우리 관객(로스터) + 라이벌 팬(_rivalFans). 총원은 변하지 않고 양쪽을 오간다
+    ///   드레인 = drainInterval 초마다 점수 −(라이벌 팬 × drainPerFan). 라이벌 팬 0명이면 멈춘다
+    ///   패턴   = B2B · GUEST LIST · BEATMATCH · KILL SWITCH (+ REVENGE 에서 DROP)
+    ///   성공   = 라이벌 팬 2명(강화 3, DROP 3) 합류 + 목표 × 6%(DROP 10%) 보너스 / 실패 = 우리 팬 1명이 라이벌로
+    ///   REVENGE = 라이벌 팬 ≤ revengeThreshold: 강화 패턴, 간격 단축, 진입 즉시 DROP. ≥ releaseThreshold 면 해제
+    ///   승패   = 시간 종료 시 점수 ≥ 목표 (PerformanceTimer 판정 그대로). 조기 종료 없음
     ///
-    /// 점수는 GameManager 가, 관객은 AudienceRosterSystem 이 담당하고 이 룰은 판정과 이동만 한다.
-    /// 클리어 판정은 StageRuntimeDirector.ClearVerdictOverride 로 TourPerformanceBridge 에 넘긴다.
-    ///
-    /// 연출: 같은 오브젝트에 BossStagePresentation 이 있으면 패턴 예고·격파 때 라이벌 무대 왕복 연출을 먼저 돌리고,
-    /// 돌아온 뒤에 패턴 창을 연다(LeadIn). 없으면 예전처럼 즉시 시작한다.
+    /// 점수는 GameManager, 관객은 AudienceRosterSystem 이 담당하고 이 룰은 판정·이동·드레인만 한다.
+    /// 드레인과 패턴 스케줄은 PerformanceTimer.Elapsed 기준이라 예고 연출(타이머 정지) 중에는 멈추고, 엿보기 중에는 계속 흐른다.
     /// </summary>
     public sealed class BossBattleRule : StageRuleBehaviour
     {
@@ -30,10 +28,10 @@ namespace ContextStage
         [SerializeField] int patternsSucceeded;
         [SerializeField] int fansRecruited;
         [SerializeField] int fansLost;
+        [SerializeField] int drainTotal;
 
         readonly List<BossPattern> _basePool = new List<BossPattern>();
-        readonly List<BossPattern> _peakPool = new List<BossPattern>();
-        readonly List<AudienceId> _idBuffer = new List<AudienceId>(4);
+        readonly List<BossPattern> _revengePool = new List<BossPattern>();
 
         BossPattern _active;
         BossPattern _pending;   // 예고 연출 중인 패턴 (LeadIn)
@@ -41,37 +39,30 @@ namespace ContextStage
         DropPattern _drop;
         System.Random _random;
 
-        float _damage;      // 디버그 피해 누적 (F7)
-        float _healed;      // 실패 회복 누적
-        float _lastHealth = -1f;
         float _remaining;
         float _nextPatternAt;
+        float _nextDrainAt;
         int _rivalFans;
-        bool _peakTime;
-        bool _defeated;
+        bool _revenge;
         bool _forceDropNext;
 
         public BossBattleConfig Config => config;
         public bool IsPatternActive => _active != null;
-
-        /// <summary>패턴 예고 연출 중 (창은 아직 안 열림).</summary>
         public bool IsLeadIn => _pending != null;
-        public bool IsPeakTime => _peakTime;
-        public bool IsDefeated => _defeated;
-
-        /// <summary>지금까지 성공한 패턴 수 (예전 연속 성공 대신).</summary>
-        public int Streak => patternsSucceeded;
-        public int RivalFansWaiting => _rivalFans;
-        /// <summary>최대 체력 = 목표 점수 × 배율. 카드 점수만으로는 다 깎기 힘들고 패턴 성공(체력/8)이 필요하다.</summary>
-        public float MaxHealth => Mathf.Max(1f, PerformanceTimer.TargetScore * (config != null ? config.HealthMultiplier : 1f));
-        public float CurrentHealth => Mathf.Clamp(MaxHealth + _healed - _damage - CurrentScore, 0f, MaxHealth + _healed);
-        public float HealthNormalized => Mathf.Clamp01(CurrentHealth / MaxHealth);
+        public bool IsRevenge => _revenge;
+        public int RivalFans => _rivalFans;
+        public int OurFans => Context.AudienceRoster != null ? Context.AudienceRoster.Count : 0;
+        public int TotalFans => OurFans + _rivalFans;
         public int PatternsResolved => patternsResolved;
         public int PatternsSucceeded => patternsSucceeded;
         public int FansRecruited => fansRecruited;
         public int FansLost => fansLost;
+        public int DrainTotal => drainTotal;
+        public float NextDrainIn => Mathf.Max(0f, _nextDrainAt - PerformanceTimer.Elapsed);
+        public int DrainAmount => _rivalFans * (config != null ? config.DrainPerFan : 0);
 
-        static int CurrentScore => GameManager.HasInstance ? GameManager.Instance.Score : 0;
+        /// <summary>예전 이름 호환: 성공한 패턴 수.</summary>
+        public int Streak => patternsSucceeded;
 
         // ---------------- 룰 수명 ----------------
 
@@ -84,32 +75,33 @@ namespace ContextStage
             }
 
             _random = new System.Random(unchecked(context.RunSeed ^ 0x0B055));
-            _damage = 0f;
-            _healed = 0f;
-            _lastHealth = -1f;
             _rivalFans = config.RivalFanPool;
-            _peakTime = false;
-            _defeated = false;
+            _revenge = false;
             _forceDropNext = false;
             _active = null;
             _pending = null;
             _lastPattern = null;
+            _remaining = 0f;
             _nextPatternAt = config.FirstPatternDelay;
+            _nextDrainAt = config.DrainStartDelay;
             patternsResolved = 0;
             patternsSucceeded = 0;
             fansRecruited = 0;
             fansLost = 0;
+            drainTotal = 0;
 
             BuildPools();
-            if (StageRuntimeDirector.Active != null) StageRuntimeDirector.Active.ClearVerdictOverride = false;
 
             if (presentation == null) presentation = GetComponent<BossStagePresentation>();
-            if (presentation != null) presentation.Begin(config);
+            if (presentation != null) presentation.Begin(config, () => !IsPatternActive && !IsLeadIn);
 
             EventBus.Subscribe<CardResolved>(OnCardResolved);
             EventBus.Subscribe<ComboChanged>(OnComboChanged);
             EventBus.Subscribe<FeverStateChanged>(OnFeverChanged);
             EventBus.Subscribe<SpecialHitLanded>(OnSpecialHit);
+            EventBus.Subscribe<AudienceDeparted>(OnAudienceDeparted);
+
+            PublishBalance();
         }
 
         protected override void OnDeactivate()
@@ -118,6 +110,7 @@ namespace ContextStage
             EventBus.Unsubscribe<ComboChanged>(OnComboChanged);
             EventBus.Unsubscribe<FeverStateChanged>(OnFeverChanged);
             EventBus.Unsubscribe<SpecialHitLanded>(OnSpecialHit);
+            EventBus.Unsubscribe<AudienceDeparted>(OnAudienceDeparted);
 
             _pending = null;
             if (_active != null)
@@ -131,34 +124,31 @@ namespace ContextStage
         void BuildPools()
         {
             _basePool.Clear();
-            _peakPool.Clear();
+            _revengePool.Clear();
             _basePool.Add(new B2BPattern());
             _basePool.Add(new GuestListPattern());
             _basePool.Add(new BeatmatchPattern());
             _basePool.Add(new KillSwitchPattern());
-            _peakPool.Add(new B2BPattern());
-            _peakPool.Add(new GuestListPattern());
-            _peakPool.Add(new BeatmatchPattern());
-            _peakPool.Add(new KillSwitchPattern());
+            _revengePool.Add(new B2BPattern());
+            _revengePool.Add(new GuestListPattern());
+            _revengePool.Add(new BeatmatchPattern());
+            _revengePool.Add(new KillSwitchPattern());
             _drop = new DropPattern();
-            _peakPool.Add(_drop);
+            _revengePool.Add(_drop);
         }
 
         // ---------------- 매 프레임 ----------------
 
         void Update()
         {
-            if (!IsActive || config == null || _defeated) return;
+            if (!IsActive || config == null) return;
             if (!GameManager.HasInstance || !GameManager.Instance.IsPlaying) return;
 
-            PublishHealth();
-            if (CurrentHealth <= 0f)
-            {
-                Defeat(byStreak: false);
-                return;
-            }
+            float elapsed = PerformanceTimer.Elapsed;
 
-            if (!_peakTime && HealthNormalized <= config.PeakTimeRatio) EnterPeakTime();
+            // 드레인: 라이벌 팬이 있는 동안 주기적으로 점수 감소 (타이머 기준이라 예고 연출 중에는 멈춘다)
+            if (_rivalFans > 0 && elapsed >= _nextDrainAt) ApplyDrain();
+            EventBus.Raise(new BossDrainCountdown(NextDrainIn, DrainAmount, _rivalFans > 0));
 
             // 예고 연출 중: 창도 스케줄도 멈춘다 (연출이 끝나면 BeginPendingPattern)
             if (_pending != null) return;
@@ -175,24 +165,23 @@ namespace ContextStage
                 return;
             }
 
-            if (PerformanceTimer.Elapsed >= _nextPatternAt) StartNextPattern();
+            if (elapsed >= _nextPatternAt) StartNextPattern();
         }
 
-        void PublishHealth()
-        {
-            float health = CurrentHealth;
-            if (Mathf.Approximately(health, _lastHealth)) return;
-            float delta = _lastHealth < 0f ? 0f : health - _lastHealth;
-            _lastHealth = health;
-            EventBus.Raise(new BossHealthChanged(health, MaxHealth, delta, _peakTime));
-        }
+        // ---------------- 드레인 ----------------
 
-        void EnterPeakTime()
+        void ApplyDrain()
         {
-            _peakTime = true;
-            _forceDropNext = true;
-            EventBus.Raise(new BossPeakTimeEntered());
-            EventBus.Raise(new BossHealthChanged(CurrentHealth, MaxHealth, 0f, true));
+            int amount = DrainAmount;
+            int score = GameManager.HasInstance ? GameManager.Instance.Score : 0;
+            int applied = Mathf.Clamp(amount, 0, score);
+            if (applied > 0) GameManager.Instance.SetScore(score - applied);
+            drainTotal += applied;
+
+            _nextDrainAt += config.DrainInterval;
+            if (_nextDrainAt < PerformanceTimer.Elapsed) _nextDrainAt = PerformanceTimer.Elapsed + config.DrainInterval;
+
+            EventBus.Raise(new BossDrainApplied(applied, _rivalFans, config.DrainInterval));
         }
 
         // ---------------- 패턴 ----------------
@@ -216,11 +205,10 @@ namespace ContextStage
 
             _remaining = window;
 
-            // 연출이 있으면 라이벌 무대를 갔다 온 뒤 창을 연다. 그동안 카드 입력은 잠기고 타이머는 멈춘다
             if (presentation != null && presentation.IsReady)
             {
                 _pending = pattern;
-                Debug.Log($"[Boss] 패턴 예고: {pattern.Title}{(pattern.Enhanced ? " (강화)" : "")}", this);
+                Debug.Log($"[Boss] 패턴 예고: {pattern.Title}{(pattern.Enhanced ? " (REVENGE)" : "")}", this);
                 EventBus.Raise(new BossPatternAnnounced(
                     pattern.Id, pattern.Title, pattern.Instruction, pattern.Enhanced, config.AnnounceDisplaySeconds));
                 presentation.PlayPatternAnnounce(BeginPendingPattern);
@@ -230,12 +218,11 @@ namespace ContextStage
             BeginPattern(pattern);
         }
 
-        /// <summary>예고 연출이 끝난 뒤 호출. 그 사이 룰이 꺼졌거나 격파됐으면 버린다.</summary>
         void BeginPendingPattern()
         {
             BossPattern pattern = _pending;
             _pending = null;
-            if (pattern == null || !IsActive || _defeated) return;
+            if (pattern == null || !IsActive) return;
             if (!GameManager.HasInstance || !GameManager.Instance.IsPlaying) return;
             BeginPattern(pattern);
         }
@@ -245,16 +232,15 @@ namespace ContextStage
             _active = pattern;
             _active.Begin();
             float window = _remaining;
-            Debug.Log($"[Boss] 패턴 시작: {pattern.Title}{(pattern.Enhanced ? " (강화)" : "")} · {window:0.0}s · {pattern.Instruction}", this);
-            EventBus.Raise(new BossPatternStarted(
-                pattern.Id, pattern.Title, pattern.Instruction, window, pattern.Enhanced));
+            Debug.Log($"[Boss] 패턴 시작: {pattern.Title}{(pattern.Enhanced ? " (REVENGE)" : "")} · {window:0.0}s · {pattern.Instruction}", this);
+            EventBus.Raise(new BossPatternStarted(pattern.Id, pattern.Title, pattern.Instruction, window, pattern.Enhanced));
         }
 
         BossPattern PickPattern()
         {
-            List<BossPattern> pool = _peakTime ? _peakPool : _basePool;
+            List<BossPattern> pool = _revenge ? _revengePool : _basePool;
 
-            if (_peakTime && _forceDropNext)
+            if (_revenge && _forceDropNext)
             {
                 _forceDropNext = false;
                 _drop.Setup(config, Context, _random, true);
@@ -266,7 +252,7 @@ namespace ContextStage
             {
                 BossPattern candidate = pool[i];
                 if (_lastPattern != null && candidate.Id == _lastPattern.Id) continue;
-                candidate.Setup(config, Context, _random, _peakTime);
+                candidate.Setup(config, Context, _random, _revenge);
                 if (candidate.CanStart()) candidates.Add(candidate);
             }
             if (candidates.Count == 0) return null;
@@ -281,78 +267,111 @@ namespace ContextStage
             pattern.End(success);
             patternsResolved++;
 
-            float healthDelta;
             int moved;
+            int bonus = 0;
             if (success)
             {
                 patternsSucceeded++;
-                // 피해 = 점수 가산. 체력은 점수로만 깎이므로 카드 점수와 같은 경로를 탄다
-                int gain = Mathf.RoundToInt(MaxHealth * config.SuccessDamageRatio);
-                if (gain > 0 && GameManager.HasInstance) GameManager.Instance.AddScore(gain);
-                healthDelta = -gain;
-                moved = RecruitRivalFans(pattern);
+                bool drop = pattern is DropPattern;
+                int want = drop ? config.StealOnDrop : (pattern.Enhanced ? config.StealOnSuccessEnhanced : config.StealOnSuccess);
+                moved = StealFans(want, pattern.RecruitPreference);
+                bonus = Mathf.RoundToInt(PerformanceTimer.TargetScore * (drop ? config.DropBonusRatio : config.PatternBonusRatio));
+                if (bonus > 0 && GameManager.HasInstance) GameManager.Instance.AddScore(bonus);
             }
             else
             {
-                float heal = MaxHealth * config.FailHealRatio;
-                _healed += heal;
-                healthDelta = heal;
-                moved = LoseOurFans();
+                moved = LoseOurFans(config.LoseFanOnFail);
             }
 
-            Debug.Log($"[Boss] 패턴 {(success ? "성공" : "실패")}: {pattern.Title} · 체력 {HealthNormalized:P0} · 성공 {patternsSucceeded}/{config.PatternsToClear} · 팬 이동 {moved}", this);
-            EventBus.Raise(new BossPatternResolved(pattern.Id, pattern.Title, success, patternsSucceeded, healthDelta, moved));
-            PublishHealth();
+            Debug.Log($"[Boss] 패턴 {(success ? "성공" : "실패")}: {pattern.Title} · 라이벌 팬 {_rivalFans} · 우리 {OurFans} · 보너스 {bonus:N0} · 팬 이동 {moved}", this);
+            EventBus.Raise(new BossPatternResolved(pattern.Id, pattern.Title, success, patternsSucceeded, bonus, moved));
 
-            if (CurrentHealth <= 0f)
-            {
-                Defeat(byStreak: false);
-                return;
-            }
-
-            _nextPatternAt = PerformanceTimer.Elapsed + (_peakTime ? config.PeakPatternInterval : config.PatternInterval);
+            _nextPatternAt = PerformanceTimer.Elapsed + (_revenge ? config.RevengePatternInterval : config.PatternInterval);
         }
 
-        // ---------------- 관객 이동 ----------------
+        // ---------------- 팬 이동 ----------------
 
-        int RecruitRivalFans(BossPattern pattern)
+        /// <summary>라이벌 팬을 우리 쪽으로. 라이벌 팬이 없거나 만석이면 그만큼 못 온다. 옮긴 수를 돌려준다.</summary>
+        public int StealFans(int count, CrowdPreference? preference = null)
         {
             AudienceRosterSystem roster = Context.AudienceRoster;
-            if (roster == null) return 0;
+            if (roster == null || !IsActive) return 0;
 
-            int want = Mathf.Min(pattern.Enhanced ? config.RecruitOnSuccessEnhanced : config.RecruitOnSuccess, _rivalFans);
             int joined = 0;
-            for (int i = 0; i < want; i++)
+            for (int i = 0; i < count; i++)
             {
-                if (roster.Count >= roster.Capacity) break; // 만석이면 점수만
-                CrowdPreference preference = pattern.RecruitPreference ?? LeastRepresentedPreference(roster);
-                if (!roster.TryAdd(preference, config.RecruitEngagement, AudienceJoinReason.RuntimeCommand, out _)) break;
+                if (_rivalFans <= 0) break;
+                if (roster.Count >= roster.Capacity) break;
+                CrowdPreference pick = preference ?? LeastRepresentedPreference(roster);
+                if (!roster.TryAdd(pick, config.RecruitEngagement, AudienceJoinReason.RuntimeCommand, out _)) break;
                 joined++;
+                _rivalFans--;
             }
 
-            _rivalFans -= joined;
-            fansRecruited += joined;
+            if (joined > 0)
+            {
+                fansRecruited += joined;
+                EventBus.Raise(new BossFanMoved(false, joined, _rivalFans, OurFans));
+                AfterFanChange();
+            }
             return joined;
         }
 
-        int LoseOurFans()
+        int LoseOurFans(int count)
         {
             AudienceRosterSystem roster = Context.AudienceRoster;
             if (roster == null) return 0;
 
             int removable = Mathf.Max(0, roster.Count - config.MinimumSurvivors);
-            int count = Mathf.Min(config.LoseFanOnFail, removable);
+            int take = Mathf.Min(count, removable);
             int lost = 0;
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < take; i++)
             {
                 if (!TryFindLowestEngagement(roster, out AudienceId id)) break;
                 if (roster.TryRemove(id, AudienceDepartureReason.NearbyConcert, out _)) lost++;
             }
 
-            _rivalFans += lost;
-            fansLost += lost;
+            if (lost > 0)
+            {
+                _rivalFans += lost;
+                fansLost += lost;
+                EventBus.Raise(new BossFanMoved(true, lost, _rivalFans, OurFans));
+                AfterFanChange();
+            }
             return lost;
         }
+
+        /// <summary>몰입도가 바닥나 자연 이탈한 관객은 라이벌 무대로 건너간 것으로 친다 (총원 유지).</summary>
+        void OnAudienceDeparted(AudienceDeparted e)
+        {
+            if (!IsActive || e.Reason != AudienceDepartureReason.EngagementDepleted) return;
+            _rivalFans++;
+            fansLost++;
+            EventBus.Raise(new BossFanMoved(true, 1, _rivalFans, OurFans));
+            AfterFanChange();
+        }
+
+        void AfterFanChange()
+        {
+            PublishBalance();
+            if (!_revenge && _rivalFans <= config.RevengeThreshold)
+            {
+                _revenge = true;
+                _forceDropNext = true;
+                Debug.Log($"[Boss] REVENGE TIME! 라이벌 팬 {_rivalFans}", this);
+                EventBus.Raise(new BossRevengeChanged(true));
+                PublishBalance();
+            }
+            else if (_revenge && _rivalFans >= config.RevengeReleaseThreshold)
+            {
+                _revenge = false;
+                Debug.Log($"[Boss] REVENGE 해제. 라이벌 팬 {_rivalFans}", this);
+                EventBus.Raise(new BossRevengeChanged(false));
+                PublishBalance();
+            }
+        }
+
+        void PublishBalance() => EventBus.Raise(new BossFanBalanceChanged(OurFans, _rivalFans, TotalFans, _revenge));
 
         static bool TryFindLowestEngagement(AudienceRosterSystem roster, out AudienceId id)
         {
@@ -385,39 +404,6 @@ namespace ContextStage
             return singalong <= mosh ? CrowdPreference.Singalong : CrowdPreference.Mosh;
         }
 
-        // ---------------- 격파 ----------------
-
-        void Defeat(bool byStreak)
-        {
-            if (_defeated) return;
-            _defeated = true;
-
-            _pending = null;
-            if (_active != null)
-            {
-                _active.End(true);
-                _active = null;
-            }
-
-            float remaining = Mathf.Max(0f, PerformanceTimer.Duration - PerformanceTimer.Elapsed);
-            int bonus = Mathf.RoundToInt(remaining * config.EarlyClearBonusPerSecond);
-            if (bonus > 0 && GameManager.HasInstance) GameManager.Instance.AddScore(bonus);
-
-            if (StageRuntimeDirector.Active != null) StageRuntimeDirector.Active.ClearVerdictOverride = true;
-            Debug.Log($"[Boss] 격파! 체력 0 (패턴 성공 {patternsSucceeded}) · 남은 {remaining:0.0}s · 보너스 {bonus:N0}", this);
-            EventBus.Raise(new BossHealthChanged(0f, MaxHealth, -_lastHealth, _peakTime));
-            EventBus.Raise(new BossDefeated(byStreak, remaining, bonus));
-
-            // 격파 연출(라이벌 무대 소등)을 보여준 뒤 공연을 끝낸다
-            if (presentation != null && presentation.IsReady) presentation.PlayDefeat(EndPerformance);
-            else EndPerformance();
-        }
-
-        static void EndPerformance()
-        {
-            if (GameManager.HasInstance && GameManager.Instance.IsPlaying) GameManager.Instance.GameOver();
-        }
-
         // ---------------- 이벤트 전달 ----------------
 
         void OnCardResolved(CardResolved e) => _active?.OnCardResolved(e);
@@ -427,11 +413,14 @@ namespace ContextStage
 
         // ---------------- 디버그 ----------------
 
-        /// <summary>[디버그] 최대 체력 대비 비율만큼 피해.</summary>
-        public void DebugDamage(float ratio)
+        /// <summary>[디버그] 라이벌 팬을 지금 뺏어온다.</summary>
+        public void DebugStealFans(int count) => StealFans(count);
+
+        /// <summary>[디버그] 드레인을 지금 적용.</summary>
+        public void DebugDrainNow()
         {
-            if (!IsActive) return;
-            _damage += MaxHealth * Mathf.Max(0f, ratio);
+            if (!IsActive || _rivalFans <= 0) return;
+            ApplyDrain();
         }
 
         /// <summary>[디버그] 다음 패턴을 지금 시작.</summary>
@@ -441,18 +430,18 @@ namespace ContextStage
             _nextPatternAt = 0f;
         }
 
-        /// <summary>[디버그] 라이벌 무대 왕복 연출만 미리보기.</summary>
-        public void DebugPreviewCinematic()
-        {
-            if (!IsActive || presentation == null) return;
-            presentation.PlayPreview();
-        }
-
         /// <summary>[디버그] 현재 패턴을 성공 처리.</summary>
         public void DebugSucceedPattern()
         {
             if (!IsActive || _active == null) return;
             Resolve(true);
+        }
+
+        /// <summary>[디버그] 라이벌 무대 왕복 연출만 미리보기.</summary>
+        public void DebugPreviewCinematic()
+        {
+            if (!IsActive || presentation == null) return;
+            presentation.PlayPreview();
         }
 
 #if UNITY_EDITOR

@@ -222,10 +222,34 @@ namespace ContextStage
 
         // ---------------- 시작 / 종료 ----------------
 
+        /// <summary>[테스트 전용] true 면 자동 실행하지 않는다 (E2E 스크립트가 켠다).</summary>
+        public static bool SuppressForTests;
+
+        [SerializeField, Tooltip("에디터·개발 빌드에서는 완료 기록과 상관없이 첫 스테이지에서 항상 튜토리얼을 띄운다")]
+        bool forceInDebugBuilds = true;
+
+        /// <summary>
+        /// 투어 중 자동 실행 조건: 첫 스테이지(stage_01)이고, 이 기기에서 아직 완료한 적이 없을 때.
+        /// 에디터·개발 빌드는 forceInDebugBuilds 로 항상. 투어 밖(Main 직접 실행)은 예전처럼 매번.
+        /// </summary>
+        bool ShouldAutoRunInTour()
+        {
+            StageDefinition stage = StageRuntimeDirector.CurrentStage;
+            if (stage == null) return true; // 투어가 아니다
+            if (!skipDuringTourStage) return true;
+            if (stage.StageId != "stage_01") return false;
+
+            bool force = false;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            force = forceInDebugBuilds;
+#endif
+            return force || !Save.GetBool(TutorialDoneKey, false);
+        }
+
         void OnGameStateChanged(GameStateChanged e)
         {
-            // 첫 공연 자동 실행 (투어 스테이지 중에는 스테이지 룰이 관객 구성을 책임지므로 건너뛴다)
-            bool tourStageActive = skipDuringTourStage && StageRuntimeDirector.CurrentStage != null;
+            // 첫 공연 자동 실행 (투어에서는 첫 스테이지 첫 플레이만 — ShouldAutoRunInTour)
+            bool tourStageActive = SuppressForTests || !ShouldAutoRunInTour();
             if (autoRunOnFirstPlay &&
                 !tourStageActive &&
                 !_hasStartedThisScene &&
@@ -322,7 +346,8 @@ namespace ContextStage
             _phase = Phase.Idle;
             ReleaseControl();
 
-            // 완료 여부를 저장하지 않아 다음 실행에서도 튜토리얼이 다시 진행된다
+            // 완료(끝까지 보거나 건너뜀)를 기록해 두면 투어 첫 스테이지에서 다시 뜨지 않는다 (에디터·개발 빌드는 forceInDebugBuilds 로 항상)
+            if (markDone) Save.SetBool(TutorialDoneKey, true);
 
             if (restartRun && GameManager.HasInstance && GameManager.Instance.IsPlaying)
             {

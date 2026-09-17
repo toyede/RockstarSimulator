@@ -76,7 +76,14 @@ namespace ContextStage
                 _fullScreenContinueButton.onClick.AddListener(RequestContinue);
             if (skipButton != null) skipButton.onClick.AddListener(() => SkipClicked?.Invoke());
             HideAll();
+            // 씬에 저장된 버튼이 켜져 있어도 튜토리얼이 시작되기 전에는 보이면 안 된다 (다른 스테이지에서 버튼만 남던 버그)
+            SetSkipVisible(false);
         }
+
+        /// <summary>메시지 패널 배경. 보스 패턴 경고 등 다른 UI 가 같은 모양을 빌려 쓴다.</summary>
+        public Image PanelImage => panelRoot != null ? panelRoot.GetComponent<Image>() : null;
+        public int TitleFontSize => titleFontSize;
+        public int BodyFontSize => bodyFontSize;
 
         /// <summary>
         /// TutorialPanel 자체의 위치와 크기는 건드리지 않고, 그 안의 제목·본문·진행 안내만

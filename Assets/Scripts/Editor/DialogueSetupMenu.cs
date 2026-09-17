@@ -218,47 +218,53 @@ namespace ContextStage.EditorTools
         {
             var result = new List<DialogueSequence>
             {
+                // 너구리: 주인공, 어리숙하지만 투어를 거치며 성장 (봇치)
+                // 고슴도치: 드러머, 너구리의 오랜 친구, 정열적 (류지)
+                // LUX//FAUNA: 생성형 AI 로봇 말투, 완벽주의
                 CreateSequence("intro_stage_01", overwrite,
-                    Line(Staff, "오늘 무대는 취소야. 아직 너희를 보러 올 관객이 없거든.", DialogueSpeakerSide.Right, "neutral"),
-                    Line(Raccoon, "관객이 없어서 무대가 없다고? 그럼 먼저 관객을 만들면 되잖아!", DialogueSpeakerSide.Left, "surprised"),
-                    Line(Hedgehog, "또 무작정 크게 연주하려는 건 아니지? 지나가는 사람은 취향이 전부 달라.", DialogueSpeakerSide.Left, "sigh"),
-                    Line(Bandmate, "복장과 움직임을 봐. 누구는 강렬한 솔로를, 누구는 떼창을, 누구는 편한 흐름을 원해.", DialogueSpeakerSide.Left, "explain"),
-                    Line(Raccoon, "좋아. 오늘은 귀부터 열고 연주한다!", DialogueSpeakerSide.Left, "resolve")),
+                    Line(Hedgehog, "야, 너구리! 오늘이 그날이라고! 골목이든 어디든 무대는 무대야!", DialogueSpeakerSide.Left, "excited"),
+                    Line(Raccoon, "어, 어… 사람이 이렇게 많이 지나가는데… 우리 노래를… 들어줄까…?", DialogueSpeakerSide.Left, "nervous"),
+                    Line(Hedgehog, "안 들으면 듣게 만들면 되지! 근데 무작정 크게 치진 마. 지나가는 사람은 취향이 전부 달라.", DialogueSpeakerSide.Left, "grin"),
+                    Line(Raccoon, "취향… 옷차림이랑 표정을 보면… 알 수 있을지도. 강렬한 걸 원하는 사람, 같이 부르고 싶은 사람, 편하게 듣고 싶은 사람…", DialogueSpeakerSide.Left, "think"),
+                    Line(Hedgehog, "오오, 이제 좀 밴드 같네! 자, 귀부터 열고 간다!", DialogueSpeakerSide.Left, "cheer"),
+                    Line(Raccoon, "…응. 오늘은, 도망치지 않을게.", DialogueSpeakerSide.Left, "resolve")),
 
                 CreateSequence("intro_stage_02", overwrite,
-                    Line(Promoter, "골목에서 사람을 멈춰 세웠다며? 오늘 오프닝 자리가 하나 비었어.", DialogueSpeakerSide.Right, "interested"),
-                    Line(Raccoon, "드디어 천장과 조명이 있는 무대다!", DialogueSpeakerSide.Left, "excited"),
-                    Line(Hedgehog, "여긴 단골이 많아. 가끔 원하는 걸 대놓고 요구하는 팬도 있어.", DialogueSpeakerSide.Left, "wary"),
-                    Line(Bandmate, "특별 관객의 요청과 같은 Special 카드를 그 관객에게 직접 건네. 시간 안에 말이야.", DialogueSpeakerSide.Left, "explain"),
-                    Line(Raccoon, "팬이 원하는 걸 말해 준다고? 그건 나도 알아들을 수 있지!", DialogueSpeakerSide.Left, "confident")),
+                    Line(Staff, "골목에서 사람들을 멈춰 세웠다는 밴드가 너희야? 오늘 오프닝 자리가 하나 비었어.", DialogueSpeakerSide.Right, "neutral"),
+                    Line(Raccoon, "처, 천장이 있어… 조명도… 지, 진짜 무대다…!", DialogueSpeakerSide.Left, "surprised"),
+                    Line(Hedgehog, "긴장 풀어! 여긴 단골이 많아서 원하는 걸 대놓고 말하는 팬도 있어. 오히려 편하지!", DialogueSpeakerSide.Left, "grin"),
+                    Line(Raccoon, "원하는 걸 말해준다면… 그건 나도 알아들을 수 있어. 특별 관객이 요청하면 그 성향의 Special 카드를 직접 건네자.", DialogueSpeakerSide.Left, "think"),
+                    Line(Hedgehog, "그거야! 대신 시간 안에 해. 단골은 기다려주지 않거든!", DialogueSpeakerSide.Left, "cheer")),
 
                 CreateSequence("intro_stage_03", overwrite,
-                    Line(Promoter, "페스티벌은 라이브홀이랑 달라. 마음에 안 들면 관객은 바로 옆 무대로 가 버려.", DialogueSpeakerSide.Right, "hurried"),
-                    Line(Rival, "작은 골목의 환호가 진짜 인기인 줄 알았나 봐?", DialogueSpeakerSide.Right, "sneer"),
-                    Line(Raccoon, "우리 관객은 우리 공연을 선택할 거야!", DialogueSpeakerSide.Left, "angry"),
-                    Line(Hedgehog, "경고가 뜨면 표시된 관객부터 봐. 호응도를 올리거나 Special 카드로 붙잡아.", DialogueSpeakerSide.Left, "calm"),
-                    Line(Bandmate, "계획보다 관객이 먼저야. 흐름은 다시 만들 수 있어.", DialogueSpeakerSide.Left, "resolve")),
+                    Line(Promoter, "페스티벌은 라이브홀과 달라. 옆 무대가 시끄러우면 관객은 바로 옮겨가. 소나기라도 오면… 알아서들 해.", DialogueSpeakerSide.Right, "hurried"),
+                    Line(Rival, "분석 완료. 골목 출신 밴드, 팬 결집도 낮음. 위협 요소로 판단되지 않습니다.", DialogueSpeakerSide.Right, "cold"),
+                    Line(Raccoon, "…지금 우릴, 위협이 아니래.", DialogueSpeakerSide.Left, "hurt"),
+                    Line(Hedgehog, "말 한번 재수 없게 하네! 두고 봐, 오늘 깃발은 우리 쪽에서 흔들린다!", DialogueSpeakerSide.Left, "angry"),
+                    Line(Raccoon, "옆 무대 경고가 뜨면 표시된 관객부터 붙잡고… 비가 오면 CHILL 카드로 우산을. 콤보를 이으면 깃발이 흔들려.", DialogueSpeakerSide.Left, "think"),
+                    Line(Hedgehog, "머리엔 다 들어있네. 그럼 몸으로 보여주자고!", DialogueSpeakerSide.Left, "cheer")),
 
                 CreateSequence("intro_stage_04", overwrite,
-                    Line(Promoter, "오늘 공연은 생방송이야. 잘하면 견제가 몰리고, 흔들리면 늦게라도 팬들이 도우러 올 거야.", DialogueSpeakerSide.Right, "serious"),
-                    Line(Raccoon, "잘해도 사건, 못해도 사건이라고?", DialogueSpeakerSide.Left, "confused"),
-                    Line(Hedgehog, "그러니까 화면을 봐. 무슨 일이든 미리 알려 줄 테니 대응하면 돼.", DialogueSpeakerSide.Left, "smile"),
-                    Line(Bandmate, "여기까지 얻은 카드와 증강을 전부 써 보자. 이 무대를 넘으면 스타디움이야.", DialogueSpeakerSide.Left, "cheer"),
-                    Line(Raccoon, "변수까지 우리 공연의 일부로 만든다!", DialogueSpeakerSide.Left, "resolve")),
+                    Line(Promoter, "전국 생방송이야. 카메라 큐시트대로 움직여야 하고… 방송 사고는 절대 없어야 해. 알았지?", DialogueSpeakerSide.Right, "serious"),
+                    Line(Raccoon, "생, 생방송… 정전 같은 건… 안 나겠지…?", DialogueSpeakerSide.Left, "nervous"),
+                    Line(Hedgehog, "나면 어때? 불이 꺼져도 관객이 어디 서 있는지는 우리가 알잖아!", DialogueSpeakerSide.Left, "grin"),
+                    Line(Raccoon, "…그래. 큐시트 순서대로 카드를 내고, 불이 꺼지면 기억으로 연주한다. Miss 없이.", DialogueSpeakerSide.Left, "resolve"),
+                    Line(Hedgehog, "여기까지 모은 카드랑 증강 전부 쏟아붓자. 이 무대 넘으면 스타디움이야!", DialogueSpeakerSide.Left, "cheer")),
 
                 CreateSequence("intro_stage_05_boss", overwrite,
-                    Line(Rival, "우리는 관객 눈치를 보지 않아. 관객이 우리를 따라오게 만들지.", DialogueSpeakerSide.Right, "confident"),
-                    Line(Raccoon, "나도 처음엔 그렇게 생각했어. 제일 큰 소리만 내면 되는 줄 알았지.", DialogueSpeakerSide.Left, "think"),
-                    Line(Raccoon, "하지만 관객은 배경이 아니야. 각자 듣고 싶은 게 있는 우리 공연의 일부라고.", DialogueSpeakerSide.Left, "smile"),
-                    Line(Hedgehog, "라이벌이 노리는 팬층을 전광판에 띄울 거야. 표시된 관객부터 지켜.", DialogueSpeakerSide.Left, "wary"),
-                    Line(Bandmate, "마지막까지 관객의 목소리를 놓치지 마.", DialogueSpeakerSide.Left, "resolve"),
-                    Line(Raccoon, "Raccoon Roll, 시작하자!", DialogueSpeakerSide.Left, "shout")),
+                    Line(Rival, "입장 확인. RACCOON ROLL. 예상 승률 3.2%. 오늘 관객의 87%는 이미 저희 쪽에 서 있습니다.", DialogueSpeakerSide.Right, "cold"),
+                    Line(Raccoon, "…숫자로 다 아는 것처럼 말하네.", DialogueSpeakerSide.Left, "calm"),
+                    Line(Rival, "저희는 관객의 눈치를 보지 않습니다. 관객이 저희를 따라오도록 설계할 뿐.", DialogueSpeakerSide.Right, "confident"),
+                    Line(Hedgehog, "설계 좋아하네! 관객은 계산기가 아니야. 야, 너구리. 골목에서 뭐라고 했더라?", DialogueSpeakerSide.Left, "angry"),
+                    Line(Raccoon, "…도망치지 않는다고 했어. 라이벌 무대의 팬이 많을수록 우리 점수가 깎여. 그러니까 뺏어온다. 한 명씩, 전부.", DialogueSpeakerSide.Left, "resolve"),
+                    Line(Hedgehog, "그래야 우리 보컬이지! 패턴 뜨면 정면으로 받아쳐. 관객 과반수를 넘기면 저 로봇들, 화낼 거다!", DialogueSpeakerSide.Left, "cheer"),
+                    Line(Raccoon, "Raccoon Roll… 시작하자!", DialogueSpeakerSide.Left, "shout")),
 
                 CreateSequence("ending_common", overwrite,
                     Line(Crowd, "RACCOON ROLL! RACCOON ROLL!", DialogueSpeakerSide.Right, "cheer"),
-                    Line(Rival, "관객이 밴드를 고른 게 아니라, 밴드가 관객을 제대로 들은 건가….", DialogueSpeakerSide.Right, "defeat"),
-                    Line(Hedgehog, "처음 골목에선 세 명뿐이었는데.", DialogueSpeakerSide.Left, "smile"),
-                    Line(Raccoon, "숫자보다 중요한 걸 이제 알겠어. 다음 무대에도 먼저 관객부터 볼 거야.", DialogueSpeakerSide.Left, "resolve")),
+                    Line(Rival, "…재계산 중. 예측 오차 원인: 불명. 관객이 밴드를 고른 것이 아니라, 밴드가 관객을… 들었다?", DialogueSpeakerSide.Right, "defeat"),
+                    Line(Hedgehog, "처음 골목에선 세 명이었는데 말이야.", DialogueSpeakerSide.Left, "smile"),
+                    Line(Raccoon, "숫자보다 중요한 걸 알았어. 다음 무대에서도, 먼저 관객부터 볼 거야. …이번엔, 안 떨렸어.", DialogueSpeakerSide.Left, "resolve")),
             };
 
             return result;
@@ -293,7 +299,22 @@ namespace ContextStage.EditorTools
                 text = text,
                 side = side,
                 emotionId = emotion,
+                portrait = PortraitOf(speaker),
             };
+        }
+
+        /// <summary>스탠딩 일러 (Sprites/0910_art/스탠딩일러). 없는 화자는 null — 일러 없이 이름만 표시된다.</summary>
+        static Sprite PortraitOf(string speaker)
+        {
+            string file;
+            switch (speaker)
+            {
+                case Raccoon: file = "raccoon_standing"; break;
+                case Hedgehog: file = "hedgehog_standing"; break;
+                case Rival: file = "lux_fauna_standing"; break;
+                default: return null;
+            }
+            return AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Sprites/0910_art/스탠딩일러/{file}.png");
         }
 
         static string SpeakerIdOf(string speaker)

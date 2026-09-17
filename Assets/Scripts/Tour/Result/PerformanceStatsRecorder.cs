@@ -39,7 +39,6 @@ namespace ContextStage
             EventBus.Subscribe<SpecialAudienceEnded>(OnSpecialEnded);
             EventBus.Subscribe<AudienceCrisisResolved>(OnCrisisResolved);
             EventBus.Subscribe<StageEventResolved>(OnStageEventResolved);
-            EventBus.Subscribe<BossDefeated>(OnBossDefeated);
         }
 
         void OnDisable()
@@ -52,7 +51,6 @@ namespace ContextStage
             EventBus.Unsubscribe<SpecialAudienceEnded>(OnSpecialEnded);
             EventBus.Unsubscribe<AudienceCrisisResolved>(OnCrisisResolved);
             EventBus.Unsubscribe<StageEventResolved>(OnStageEventResolved);
-            EventBus.Unsubscribe<BossDefeated>(OnBossDefeated);
         }
 
         /// <summary>공연 시작(Ready) 마다 초기화. 종료·초기화 전에 Freeze 를 먼저 부른다.</summary>
@@ -112,7 +110,6 @@ namespace ContextStage
             if (e.Success) stageEventsSucceeded++;
         }
 
-        void OnBossDefeated(BossDefeated e) => bossOutcome = e.ByStreak ? BossOutcome.StreakWin : BossOutcome.Defeated;
 
         // ---------------- 확정 ----------------
 
@@ -155,9 +152,9 @@ namespace ContextStage
                 report.bossPatternsResolved = boss.PatternsResolved;
                 report.bossFansRecruited = boss.FansRecruited;
                 report.bossFansLost = boss.FansLost;
-                report.bossOutcome = bossOutcome != BossOutcome.None
-                    ? bossOutcome
-                    : (boss.IsDefeated ? BossOutcome.Defeated : BossOutcome.TimeOut);
+                report.bossDrainTotal = boss.DrainTotal;
+                // 승패는 시간 종료 시 점수 ≥ 목표 (타이머 판정) — 보스 시스템이 따로 정하지 않는다
+                report.bossOutcome = PerformanceTimer.Failed ? BossOutcome.Lost : BossOutcome.Won;
             }
 
             return report;

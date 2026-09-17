@@ -23,25 +23,27 @@ MonoBehaviour:
     sfxId: 
   - speakerId: rival
     speakerName: LUX//FAUNA
-    portrait: {fileID: 0}
+    portrait: {fileID: 21300000, guid: 254fd7c2586c89e42a01d756ea2dffb3, type: 3}
     emotionId: defeat
-    text: "\uAD00\uAC1D\uC774 \uBC34\uB4DC\uB97C \uACE0\uB978 \uAC8C \uC544\uB2C8\uB77C,
-      \uBC34\uB4DC\uAC00 \uAD00\uAC1D\uC744 \uC81C\uB300\uB85C \uB4E4\uC740 \uAC74\uAC00\u2026."
+    text: "\u2026\uC7AC\uACC4\uC0B0 \uC911. \uC608\uCE21 \uC624\uCC28 \uC6D0\uC778:
+      \uBD88\uBA85. \uAD00\uAC1D\uC774 \uBC34\uB4DC\uB97C \uACE0\uB978 \uAC83\uC774
+      \uC544\uB2C8\uB77C, \uBC34\uB4DC\uAC00 \uAD00\uAC1D\uC744\u2026 \uB4E4\uC5C8\uB2E4?"
     side: 1
     sfxId: 
   - speakerId: hedgehog
     speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
-    portrait: {fileID: 0}
+    portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
     emotionId: smile
-    text: "\uCC98\uC74C \uACE8\uBAA9\uC5D0\uC120 \uC138 \uBA85\uBFD0\uC774\uC5C8\uB294\uB370."
+    text: "\uCC98\uC74C \uACE8\uBAA9\uC5D0\uC120 \uC138 \uBA85\uC774\uC5C8\uB294\uB370
+      \uB9D0\uC774\uC57C."
     side: 0
     sfxId: 
   - speakerId: raccoon
     speakerName: "\uB108\uAD6C\uB9AC"
-    portrait: {fileID: 0}
+    portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
     emotionId: resolve
-    text: "\uC22B\uC790\uBCF4\uB2E4 \uC911\uC694\uD55C \uAC78 \uC774\uC81C \uC54C\uACA0\uC5B4.
-      \uB2E4\uC74C \uBB34\uB300\uC5D0\uB3C4 \uBA3C\uC800 \uAD00\uAC1D\uBD80\uD130
-      \uBCFC \uAC70\uC57C."
+    text: "\uC22B\uC790\uBCF4\uB2E4 \uC911\uC694\uD55C \uAC78 \uC54C\uC558\uC5B4.
+      \uB2E4\uC74C \uBB34\uB300\uC5D0\uC11C\uB3C4, \uBA3C\uC800 \uAD00\uAC1D\uBD80\uD130
+      \uBCFC \uAC70\uC57C. \u2026\uC774\uBC88\uC5D4, \uC548 \uB5A8\uB838\uC5B4."
     side: 0
     sfxId: 

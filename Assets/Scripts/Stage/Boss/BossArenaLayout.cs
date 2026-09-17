@@ -3,24 +3,22 @@ using UnityEngine;
 
 namespace ContextStage
 {
-    /// <summary>보스전 3화면의 구역. 왼쪽으로 갈수록 값이 크다 (구역 중심 x = 홈 x − 구역 폭 × 값).</summary>
+    /// <summary>보스전 2화면의 구역. 구역 중심 x = 홈 x − 구역 폭 × 값.</summary>
     public enum BossZone
     {
         /// <summary>너구리 밴드 무대. 현재 플레이 화면 그대로 (x = 0).</summary>
         OurStage = 0,
-        /// <summary>관객 스탠딩석. 상대 대기 팬이 서 있다.</summary>
-        Standing = 1,
-        /// <summary>라이벌 무대.</summary>
-        RivalStage = 2,
+        /// <summary>라이벌 무대 (바로 왼쪽 화면). 라이벌 팬이 그 앞에 서 있다.</summary>
+        RivalStage = 1,
     }
 
     /// <summary>
-    /// 보스전 3화면 배치 (백지). 현재 플레이 화면(x = 0)은 건드리지 않고 왼쪽에 구역 두 개를 덧붙인다.
+    /// 보스전 2화면 배치 (백지). 현재 플레이 화면(x = 0)은 건드리지 않고 왼쪽에 라이벌 무대 구역을 덧붙인다.
     ///
-    ///   x = -2W  라이벌 무대     x = -W  관객 스탠딩석     x = 0  너구리 밴드 무대(조작)
+    ///   x = -W  라이벌 무대     x = 0  너구리 밴드 무대(조작)
     ///
     /// 구역 폭 W 는 배경 아트 규격(1920px, PPU 100 = 19.2 유닛)과 같다.
-    /// 아트가 오면 구역별 스프라이트를 넣기만 하면 Square 대신 그것을 쓴다.
+    /// 아트가 오면 구역 스프라이트를 넣기만 하면 Square 대신 그것을 쓴다.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class BossArenaLayout : MonoBehaviour
@@ -32,14 +30,11 @@ namespace ContextStage
         [SerializeField] string sortingLayer = "Default";
 
         [Header("백지 색 (아트 오기 전)")]
-        [SerializeField] Color standingColor = new Color32(0x14, 0x2A, 0x2E, 0xFF);
-        [SerializeField] Color standingFloorColor = new Color32(0x1F, 0x3E, 0x42, 0xFF);
         [SerializeField] Color rivalColor = new Color32(0x22, 0x12, 0x30, 0xFF);
         [SerializeField] Color rivalFloorColor = new Color32(0x36, 0x1E, 0x4C, 0xFF);
         [SerializeField] Color labelColor = new Color32(0xFF, 0xFF, 0xFF, 0x50);
 
         [Header("아트 (비우면 Square)")]
-        [SerializeField] Sprite standingBackground;
         [SerializeField] Sprite rivalBackground;
         [SerializeField, Tooltip("한글 라벨 폰트. 비우면 DialogueCatalog 스타일 폰트")] TMP_FontAsset labelFont;
 
@@ -83,7 +78,6 @@ namespace ContextStage
             rootObject.transform.position = Vector3.zero;
             _root = rootObject.transform;
 
-            BuildZone(BossZone.Standing, "Zone_Standing", "관객 스탠딩석 (임시)", standingBackground, standingColor, standingFloorColor);
             BuildZone(BossZone.RivalStage, "Zone_RivalStage", "라이벌 무대 (임시)", rivalBackground, rivalColor, rivalFloorColor);
         }
 
