@@ -40,8 +40,8 @@ namespace ContextStage
         float punctuationDelay = 0.12f;
         [SerializeField, Tooltip("타이핑 중 재생할 짧은 효과음 ID. 비우면 없음")]
         string typingSoundId = "";
-        [SerializeField, Min(1), Tooltip("몇 프레임마다 타이핑 효과음을 낼지")]
-        int typingSoundEvery = 3;
+        [SerializeField, Min(1), Tooltip("완성된 글자 몇 개마다 타이핑 효과음을 낼지 (공백·문장부호 제외)")]
+        int typingSoundEvery = 1;
 
         [Header("화살표 (다음 표시)")]
         [SerializeField, Tooltip("아트 화살표. 비우면 픽셀 삼각형을 런타임에 만든다")]

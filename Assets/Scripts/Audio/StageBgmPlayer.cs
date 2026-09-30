@@ -37,7 +37,7 @@ namespace ContextStage
         [SerializeField, Tooltip("게임오버 시 BGM 을 멈출지")]
         bool stopOnGameOver = false;
 
-        [SerializeField, Tooltip("게임오버 페이드아웃 시간(초)")]
+        [SerializeField, Tooltip("Stop() 호출 시 페이드아웃 시간(초). 게임오버에서는 즉시 정지한다")]
         float fadeOutDuration = 1.5f;
 
         public string BgmId => bgmId;
@@ -48,15 +48,21 @@ namespace ContextStage
         }
 
         void OnEnable() => EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
-        void OnDisable() => EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
+        void OnDisable()
+        {
+            EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
+            if (stopOnGameOver && AudioManager.HasInstance && Bgm.Current == bgmId)
+                Bgm.StopPerformance();
+        }
 
         void OnGameStateChanged(GameStateChanged e)
         {
-            if (startOn == StartTrigger.PerformanceStart &&
+            if ((startOn == StartTrigger.PerformanceStart ||
+                 (startOn == StartTrigger.SceneStart && stopOnGameOver && Bgm.Current != bgmId)) &&
                 e.Previous == GameState.Ready && e.Current == GameState.Playing)
                 Play();
 
-            if (stopOnGameOver && e.Current == GameState.GameOver) Stop();
+            if (stopOnGameOver && e.Current == GameState.GameOver) Bgm.StopPerformance();
         }
 
         /// <summary>지정된 BGM 을 재생한다. 이미 같은 곡이 나오는 중이면 킷이 알아서 무시한다.</summary>
@@ -91,5 +97,17 @@ namespace ContextStage
 
         public static void Play(string id, float fade = 1.5f) => Sound.Bgm(id, fade);
         public static void Stop(float fade = 1.5f) => Sound.StopBgm(fade);
+
+        /// <summary>공연 종료·맵 진입 시 UI 이외의 공용 소리를 정지한다.</summary>
+        public static void StopPerformance()
+        {
+            if (!AudioManager.HasInstance) return;
+            var audio = AudioManager.Instance;
+            audio.StopBgm(0f);
+            audio.StopSfx(AudioBus.CardSFX);
+            audio.StopSfx(AudioBus.ImpactSFX);
+            audio.StopSfx(AudioBus.EventSFX);
+            audio.StopSfx(AudioBus.Crowd);
+        }
     }
 }

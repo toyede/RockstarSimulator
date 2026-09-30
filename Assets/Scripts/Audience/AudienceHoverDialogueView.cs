@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using GameJamKit;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,12 +25,6 @@ namespace ContextStage
         Camera _worldCamera;
         float _targetAlpha;
         Coroutine _typingRoutine;
-
-        static readonly char[] CompatibilityInitials =
-        {
-            'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ',
-            'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ',
-        };
 
         public bool IsVisible => _target != null && _targetAlpha > 0f;
 
@@ -90,12 +84,17 @@ namespace ContextStage
 
         IEnumerator TypeDialogue(string richText)
         {
-            List<TypeFrame> frames = BuildTypingFrames(richText);
+            List<TypewriterFrame> frames = HangulTypewriter.BuildFrames(richText, _config != null ? _config.DialoguePunctuationDelay : 0f);
             float interval = _config != null ? _config.DialogueTypingInterval : 0.035f;
 
+            string soundId = _config != null ? _config.TypingSoundId : string.Empty;
+            int soundEvery = _config != null ? _config.TypingSoundEvery : 1;
+            int soundFrame = 0;
             for (int i = 0; i < frames.Count; i++)
             {
                 _dialogueText.text = frames[i].Text;
+                if (frames[i].PlaySound && soundFrame++ % soundEvery == 0 && !string.IsNullOrEmpty(soundId))
+                    Sound.Play(soundId);
                 float wait = interval + frames[i].ExtraDelay;
                 if (wait > 0f) yield return new WaitForSecondsRealtime(wait);
             }
@@ -104,98 +103,11 @@ namespace ContextStage
             _typingRoutine = null;
         }
 
-        List<TypeFrame> BuildTypingFrames(string richText)
-        {
-            var frames = new List<TypeFrame>(richText.Length * 2);
-            var committed = new StringBuilder(richText.Length + 16);
-
-            for (int i = 0; i < richText.Length; i++)
-            {
-                char value = richText[i];
-                if (value == '<')
-                {
-                    int tagEnd = richText.IndexOf('>', i);
-                    if (tagEnd >= i)
-                    {
-                        committed.Append(richText, i, tagEnd - i + 1);
-                        i = tagEnd;
-                        continue;
-                    }
-                }
-
-                if (TryDecomposeHangul(value, out char initial, out char medialForm, out bool hasFinal))
-                {
-                    frames.Add(new TypeFrame(committed.ToString() + initial, 0f));
-                    frames.Add(new TypeFrame(committed.ToString() + medialForm, 0f));
-                    if (hasFinal)
-                        frames.Add(new TypeFrame(committed.ToString() + value, 0f));
-                    committed.Append(value);
-                    continue;
-                }
-
-                committed.Append(value);
-                if (char.IsWhiteSpace(value)) continue;
-
-                float punctuationDelay = IsPunctuation(value) && _config != null
-                    ? _config.DialoguePunctuationDelay
-                    : 0f;
-                frames.Add(new TypeFrame(committed.ToString(), punctuationDelay));
-            }
-
-            if (frames.Count == 0 || frames[frames.Count - 1].Text != richText)
-                frames.Add(new TypeFrame(richText, 0f));
-            return frames;
-        }
-
-        static bool TryDecomposeHangul(
-            char value,
-            out char initial,
-            out char medialForm,
-            out bool hasFinal)
-        {
-            const int hangulBase = 0xAC00;
-            const int hangulLast = 0xD7A3;
-            int code = value;
-            if (code < hangulBase || code > hangulLast)
-            {
-                initial = default;
-                medialForm = default;
-                hasFinal = false;
-                return false;
-            }
-
-            int syllableIndex = code - hangulBase;
-            int initialIndex = syllableIndex / 588;
-            int medialIndex = (syllableIndex % 588) / 28;
-            int finalIndex = syllableIndex % 28;
-
-            initial = CompatibilityInitials[initialIndex];
-            medialForm = (char)(hangulBase + initialIndex * 588 + medialIndex * 28);
-            hasFinal = finalIndex > 0;
-            return true;
-        }
-
-        static bool IsPunctuation(char value) =>
-            value == '.' || value == ',' || value == '!' || value == '?' ||
-            value == '…' || value == '。' || value == '！' || value == '？';
-
         void StopTyping()
         {
             if (_typingRoutine == null) return;
             StopCoroutine(_typingRoutine);
             _typingRoutine = null;
-        }
-
-        readonly struct TypeFrame
-        {
-            public TypeFrame(string text, float extraDelay)
-            {
-                Text = text;
-                ExtraDelay = extraDelay;
-            }
-
-            public string Text { get; }
-            public float ExtraDelay { get; }
         }
 
         void LateUpdate()

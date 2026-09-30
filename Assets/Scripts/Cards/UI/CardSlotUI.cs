@@ -31,6 +31,8 @@ namespace ContextStage
         Color _descriptionBaseColor = Color.white;
         Color _roleBaseColor = Color.white;
         SpecialCardIdleVFX _specialIdleVfx;
+        bool _canShowSpecialIdleVfx;
+        bool _specialIdleActive;
         CardUpgradeFrame _upgradeFrame;
         CardUpgradeVFX _grantedCardVfx;
 
@@ -100,7 +102,9 @@ namespace ContextStage
             bool granted = !usesUpgradeFrame && deck != null &&
                 deck.TryGetGrantedCardTier(card.Id, out grantedTier);
             EnsureSpecialIdleVfx();
-            _specialIdleVfx.Bind(background, card.Role == CardRole.Special && !granted);
+            _canShowSpecialIdleVfx = card.Role == CardRole.Special && !granted;
+            _specialIdleActive = HasUsableSpecialTarget();
+            _specialIdleVfx.Bind(background, _specialIdleActive);
             // 비강화 상태에서도 미리 생성해 디졸브의 재사용 대상 목록에 포함시킨다.
             if (_upgradeFrame == null && upgradeFrameSprite != null)
                 _upgradeFrame = CardUpgradeFrame.Create(artwork);
@@ -123,10 +127,39 @@ namespace ContextStage
             ApplyFeverVisual();
         }
 
+        void LateUpdate()
+        {
+            if (!_canShowSpecialIdleVfx) return;
+
+            // 등장/종료 이벤트의 구독 순서와 무관하게 확정된 요청·드롭 영역을 확인한다.
+            bool active = HasUsableSpecialTarget();
+            if (active == _specialIdleActive) return;
+            _specialIdleActive = active;
+            _specialIdleVfx.Bind(background, active);
+        }
+
+        bool HasUsableSpecialTarget()
+        {
+            if (!_canShowSpecialIdleVfx || _boundCard == null ||
+                !SpecialAudience.HasActiveRequest)
+                return false;
+
+            var manager = SpecialAudienceManager.Instance;
+            if (!manager.isActiveAndEnabled ||
+                manager.CurrentRequestType != _boundCard.TargetStage)
+                return false;
+
+            if (!manager.RequireDropOnTarget) return true;
+            var target = SpecialAudience.CurrentDropTarget;
+            return target != null && target.isActiveAndEnabled && target.IsActive;
+        }
+
         void OnDisable()
         {
             _feverVisual = false;
             _boundCard = null;
+            _canShowSpecialIdleVfx = false;
+            _specialIdleActive = false;
             if (_specialIdleVfx != null) _specialIdleVfx.SetActive(false);
             if (_upgradeFrame != null) _upgradeFrame.enabled = false;
             if (_grantedCardVfx != null) _grantedCardVfx.StopEffect();

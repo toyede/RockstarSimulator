@@ -90,6 +90,7 @@ namespace ContextStage
             buttonRect.sizeDelta = new Vector2(230f, 66f);
             var button = buttonObject.AddComponent<Button>();
             button.targetGraphic = buttonObject.GetComponent<Image>();
+            UIInteractionSfx.Ensure(button);
             button.onClick.AddListener(() => _webExitOverlay.SetActive(false));
             CreateText(
                 "Label",

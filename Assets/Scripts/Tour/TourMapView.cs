@@ -171,6 +171,7 @@ namespace ContextStage
                 NodeSlot slot = nodeSlots[i];
                 slot.Index = i;
                 if (slot.button == null) continue;
+                UIInteractionSfx.Ensure(slot.button);
                 NodeSlot captured = slot;
                 slot.button.onClick.AddListener(() => OnNodeClicked(captured));
                 AttachHover(slot);
@@ -178,6 +179,7 @@ namespace ContextStage
 
             if (busImage != null) _busImageBase = busImage.anchoredPosition;
             if (raccoonImage != null) _raccoonBase = raccoonImage.anchoredPosition;
+            UIInteractionSfx.Ensure(titleButton);
             if (titleButton != null) titleButton.onClick.AddListener(() => ReturnToTitleRequested?.Invoke());
 
             ApplyFrame();
@@ -437,6 +439,7 @@ namespace ContextStage
         void AttachHover(NodeSlot slot)
         {
             if (slot.root == null) return;
+            UIInteractionSfx.Ensure(slot.button);
             NodeHoverRelay relay = slot.root.GetComponent<NodeHoverRelay>();
             if (relay == null) relay = slot.root.gameObject.AddComponent<NodeHoverRelay>();
             NodeSlot captured = slot;

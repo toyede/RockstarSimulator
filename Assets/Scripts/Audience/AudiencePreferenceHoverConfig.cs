@@ -22,6 +22,9 @@ namespace ContextStage
         [SerializeField, Min(12f)] float dialogueFontSize = 25f;
         [SerializeField, Min(0f)] float dialogueFadeSpeed = 12f;
         [SerializeField] bool useHangulTypewriter = true;
+        [SerializeField] string typingSoundId = "ui_text";
+        [SerializeField, Min(1), Tooltip("완성된 글자 몇 개마다 타이핑 효과음을 낼지 (공백·문장부호 제외)")]
+        int typingSoundEvery = 1;
         [SerializeField, Min(0.005f)] float dialogueTypingInterval = 0.035f;
         [SerializeField, Min(0f)] float dialoguePunctuationDelay = 0.08f;
 
@@ -48,6 +51,8 @@ namespace ContextStage
         public float DialogueFontSize => Mathf.Max(12f, dialogueFontSize);
         public float DialogueFadeSpeed => Mathf.Max(0f, dialogueFadeSpeed);
         public bool UseHangulTypewriter => useHangulTypewriter;
+        public string TypingSoundId => typingSoundId;
+        public int TypingSoundEvery => Mathf.Max(1, typingSoundEvery);
         public float DialogueTypingInterval => Mathf.Max(0.005f, dialogueTypingInterval);
         public float DialoguePunctuationDelay => Mathf.Max(0f, dialoguePunctuationDelay);
 

@@ -74,6 +74,9 @@ namespace ContextStage.EditorTools
 
             // UI — 버튼 UnityEvent(PlaySfx) · DisplayModeDropdown
             ("ui_click_wooden", AudioBus.UI),
+            ("ui_click", AudioBus.UI),
+            ("ui_hover", AudioBus.UI),
+            ("ui_text", AudioBus.UI),
             ("game_start", AudioBus.UI),
         };
 

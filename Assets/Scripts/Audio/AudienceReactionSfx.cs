@@ -122,18 +122,29 @@ namespace ContextStage
             }
         }
 
-        void OnEnable() => EventBus.Subscribe<CardResolved>(OnCardResolved);
+        void OnEnable()
+        {
+            EventBus.Subscribe<CardResolved>(OnCardResolved);
+            EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
+        }
 
         void OnDisable()
         {
             EventBus.Unsubscribe<CardResolved>(OnCardResolved);
+            EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
             StopAll();
+        }
+
+        void OnGameStateChanged(GameStateChanged e)
+        {
+            if (e.Current == GameState.GameOver || e.Current == GameState.Ready) StopAll();
         }
 
         // ---------------- 판정 ----------------
 
         void OnCardResolved(CardResolved e)
         {
+            if (GameManager.HasInstance && GameManager.Instance.State == GameState.GameOver) return;
             if (!reactToZeroScore && e.Role == CardRole.Utility && e.GainedScore == 0) return;
 
             if (e.IsSpecialHit && useSpecialHitReaction && specialHitReaction.clip != null)

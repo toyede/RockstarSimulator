@@ -47,6 +47,7 @@ namespace ContextStage
 
         void OnCardSelected(CardSelected e)
         {
+            if (GameManager.HasInstance && GameManager.Instance.State == GameState.GameOver) return;
             PlayIfSet(ResolveCardSfx(e.CardId));
             PlayIfSet(ResolveJudgementSfx(e.Judgement));
         }

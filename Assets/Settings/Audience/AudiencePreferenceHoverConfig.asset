@@ -21,6 +21,8 @@ MonoBehaviour:
   dialogueFontSize: 25
   dialogueFadeSpeed: 12
   useHangulTypewriter: 1
+  typingSoundId: ui_text
+  typingSoundEvery: 1
   dialogueTypingInterval: 0.035
   dialoguePunctuationDelay: 0.08
   chillColor: {r: 0.19215687, g: 0.8745098, b: 0.91764706, a: 1}

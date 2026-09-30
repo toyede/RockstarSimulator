@@ -6,14 +6,16 @@ namespace ContextStage
     /// <summary>타이핑 연출 한 프레임. Text 는 그 시점에 보여줄 전체 문자열이다.</summary>
     public readonly struct TypewriterFrame
     {
-        public TypewriterFrame(string text, float extraDelay)
+        public TypewriterFrame(string text, float extraDelay, bool playSound = true)
         {
             Text = text;
             ExtraDelay = extraDelay;
+            PlaySound = playSound;
         }
 
         public string Text { get; }
         public float ExtraDelay { get; }
+        public bool PlaySound { get; }
     }
 
     /// <summary>
@@ -53,8 +55,9 @@ namespace ContextStage
 
                 if (TryDecomposeHangul(value, out char initial, out char medialForm, out bool hasFinal))
                 {
-                    frames.Add(new TypewriterFrame(committed.ToString() + initial, 0f));
-                    frames.Add(new TypewriterFrame(committed.ToString() + medialForm, 0f));
+                    // 소리는 자모 중간 단계가 아닌 한 글자가 완성될 때 한 번 낸다.
+                    frames.Add(new TypewriterFrame(committed.ToString() + initial, 0f, false));
+                    frames.Add(new TypewriterFrame(committed.ToString() + medialForm, 0f, !hasFinal));
                     if (hasFinal)
                         frames.Add(new TypewriterFrame(committed.ToString() + value, 0f));
                     committed.Append(value);
@@ -65,11 +68,11 @@ namespace ContextStage
                 if (char.IsWhiteSpace(value)) continue;
 
                 float delay = IsPunctuation(value) ? punctuationDelay : 0f;
-                frames.Add(new TypewriterFrame(committed.ToString(), delay));
+                frames.Add(new TypewriterFrame(committed.ToString(), delay, !char.IsPunctuation(value)));
             }
 
             if (frames.Count == 0 || frames[frames.Count - 1].Text != richText)
-                frames.Add(new TypewriterFrame(richText, 0f));
+                frames.Add(new TypewriterFrame(richText, 0f, false));
             return frames;
         }
 

@@ -20,7 +20,7 @@ namespace ContextStage
 
         [SerializeField] string fullscreenLabel = "전체 화면";
         [SerializeField] string windowedLabel = "창 모드";
-        [SerializeField] string clickSoundId = "ui_click_wooden";
+        [SerializeField] string clickSoundId = "ui_click";
 
         [Header("Windowed")]
         [SerializeField, Min(640)] int windowedWidth = 1280;

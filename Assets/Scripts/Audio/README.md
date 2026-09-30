@@ -24,7 +24,8 @@ Tools/Audio/Setup Crowd Ambience
 | Ready → Playing | 현재 호응도에 맞는 티어로 페이드인 |
 | 호응도 변화 (`HypeChanged`) | 티어 재평가 → 바뀌면 크로스페이드 |
 | Playing → Paused | 앰비언스 일시정지 |
-| GameOver / Ready | 페이드아웃 후 정지 |
+| Ready | 페이드아웃 후 정지 |
+| GameOver | 관객 앰비언스·반응음 즉시 정지 |
 
 티어 경계에는 히스테리시스(기본 ±0.04)가 있어 경계값에서 소리가 딸깍거리지 않는다.
 전환 시 새 클립은 이전 클립과 같은 재생 위치에서 시작해 군중 소리가 끊기지 않는다.
@@ -71,7 +72,10 @@ void OnTier(CrowdAmbienceTierChanged e) => Debug.Log($"{e.PreviousIndex} → {e.
 | `bgmId` | `big_rock` | SoundLibrary ID |
 | `startOn` | `SceneStart` | `PerformanceStart`(공연 시작 시) / `Manual` 로 변경 가능 |
 | `fadeInDuration` | 1.5초 | 페이드인 |
-| `stopOnGameOver` | 꺼짐 | 켜면 게임오버 시 페이드아웃 |
+| `stopOnGameOver` | 코드 기본값 꺼짐 / Main 씬 켜짐 | 공연 종료 시 BGM·공연 효과음 즉시 정지. UI 효과음은 유지 |
+
+Main 씬의 공연 종료 및 투어 맵 진입 시 `Bgm.StopPerformance()`로 남은 공연 소리를 정리한다.
+다음 공연 시작 시 BGM이 다시 재생되며, 타이틀 BGM은 공연 종료 설정을 사용하지 않는다.
 
 **볼륨은 두 층으로 나뉜다.** 곡 자체 밸런스는 SoundLibrary 의 `big_rock` 항목 볼륨(= 0.5),
 플레이어가 옵션에서 만지는 값은 Bgm 채널 볼륨(`AudioVolumeSlider`)이다. 서로 곱해진다.

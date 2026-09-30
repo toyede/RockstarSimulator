@@ -65,7 +65,7 @@ namespace ContextStage
         [SerializeField, Tooltip("씬 시작과 동시에 깔기 시작한다")]
         bool playOnStart = true;
 
-        [SerializeField, Tooltip("공연이 끝나면(GameOver) 서서히 걷는다")]
+        [SerializeField, Tooltip("공연이 끝나면(GameOver) 즉시 정지한다")]
         bool stopOnGameOver = true;
 
         [SerializeField, Min(0.01f), Tooltip("전체를 걷을 때의 페이드 시간(초)")]
@@ -131,6 +131,13 @@ namespace ContextStage
 
         public void StartAmbience()
         {
+            // 결과 확인 후 Ready로 초기화돼도 증강·맵 이동 중에는 재시작하지 않는다.
+            if (TourRunManager.HasInstance && TourRunManager.Instance.CurrentRun != null &&
+                TourRunManager.Instance.CurrentRun.phase != RunPhase.Performance)
+            {
+                StopImmediate();
+                return;
+            }
             BuildSources();
             _running = true;
             _globalTarget = 1f;
@@ -184,7 +191,7 @@ namespace ContextStage
                     StartAmbience();
                     break;
                 case GameState.GameOver:
-                    if (stopOnGameOver) StopAmbience();
+                    if (stopOnGameOver) StopImmediate();
                     break;
             }
         }
