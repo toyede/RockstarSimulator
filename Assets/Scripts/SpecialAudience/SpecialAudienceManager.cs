@@ -67,6 +67,18 @@ namespace ContextStage
         HeatStage _currentRequest;
         bool _hitRaisedForCurrentRequest;     // 한 요청당 Special Hit 이벤트 1회 보장
         float _lastReportedRemaining = -1f;   // 같은 값 중복 통지 방지
+        bool _tutorialHold;
+        float _heldRemaining;
+
+        /// <summary>요청 만료/다음 자동 등장만 보류한다. 액터 이동과 성공 연출은 계속된다.</summary>
+        public void SetTutorialHold(bool held)
+        {
+            if (_tutorialHold == held) return;
+            if (held) _heldRemaining = Mathf.Max(0f, _phaseDeadline - Time.time);
+            else if (_phase == Phase.Active || _phase == Phase.Waiting)
+                _phaseDeadline = Time.time + _heldRemaining;
+            _tutorialHold = held;
+        }
 
         /// <summary>셔플 백. 매 등장마다 새 리스트를 만들지 않고 재사용한다.</summary>
         readonly List<HeatStage> _bag = new List<HeatStage>(3);
@@ -82,7 +94,7 @@ namespace ContextStage
         public float RequestDuration => config != null ? config.RequestDuration : 0f;
 
         public float RemainingTime =>
-            _phase == Phase.Active ? Mathf.Max(0f, _phaseDeadline - Time.time) : 0f;
+            _phase == Phase.Active ? (_tutorialHold ? _heldRemaining : Mathf.Max(0f, _phaseDeadline - Time.time)) : 0f;
 
         /// <summary>현재 남은 시간의 0~1 비율. 게이지용.</summary>
         public float RemainingNormalized =>
@@ -285,6 +297,7 @@ namespace ContextStage
         /// <summary>시스템을 멈춘다. 활성 요청이 있으면 StageEnded 로 종료 처리한다.</summary>
         public void StopSystem()
         {
+            _tutorialHold = false;
             if (_phase == Phase.Active || _phase == Phase.HitHold)
                 EndRequest(SpecialAudienceEndReason.StageEnded, hideInstant: true);
 
@@ -296,6 +309,7 @@ namespace ContextStage
         /// <summary>내부 상태를 초기값으로 되돌린다. (타이머·셔플 백·연출)</summary>
         public void ResetSystem()
         {
+            _tutorialHold = false;
             _phase = Phase.Stopped;
             _phaseDeadline = 0f;
             _hitRaisedForCurrentRequest = false;
@@ -380,7 +394,7 @@ namespace ContextStage
         void Update()
         {
             // 디버그 키는 시스템이 꺼져 있어도 받는다 (Play Mode 에서 바로 확인할 수 있도록)
-            HandleDebugKey();
+            if (!_tutorialHold) HandleDebugKey();
 
             if (_phase == Phase.Stopped) return;
 
@@ -390,6 +404,7 @@ namespace ContextStage
             switch (_phase)
             {
                 case Phase.Waiting:
+                    if (_tutorialHold) return;
                     if (Time.time >= _phaseDeadline)
                     {
                         if (TryTakeAvailableRequest(out HeatStage requestType))
@@ -401,6 +416,7 @@ namespace ContextStage
 
                 case Phase.Active:
                     ReportRemaining();
+                    if (_tutorialHold) return;
                     if (Time.time >= _phaseDeadline)
                     {
                         var type = _currentRequest;
@@ -438,6 +454,7 @@ namespace ContextStage
             _lastReportedRemaining = -1f;
             _phase = Phase.Active;
             _phaseDeadline = Time.time + config.RequestDuration;
+            if (_tutorialHold) _heldRemaining = config.RequestDuration;
 
             OnSpecialAudienceSpawned?.Invoke(requestType, config.RequestDuration);
             EventBus.Raise(new SpecialAudienceSpawned { RequestType = requestType, Duration = config.RequestDuration });
@@ -469,6 +486,7 @@ namespace ContextStage
         {
             _phase = Phase.Waiting;
             _phaseDeadline = Time.time + config.SpawnInterval;
+            if (_tutorialHold) _heldRemaining = config.SpawnInterval;
         }
 
         // ---------------- 셔플 백 ----------------

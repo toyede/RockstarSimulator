@@ -21,6 +21,7 @@ namespace ContextStage
     ///     F10         : 현재 단계를 자동으로 한 칸 진행
     ///                   (Map → 노드 선택 / Dialogue → 완료 / Performance → 공연 없이 클리어 결과 제출 / Result → 확인)
     ///                   증강 선택 화면은 직접 고른다.
+    ///     F12         : 저장 데이터 전부 삭제 (튜토리얼 완료 기록·로컬 순위) — 테스트 빌드 첫 실행 확인용
     ///
     /// 정식 클리어 조건(제한시간·목표 점수)은 PerformanceTimerSystem 이 담당하며 이 스크립트는 그 판정을
     /// 흉내 내기만 한다. 릴리즈 빌드에서는 컴파일되지 않는다.
@@ -63,6 +64,11 @@ namespace ContextStage
             if (home) ClearStage(shift ? SRankRatio : 1f);
             if (delete) FailStage();
             if (f10) AdvanceTourStep();
+#if ENABLE_INPUT_SYSTEM
+            if (keyboard.f12Key.wasPressedThisFrame) ResetSaveData();
+#else
+            if (Input.GetKeyDown(KeyCode.F12)) ResetSaveData();
+#endif
 
 #if ENABLE_INPUT_SYSTEM
             if (keyboard.f4Key.wasPressedThisFrame) BossDebug(rule => rule.DebugDrainNow());
@@ -106,6 +112,14 @@ namespace ContextStage
             gm.SetScore(score);
             gm.GameOver();
             Debug.Log($"[TourDebug] 스테이지 클리어 강제: 점수 {score:N0} / 목표 {target:N0}");
+        }
+
+        /// <summary>저장 데이터(튜토리얼 완료 기록·로컬 순위 등 PlayerPrefs) 전부 삭제. 테스트 빌드에서 "첫 실행" 상태를 다시 보기 위한 것.</summary>
+        public static void ResetSaveData()
+        {
+            Save.DeleteAll();
+            PlayerPrefs.Save();
+            Debug.Log("[TourDebug] 저장 데이터 전부 삭제 (튜토리얼 완료 기록 포함). 다음 투어부터 첫 실행 상태.");
         }
 
         /// <summary>점수 0 으로 공연을 끝낸다 (실패).</summary>
@@ -218,7 +232,7 @@ namespace ContextStage
             }
 
             if (TourRunManager.HasInstance && TourRunManager.Instance.CurrentRun != null)
-                return $"[DEBUG] {stageName} · {phase}  |  F10: 현재 단계 자동 진행 (공연은 클리어 처리)";
+                return $"[DEBUG] {stageName} · {phase}  |  F10: 현재 단계 자동 진행 (공연은 클리어 처리)  F12: 저장 초기화";
 
             return null;
         }

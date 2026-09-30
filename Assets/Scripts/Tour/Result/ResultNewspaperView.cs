@@ -74,6 +74,10 @@ namespace ContextStage
         [SerializeField, Tooltip("도장 찍힐 때 재생 (비우면 없음)")] string stampSoundId = "";
 
         Coroutine _routine;
+        // 스킨별 위치 보정의 기준(씬에서 잡은 위치). 첫 표시 때 한 번 저장한다
+        bool _baseCached;
+        Vector2 _headlineBase;
+        Vector2 _recordsBase;
         Coroutine _bandRoutine;
         Action _onPrimary;
         bool _complete;
@@ -140,6 +144,23 @@ namespace ContextStage
 
         // ---------------- 내용 ----------------
 
+        /// <summary>지면(스킨)마다 제호 높이·칸 선 위치가 달라 헤드라인 묶음과 기록 묶음만 스킨 값만큼 옮긴다. 기준은 씬 위치.</summary>
+        void ApplySkinOffsets(ResultNewspaperCatalog.Skin skin)
+        {
+            RectTransform headlineRect = headlineGroup != null ? headlineGroup.GetComponent<RectTransform>() : null;
+            RectTransform recordsRect = recordsGroup != null ? recordsGroup.GetComponent<RectTransform>() : null;
+            if (!_baseCached)
+            {
+                if (headlineRect != null) _headlineBase = headlineRect.anchoredPosition;
+                if (recordsRect != null) _recordsBase = recordsRect.anchoredPosition;
+                _baseCached = true;
+            }
+            Vector2 headlineOffset = skin != null ? skin.headlineOffset : Vector2.zero;
+            Vector2 recordsOffset = skin != null ? skin.recordsOffset : Vector2.zero;
+            if (headlineRect != null) headlineRect.anchoredPosition = _headlineBase + headlineOffset;
+            if (recordsRect != null) recordsRect.anchoredPosition = _recordsBase + recordsOffset;
+        }
+
         void Fill(ResultPresentation d)
         {
             if (paperImage != null && d.skin != null && d.skin.paper != null)
@@ -147,6 +168,8 @@ namespace ContextStage
                 paperImage.sprite = d.skin.paper;
                 paperImage.SetNativeSize();
             }
+
+            ApplySkinOffsets(d.skin);
 
             Set(mastheadInfo, d.mastheadInfo);
             Set(headline, d.headline);

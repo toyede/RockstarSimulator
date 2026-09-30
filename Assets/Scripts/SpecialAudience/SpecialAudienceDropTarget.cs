@@ -90,6 +90,7 @@ namespace ContextStage
         public bool IsHoverVisible => _hoverVisible;
 
         public Collider2D HitCollider => hitCollider;
+        public Camera WorldCamera => ResolveCamera();
 
         void Awake()
         {
@@ -346,6 +347,8 @@ namespace ContextStage
 
         static Vector2 ReadPointerPosition()
         {
+            if (CardDragHandler.Current != null)
+                return CardDragHandler.Current.PointerScreenPosition;
 #if ENABLE_INPUT_SYSTEM
             var mouse = Mouse.current;
             return mouse != null ? mouse.position.ReadValue() : Vector2.zero;

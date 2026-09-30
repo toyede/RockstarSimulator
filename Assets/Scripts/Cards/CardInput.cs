@@ -13,6 +13,8 @@ namespace ContextStage
         /// 카드는 소모되지 않고 손패로 되돌아간다 (기존 실패 경로 그대로).
         /// </summary>
         public static System.Func<int, bool> UseFilter;
+        /// <summary>드롭 컨텍스트까지 확인하는 교육용 게이트. 실제 소비 전에 호출한다.</summary>
+        public static System.Func<int, SpecialCardRequest, bool> RequestFilter;
         public static event System.Action<int> UseBlocked;
 
         /// <summary>
@@ -40,7 +42,8 @@ namespace ContextStage
             if (!CanUseCard(handIndex)) return false;
 
             // 튜토리얼이 지정한 카드가 아니면 소모 없이 되돌린다 (평소에는 UseFilter 가 null)
-            if (UseFilter != null && !UseFilter(handIndex))
+            if ((UseFilter != null && !UseFilter(handIndex)) ||
+                (RequestFilter != null && !RequestFilter(handIndex, specialRequest)))
             {
                 UseBlocked?.Invoke(handIndex);
                 return false;

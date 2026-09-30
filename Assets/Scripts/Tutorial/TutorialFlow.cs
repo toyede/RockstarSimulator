@@ -27,12 +27,17 @@ namespace ContextStage
     ///   공연 시간 정지  : PerformanceTimer.SetPaused(true)
     /// 끝나면(스킵 포함) 전부 원래대로 복구하고 새 공연을 시작한다.
     ///
-    /// 완료 여부는 Save("tutorial_done") 에 저장되어 다음 실행부터는 자동으로 뜨지 않는다.
+    /// 기본 교육은 tutorial_done, Stage 2 특별 관객 교육은 tutorial_special_done으로 따로 저장한다.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class TutorialFlow : MonoBehaviour
     {
         public const string TutorialDoneKey = "tutorial_done";
+        public const string SpecialTutorialDoneKey = "tutorial_special_done";
+        bool _specialLesson;
+        TutorialDragGuideUI _dragGuide;
+        System.Func<int, bool> _previousUseFilter;
+        System.Func<int, SpecialCardRequest, bool> _previousRequestFilter;
 
         enum Phase
         {
@@ -61,8 +66,7 @@ namespace ContextStage
         float startDelay = 0.6f;
 
         [SerializeField, Tooltip(
-            "투어 스테이지(StageRuntimeDirector 가 적용한 공연) 중에는 자동 실행하지 않는다. " +
-            "Stage 1 '골목 버스킹'이 관찰 학습 스테이지 역할을 하므로 관객 구성을 튜토리얼이 덮어쓰지 않게 한다")]
+            "투어에서는 Stage 1 기본 교육과 Stage 2 특별 관객 교육만 실행한다")]
         bool skipDuringTourStage = true;
 
         [Header("관객 몰입도 프리셋 (0~100)")]
@@ -122,6 +126,7 @@ namespace ContextStage
 
         void OnDisable()
         {
+            _pendingStartAt = -1f;
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
             EventBus.Unsubscribe<CardResolved>(OnCardResolved);
             CardInput.UseBlocked -= OnCardBlocked;
@@ -203,12 +208,7 @@ namespace ContextStage
 
                 case Phase.SpecialIntro:
                 case Phase.SpecialUse:
-                    // 설명을 읽는 동안 요청 시간이 끝나도 바로 같은 요청을 다시 보여준다.
-                    if (SpecialAudienceManager.HasInstance &&
-                        !SpecialAudienceManager.Instance.HasActiveRequest)
-                    {
-                        SpecialAudienceManager.Instance.ForceSpawn(HeatStage.Singalong);
-                    }
+                    // 요청 타이머는 Manager가 보류한다. 반복 재생성하지 않는다.
                     break;
 
                 case Phase.FinalRun:
@@ -225,29 +225,31 @@ namespace ContextStage
         /// <summary>[테스트 전용] true 면 자동 실행하지 않는다 (E2E 스크립트가 켠다).</summary>
         public static bool SuppressForTests;
 
-        [SerializeField, Tooltip("에디터·개발 빌드에서는 완료 기록과 상관없이 첫 스테이지에서 항상 튜토리얼을 띄운다")]
+        [SerializeField, Tooltip("에디터·개발 빌드에서는 완료 기록과 상관없이 Stage 1/2의 해당 교육을 띄운다")]
         bool forceInDebugBuilds = true;
 
         /// <summary>
-        /// 투어 중 자동 실행 조건: 첫 스테이지(stage_01)이고, 이 기기에서 아직 완료한 적이 없을 때.
+        /// Stage 1 기본 교육 / Stage 2 특별 관객 교육의 독립적인 완료 기록을 확인한다.
         /// 에디터·개발 빌드는 forceInDebugBuilds 로 항상. 투어 밖(Main 직접 실행)은 예전처럼 매번.
         /// </summary>
         bool ShouldAutoRunInTour()
         {
             StageDefinition stage = StageRuntimeDirector.CurrentStage;
             if (stage == null) return true; // 투어가 아니다
-            if (!skipDuringTourStage) return true;
-            if (stage.StageId != "stage_01") return false;
+            if (stage.StageId != "stage_01" && stage.StageId != "stage_02") return false;
 
             bool force = false;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             force = forceInDebugBuilds;
 #endif
-            return force || !Save.GetBool(TutorialDoneKey, false);
+            return !skipDuringTourStage || force || !Save.GetBool(
+                stage.StageId == "stage_02" ? SpecialTutorialDoneKey : TutorialDoneKey, false);
         }
 
         void OnGameStateChanged(GameStateChanged e)
         {
+            if (e.Current == GameState.Ready || e.Current == GameState.GameOver)
+                _pendingStartAt = -1f;
             // 첫 공연 자동 실행 (투어에서는 첫 스테이지 첫 플레이만 — ShouldAutoRunInTour)
             bool tourStageActive = SuppressForTests || !ShouldAutoRunInTour();
             if (autoRunOnFirstPlay &&
@@ -281,8 +283,11 @@ namespace ContextStage
 
             IsRunning = true;
             _hasStartedThisScene = true;
+            _specialLesson = StageRuntimeDirector.CurrentStage != null &&
+                             StageRuntimeDirector.CurrentStage.StageId == "stage_02";
             TakeControl();
-            EnterIntro();
+            if (_specialLesson) EnterSpecialIntro();
+            else EnterIntro();
         }
 
         /// <summary>스킵. 완료로 기록해 다음부터 뜨지 않는다.</summary>
@@ -310,7 +315,10 @@ namespace ContextStage
 
             roster.SuppressEngagementDecay = true;
 
+            _previousUseFilter = CardInput.UseFilter;
+            _previousRequestFilter = CardInput.RequestFilter;
             CardInput.UseFilter = FilterCard;
+            CardInput.RequestFilter = FilterRequest;
             _allowAllCards = false;
             SetupFixedHand();
 
@@ -336,18 +344,23 @@ namespace ContextStage
                 FeverSystem.Instance.CancelFever();
                 FeverSystem.Instance.SetAutomaticTriggerEnabled(true);
             }
-            CardInput.UseFilter = null;
+            if (CardInput.UseFilter == FilterCard) CardInput.UseFilter = _previousUseFilter;
+            if (CardInput.RequestFilter == FilterRequest) CardInput.RequestFilter = _previousRequestFilter;
+            if (_dragGuide != null) _dragGuide.Hide();
+            overlay?.SetSpecialLessonLayout(false);
             overlay?.HideAll();
             overlay?.SetSkipVisible(false);
         }
 
         void EndTutorial(bool markDone, bool restartRun)
         {
+            if (!IsRunning) return;
+            _pendingStartAt = -1f;
             _phase = Phase.Idle;
             ReleaseControl();
 
             // 완료(끝까지 보거나 건너뜀)를 기록해 두면 투어 첫 스테이지에서 다시 뜨지 않는다 (에디터·개발 빌드는 forceInDebugBuilds 로 항상)
-            if (markDone) Save.SetBool(TutorialDoneKey, true);
+            if (markDone) Save.SetBool(_specialLesson ? SpecialTutorialDoneKey : TutorialDoneKey, true);
 
             if (restartRun && GameManager.HasInstance && GameManager.Instance.IsPlaying)
             {
@@ -391,12 +404,12 @@ namespace ContextStage
             else Debug.LogWarning("[Tutorial] 카드 풀에 성향별 Normal 카드가 3종 모두 있어야 합니다.");
         }
 
-        void SetupSpecialHand()
+        bool SetupSpecialHand()
         {
-            if (!CardSystem.HasInstance) return;
+            if (!CardSystem.HasInstance) return false;
             var system = CardSystem.Instance;
             var config = system.Config;
-            if (config == null) return;
+            if (config == null) return false;
 
             foreach (var entry in config.CardPool)
             {
@@ -407,10 +420,11 @@ namespace ContextStage
                     continue;
 
                 system.SetHand(new[] { card });
-                return;
+                return true;
             }
 
             Debug.LogWarning("[Tutorial] SINGALONG Special 카드가 카드 풀에 없습니다.");
+            return false;
         }
 
         /// <summary>기존 관객을 정리하고 지정 구성으로 채운다. (추가 먼저 → 제거 — 로스터가 비면 게임오버가 뜨므로)</summary>
@@ -455,6 +469,7 @@ namespace ContextStage
 
         bool FilterCard(int handIndex)
         {
+            if (_specialLesson && _phase != Phase.SpecialUse) return false;
             if (_allowAllCards) return true;
             if (!CardSystem.HasInstance) return true;
 
@@ -471,6 +486,14 @@ namespace ContextStage
             if (!HandHasMatch()) return true;
 
             return card.Role == CardRole.Normal && card.TargetPreference == _expectedPref;
+        }
+
+        bool FilterRequest(int handIndex, SpecialCardRequest request)
+        {
+            if (!_specialLesson) return true;
+            return _phase == Phase.SpecialUse && request.IsActive &&
+                   request.RequestedStage == HeatStage.Singalong &&
+                   SpecialAudience.HasActiveRequest;
         }
 
         bool HandHasMatch()
@@ -504,9 +527,9 @@ namespace ContextStage
                 case Phase.GameOverExplain: EnterCrowdChange(); break;
                 case Phase.CrowdChange:  EnterLightingHint(); break;
                 case Phase.LightingHint: EnterFeverIntro(); break;
-                case Phase.FeverExplain: EnterSpecialIntro(); break;
+                case Phase.FeverExplain: EnterFinalIntro(); break;
                 case Phase.SpecialIntro: EnterSpecialUse(); break;
-                case Phase.SpecialExplain: EnterFinalIntro(); break;
+                case Phase.SpecialExplain: EndTutorial(markDone: true, restartRun: true); break;
                 case Phase.FinalIntro:   EnterFinalRun(); break;
                 case Phase.FinalFail:    EnterFinalIntro(); break;
                 case Phase.Complete:     EndTutorial(markDone: true, restartRun: true); break;
@@ -757,20 +780,34 @@ namespace ContextStage
             SetPhase(Phase.SpecialIntro);
             _allowAllCards = false;
             if (FeverSystem.HasInstance) FeverSystem.Instance.CancelFever();
-            SetupSpecialHand();
+            if (!SpecialAudienceManager.HasInstance || SpecialAudienceManager.Instance.Config == null ||
+                overlay == null || !SetupSpecialHand())
+            {
+                Debug.LogWarning("[Tutorial] 특별 관객 교육 연결이 없어 본 공연으로 진행합니다. 완료 기록은 남기지 않습니다.");
+                EndTutorial(markDone: false, restartRun: true);
+                return;
+            }
 
             if (SpecialAudienceManager.HasInstance)
             {
                 SpecialAudienceManager.Instance.StopSystem();
                 SpecialAudienceManager.Instance.ForceSpawn(HeatStage.Singalong);
+                SpecialAudienceManager.Instance.SetTutorialHold(true);
             }
 
+            if (SpecialAudience.CurrentDropTarget == null || SpecialAudience.CurrentDropTarget.HitCollider == null)
+            {
+                Debug.LogWarning("[Tutorial] 특별 관객 드롭 영역이 없어 교육을 건너뜁니다. 씬 연결을 확인하세요.");
+                EndTutorial(markDone: false, restartRun: true);
+                return;
+            }
+
+            overlay.SetSpecialLessonLayout(true);
             overlay?.SetDim(false);
             overlay?.Spotlight(null);
             overlay?.ShowMessage(
-                "특별 관객의 아이콘은 원하는 SPECIAL 카드를 뜻합니다.",
-                "지금 특별 관객은 함께 노래할 퍼포먼스를 요청하고 있습니다. " +
-                "요청 아이콘과 손패의 SPECIAL 카드를 비교하세요. (클릭해서 계속)",
+                "특별 관객이 연주를 요청하고 있습니다.",
+                "머리 위 요청 아이콘과 같은 SPECIAL 카드를 확인하세요. (클릭해서 계속)",
                 true);
         }
 
@@ -778,7 +815,7 @@ namespace ContextStage
         {
             SetPhase(Phase.SpecialUse);
             _allowAllCards = false;
-            _blockedHint = "요청 아이콘과 같은 SPECIAL 카드를 골라 특별 관객에게 직접 전달하세요.";
+            _blockedHint = "카드를 관객의 몸에 겹친 뒤 놓아주세요. 연습 중에는 카드가 소모되지 않습니다.";
             SetupSpecialHand();
             if (SpecialAudienceManager.HasInstance &&
                 !SpecialAudienceManager.Instance.HasActiveRequest)
@@ -787,24 +824,26 @@ namespace ContextStage
             }
 
             overlay?.ShowMessage(
-                "SPECIAL 카드는 특별 관객에게 직접 전달합니다.",
-                "일반 카드처럼 무대 위로 던지지 마세요. 요청과 같은 SPECIAL 카드를 " +
-                "특별 관객 위로 드래그해 놓으세요.",
+                "카드를 누른 채 특별 관객에게 가져가세요.",
+                "관객의 몸과 겹치면 놓으세요. 움직이는 손 모양을 따라 해보세요.",
                 false);
+            if (_dragGuide == null) _dragGuide = overlay.gameObject.AddComponent<TutorialDragGuideUI>();
+            _dragGuide.Show(overlay);
         }
 
         void EnterSpecialExplain()
         {
+            if (_dragGuide != null) _dragGuide.Hide();
             SetPhase(Phase.SpecialExplain);
             overlay?.ShowMessage(
-                "SPECIAL HIT! 관객의 요청과 카드를 정확히 맞혔습니다.",
-                "특별 관객에게 요청과 같은 SPECIAL 카드를 전달하면 강력한 보너스 점수를 얻습니다. " +
-                "(클릭해서 계속)",
+                "요청 성공! 특별 효과가 발동했습니다.",
+                "본 공연에서는 요청 게이지가 끝나기 전에 전달하세요. (클릭해서 공연 시작)",
                 true);
         }
 
         void EnterFinalIntro()
         {
+            if (FeverSystem.HasInstance) FeverSystem.Instance.CancelFever();
             SetPhase(Phase.FinalIntro);
             _allowAllCards = true;
             if (SpecialAudienceManager.HasInstance)
@@ -866,7 +905,6 @@ namespace ContextStage
         void DebugStart()
         {
             if (!Application.isPlaying) { Debug.LogWarning("[Tutorial] Play Mode 전용."); return; }
-            Save.SetBool(TutorialDoneKey, false);
             StartTutorial();
         }
 
@@ -874,6 +912,7 @@ namespace ContextStage
         void DebugResetFlag()
         {
             Save.SetBool(TutorialDoneKey, false);
+            Save.SetBool(SpecialTutorialDoneKey, false);
             Debug.Log("[Tutorial] 완료 기록을 지웠습니다. 다음 공연 시작 시 다시 뜹니다.");
         }
     }

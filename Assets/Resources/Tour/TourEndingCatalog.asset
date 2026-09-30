@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cb3b46f6f8777248935a6cb01dc8165, type: 3}
+  m_Name: TourEndingCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.TourEndingCatalog
+  entries:
+  - kind: 0
+    title: "\uACF5\uC5F0 \uC911\uB2E8"
+    illustration: {fileID: 0}
+    summary: "\uC7A5\uBE44\uB97C \uBE7C\uB2EC\uB77C\uB294 \uB9D0\uC744 \uB4E4\uC5C8\uB2E4.
+      \uCD1D\uC810 {0}."
+  - kind: 1
+    title: "\uC804 \uACF5\uC5F0 S \uB7AD\uD06C"
+    illustration: {fileID: 0}
+    summary: "\uC2A4\uD0C0\uB514\uC6C0 \uC804\uAD11\uD310\uC5D0 \uB2E4\uC74C \uD22C\uC5B4
+      \uAD11\uACE0\uAC00 \uB5B4\uB2E4. \uCD1D\uC810 {0}."
+  - kind: 2
+    title: "\uD06C\uB77C\uC6B0\uB4DC\uC11C\uD551"
+    illustration: {fileID: 0}
+    summary: "\uC9C0\uD558 \uD074\uB7FD\uC758 \uD32C\uB4E4\uC740 \uBB3C\uB7EC\uC11C\uC9C0
+      \uC54A\uC558\uB2E4. \uCD1D\uC810 {0}, \uAC00\uC7A5 \uB728\uAC70\uC6B4 \uAD00\uAC1D
+      {1}."
+  - kind: 3
+    title: "\uB5BC\uCC3D"
+    illustration: {fileID: 0}
+    summary: "\uBC16\uC5D0\uC11C\uB294 \uC544\uC9C1\uB3C4 \uD6C4\uB834\uC774 \uB4E4\uB9B0\uB2E4.
+      \uCD1D\uC810 {0}, \uAC00\uC7A5 \uB728\uAC70\uC6B4 \uAD00\uAC1D {1}."
+  - kind: 4
+    title: "\uCCAB \uC2F1\uAE00"
+    illustration: {fileID: 0}
+    summary: "\uC9C1\uC811 \uB179\uC74C\uD55C \uACE1\uC774 \uCD94\uCC9C \uBAA9\uB85D\uC5D0
+      \uC62C\uB790\uB2E4. \uCD1D\uC810 {0}, \uAC00\uC7A5 \uB728\uAC70\uC6B4 \uAD00\uAC1D
+      {1}."
+  totalScoreLabel: TOTAL SCORE
+  ranksLabel: RANKS
+  topAudienceLabel: "\uAC00\uC7A5 \uD638\uC751\uD55C \uAD00\uAC1D"
+  nameEntryLabel: "\uC774\uB984\uC744 \uB0A8\uAE30\uACE0 \uC21C\uC704\uC5D0 \uAE30\uB85D\uD558\uC138\uC694"
+  nameEntryButton: "\uAE30\uB85D\uD558\uAE30"
+  nameEntryDone: "\uAE30\uB85D\uB428"
+  returnButton: "\uD0C0\uC774\uD2C0\uB85C"
+  dialogueConfirmLabel: "\uACB0\uB9D0 \uBCF4\uAE30"

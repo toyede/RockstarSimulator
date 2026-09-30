@@ -20,6 +20,10 @@ namespace ContextStage
             [Tooltip("신문 지면 (제호 포함 초안)")] public Sprite paper;
             [Tooltip("매체 이름 (로그·제호 정보용)")] public string paperName = "";
             [Tooltip("도장·포인트 색")] public Color accent = new Color32(0xB3, 0x38, 0x31, 0xFF);
+            [Tooltip("이 지면에서 헤드라인·부제 묶음을 씬 기본 위치에서 옮기는 양 (지면 로컬 px). 제호가 큰 지면은 아래(−y)로")]
+            public Vector2 headlineOffset;
+            [Tooltip("기록 칸(콤보·피버·관객, 기사) 묶음을 옮기는 양 (지면 로컬 px)")]
+            public Vector2 recordsOffset;
         }
 
         [Serializable]
@@ -99,6 +103,12 @@ namespace ContextStage
         [SerializeField] string articleDefaultTitle = "공연 후기";
         [SerializeField] string articleDefaultBody = "공연 중 최다 관객 {0}명";
 
+        [Header("가장 호응한 관객 ({0} = 성향, {1} = 점수). 기사 끝에 붙는다")]
+        [SerializeField] string articleTopAudience = "가장 뜨거웠던 관객은 {0} ({1}점)";
+        [SerializeField] string preferenceChill = "CHILL";
+        [SerializeField] string preferenceSingalong = "SINGALONG";
+        [SerializeField] string preferenceMosh = "MOSH";
+
         [Header("보스 결말 한 줄")]
         [SerializeField] string outcomeDefeated = "라이벌 격파";
         [SerializeField] string outcomeStreak = "연속 패턴 성공으로 승리";
@@ -150,6 +160,17 @@ namespace ContextStage
         public string ArticleBossBody => articleBossBody;
         public string ArticleDefaultTitle => articleDefaultTitle;
         public string ArticleDefaultBody => articleDefaultBody;
+        public string ArticleTopAudience => articleTopAudience;
+
+        public string PreferenceLabel(CrowdPreference p)
+        {
+            switch (p)
+            {
+                case CrowdPreference.Chill: return preferenceChill;
+                case CrowdPreference.Singalong: return preferenceSingalong;
+                default: return preferenceMosh;
+            }
+        }
         public string OutcomeDefeated => outcomeDefeated;
         public string OutcomeStreak => outcomeStreak;
         public string OutcomeTimeOut => outcomeTimeOut;

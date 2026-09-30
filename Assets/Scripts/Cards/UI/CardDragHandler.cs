@@ -55,6 +55,7 @@ namespace ContextStage
         readonly Vector3[] _worldCorners = new Vector3[4];
 
         public bool IsDragging => _dragging;
+        public Vector2 PointerScreenPosition { get; private set; }
         public int HandIndex => _handIndex;
 
         /// <summary>이 카드의 데이터. 드롭 대상이 카드 종류를 확인할 때 쓴다.</summary>
@@ -160,6 +161,7 @@ namespace ContextStage
             }
 
             _dragging = true;
+            PointerScreenPosition = eventData.position;
             Current = this;   // 드롭 대상이 "지금 무슨 카드를 들고 있는지" 볼 수 있게 한다
             _dragPointerId = eventData.pointerId;
             _originalParent = _rectTransform.parent;
@@ -189,6 +191,7 @@ namespace ContextStage
         public void OnDrag(PointerEventData eventData)
         {
             if (!_dragging || eventData.pointerId != _dragPointerId) return;
+            PointerScreenPosition = eventData.position;
             if (!TryGetPointerLocalPosition(eventData, out var pointerPosition)) return;
 
             _rectTransform.anchoredPosition = pointerPosition + _pointerOffset;

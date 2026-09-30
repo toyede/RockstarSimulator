@@ -192,7 +192,9 @@ namespace ContextStage
             if (_state == State.LineComplete) AnimateArrow();
         }
 
-        bool UseScreenBlur => blurBackdrop != null && (style == null || style.UseScreenBlur);
+        bool UseScreenBlur =>
+            blurBackdrop != null && (style == null || style.UseScreenBlur) &&
+            !(_context.useBackdropImage && _context.backdrop != null);
 
         // ---------------- 공개 API ----------------
 
@@ -354,7 +356,9 @@ namespace ContextStage
             if (nameTag != null) nameTag.gameObject.SetActive(hasName);
             if (nameText != null) nameText.text = hasName ? line.speakerName : string.Empty;
 
-            ApplyPortraits(line);
+            // 이름 없는 상황 지문에 직전 화자의 초상화가 남아 있으면 그 인물의 대사처럼 보인다.
+            if (!hasName && line.portrait == null) ResetPortraits();
+            else ApplyPortraits(line);
 
             if (!string.IsNullOrEmpty(line.sfxId)) Sound.Play(line.sfxId);
 
@@ -524,7 +528,9 @@ namespace ContextStage
             {
                 backdropImage.sprite = _context.backdrop;
                 backdropImage.enabled = !useBlur && _context.backdrop != null;
-                backdropImage.color = style != null ? style.BackdropTint : new Color(0.4f, 0.4f, 0.45f, 1f);
+                backdropImage.color = _context.brightBackdrop
+                    ? Color.white
+                    : (style != null ? style.BackdropTint : new Color(0.4f, 0.4f, 0.45f, 1f));
             }
 
             if (dimImage != null)
@@ -533,6 +539,7 @@ namespace ContextStage
                 // 블러 배경이면 어둡기는 블러 색이 담당한다. 배경 그림도 블러도 없으면 단색으로 진하게 가린다
                 if (useBlur) alpha = Mathf.Min(alpha, 0.15f);
                 else if (_context.backdrop == null) alpha = Mathf.Max(alpha, 0.9f);
+                else if (_context.brightBackdrop) alpha = Mathf.Min(alpha, 0.12f); // 일러스트가 주인공: 살짝만
                 dimImage.color = new Color(0f, 0f, 0f, alpha);
             }
         }
