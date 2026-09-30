@@ -84,6 +84,8 @@ namespace ContextStage
 
         void Awake()
         {
+            UIInteractionSfx.Ensure(skipCatcher, hover: false);
+            UIInteractionSfx.Ensure(primaryButton);
             if (skipCatcher != null) skipCatcher.onClick.AddListener(CompleteImmediately);
             if (primaryButton != null) primaryButton.onClick.AddListener(OnPrimaryClicked);
             if (root != null) root.SetActive(false);

@@ -538,6 +538,14 @@ Tools/GameJamKit/Export .unitypackage
 
 ## 변경 이력 (프로젝트에서 킷을 수정한 기록)
 
+- 2026-09-30 (Codex): `AudioManager.StopSfx(AudioBus)`로 버스별 원샷을 정지할 수 있게 했다. 공연 종료 시 UI 소리는 유지하며 공연 효과음을 정리하는 데 사용한다. `StopBgm`은 크로스페이드 중 이전 트랙도 함께 정리한다.
+- 2026-09-30 (Codex): `ui_text` 개별 볼륨을 1.0으로 변경하고 오디오 등록 도구의 기본값도 맞췄다.
+- 2026-09-30 (Codex): 대화창과 관객 말풍선의 타자음을 완성된 글자마다 한 번 재생하도록 변경했다. `ui_text`의 최소 재생 간격을 0으로 설정해 글자별 요청이 생략되지 않게 했다. 자모 조립 연출과 개별 음량은 유지한다.
+- 2026-09-30 (Codex): UI 클릭·호버·텍스트의 재생 클립을 앞 무음을 제거한 `_Trimmed.wav`로 교체했다(원본 MP3 보존). 호버/텍스트의 SoundLibrary 볼륨을 각각 0.30→0.60, 0.18→0.36으로 변경했다. 파형 정규화 없이 소스 크기를 유지하며, 클릭 볼륨과 믹서 설정은 유지한다.
+
+- 2026-09-30 (Codex): `Resources/SoundLibrary.asset`에 `ui_click`, `ui_hover`, `ui_text`를 UI 버스로 등록했다. 기존 `ui_click_wooden` ID는 직렬화된 버튼 연결을 보존하기 위해 새 클릭음의 호환 항목으로 유지한다. UI 연결 코드는 게임 전용 `Assets/Scripts/Audio/UIInteractionSfx.cs`에서 관리한다.
+- 2026-09-30 (Codex): `Audio/AudioRouting.cs`를 클래스명과 일치하는 `Audio/AudioRoutingConfig.cs`로 이동(GUID 유지)하고, `Resources/AudioRoutingConfig.asset`의 누락된 스크립트 참조를 복구했다. 믹서 그룹 구성은 유지한다.
+
 
 | 날짜 | 작업자 | 파일 | 내용 |
 |---|---|---|---|

@@ -379,13 +379,15 @@ namespace ContextStage
             float interval = style != null ? style.TypingInterval : 0.03f;
             float punctuation = style != null ? style.PunctuationDelay : 0.1f;
             string soundId = style != null ? style.TypingSoundId : string.Empty;
-            int soundEvery = style != null ? style.TypingSoundEvery : 3;
+            int soundEvery = style != null ? style.TypingSoundEvery : 1;
 
             List<TypewriterFrame> frames = HangulTypewriter.BuildFrames(text, punctuation);
+            int soundFrame = 0;
             for (int i = 0; i < frames.Count; i++)
             {
                 bodyText.text = frames[i].Text;
-                if (!string.IsNullOrEmpty(soundId) && i % soundEvery == 0) Sound.Play(soundId);
+                if (frames[i].PlaySound && soundFrame++ % soundEvery == 0 && !string.IsNullOrEmpty(soundId))
+                    Sound.Play(soundId);
 
                 float wait = interval + frames[i].ExtraDelay;
                 if (wait > 0f) yield return new WaitForSecondsRealtime(wait);
@@ -738,6 +740,9 @@ namespace ContextStage
         {
             if (_listenersBound) return;
             _listenersBound = true;
+            UIInteractionSfx.Ensure(advanceButton, hover: false, click: false);
+            UIInteractionSfx.Ensure(skipButton, click: false);
+            UIInteractionSfx.Ensure(ruleConfirmButton, click: false);
             if (advanceButton != null) advanceButton.onClick.AddListener(Advance);
             if (skipButton != null) skipButton.onClick.AddListener(Skip);
             if (ruleConfirmButton != null) ruleConfirmButton.onClick.AddListener(ConfirmRuleCard);

@@ -137,6 +137,9 @@ namespace ContextStage
         {
             if (!_bound || _dragging) return;
 
+            if (_cardInput != null && _cardInput.CanUseCard(_handIndex))
+                GameJamKit.Sound.Play("ui_hover");
+
             SetSorting(HoverSortingOrder);
             AnimateScale(hoverScale);
         }

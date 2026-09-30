@@ -366,6 +366,8 @@ namespace ContextStage
         void WireButtons()
         {
             if (_wired || selectButton == null || rerollButton == null) return;
+            UIInteractionSfx.Ensure(selectButton);
+            UIInteractionSfx.Ensure(rerollButton);
             selectButton.onClick.AddListener(OnSelectClicked);
             rerollButton.onClick.AddListener(OnRerollClicked);
             _wired = true;

@@ -30,8 +30,8 @@ MonoBehaviour:
   useHangulTypewriter: 1
   typingInterval: 0.028
   punctuationDelay: 0.12
-  typingSoundId: 
-  typingSoundEvery: 3
+  typingSoundId: ui_text
+  typingSoundEvery: 1
   arrowSprite: {fileID: 21300000, guid: 9913ccb8ccfbea14c895c1e84decb548, type: 3}
   arrowSize: {x: 20, y: 20}
   arrowBobAmplitude: 8

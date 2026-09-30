@@ -1405,6 +1405,18 @@ MonoBehaviour:
   cardClipOverrides:
   - cardId: guitar_solo
     clipName: GuitarSolo
+  - cardId: encore_bronze
+    clipName: Stroke
+  - cardId: encore_silver
+    clipName: Stroke
+  - cardId: encore_gold
+    clipName: Stroke
+  - cardId: stage_control_bronze
+    clipName: GuitarSolo
+  - cardId: stage_control_silver
+    clipName: GuitarSolo
+  - cardId: stage_control_gold
+    clipName: GuitarSolo
   startDelay: 0
   interruptPolicy: 0
 --- !u!114 &266755679
@@ -20834,7 +20846,7 @@ MonoBehaviour:
   bgmId: big_rock
   startOn: 0
   fadeInDuration: 1.5
-  stopOnGameOver: 0
+  stopOnGameOver: 1
   fadeOutDuration: 1.5
 --- !u!114 &1727356349
 MonoBehaviour:

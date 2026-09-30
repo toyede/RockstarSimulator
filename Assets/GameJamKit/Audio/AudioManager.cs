@@ -18,6 +18,8 @@ namespace GameJamKit
         [SerializeField, Range(1, 32)] int sfxVoices = 12;
 
         AudioSource[] _sfx;
+        readonly System.Collections.Generic.Dictionary<AudioSource, AudioBus> _sfxBuses =
+            new System.Collections.Generic.Dictionary<AudioSource, AudioBus>();
         AudioSource _bgmA, _bgmB;
         bool _usingA = true;
         int _nextVoice;
@@ -136,7 +138,17 @@ namespace GameJamKit
             src.pitch = pitch;
             src.spatialBlend = 0f;
             src.outputAudioMixerGroup = AudioRouting.Resolve(bus); // 공용 보이스라 매번 갱신
+            _sfxBuses[src] = bus;
             src.Play();
+        }
+
+        /// <summary>지정 버스의 재생만 정지한다. 다른 버스와 사용자 볼륨은 유지한다.</summary>
+        public void StopSfx(AudioBus bus)
+        {
+            if (_sfx == null) return;
+            foreach (var src in _sfx)
+                if (src != null && _sfxBuses.TryGetValue(src, out var assignedBus) && assignedBus == bus)
+                    src.Stop();
         }
 
         SoundEntry Resolve(string id)
@@ -170,6 +182,7 @@ namespace GameJamKit
             src.volume = entry.volume * Mathf.Clamp01(volumeScale) * _sfxVolume * _master;
             src.pitch = entry.PickPitch();
             src.outputAudioMixerGroup = AudioRouting.Resolve(entry.bus);
+            _sfxBuses[src] = entry.bus;
         }
 
         AudioSource GetFreeVoice()
@@ -221,6 +234,9 @@ namespace GameJamKit
         public void StopBgm(float fadeDuration = 1f)
         {
             CurrentBgmId = null;
+            // 크로스페이드 도중 정지해도 이전 트랙이 남지 않게 양쪽을 정리한다.
+            Inactive.Stop();
+            Inactive.volume = 0f;
             RestartBgmRoutine(CrossfadeRoutine(Active, null, 0f, fadeDuration));
         }
 

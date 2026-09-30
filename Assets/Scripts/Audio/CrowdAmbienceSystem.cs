@@ -104,6 +104,7 @@ namespace ContextStage
         {
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
             EventBus.Unsubscribe<HypeChanged>(OnHypeChanged);
+            StopImmediate();
         }
 
         AudioSource CreateSource(string sourceName)
@@ -136,7 +137,11 @@ namespace ContextStage
                     PauseAmbience();
                     break;
 
-                default: // Ready · GameOver
+                case GameState.GameOver:
+                    StopImmediate();
+                    break;
+
+                default: // Ready
                     StopAmbience();
                     break;
             }
@@ -167,6 +172,15 @@ namespace ContextStage
             _active = false;
             _fadeDuration = config.stopFadeDuration;
             _currentTier = -1;
+        }
+
+        public void StopImmediate()
+        {
+            _active = false;
+            _currentTier = -1;
+            _weightA = _weightB = 0f;
+            if (_a != null) _a.Stop();
+            if (_b != null) _b.Stop();
         }
 
         public void PauseAmbience()  { _a.Pause();   _b.Pause(); }

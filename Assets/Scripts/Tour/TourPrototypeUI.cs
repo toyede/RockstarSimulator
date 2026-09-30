@@ -53,6 +53,7 @@ namespace ContextStage
 
         void OnEnable()
         {
+            Bgm.StopPerformance();
             _manager = TourRunManager.Instance;
             if (_manager != null) _manager.StateChanged += Refresh;
             _augmentCoordinator?.Bind(_manager);
@@ -588,6 +589,7 @@ namespace ContextStage
             layout.minHeight = 54f;
 
             Button button = buttonObject.GetComponent<Button>();
+            UIInteractionSfx.Ensure(button);
             if (onClick != null) button.onClick.AddListener(() => onClick());
 
             Text text = CreateText(rect, "Label", 25, TextAnchor.MiddleCenter, Color.white);

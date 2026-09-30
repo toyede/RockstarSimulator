@@ -127,6 +127,7 @@ namespace ContextStage
             button.name = "MapOwnedAugmentListButton";
             button.onClick = new Button.ButtonClickedEvent();
             button.gameObject.SetActive(false);
+            UIInteractionSfx.Ensure(button);
             return button;
         }
 
@@ -309,6 +310,11 @@ namespace ContextStage
                 choice.RerollRequested += OnRerollRequested;
             }
 
+            UIInteractionSfx.Ensure(ownedListButton);
+            UIInteractionSfx.Ensure(ownedModalCloseButton);
+            // 입력 차단용 배경은 실제 버튼처럼 소리를 내지 않는다.
+            if (ownedModalBlocker != null)
+                UIInteractionSfx.Ensure(ownedModalBlocker.GetComponent<Button>(), hover: false, click: false);
             ownedListButton?.onClick.AddListener(OpenOwnedModal);
             ownedModalCloseButton?.onClick.AddListener(CloseOwnedModal);
             _wired = true;

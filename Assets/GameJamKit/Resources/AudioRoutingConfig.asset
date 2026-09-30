@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: a509ff61bf0be9c4e9ea1726040a291a, type: 3}
   m_Name: AudioRoutingConfig
   m_EditorClassIdentifier: Assembly-CSharp:GameJamKit:AudioRoutingConfig
   music: {fileID: -8422361001857858827, guid: 9e963faabf5c65f479a21511d19c1c75, type: 2}

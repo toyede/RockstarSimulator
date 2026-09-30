@@ -252,6 +252,7 @@ namespace ContextStage
 
             _ownedButton = buttonObject.GetComponent<Button>();
             _ownedButton.targetGraphic = hitArea;
+            UIInteractionSfx.Ensure(_ownedButton);
             _ownedButton.onClick.AddListener(OnOwnedAugmentsClicked);
 
             Image icon = CreateImage(rect, "Icon", Vector2.zero, new Vector2(78f, 78f), _art.OwnedAugmentIcon);
@@ -576,6 +577,7 @@ namespace ContextStage
 
                 _button = rootObject.GetComponent<Button>();
                 _button.transition = Selectable.Transition.SpriteSwap;
+                UIInteractionSfx.Ensure(_button);
                 _button.onClick.AddListener(HandleClick);
 
                 _visual = CreateRect(root, "PinVisual", Vector2.zero, new Vector2(173f, 219f));

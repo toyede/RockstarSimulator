@@ -11,7 +11,7 @@ namespace ContextStage
     public sealed class TitleLeaderboardPopup : UIPopup
     {
         const int DisplayCount = 10;
-        const string ClickSoundId = "ui_click_wooden";
+        const string ClickSoundId = "ui_click";
 
         [SerializeField] Text leaderboardText;
 

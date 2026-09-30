@@ -101,12 +101,12 @@ MonoBehaviour:
     bus: 0
   - id: ui_click_wooden
     clips:
-    - {fileID: 8300000, guid: c407b0217c5bd514fa30f4d86c83eef2, type: 3}
-    volume: 0.69
+    - {fileID: 8300000, guid: 20a882223cd4d564c855b1dacf789bb3, type: 3}
+    volume: 0.65
     pitchMin: 1
     pitchMax: 1
     loop: 0
-    minInterval: 0.02
+    minInterval: 0.08
     bus: 3
   - id: card_tempo_up
     clips:
@@ -170,4 +170,31 @@ MonoBehaviour:
     pitchMax: 1
     loop: 0
     minInterval: 0.02
+    bus: 3
+  - id: ui_click
+    clips:
+    - {fileID: 8300000, guid: 20a882223cd4d564c855b1dacf789bb3, type: 3}
+    volume: 0.65
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.08
+    bus: 3
+  - id: ui_hover
+    clips:
+    - {fileID: 8300000, guid: 4afc377dd168a6241bbd06b31e4d1751, type: 3}
+    volume: 0.6
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.07
+    bus: 3
+  - id: ui_text
+    clips:
+    - {fileID: 8300000, guid: 5ae88619d11dac6459aedd62e855cccd, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0
     bus: 3

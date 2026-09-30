@@ -41,7 +41,11 @@ namespace ContextStage.EditorTools
             ("hey_low",       "Assets/Audio/OneShot/Hey_low.wav",       false, 1f),
 
             // UI 버튼 클릭
-            ("ui_click_wooden", "Assets/Audio/OneShot/UI/UI_Click_wooden.wav", false, 1f),
+            // 기존 씬 UnityEvent가 쓰는 ID도 새 클릭음을 가리킨다.
+            ("ui_click_wooden", "Assets/Audio/OneShot/UI/Click_sfx_Trimmed.wav", false, 0.65f),
+            ("ui_click", "Assets/Audio/OneShot/UI/Click_sfx_Trimmed.wav", false, 0.65f),
+            ("ui_hover", "Assets/Audio/OneShot/UI/Hover_sfx_Trimmed.wav", false, 0.6f),
+            ("ui_text", "Assets/Audio/OneShot/UI/text_sfx_Trimmed.wav", false, 1f),
 
             // 카드별 전용 효과음 (placeholder). 사운드 담당자가 아래 경로에 파일만 넣으면
             // Register Audio Clips To Library 를 다시 눌러 자동 등록된다. 파일이 없으면
@@ -160,7 +164,13 @@ namespace ContextStage.EditorTools
                 element.FindPropertyRelative("pitchMin").floatValue = 1f;
                 element.FindPropertyRelative("pitchMax").floatValue = 1f;
                 element.FindPropertyRelative("loop").boolValue = loop;
-                element.FindPropertyRelative("minInterval").floatValue = 0.02f;
+                element.FindPropertyRelative("minInterval").floatValue = id switch
+                {
+                    "ui_click" or "ui_click_wooden" => 0.08f,
+                    "ui_hover" => 0.07f,
+                    "ui_text" => 0f, // 완성된 글자마다 요청한 타자음을 생략하지 않는다.
+                    _ => 0.02f,
+                };
 
                 // 새 항목도 처음부터 올바른 믹서 버스로 들어가게 한다.
                 // 분류표는 AudioMixerRoutingSetup 한 곳에만 둔다 — 두 벌이면 재실행 때 어긋난다
