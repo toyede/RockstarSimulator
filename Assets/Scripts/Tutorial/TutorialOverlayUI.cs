@@ -84,6 +84,54 @@ namespace ContextStage
         public Image PanelImage => panelRoot != null ? panelRoot.GetComponent<Image>() : null;
         public int TitleFontSize => titleFontSize;
         public int BodyFontSize => bodyFontSize;
+        public Font GuideFont => subText != null ? subText.font : null;
+
+        struct RectState
+        {
+            public RectTransform Rect;
+            public Vector2 Min, Max, Pivot, Position, Size;
+            public RectState(RectTransform rect)
+            {
+                Rect = rect;
+                Min = rect.anchorMin; Max = rect.anchorMax; Pivot = rect.pivot;
+                Position = rect.anchoredPosition; Size = rect.sizeDelta;
+            }
+            public void Restore()
+            {
+                if (Rect == null) return;
+                Rect.anchorMin = Min; Rect.anchorMax = Max; Rect.pivot = Pivot;
+                Rect.anchoredPosition = Position; Rect.sizeDelta = Size;
+            }
+        }
+        RectState[] _specialLayout;
+
+        /// <summary>교육 중에만 왼쪽에 짧은 안내를 표시한다. 저장된 씬 배치는 복원한다.</summary>
+        public void SetSpecialLessonLayout(bool compact)
+        {
+            if (!compact)
+            {
+                if (_specialLayout != null)
+                    foreach (var state in _specialLayout) state.Restore();
+                _specialLayout = null;
+                return;
+            }
+            if (_specialLayout != null || panelRoot == null || mainText == null || subText == null) return;
+            var panel = (RectTransform)panelRoot.transform;
+            _specialLayout = new[] { new RectState(panel), new RectState(mainText.rectTransform), new RectState(subText.rectTransform) };
+            panel.anchorMin = new Vector2(0.015f, 0.38f);
+            panel.anchorMax = new Vector2(0.35f, 0.67f);
+            panel.pivot = new Vector2(0.5f, 0.5f);
+            panel.anchoredPosition = Vector2.zero;
+            panel.sizeDelta = Vector2.zero;
+            mainText.rectTransform.anchorMin = new Vector2(0f, 0.60f);
+            mainText.rectTransform.anchorMax = new Vector2(1f, 1f);
+            mainText.rectTransform.offsetMin = new Vector2(16f, 0f);
+            mainText.rectTransform.offsetMax = new Vector2(-16f, -12f);
+            subText.rectTransform.anchorMin = new Vector2(0f, 0f);
+            subText.rectTransform.anchorMax = new Vector2(1f, 0.60f);
+            subText.rectTransform.offsetMin = new Vector2(20f, 50f);
+            subText.rectTransform.offsetMax = new Vector2(-20f, -6f);
+        }
 
         /// <summary>
         /// TutorialPanel 자체의 위치와 크기는 건드리지 않고, 그 안의 제목·본문·진행 안내만

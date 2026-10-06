@@ -8,6 +8,9 @@ namespace ContextStage
     [DisallowMultipleComponent]
     public sealed class NearbyConcertCrisisDirector : MonoBehaviour
     {
+        // 폐기된 게임잼 이벤트. 기존 씬/프리팹 참조를 보존하되 실행은 금지한다.
+        // 소나기/큐시트/정전/보스 룰은 이 디렉터와 독립적이다.
+        public static bool IsRetired => true;
         [SerializeField] AudienceCrisisConfig config;
         [SerializeField] AudienceRosterSystem audienceRoster;
 
@@ -34,6 +37,7 @@ namespace ContextStage
         public bool IsWarning => _state == AudienceCrisisState.Warning;
         public float WarningRemaining => _warningRemaining;
         public bool CanForceEvent =>
+            !IsRetired &&
             isActiveAndEnabled &&
             GameManager.HasInstance &&
             GameManager.Instance.IsPlaying &&
@@ -47,6 +51,11 @@ namespace ContextStage
 
         void OnEnable()
         {
+            if (IsRetired)
+            {
+                enabled = false;
+                return;
+            }
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
             EventBus.Subscribe<CardResolved>(OnCardResolved);
             EventBus.Subscribe<AudienceDeparted>(OnAudienceDeparted);
@@ -57,11 +66,12 @@ namespace ContextStage
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
             EventBus.Unsubscribe<CardResolved>(OnCardResolved);
             EventBus.Unsubscribe<AudienceDeparted>(OnAudienceDeparted);
-            CancelCrisis(false);
+            CancelCrisis(true);
         }
 
         void Update()
         {
+            if (IsRetired) return;
             bool playing =
                 GameManager.HasInstance && GameManager.Instance.IsPlaying;
             if (!playing)
@@ -137,7 +147,7 @@ namespace ContextStage
             CancelCrisis(false);
             _wasPlaying = false;
             if (stageConfig != null) config = stageConfig;
-            enabled = active && ValidateDependencies();
+            enabled = !IsRetired && active && ValidateDependencies();
         }
 
         void UpdateArmed()

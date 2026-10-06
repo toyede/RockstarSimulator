@@ -13,7 +13,7 @@ namespace ContextStage
         [SerializeField, Tooltip("StageDefinition.preDialogueId 와 같은 값 (예: intro_stage_01)")]
         string sequenceId = "";
 
-        [SerializeField, Tooltip("한 시퀀스는 20~40초, 3~6줄 안에 끝낸다")]
+        [SerializeField, Tooltip("한 항목이 한 대화 화면. 짧은 대사 1~2문장 또는 이름 없는 상황 지문을 넣는다")]
         List<DialogueLine> lines = new List<DialogueLine>();
 
         public string SequenceId => sequenceId;

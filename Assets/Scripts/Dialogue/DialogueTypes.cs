@@ -17,7 +17,7 @@ namespace ContextStage
     [Serializable]
     public sealed class DialogueLine
     {
-        [Tooltip("화자 ID (raccoon / hedgehog / zebra / hyena / promoter / rival ...). 초상화 교체·통계용")]
+        [Tooltip("화자 ID (raccoon / hedgehog / zebra / rival). 이름과 초상화를 비우면 상황 지문")]
         public string speakerId = "";
 
         [Tooltip("화면에 표시할 화자 이름")]
@@ -52,6 +52,12 @@ namespace ContextStage
 
         [Tooltip("대화 뒤에 어둡게 깔 배경. 비우면 단색")]
         public Sprite backdrop;
+
+        [Tooltip("배경을 어둡게 하지 않고 그대로 보여준다 (엔딩 일러스트처럼 배경이 주인공일 때)")]
+        public bool brightBackdrop;
+
+        [Tooltip("이전 화면 블러 대신 backdrop 스프라이트를 그린다 (엔딩처럼 뒤에 보여줄 화면이 없을 때)")]
+        public bool useBackdropImage;
 
         [Tooltip("마지막에 보여줄 룰 카드. ruleTitle 이 비어 있으면 룰 카드를 건너뛴다")]
         public string ruleTitle;

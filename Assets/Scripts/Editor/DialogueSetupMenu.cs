@@ -10,11 +10,11 @@ namespace ContextStage.EditorTools
     ///
     ///   Tools/Dialogue/Setup Dialogue Data
     ///     Settings/Dialogue/DialogueStyle.asset (DungGeunMo 폰트 연결)
-    ///     Settings/Dialogue/Sequences/intro_stage_01 ~ 05_boss, ending_common (기획서 §12·§13 초안)
+    ///     Settings/Dialogue/Sequences/intro_stage_01 ~ 05_boss, 엔딩 대사 초안
     ///     Resources/Dialogue/DialogueCatalog.asset
     ///
     ///   Tools/Dialogue/Rewrite Default Sequences (Overwrite)
-    ///     시퀀스 대사를 기획서 초안으로 되돌린다 (손으로 고친 대사가 지워진다)
+    ///     시퀀스 대사를 승인된 스토리 초안으로 되돌린다 (손으로 고친 대사가 지워진다)
     ///
     ///   Tools/Dialogue/Create Dialogue Panel Prefab
     ///     Resources/Dialogue/DialoguePanel.prefab — 피그마 시안에 맞춰 손으로 고칠 수 있는 프리팹.
@@ -33,11 +33,8 @@ namespace ContextStage.EditorTools
         // 화자 이름은 팀에서 확정하기 전까지 역할 가칭을 쓴다 (기획서 §11)
         const string Raccoon = "너구리";
         const string Hedgehog = "고슴도치";
-        const string Bandmate = "밴드 동료";
-        const string Promoter = "공연 기획자";
-        const string Staff = "공연장 직원";
+        const string Zebra = "얼룩말";
         const string Rival = "LUX//FAUNA";
-        const string Crowd = "관객";
 
         [MenuItem("Tools/Dialogue/Setup Dialogue Data", false, 0)]
         public static void SetupData()
@@ -66,13 +63,21 @@ namespace ContextStage.EditorTools
             EnsureFolder(SequenceFolder);
             EnsureFolder(ResourceFolder);
 
-            DialogueStyle style = GetOrCreateStyle();
+            // 대사만 교체할 때는 기존 스타일·아트 임포트·수동 배치를 다시 셋업하지 않는다.
+            var existingCatalog = AssetDatabase.LoadAssetAtPath<DialogueCatalog>(CatalogPath);
+            DialogueStyle style = existingCatalog != null ? existingCatalog.Style : null;
+            if (style == null) style = AssetDatabase.LoadAssetAtPath<DialogueStyle>(StylePath);
+            if (style == null) style = GetOrCreateStyle();
             List<DialogueSequence> sequences = CreateDefaultSequences(overwrite: true);
-            GetOrCreateCatalog(style, sequences);
+            DialogueCatalog catalog = GetOrCreateCatalog(style, sequences);
 
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log($"[Dialogue] 기본 대사 {sequences.Count}개를 기획서 초안으로 다시 썼습니다.");
+            // 현재 씬이나 다른 팀원이 수정 중인 에셋까지 저장하지 않는다.
+            foreach (DialogueSequence sequence in sequences) AssetDatabase.SaveAssetIfDirty(sequence);
+            AssetDatabase.SaveAssetIfDirty(catalog);
+            if (!catalog.TryValidate(out string error))
+                Debug.LogError($"[Dialogue] 카탈로그 검증 실패: {error}", catalog);
+            else
+                Debug.Log($"[Dialogue] 스토리 초안 {sequences.Count}개 적용 완료. 인트로 5개는 기존 투어에서 재생되며, 엔딩 자동 분기는 별도 연결이 필요합니다.", catalog);
         }
 
         [MenuItem("Tools/Dialogue/Create Dialogue Panel Prefab", false, 20)]
@@ -218,56 +223,253 @@ namespace ContextStage.EditorTools
         {
             var result = new List<DialogueSequence>
             {
-                // 너구리: 주인공, 어리숙하지만 투어를 거치며 성장 (봇치)
-                // 고슴도치: 드러머, 너구리의 오랜 친구, 정열적 (류지)
-                // LUX//FAUNA: 생성형 AI 로봇 말투, 완벽주의
+                // 게임 규칙은 기존 룰 카드가 안내한다. 아래는 캐릭터의 말과 짧은 상황 지문만.
+                // 3인 밴드: 너구리(보컬/기타), 고슴도치(드럼), Stage 2부터 얼룩말(베이스).
                 CreateSequence("intro_stage_01", overwrite,
-                    Line(Hedgehog, "야, 너구리! 오늘이 그날이라고! 골목이든 어디든 무대는 무대야!", DialogueSpeakerSide.Left, "excited"),
-                    Line(Raccoon, "어, 어… 사람이 이렇게 많이 지나가는데… 우리 노래를… 들어줄까…?", DialogueSpeakerSide.Left, "nervous"),
-                    Line(Hedgehog, "안 들으면 듣게 만들면 되지! 근데 무작정 크게 치진 마. 지나가는 사람은 취향이 전부 달라.", DialogueSpeakerSide.Left, "grin"),
-                    Line(Raccoon, "취향… 옷차림이랑 표정을 보면… 알 수 있을지도. 강렬한 걸 원하는 사람, 같이 부르고 싶은 사람, 편하게 듣고 싶은 사람…", DialogueSpeakerSide.Left, "think"),
-                    Line(Hedgehog, "오오, 이제 좀 밴드 같네! 자, 귀부터 열고 간다!", DialogueSpeakerSide.Left, "cheer"),
-                    Line(Raccoon, "…응. 오늘은, 도망치지 않을게.", DialogueSpeakerSide.Left, "resolve")),
+                    Narration("퇴근길 골목. 너구리와 고슴도치가 작은 앰프 앞에서 공연을 준비한다."),
+                    Line(Raccoon, "몇 시에 시작한다고 올렸지?"),
+                    Line(Hedgehog, "일곱 시."),
+                    Line(Raccoon, "아직 좀 남았나?"),
+                    Line(Hedgehog, "지났어."),
+                    Line(Raccoon, "아, 안녕하세요. 저희는...", "nervous"),
+                    Line(Hedgehog, "마이크."),
+                    Line(Raccoon, "왜?"),
+                    Line(Hedgehog, "안 켰어."),
+                    Narration("마이크를 켜자 맞은편 전광판에서 광고 음악이 울린다.\n'LUX//FAUNA 스타디움 공연'"),
+                    Line(Raccoon, "...저거 끝나고 하자."),
+                    Line(Hedgehog, "아까도 그랬잖아. 계속 나오는 거야."),
+                    Line(Raccoon, "알았어. 잠깐만."),
+                    Narration("너구리가 기타를 고쳐 메고 고개를 끄덕인다."),
+                    Line(Hedgehog, "원, 투. 원, 투, 쓰리, 포!", "excited")),
 
                 CreateSequence("intro_stage_02", overwrite,
-                    Line(Staff, "골목에서 사람들을 멈춰 세웠다는 밴드가 너희야? 오늘 오프닝 자리가 하나 비었어.", DialogueSpeakerSide.Right, "neutral"),
-                    Line(Raccoon, "처, 천장이 있어… 조명도… 지, 진짜 무대다…!", DialogueSpeakerSide.Left, "surprised"),
-                    Line(Hedgehog, "긴장 풀어! 여긴 단골이 많아서 원하는 걸 대놓고 말하는 팬도 있어. 오히려 편하지!", DialogueSpeakerSide.Left, "grin"),
-                    Line(Raccoon, "원하는 걸 말해준다면… 그건 나도 알아들을 수 있어. 특별 관객이 요청하면 그 성향의 Special 카드를 직접 건네자.", DialogueSpeakerSide.Left, "think"),
-                    Line(Hedgehog, "그거야! 대신 시간 안에 해. 단골은 기다려주지 않거든!", DialogueSpeakerSide.Left, "cheer")),
+                    Narration("지하 라이브홀의 오프닝 무대.\n구석에서는 얼룩말이 베이스와 장비를 정리하고 있다."),
+                    Line(Raccoon, "왜 안 나지. 이쪽이 안 꽂혔나?"),
+                    Line(Hedgehog, "아까는 났잖아."),
+                    Narration("너구리가 케이블을 뽑는다.\n펑! 스피커에서 큰 소리와 함께 먼지가 튄다."),
+                    Line(Zebra, "뭐 뽑았어?"),
+                    Line(Raccoon, "소리가 안 나서요.", "nervous"),
+                    Line(Zebra, "그래서 그냥 뽑았어?"),
+                    Line(Raccoon, "...네."),
+                    Line(Zebra, "일단 손 떼."),
+                    Line(Hedgehog, "고장 난 거예요?"),
+                    Line(Zebra, "잠깐."),
+                    Narration("얼룩말이 앰프를 살핀다. 너구리는 고슴도치 쪽으로 바짝 붙는다."),
+                    Line(Raccoon, "이거 비싸 보이냐?"),
+                    Line(Hedgehog, "나한테 물어보지 마."),
+                    Line(Zebra, "들린다."),
+                    Narration("얼룩말이 연결을 확인하고 자기 베이스를 튕긴다. 낮은 음이 정상적으로 울린다."),
+                    Line(Raccoon, "...다행이다.", "relieved"),
+                    Line(Zebra, "내가 할 말이고. 내 앰프야."),
+                    Line(Zebra, "오늘 공연하는 애들이 너희야?"),
+                    Line(Hedgehog, "네."),
+                    Line(Zebra, "몇 시?"),
+                    Line(Hedgehog, "십 분 뒤요."),
+                    Line(Zebra, "베이스는 어디 있는데?"),
+                    Line(Raccoon, "아직 못 구했어요."),
+                    Line(Zebra, "...일단 첫 곡 해봐."),
+                    Narration("합주가 시작되자 얼룩말이 베이스를 얹는다.\n돌아보는 너구리에게 앞을 보라는 눈짓이 돌아온다."),
+                    Line(Raccoon, "그대로 공연까지 해주시면 안 돼요?"),
+                    Line(Zebra, "지금?"),
+                    Line(Hedgehog, "지금 아니면 다음 사람이 없어요."),
+                    Narration("얼룩말은 시계를 보고도 베이스를 내려놓지 않는다."),
+                    Line(Zebra, "곡 순서 줘.")),
 
                 CreateSequence("intro_stage_03", overwrite,
-                    Line(Promoter, "페스티벌은 라이브홀과 달라. 옆 무대가 시끄러우면 관객은 바로 옮겨가. 소나기라도 오면… 알아서들 해.", DialogueSpeakerSide.Right, "hurried"),
-                    Line(Rival, "분석 완료. 골목 출신 밴드, 팬 결집도 낮음. 위협 요소로 판단되지 않습니다.", DialogueSpeakerSide.Right, "cold"),
-                    Line(Raccoon, "…지금 우릴, 위협이 아니래.", DialogueSpeakerSide.Left, "hurt"),
-                    Line(Hedgehog, "말 한번 재수 없게 하네! 두고 봐, 오늘 깃발은 우리 쪽에서 흔들린다!", DialogueSpeakerSide.Left, "angry"),
-                    Line(Raccoon, "옆 무대 경고가 뜨면 표시된 관객부터 붙잡고… 비가 오면 CHILL 카드로 우산을. 콤보를 이으면 깃발이 흔들려.", DialogueSpeakerSide.Left, "think"),
-                    Line(Hedgehog, "머리엔 다 들어있네. 그럼 몸으로 보여주자고!", DialogueSpeakerSide.Left, "cheer")),
+                    Narration("페스티벌 대기 구역. 너구리가 휴대전화에서 오래된 공연 영상을 찾았다."),
+                    Line(Raccoon, "형, 이 밴드에도 있었어요?"),
+                    Line(Zebra, "그걸 어디서 찾았어?"),
+                    Line(Raccoon, "검색하니까 나오던데요. 밴드가 몇 개예요?"),
+                    Line(Zebra, "그만 좀 넘겨."),
+                    Line(Raccoon, "이 곡은 제목이 뭐예요? 음원이 안 나오는데."),
+                    Line(Zebra, "안 냈어."),
+                    Line(Hedgehog, "왜요? 괜찮은데."),
+                    Line(Zebra, "전에 잘된 곡이 있었거든. 그런 걸 먼저 내자고 해서."),
+                    Line(Raccoon, "그럼 이건요?"),
+                    Line(Zebra, "나중에 하자더라."),
+                    Line(Raccoon, "결국 안 했어요?"),
+                    Line(Zebra, "응. 다른 곡 가져가도 비슷했고."),
+                    Line(Raccoon, "그래서 나온 거예요?"),
+                    Line(Zebra, "...들어는 보고 바꾸라든가."),
+                    Narration("너구리가 영상을 멈춘다. 얼룩말은 휴대전화에서 시선을 뗀다."),
+                    Line(Zebra, "우리 순서나 봐."),
+                    Narration("메인 무대 전광판에 'HEADLINER: LUX//FAUNA'가 뜬다.\n안내 방송을 들은 관객들이 이동하기 시작한다."),
+                    Line(Hedgehog, "저쪽도 지금 시작하나 봐요."),
+                    Line(Raccoon, "우리랑 겹치네. 다 저기로 가는데?"),
+                    Narration("얼룩말이 작은 무대 앞에 남아 있는 사람들을 가리킨다."),
+                    Line(Zebra, "저기 기다리잖아. 들어가자.")),
 
                 CreateSequence("intro_stage_04", overwrite,
-                    Line(Promoter, "전국 생방송이야. 카메라 큐시트대로 움직여야 하고… 방송 사고는 절대 없어야 해. 알았지?", DialogueSpeakerSide.Right, "serious"),
-                    Line(Raccoon, "생, 생방송… 정전 같은 건… 안 나겠지…?", DialogueSpeakerSide.Left, "nervous"),
-                    Line(Hedgehog, "나면 어때? 불이 꺼져도 관객이 어디 서 있는지는 우리가 알잖아!", DialogueSpeakerSide.Left, "grin"),
-                    Line(Raccoon, "…그래. 큐시트 순서대로 카드를 내고, 불이 꺼지면 기억으로 연주한다. Miss 없이.", DialogueSpeakerSide.Left, "resolve"),
-                    Line(Hedgehog, "여기까지 모은 카드랑 증강 전부 쏟아붓자. 이 무대 넘으면 스타디움이야!", DialogueSpeakerSide.Left, "cheer")),
+                    Narration("방송국 대기실. 모니터에서 파이널 예고가 흘러나온다.\n'LUX//FAUNA와 맞설 마지막 도전자는?'"),
+                    Narration("화면이 대기실의 세 사람으로 바뀐다. 너구리가 황급히 자세를 고친다."),
+                    Line(Raccoon, "저거 지금 나가는 거야?", "nervous"),
+                    Line(Hedgehog, "대기 화면 아니야?"),
+                    Line(Zebra, "빨간 불 들어왔는데."),
+                    Line(Raccoon, "아까부터 나갔나?"),
+                    Line(Hedgehog, "나 방금 이 쑤셨는데."),
+                    Line(Raccoon, "너 방송 링크 보냈어?"),
+                    Line(Hedgehog, "응. 단체방에."),
+                    Line(Raccoon, "지금?"),
+                    Line(Hedgehog, "보내달라며."),
+                    Line(Raccoon, "...그러긴 했지."),
+                    Narration("얼룩말이 케이블을 다시 확인하고 베이스를 짧게 튕긴다."),
+                    Line(Zebra, "내 소리 들려?"),
+                    Line(Hedgehog, "네."),
+                    Narration("얼룩말이 같은 음을 한 번 더 튕긴다."),
+                    Line(Hedgehog, "들려요. 방금도 들렸어요."),
+                    Line(Raccoon, "형은 방송 해봤죠?"),
+                    Line(Zebra, "녹화는."),
+                    Line(Raccoon, "생방은요?"),
+                    Line(Zebra, "...처음."),
+                    Line(Raccoon, "오늘 통과하면 진짜 저기 가는 거네."),
+                    Line(Hedgehog, "일단 오늘 것부터 하자. 나 손에 땀나."),
+                    Narration("고슴도치가 여분 스틱을 옆에 놓는다. 스태프가 세 사람을 부른다."),
+                    Line(Zebra, "휴대전화 내려놔. 우리 들어간다.")),
 
                 CreateSequence("intro_stage_05_boss", overwrite,
-                    Line(Rival, "입장 확인. RACCOON ROLL. 예상 승률 3.2%. 오늘 관객의 87%는 이미 저희 쪽에 서 있습니다.", DialogueSpeakerSide.Right, "cold"),
-                    Line(Raccoon, "…숫자로 다 아는 것처럼 말하네.", DialogueSpeakerSide.Left, "calm"),
-                    Line(Rival, "저희는 관객의 눈치를 보지 않습니다. 관객이 저희를 따라오도록 설계할 뿐.", DialogueSpeakerSide.Right, "confident"),
-                    Line(Hedgehog, "설계 좋아하네! 관객은 계산기가 아니야. 야, 너구리. 골목에서 뭐라고 했더라?", DialogueSpeakerSide.Left, "angry"),
-                    Line(Raccoon, "…도망치지 않는다고 했어. 라이벌 무대의 팬이 많을수록 우리 점수가 깎여. 그러니까 뺏어온다. 한 명씩, 전부.", DialogueSpeakerSide.Left, "resolve"),
-                    Line(Hedgehog, "그래야 우리 보컬이지! 패턴 뜨면 정면으로 받아쳐. 관객 과반수를 넘기면 저 로봇들, 화낼 거다!", DialogueSpeakerSide.Left, "cheer"),
-                    Line(Raccoon, "Raccoon Roll… 시작하자!", DialogueSpeakerSide.Left, "shout")),
+                    Narration("스타디움 파이널. 무대 입구에서 전자음악 듀오 LUX//FAUNA와 마주친다."),
+                    Line(Rival, "방송 봤어요. 후렴 좋던데."),
+                    Line(Raccoon, "아, 감사합니다."),
+                    Line(Rival, "앞에 베이스 나오는 부분은 줄이는 게 낫겠더라고요."),
+                    Line(Rival, "바로 후렴으로 들어가면 반응이 더 빠를 거예요."),
+                    Narration("베이스를 만지던 얼룩말의 손이 잠깐 멈춘다."),
+                    Line(Raccoon, "오늘은 맞춰온 대로 하려고요."),
+                    Line(Rival, "그래요? 저희는 반응 안 나오는 부분은 바로 빼요."),
+                    Line(Raccoon, "저희는 그 부분도 좋아해서요."),
+                    Line(Rival, "그럼 공연 때 들어볼게요."),
+                    Narration("LUX//FAUNA가 스태프를 따라 무대로 올라간다."),
+                    Line(Hedgehog, "뭐래?"),
+                    Line(Raccoon, "앞에 좀 줄이래."),
+                    Line(Hedgehog, "지금 와서?"),
+                    Line(Zebra, "안 줄여. 아까 맞춘 대로 가."),
+                    Narration("맞은편 무대에서 첫 전자음이 울린다. 객석이 환호로 들썩인다."),
+                    Line(Raccoon, "저쪽은 소리만 내도 좋아하네."),
+                    Line(Zebra, "네 기타는 소리 나와?"),
+                    Narration("너구리가 줄을 튕긴다. 아무 소리도 나지 않는다."),
+                    Line(Raccoon, "...잠깐."),
+                    Narration("너구리가 기타 볼륨을 올린다. 이번에는 소리가 난다."),
+                    Line(Hedgehog, "좋아. 이제 우리도 소리는 난다."),
+                    Line(Raccoon, "저희 쪽도 잘 들리세요?"),
+                    Narration("무대 앞에서 몇몇 관객이 손을 들고 소리친다."),
+                    Line(Raccoon, "됐죠?"),
+                    Line(Zebra, "응."),
+                    Line(Hedgehog, "가?"),
+                    Line(Raccoon, "가자."),
+                    Line(Hedgehog, "원, 투. 원, 투, 쓰리, 포!", "excited")),
 
+                // 기존 ID는 호환용으로 유지. 엔딩 선택/점수 판정은 이 셋업의 책임이 아니다.
                 CreateSequence("ending_common", overwrite,
-                    Line(Crowd, "RACCOON ROLL! RACCOON ROLL!", DialogueSpeakerSide.Right, "cheer"),
-                    Line(Rival, "…재계산 중. 예측 오차 원인: 불명. 관객이 밴드를 고른 것이 아니라, 밴드가 관객을… 들었다?", DialogueSpeakerSide.Right, "defeat"),
-                    Line(Hedgehog, "처음 골목에선 세 명이었는데 말이야.", DialogueSpeakerSide.Left, "smile"),
-                    Line(Raccoon, "숫자보다 중요한 걸 알았어. 다음 무대에서도, 먼저 관객부터 볼 거야. …이번엔, 안 떨렸어.", DialogueSpeakerSide.Left, "resolve")),
+                    Narration("공연이 끝난 뒤. 세 사람은 무대 뒤에서 장비를 챙긴다."),
+                    Line(Raccoon, "오늘 영상 찍혔겠죠?"),
+                    Line(Hedgehog, "응. 네 기타 소리 안 나던 데부터."),
+                    Line(Raccoon, "거긴 좀 잘라."),
+                    Line(Zebra, "영상은 나가서 봐. 뒤에 다른 팀 기다린다."),
+                    Line(Raccoon, "형, 앰프는 제가 옮길게요."),
+                    Line(Zebra, "케이블은 건드리지 말고.")),
+
+                CreateSequence("ending_mosh", overwrite,
+                    Narration("투어가 끝난 뒤, 다시 찾은 지하 클럽.\n마지막 곡이 끝나도 무대 앞의 팬들은 물러서지 않는다."),
+                    Line(Raccoon, "받아줄 거지?", "excited"),
+                    Narration("관객들이 손을 든다. 너구리가 무대 밖으로 몸을 기울인다."),
+                    Line(Hedgehog, "야. 기타."),
+                    Line(Raccoon, "아."),
+                    Narration("기타를 벗어놓은 너구리가 관객들의 손 위로 뛰어든다."),
+                    Line(Hedgehog, "오, 됐다."),
+                    Narration("얼룩말도 웃으며 무대 앞으로 다가온다. 너구리는 점점 객석 뒤로 밀려간다."),
+                    Line(Raccoon, "잠깐! 나 어디 가?"),
+                    Line(Hedgehog, "뒤로 간다!"),
+                    Line(Raccoon, "무대 쪽! 무대 쪽으로!"),
+                    Narration("너구리가 관객들 위를 떠간다. 벗겨진 왕관은 어느 팬의 손에 들려 있다.")),
+
+                CreateSequence("ending_singalong", overwrite,
+                    Narration("야외 공연이 끝난 뒤. 밖에서는 아직도 팬들이 후렴을 부르고 있다."),
+                    Line(Raccoon, "오늘 영상 이걸로 올릴까?"),
+                    Line(Hedgehog, "좀 앞으로 돌려봐."),
+                    Narration("휴대전화에서 관객들의 노랫소리가 터져 나온다."),
+                    Line(Raccoon, "내 목소리가 거의 안 들리네."),
+                    Line(Hedgehog, "뒤쪽 봐. 저기까지 다 부른다."),
+                    Narration("얼룩말도 두 사람 옆으로 와서 화면을 들여다본다."),
+                    Line(Raccoon, "다른 각도도 찾아볼까요?"),
+                    Line(Zebra, "왜? 이거 좋은데."),
+                    Line(Hedgehog, "여기. 마이크 내리는 데부터 올려."),
+                    Line(Raccoon, "아직도 부르네."),
+                    Line(Hedgehog, "너 아까 두 번 더 시켰잖아."),
+                    Line(Raccoon, "...그랬지."),
+                    Narration("너구리가 영상을 올린다. 열린 문 사이로 후렴이 한 번 더 들려온다.")),
+
+                CreateSequence("ending_chill", overwrite,
+                    Narration("세 사람이 직접 녹음하고 올린 새 싱글.\n작은 작업실에서 음원과 라이브 영상의 댓글을 확인한다."),
+                    Line(Raccoon, "우리 곡 추천 목록에 들어갔어."),
+                    Line(Hedgehog, "어디?"),
+                    Line(Raccoon, "여기. 사진은 이걸로 나가네."),
+                    Line(Hedgehog, "내가 눈 감은 거?"),
+                    Line(Raccoon, "...작게 보면 괜찮아."),
+                    Line(Hedgehog, "난 크게 보이는데."),
+                    Line(Raccoon, "형, 이거 물어보는데요."),
+                    Line(Zebra, "뭘?"),
+                    Line(Raccoon, "베이스 어떻게 녹음했냐고. 1분 42초."),
+                    Narration("얼룩말이 해당 구간을 듣더니 구석의 앰프를 가리킨다."),
+                    Line(Zebra, "저 앰프."),
+                    Line(Hedgehog, "네가 터뜨릴 뻔한 거."),
+                    Line(Raccoon, "안 터졌잖아."),
+                    Line(Raccoon, "사진도 올려줄까요?"),
+                    Line(Zebra, "응. 뒤쪽도 찍어줘."),
+                    Narration("너구리가 앰프 사진을 찍는다. 얼룩말은 녹음 방법을 댓글로 적고 있다."),
+                    Line(Hedgehog, "형, 그걸 다 쓰게요?"),
+                    Line(Zebra, "물어봤잖아.")),
+
+                CreateSequence("ending_all_s", overwrite,
+                    Narration("스타디움 밖. 대형 전광판에 RACCOON ROLL의 다음 투어 광고가 뜬다."),
+                    Line(Raccoon, "잠깐. 우리 나온다."),
+                    Line(Hedgehog, "아까도 봤어."),
+                    Line(Raccoon, "사진 좀 찍어줘. 광고 바뀌기 전에."),
+                    Line(Hedgehog, "그럼 이거 받아."),
+                    Narration("장비를 넘겨받는 사이 전광판이 다른 광고로 바뀐다."),
+                    Line(Raccoon, "아."),
+                    Line(Hedgehog, "또 나오겠지."),
+                    Line(Raccoon, "형 먼저 가셔도 돼요."),
+                    Line(Zebra, "나도 찍어야지."),
+                    Narration("얼룩말이 장비를 내려놓는다. 잠시 뒤 세 사람의 광고가 다시 돌아온다."),
+                    Line(Zebra, "너도 들어와. 타이머 해놓고."),
+                    Line(Hedgehog, "폰 어디 세워?"),
+                    Line(Raccoon, "내 케이스에 기대."),
+                    Narration("사진이 찍히는 순간, 너구리 혼자 뒤돌아서 전광판을 보고 있다."),
+                    Line(Hedgehog, "...한 번 더 찍자.")),
+
+                // 같은 배드엔딩의 합류 전/후 대사. Stage 1 실패에 얼룩말이 나타나지 않도록 분리한다.
+                CreateSequence("ending_bad_before_join", overwrite, CreateBadEndingLines(withZebra: false)),
+                CreateSequence("ending_bad", overwrite, CreateBadEndingLines(withZebra: true)),
             };
 
             return result;
+        }
+
+        static DialogueLine[] CreateBadEndingLines(bool withZebra)
+        {
+            var lines = new List<DialogueLine>
+            {
+                Narration("공연이 중단되고 장비를 빼달라는 말을 들었다. 밖에는 케이스들이 쌓여 있다."),
+                Line(Raccoon, "드럼도 지금 다 빼달래."),
+                Line(Hedgehog, "의자 하나 남았어. 가져올게."),
+                Line(Raccoon, "오늘 영상 찍었어?"),
+                Line(Hedgehog, "켜놓긴 했는데."),
+                Line(Raccoon, "그건 올리지 마."),
+                Line(Hedgehog, "알았어."),
+                Line(Raccoon, "내가 나중에 옮길게. 너 먼저 가."),
+                Line(Hedgehog, "그걸 혼자 어떻게 들어."),
+                Line(Raccoon, "조금씩 옮기면..."),
+                Line(Hedgehog, "됐어. 반대쪽 잡아."),
+                Narration("둘이 드럼 케이스의 양쪽을 잡고 들어 올린다."),
+            };
+            if (withZebra)
+            {
+                lines.Add(Narration("얼룩말이 출입문을 잡아준다."));
+                lines.Add(Line(Zebra, "천천히. 문턱 있어."));
+                lines.Add(Line(Raccoon, "...형 앰프도 제가 옮길게요."));
+                lines.Add(Line(Zebra, "내 건 내가 들어. 네 기타부터 챙겨."));
+                lines.Add(Narration("얼룩말은 두 사람이 나올 때까지 문을 잡고 기다린다."));
+            }
+            return lines.ToArray();
         }
 
         static DialogueSequence CreateSequence(string id, bool overwrite, params DialogueLine[] lines)
@@ -283,6 +485,7 @@ namespace ContextStage.EditorTools
 
             if (created || overwrite)
             {
+                if (!created) Undo.RecordObject(sequence, "Rewrite Dialogue Story");
                 sequence.EditorInitialize(id, new List<DialogueLine>(lines));
                 EditorUtility.SetDirty(sequence);
             }
@@ -290,18 +493,21 @@ namespace ContextStage.EditorTools
             return sequence;
         }
 
-        static DialogueLine Line(string speaker, string text, DialogueSpeakerSide side, string emotion)
+        static DialogueLine Line(string speaker, string text, string emotion = "neutral")
         {
             return new DialogueLine
             {
                 speakerId = SpeakerIdOf(speaker),
                 speakerName = speaker,
                 text = text,
-                side = side,
+                side = speaker == Raccoon ? DialogueSpeakerSide.Left : DialogueSpeakerSide.Right,
                 emotionId = emotion,
                 portrait = PortraitOf(speaker),
             };
         }
+
+        // 연출 에셋이 없는 행동/광고는 짧은 지문으로 전달한다. 캐릭터의 발화로 처리하지 않는다.
+        static DialogueLine Narration(string text) => new DialogueLine { text = text };
 
         /// <summary>스탠딩 일러 (Sprites/0910_art/스탠딩일러). 없는 화자는 null — 일러 없이 이름만 표시된다.</summary>
         static Sprite PortraitOf(string speaker)
@@ -323,11 +529,8 @@ namespace ContextStage.EditorTools
             {
                 case Raccoon: return "raccoon";
                 case Hedgehog: return "hedgehog";
-                case Bandmate: return "bandmate";
-                case Promoter: return "promoter";
-                case Staff: return "staff";
+                case Zebra: return "zebra";
                 case Rival: return "rival";
-                case Crowd: return "crowd";
                 default: return speaker;
             }
         }

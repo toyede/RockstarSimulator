@@ -14,63 +14,216 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.DialogueSequence
   sequenceId: intro_stage_05_boss
   lines:
-  - speakerId: rival
-    speakerName: LUX//FAUNA
-    portrait: {fileID: 21300000, guid: 254fd7c2586c89e42a01d756ea2dffb3, type: 3}
-    emotionId: cold
-    text: "\uC785\uC7A5 \uD655\uC778. RACCOON ROLL. \uC608\uC0C1 \uC2B9\uB960 3.2%.
-      \uC624\uB298 \uAD00\uAC1D\uC758 87%\uB294 \uC774\uBBF8 \uC800\uD76C \uCABD\uC5D0
-      \uC11C \uC788\uC2B5\uB2C8\uB2E4."
-    side: 1
-    sfxId: 
-  - speakerId: raccoon
-    speakerName: "\uB108\uAD6C\uB9AC"
-    portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
-    emotionId: calm
-    text: "\u2026\uC22B\uC790\uB85C \uB2E4 \uC544\uB294 \uAC83\uCC98\uB7FC \uB9D0\uD558\uB124."
+  - speakerId: 
+    speakerName: 
+    portrait: {fileID: 0}
+    emotionId: 
+    text: "\uC2A4\uD0C0\uB514\uC6C0 \uD30C\uC774\uB110. \uBB34\uB300 \uC785\uAD6C\uC5D0\uC11C
+      \uC804\uC790\uC74C\uC545 \uB4C0\uC624 LUX//FAUNA\uC640 \uB9C8\uC8FC\uCE5C\uB2E4."
     side: 0
     sfxId: 
   - speakerId: rival
     speakerName: LUX//FAUNA
     portrait: {fileID: 21300000, guid: 254fd7c2586c89e42a01d756ea2dffb3, type: 3}
-    emotionId: confident
-    text: "\uC800\uD76C\uB294 \uAD00\uAC1D\uC758 \uB208\uCE58\uB97C \uBCF4\uC9C0
-      \uC54A\uC2B5\uB2C8\uB2E4. \uAD00\uAC1D\uC774 \uC800\uD76C\uB97C \uB530\uB77C\uC624\uB3C4\uB85D
-      \uC124\uACC4\uD560 \uBFD0."
+    emotionId: neutral
+    text: "\uBC29\uC1A1 \uBD24\uC5B4\uC694. \uD6C4\uB834 \uC88B\uB358\uB370."
+    side: 1
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
+    emotionId: neutral
+    text: "\uC544, \uAC10\uC0AC\uD569\uB2C8\uB2E4."
+    side: 0
+    sfxId: 
+  - speakerId: rival
+    speakerName: LUX//FAUNA
+    portrait: {fileID: 21300000, guid: 254fd7c2586c89e42a01d756ea2dffb3, type: 3}
+    emotionId: neutral
+    text: "\uC55E\uC5D0 \uBCA0\uC774\uC2A4 \uB098\uC624\uB294 \uBD80\uBD84\uC740
+      \uC904\uC774\uB294 \uAC8C \uB0AB\uACA0\uB354\uB77C\uACE0\uC694."
+    side: 1
+    sfxId: 
+  - speakerId: rival
+    speakerName: LUX//FAUNA
+    portrait: {fileID: 21300000, guid: 254fd7c2586c89e42a01d756ea2dffb3, type: 3}
+    emotionId: neutral
+    text: "\uBC14\uB85C \uD6C4\uB834\uC73C\uB85C \uB4E4\uC5B4\uAC00\uBA74 \uBC18\uC751\uC774
+      \uB354 \uBE60\uB97C \uAC70\uC608\uC694."
+    side: 1
+    sfxId: 
+  - speakerId: 
+    speakerName: 
+    portrait: {fileID: 0}
+    emotionId: 
+    text: "\uBCA0\uC774\uC2A4\uB97C \uB9CC\uC9C0\uB358 \uC5BC\uB8E9\uB9D0\uC758 \uC190\uC774
+      \uC7A0\uAE50 \uBA48\uCD98\uB2E4."
+    side: 0
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
+    emotionId: neutral
+    text: "\uC624\uB298\uC740 \uB9DE\uCDB0\uC628 \uB300\uB85C \uD558\uB824\uACE0\uC694."
+    side: 0
+    sfxId: 
+  - speakerId: rival
+    speakerName: LUX//FAUNA
+    portrait: {fileID: 21300000, guid: 254fd7c2586c89e42a01d756ea2dffb3, type: 3}
+    emotionId: neutral
+    text: "\uADF8\uB798\uC694? \uC800\uD76C\uB294 \uBC18\uC751 \uC548 \uB098\uC624\uB294
+      \uBD80\uBD84\uC740 \uBC14\uB85C \uBE7C\uC694."
+    side: 1
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
+    emotionId: neutral
+    text: "\uC800\uD76C\uB294 \uADF8 \uBD80\uBD84\uB3C4 \uC88B\uC544\uD574\uC11C\uC694."
+    side: 0
+    sfxId: 
+  - speakerId: rival
+    speakerName: LUX//FAUNA
+    portrait: {fileID: 21300000, guid: 254fd7c2586c89e42a01d756ea2dffb3, type: 3}
+    emotionId: neutral
+    text: "\uADF8\uB7FC \uACF5\uC5F0 \uB54C \uB4E4\uC5B4\uBCFC\uAC8C\uC694."
+    side: 1
+    sfxId: 
+  - speakerId: 
+    speakerName: 
+    portrait: {fileID: 0}
+    emotionId: 
+    text: "LUX//FAUNA\uAC00 \uC2A4\uD0DC\uD504\uB97C \uB530\uB77C \uBB34\uB300\uB85C
+      \uC62C\uB77C\uAC04\uB2E4."
+    side: 0
+    sfxId: 
+  - speakerId: hedgehog
+    speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
+    portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
+    emotionId: neutral
+    text: "\uBB50\uB798?"
+    side: 1
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
+    emotionId: neutral
+    text: "\uC55E\uC5D0 \uC880 \uC904\uC774\uB798."
+    side: 0
+    sfxId: 
+  - speakerId: hedgehog
+    speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
+    portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
+    emotionId: neutral
+    text: "\uC9C0\uAE08 \uC640\uC11C?"
+    side: 1
+    sfxId: 
+  - speakerId: zebra
+    speakerName: "\uC5BC\uB8E9\uB9D0"
+    portrait: {fileID: 0}
+    emotionId: neutral
+    text: "\uC548 \uC904\uC5EC. \uC544\uAE4C \uB9DE\uCD98 \uB300\uB85C \uAC00."
+    side: 1
+    sfxId: 
+  - speakerId: 
+    speakerName: 
+    portrait: {fileID: 0}
+    emotionId: 
+    text: "\uB9DE\uC740\uD3B8 \uBB34\uB300\uC5D0\uC11C \uCCAB \uC804\uC790\uC74C\uC774
+      \uC6B8\uB9B0\uB2E4. \uAC1D\uC11D\uC774 \uD658\uD638\uB85C \uB4E4\uC369\uC778\uB2E4."
+    side: 0
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
+    emotionId: neutral
+    text: "\uC800\uCABD\uC740 \uC18C\uB9AC\uB9CC \uB0B4\uB3C4 \uC88B\uC544\uD558\uB124."
+    side: 0
+    sfxId: 
+  - speakerId: zebra
+    speakerName: "\uC5BC\uB8E9\uB9D0"
+    portrait: {fileID: 0}
+    emotionId: neutral
+    text: "\uB124 \uAE30\uD0C0\uB294 \uC18C\uB9AC \uB098\uC640?"
+    side: 1
+    sfxId: 
+  - speakerId: 
+    speakerName: 
+    portrait: {fileID: 0}
+    emotionId: 
+    text: "\uB108\uAD6C\uB9AC\uAC00 \uC904\uC744 \uD295\uAE34\uB2E4. \uC544\uBB34
+      \uC18C\uB9AC\uB3C4 \uB098\uC9C0 \uC54A\uB294\uB2E4."
+    side: 0
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
+    emotionId: neutral
+    text: "...\uC7A0\uAE50."
+    side: 0
+    sfxId: 
+  - speakerId: 
+    speakerName: 
+    portrait: {fileID: 0}
+    emotionId: 
+    text: "\uB108\uAD6C\uB9AC\uAC00 \uAE30\uD0C0 \uBCFC\uB968\uC744 \uC62C\uB9B0\uB2E4.
+      \uC774\uBC88\uC5D0\uB294 \uC18C\uB9AC\uAC00 \uB09C\uB2E4."
+    side: 0
+    sfxId: 
+  - speakerId: hedgehog
+    speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
+    portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
+    emotionId: neutral
+    text: "\uC88B\uC544. \uC774\uC81C \uC6B0\uB9AC\uB3C4 \uC18C\uB9AC\uB294 \uB09C\uB2E4."
+    side: 1
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
+    emotionId: neutral
+    text: "\uC800\uD76C \uCABD\uB3C4 \uC798 \uB4E4\uB9AC\uC138\uC694?"
+    side: 0
+    sfxId: 
+  - speakerId: 
+    speakerName: 
+    portrait: {fileID: 0}
+    emotionId: 
+    text: "\uBB34\uB300 \uC55E\uC5D0\uC11C \uBA87\uBA87 \uAD00\uAC1D\uC774 \uC190\uC744
+      \uB4E4\uACE0 \uC18C\uB9AC\uCE5C\uB2E4."
+    side: 0
+    sfxId: 
+  - speakerId: raccoon
+    speakerName: "\uB108\uAD6C\uB9AC"
+    portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
+    emotionId: neutral
+    text: "\uB410\uC8E0?"
+    side: 0
+    sfxId: 
+  - speakerId: zebra
+    speakerName: "\uC5BC\uB8E9\uB9D0"
+    portrait: {fileID: 0}
+    emotionId: neutral
+    text: "\uC751."
     side: 1
     sfxId: 
   - speakerId: hedgehog
     speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
     portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
-    emotionId: angry
-    text: "\uC124\uACC4 \uC88B\uC544\uD558\uB124! \uAD00\uAC1D\uC740 \uACC4\uC0B0\uAE30\uAC00
-      \uC544\uB2C8\uC57C. \uC57C, \uB108\uAD6C\uB9AC. \uACE8\uBAA9\uC5D0\uC11C \uBB50\uB77C\uACE0
-      \uD588\uB354\uB77C?"
-    side: 0
+    emotionId: neutral
+    text: "\uAC00?"
+    side: 1
     sfxId: 
   - speakerId: raccoon
     speakerName: "\uB108\uAD6C\uB9AC"
     portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
-    emotionId: resolve
-    text: "\u2026\uB3C4\uB9DD\uCE58\uC9C0 \uC54A\uB294\uB2E4\uACE0 \uD588\uC5B4.
-      \uB77C\uC774\uBC8C \uBB34\uB300\uC758 \uD32C\uC774 \uB9CE\uC744\uC218\uB85D
-      \uC6B0\uB9AC \uC810\uC218\uAC00 \uAE4E\uC5EC. \uADF8\uB7EC\uB2C8\uAE4C \uBE8F\uC5B4\uC628\uB2E4.
-      \uD55C \uBA85\uC529, \uC804\uBD80."
+    emotionId: neutral
+    text: "\uAC00\uC790."
     side: 0
     sfxId: 
   - speakerId: hedgehog
     speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
     portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
-    emotionId: cheer
-    text: "\uADF8\uB798\uC57C \uC6B0\uB9AC \uBCF4\uCEEC\uC774\uC9C0! \uD328\uD134
-      \uB728\uBA74 \uC815\uBA74\uC73C\uB85C \uBC1B\uC544\uCCD0. \uAD00\uAC1D \uACFC\uBC18\uC218\uB97C
-      \uB118\uAE30\uBA74 \uC800 \uB85C\uBD07\uB4E4, \uD654\uB0BC \uAC70\uB2E4!"
-    side: 0
-    sfxId: 
-  - speakerId: raccoon
-    speakerName: "\uB108\uAD6C\uB9AC"
-    portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
-    emotionId: shout
-    text: "Raccoon Roll\u2026 \uC2DC\uC791\uD558\uC790!"
-    side: 0
+    emotionId: excited
+    text: "\uC6D0, \uD22C. \uC6D0, \uD22C, \uC4F0\uB9AC, \uD3EC!"
+    side: 1
     sfxId: 

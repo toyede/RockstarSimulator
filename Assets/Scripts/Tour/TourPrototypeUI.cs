@@ -43,6 +43,14 @@ namespace ContextStage
         bool _dialoguePlaying;
         string _travelKey = string.Empty;
 
+        // 엔딩: 판정 → 엔딩 대사 1회 → 결말 요약(총점·랭크·가장 호응한 관객·이름 기록)
+        bool _endingPlaying;
+        string _endingShownFor = string.Empty;
+        TourEndingVerdict _verdict;
+        InputField _nameInput;
+        Button _recordButton;
+        bool _nameRecorded;
+
         bool UsingSceneMap => _mapView != null;
 
         void Awake()
@@ -384,7 +392,9 @@ namespace ContextStage
         {
             TourRunState run = _manager == null ? null : _manager.CurrentRun;
             if (run != null && run.phase == RunPhase.Dialogue) return;
+            if (_endingPlaying && run != null && (run.phase == RunPhase.Completed || run.phase == RunPhase.Failed)) return;
             _dialoguePlaying = false;
+            _endingPlaying = false;
             Dialogue.HideImmediate();
         }
 
@@ -414,20 +424,174 @@ namespace ContextStage
             _augmentPopup.ShowOwnedModal(AugmentOwnedViewModelBuilder.Build(run, catalog));
         }
 
-        void ShowCompleted(TourRunState run)
+        void ShowCompleted(TourRunState run) => ShowEnding(run);
+
+        void ShowFailed(TourRunState run) => ShowEnding(run);
+
+        // ---------------- 엔딩 ----------------
+
+        /// <summary>
+        /// 투어 완료·실패: 엔딩을 판정하고(TourEndingSelector) 엔딩 대사를 한 번 재생한 뒤 결말 요약을 보여준다.
+        /// Refresh 가 다시 들어와도(상태 변경) 같은 런에서는 대사를 다시 틀지 않는다.
+        /// </summary>
+        void ShowEnding(TourRunState run)
         {
-            SetHeader("TOUR COMPLETE", run.phase.ToString());
-            _bodyText.text =
-                $"TOTAL SCORE  {run.totalScore:N0}\n" +
-                $"CLEARED PERFORMANCES  {run.stageResults.Count}";
-            AddButton("RETURN TO TITLE", ReturnToTitle);
+            if (_endingPlaying)
+            {
+                if (_mainPanel != null) _mainPanel.gameObject.SetActive(false);
+                return;
+            }
+
+            string key = $"{run.phase}:{run.seed}:{run.stageResults.Count}:{run.totalScore}";
+            if (_endingShownFor != key)
+            {
+                _endingShownFor = key;
+                _verdict = TourEndingSelector.Resolve(run);
+                _nameRecorded = false;
+                Debug.Log($"[TourEnding] {_verdict.kind} ({_verdict.sequenceId}) · 총점 {_verdict.totalScore:N0} · 랭크 {_verdict.ranks} · 성향 점수 C/S/M {_verdict.scoreByPreference[0]}/{_verdict.scoreByPreference[1]}/{_verdict.scoreByPreference[2]}");
+                if (TryPlayEndingDialogue(run))
+                {
+                    _endingPlaying = true;
+                    if (_mainPanel != null) _mainPanel.gameObject.SetActive(false);
+                    return;
+                }
+            }
+
+            ShowEndingSummary(run);
         }
 
-        void ShowFailed(TourRunState run)
+        bool TryPlayEndingDialogue(TourRunState run)
         {
-            SetHeader("TOUR FAILED", run.phase.ToString());
-            _bodyText.text = $"TOTAL SCORE  {run.totalScore:N0}\nTry the tour again from the title.";
-            AddButton("RETURN TO TITLE", ReturnToTitle, danger: true);
+            if (_verdict == null || string.IsNullOrEmpty(_verdict.sequenceId)) return false;
+
+            TourEndingCatalog catalog = TourEndingCatalog.LoadDefault();
+            TourEndingCatalog.Entry entry = catalog != null ? catalog.Find(_verdict.kind) : null;
+
+            var context = new DialoguePresentationContext
+            {
+                venueName = entry != null && !string.IsNullOrEmpty(entry.title) ? entry.title : _verdict.kind.ToString(),
+                confirmLabel = catalog != null ? catalog.DialogueConfirmLabel : "결말 보기",
+            };
+
+            context.useBackdropImage = true; // 허브에는 뒤에 보여줄 화면이 없으므로 블러 대신 배경 그림
+            if (entry != null && entry.illustration != null)
+            {
+                context.backdrop = entry.illustration;
+                context.brightBackdrop = true; // 일러스트가 주인공
+            }
+            else
+            {
+                // 일러스트가 없으면 마지막 공연 배경을 어둡게
+                StageResult last = run.LatestStageResult;
+                if (last != null && StageVisualCatalog.TryResolve(last.stageId, out StageVisualEntry visual) && visual != null)
+                    context.backdrop = visual.backgroundBase;
+            }
+
+            return Dialogue.TryPlay(_verdict.sequenceId, context, OnEndingDialogueFinished);
+        }
+
+        void OnEndingDialogueFinished()
+        {
+            _endingPlaying = false;
+            TourRunState run = _manager == null ? null : _manager.CurrentRun;
+            if (run == null) return;
+            ShowEndingSummary(run);
+        }
+
+        void ShowEndingSummary(TourRunState run)
+        {
+            if (_mainPanel != null) _mainPanel.gameObject.SetActive(true);
+            if (_background != null) _background.enabled = true;
+            ClearButtons();
+
+            TourEndingCatalog catalog = TourEndingCatalog.LoadDefault();
+            TourEndingCatalog.Entry entry = catalog != null && _verdict != null ? catalog.Find(_verdict.kind) : null;
+            ResultNewspaperCatalog newspaper = ResultNewspaperCatalog.LoadDefault();
+
+            string title = entry != null && !string.IsNullOrEmpty(entry.title)
+                ? entry.title
+                : (_verdict != null && _verdict.failed ? "TOUR FAILED" : "TOUR COMPLETE");
+            SetHeader(title, run.phase.ToString());
+
+            string topLabel = _verdict != null
+                ? (newspaper != null ? newspaper.PreferenceLabel(_verdict.topPreference) : _verdict.topPreference.ToString())
+                : "-";
+            string summary = entry != null && !string.IsNullOrEmpty(entry.summary)
+                ? string.Format(entry.summary, run.totalScore.ToString("N0"), topLabel)
+                : "";
+            string totalLabel = catalog != null ? catalog.TotalScoreLabel : "TOTAL SCORE";
+            string ranksLabel = catalog != null ? catalog.RanksLabel : "RANKS";
+            string topAudienceLabel = catalog != null ? catalog.TopAudienceLabel : "TOP AUDIENCE";
+            string ranks = _verdict != null && !string.IsNullOrEmpty(_verdict.ranks) ? _verdict.ranks : "-";
+            int topScore = _verdict != null ? _verdict.topPreferenceScore : 0;
+
+            _bodyText.text =
+                (string.IsNullOrEmpty(summary) ? "" : summary + "\n") +
+                $"{totalLabel}  {run.totalScore:N0}    {ranksLabel}  {ranks}\n" +
+                $"{topAudienceLabel}  {topLabel} ({topScore:N0})";
+
+            // 이름 기록 (로컬 순위 + 원격 순위). 한 번만.
+            string entryLabel = catalog != null ? catalog.NameEntryLabel : "이름을 남기고 순위에 기록하세요";
+            string recordLabel = catalog != null ? (_nameRecorded ? catalog.NameEntryDone : catalog.NameEntryButton) : (_nameRecorded ? "기록됨" : "기록하기");
+            _nameInput = CreateNameInput(_buttonRoot, entryLabel);
+            _nameInput.interactable = !_nameRecorded;
+            _recordButton = AddButton(recordLabel, RecordEndingScore);
+            _recordButton.interactable = !_nameRecorded;
+
+            AddButton(catalog != null ? catalog.ReturnButton : "RETURN TO TITLE", ReturnToTitle, danger: _verdict != null && _verdict.failed);
+        }
+
+        void RecordEndingScore()
+        {
+            if (_nameRecorded || _manager == null || _manager.CurrentRun == null) return;
+            string name = RemoteLeaderboardClient.NormalizePlayerName(_nameInput != null ? _nameInput.text : string.Empty);
+            int score = Mathf.Max(0, _manager.CurrentRun.totalScore);
+
+            LeaderboardStore.Add(name, score); // 네트워크 응답과 무관하게 로컬 기록부터
+            _nameRecorded = true;
+            if (_nameInput != null) _nameInput.interactable = false;
+            if (_recordButton != null)
+            {
+                _recordButton.interactable = false;
+                Text label = _recordButton.GetComponentInChildren<Text>();
+                TourEndingCatalog catalog = TourEndingCatalog.LoadDefault();
+                if (label != null) label.text = catalog != null ? catalog.NameEntryDone : "기록됨";
+            }
+            StartCoroutine(RemoteLeaderboardClient.SubmitScore(name, score, _ => { }));
+        }
+
+        /// <summary>결말 화면의 이름 입력칸. 버튼 목록(VerticalLayoutGroup)에 한 줄로 들어간다.</summary>
+        static InputField CreateNameInput(Transform parent, string placeholder)
+        {
+            var root = new GameObject("NameInput", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(InputField), typeof(LayoutElement));
+            RectTransform rect = root.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.sizeDelta = new Vector2(820f, 62f);
+            root.GetComponent<Image>().color = new Color32(0x1B, 0x16, 0x20, 0xFF);
+            LayoutElement layout = root.GetComponent<LayoutElement>();
+            layout.preferredHeight = 62f;
+            layout.minHeight = 54f;
+
+            Text text = TourPrototypeUIFactory.CreateText(rect, "Text", 26, TextAnchor.MiddleLeft, Color.white);
+            text.supportRichText = false;
+            text.rectTransform.anchorMin = Vector2.zero;
+            text.rectTransform.anchorMax = Vector2.one;
+            text.rectTransform.offsetMin = new Vector2(18f, 4f);
+            text.rectTransform.offsetMax = new Vector2(-18f, -4f);
+
+            Text hint = TourPrototypeUIFactory.CreateText(rect, "Placeholder", 24, TextAnchor.MiddleLeft, new Color(1f, 1f, 1f, 0.35f));
+            hint.text = placeholder;
+            hint.rectTransform.anchorMin = Vector2.zero;
+            hint.rectTransform.anchorMax = Vector2.one;
+            hint.rectTransform.offsetMin = new Vector2(18f, 4f);
+            hint.rectTransform.offsetMax = new Vector2(-18f, -4f);
+
+            InputField input = root.GetComponent<InputField>();
+            input.textComponent = text;
+            input.placeholder = hint;
+            input.characterLimit = 16;
+            input.lineType = InputField.LineType.SingleLine;
+            return input;
         }
 
         void StartSelectedPerformance()

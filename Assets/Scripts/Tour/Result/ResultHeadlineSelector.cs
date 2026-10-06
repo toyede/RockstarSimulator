@@ -179,6 +179,13 @@ namespace ContextStage
             if (report.HasStageEvents)
                 p.articleBody += $" · 기믹 이벤트 {report.stageEventsSucceeded} / {report.stageEventsTotal}회 성공";
 
+            // 가장 많이 점수를 준 관객 성향 (엔딩 판정과 같은 집계)
+            if (report.TryGetTopPreference(out CrowdPreference top, out int topScore) &&
+                !string.IsNullOrEmpty(catalog.ArticleTopAudience))
+            {
+                p.articleBody += " · " + string.Format(catalog.ArticleTopAudience, catalog.PreferenceLabel(top), topScore.ToString("N0"));
+            }
+
             // ---------------- 버튼 ----------------
             switch (nextAction)
             {

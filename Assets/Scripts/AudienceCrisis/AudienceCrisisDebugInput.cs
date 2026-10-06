@@ -29,7 +29,7 @@ namespace ContextStage
         void Update()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            if (director == null) return;
+            if (NearbyConcertCrisisDirector.IsRetired || director == null) return;
 #if ENABLE_INPUT_SYSTEM
             Keyboard keyboard = Keyboard.current;
             if (keyboard != null)
@@ -51,7 +51,7 @@ namespace ContextStage
         void OnGUI()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            if (!showDebugButtons || director == null) return;
+            if (NearbyConcertCrisisDirector.IsRetired || !showDebugButtons || director == null) return;
 
             const float width = 220f;
             const float height = 92f;

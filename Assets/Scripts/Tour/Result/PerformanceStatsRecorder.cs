@@ -23,6 +23,8 @@ namespace ContextStage
         [SerializeField] int stageEventsSucceeded;
         [SerializeField] int stageEventsTotal;
         [SerializeField] BossOutcome bossOutcome;
+        [SerializeField] int[] scoreByPreference = new int[PerformanceReport.PreferenceCount];
+        [SerializeField] int[] cardsByPreference = new int[PerformanceReport.PreferenceCount];
 
         bool _feverActive;
 
@@ -39,10 +41,14 @@ namespace ContextStage
             EventBus.Subscribe<SpecialAudienceEnded>(OnSpecialEnded);
             EventBus.Subscribe<AudienceCrisisResolved>(OnCrisisResolved);
             EventBus.Subscribe<StageEventResolved>(OnStageEventResolved);
+            EventBus.Subscribe<AudienceCardReacted>(OnAudienceReacted);
+            EventBus.Subscribe<CardResolved>(OnCardResolved);
         }
 
         void OnDisable()
         {
+            EventBus.Unsubscribe<AudienceCardReacted>(OnAudienceReacted);
+            EventBus.Unsubscribe<CardResolved>(OnCardResolved);
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
             EventBus.Unsubscribe<ComboChanged>(OnComboChanged);
             EventBus.Unsubscribe<FeverStateChanged>(OnFeverChanged);
@@ -68,6 +74,24 @@ namespace ContextStage
             stageEventsTotal = 0;
             bossOutcome = BossOutcome.None;
             _feverActive = false;
+            scoreByPreference = new int[PerformanceReport.PreferenceCount];
+            cardsByPreference = new int[PerformanceReport.PreferenceCount];
+        }
+
+        // 성향별 집계: 관객 한 명의 반응값을 그 관객의 성향에, 공연 카드 사용은 카드가 겨냥한 성향에
+        void OnAudienceReacted(AudienceCardReacted e)
+        {
+            int index = (int)e.Current.Preference;
+            if (index < 0 || index >= scoreByPreference.Length) return;
+            scoreByPreference[index] += e.ReactionValue;
+        }
+
+        void OnCardResolved(CardResolved e)
+        {
+            if (e.Role == CardRole.Utility) return;
+            int index = (int)e.TargetPreference;
+            if (index < 0 || index >= cardsByPreference.Length) return;
+            cardsByPreference[index]++;
         }
 
         // ---------------- 수집 ----------------
@@ -131,6 +155,8 @@ namespace ContextStage
                 crisisRetained = crisisRetained,
                 stageEventsSucceeded = stageEventsSucceeded,
                 stageEventsTotal = stageEventsTotal,
+                scoreByPreference = (int[])scoreByPreference.Clone(),
+                cardsByPreference = (int[])cardsByPreference.Clone(),
             };
 
             if (AudienceRosterSystem.HasInstance)

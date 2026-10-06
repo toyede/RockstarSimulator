@@ -12,7 +12,8 @@
 |---|---|
 | 투어 첫 스테이지(`stage_01`), 이 기기에서 첫 플레이 | O |
 | 투어 첫 스테이지, `tutorial_done` 기록 있음 | X (빌드) / **O (에디터·개발 빌드, `forceInDebugBuilds`)** |
-| 투어 2~5 스테이지 | X |
+| 투어 2 스테이지(`stage_02`) | 특별 관객 전달 교육. `tutorial_special_done`으로 별도 저장 |
+| 투어 3~5 스테이지 | X |
 | 투어 없이 Main 직접 실행 | 예전처럼 매번 |
 
 디버그에서 매번 뜨는 게 귀찮으면 `[Tutorial]` 인스펙터의 `forceInDebugBuilds` 를 끈다. E2E 스크립트는 `TutorialFlow.SuppressForTests = true` 로 끈다.
@@ -40,7 +41,7 @@ Tools/Tutorial/Setup Tutorial   →   Ctrl+S  (Main.unity 에서!)
 | CrowdChange | 흥분한 Singalong 관객 입장, **2초 관찰 강제** | 클릭 |
 | FeverIntro | 피버타임 강제 발동, 카드 사용해 보너스 점수 확인 | 카드 사용 |
 | FeverExplain | 피버 중 스코어링 방식(관객 수 기반) 설명 | 클릭 |
-| FinalRun | 관객 6명(지루한 Chill 2 포함), **30초 · 반응 +100 · 이탈 ≤1** | 타이머 |
+| FinalRun | 관객 6명(지루한 Chill 2 포함), **10초 · 총 반응 1,000점** | 타이머 |
 | Complete/Fail | 성공 → 본 공연 시작 / 실패 → **미니 공연만 재시작** | 클릭 |
 
 - 튜토리얼 시작 손패는 랜덤이 아니라 성향별 카드 1장씩, 총 3장으로 고정된다 (`CardSystem.SetHand`)
@@ -87,12 +88,45 @@ Tools/Tutorial/Setup Tutorial   →   Ctrl+S  (Main.unity 에서!)
 | `FeverSystem.cs` | `ForceStart()` — 콤보 조건 없이 즉시 피버타임 시작 (이미 활성 중이면 무시) |
 | `PerformanceTimerSystem.cs` | `SetPaused(bool)`(정적 파사드 `PerformanceTimer.SetPaused`) — true 인 동안 제한시간 정지 |
 
-※ 프리젠터의 구버전 API 참조 2건(`PlayDeparture`/`LayoutPosition`)도 이번에 수정 — 컴파일 복구.
+## 스테이지 2 특별 관객 교육
+
+- Stage 1의 FeverExplain 다음은 바로 FinalIntro. 체험 Fever를 취소한 뒤 미니 공연 시작.
+- Stage 2 시작 직후: SpecialIntro → SpecialUse → SpecialExplain → 같은 스테이지 본 공연.
+- Stage 1 완료/스킵 기록과 독립적. 기존 유저도 Stage 2 교육은 한 번 본다.
+- 에디터/개발 빌드의 `forceInDebugBuilds`는 두 교육에 적용. 3~5 스테이지는 자동 교육 없음.
+- 일치하는 Singalong Special 1장을 보장. 실제 `CardResolved.IsSpecialHit`만 성공 인정.
+- `CardInput.RequestFilter`가 드롭 컨텍스트를 소비 전에 검사한다. 빗나가거나 숫자키로 사용하면 소모 없이 복귀.
+- `SpecialAudienceManager.SetTutorialHold(true)`는 요청 만료/다음 자동 등장만 보류한다. 이동/성공 연출은 유지.
+- 타이머, 자연 유입/몰입도 감소, 위기는 정지. 완료/스킵 시 `GameManager.ResetGame/StartGame`으로 연습 점수/통계를 초기화한다. 투어/증강을 초기화하지 않는다.
+- 연결/필수 카드가 없으면 경고 후 교육 완료 기록 없이 본 공연으로 복귀한다.
+
+### 드래그 안내와 담당 경계
+
+`TutorialDragGuideUI`는 런타임 시각 전용 UI다. 별도 씬 셋업/에셋 재생성 불필요.
+
+- 실제 손패 카드 위치 → 움직이는 `CurrentDropTarget.HitCollider.bounds.center`를 연결.
+- 월드 카메라 → 화면 → 루트 Canvas 로컬 좌표로 변환. 해상도 고정 좌표 없음.
+- 픽셀 손과 반투명 카드가 약 2.7초 주기로 반복. 실제 드래그 시 숨기고 표적 표시만 유지.
+- 실제 겹침 판정에 따라 “여기서 놓으세요!” 표시. 모든 가이드 Graphic은 raycast 비활성.
+- 손패 검색은 시작 시 최대 3회만 수행. 가이드는 카드 사용 이벤트를 발생시키지 않는다.
+- `CardDragHandler.PointerScreenPosition`으로 마우스/터치 모두 같은 대상 강조 사용.
+- 안내 패널의 임시 배치는 종료 시 원래 배치로 복구. 씬의 수동 위치/크기는 저장 변경하지 않는다.
+
+### 검증 체크리스트
+
+1. Stage 1 Fever 설명 뒤 특별 관객 없이 10초/1,000점 연습으로 이동.
+2. Stage 1 스킵 후에도 Stage 2 특별 관객 교육이 실행됨.
+3. 요청 제한시간보다 오래 읽어도 같은 관객이 유지되고 계속 이동함.
+4. 잘못된 드롭/숫자키 사용은 카드/점수/덱을 소모하지 않음.
+5. 실제 대상 드롭만 완료, 성공 설명 동안 추가 카드 사용 차단.
+6. 완료/스킵 후 점수·통계 초기화, 투어 노드·기존 증강·추가 카드 유지.
+7. PC/모바일·창 크기 변경에서 안내와 실제 드롭 영역 일치.
+8. Disable/재시작 후 필터/가이드/타이머 보류가 남지 않음.
 
 ## 6. 테스트
 
 1. `Ctrl+R` → Setup → `Ctrl+S` → Play → 공연 시작 → 0.6초 뒤 튜토리얼 자동 시작
-2. 재실행: `[Tutorial]` 인스펙터 ⋮ → `Debug/Start Tutorial` (완료 기록도 함께 초기화)
+2. 재실행: `[Tutorial]` 인스펙터 ⋮ → `Debug/Start Tutorial` (현재 Stage에 맞는 교육 수동 실행)
 3. 완료 기록만 초기화: `Debug/Reset Tutorial Done Flag`
 
 ## 7. 기획안 대비 미구현 (시간 판단, 필요 시 위치 명시)

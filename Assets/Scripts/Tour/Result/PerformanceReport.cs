@@ -62,7 +62,45 @@ namespace ContextStage
         public int bossFansLost;
         public int bossDrainTotal;
 
+        [Header("성향별 (인덱스 = CrowdPreference: Chill · Singalong · Mosh)")]
+        [Tooltip("관객 반응값 합계. 카드 한 장에 반응한 관객 각각의 반응값을 그 관객의 성향에 더한다 (음수 포함)")]
+        public int[] scoreByPreference = new int[PreferenceCount];
+        [Tooltip("그 성향을 겨냥한 공연 카드를 낸 횟수 (유틸리티 카드 제외)")]
+        public int[] cardsByPreference = new int[PreferenceCount];
+
+        public const int PreferenceCount = 3;
+
         public bool HasSpecialAudience => specialEnded > 0;
+
+        public int ScoreFor(CrowdPreference p) => scoreByPreference != null && (int)p < scoreByPreference.Length ? scoreByPreference[(int)p] : 0;
+        public int CardsFor(CrowdPreference p) => cardsByPreference != null && (int)p < cardsByPreference.Length ? cardsByPreference[(int)p] : 0;
+
+        /// <summary>가장 많은 반응 점수를 준 성향. 동률이면 카드 사용 횟수, 그래도 같으면 Mosh &gt; Singalong &gt; Chill.</summary>
+        public bool TryGetTopPreference(out CrowdPreference top, out int score)
+        {
+            return TopPreference(scoreByPreference, cardsByPreference, out top, out score);
+        }
+
+        public static bool TopPreference(int[] scores, int[] cards, out CrowdPreference top, out int score)
+        {
+            top = CrowdPreference.Mosh;
+            score = 0;
+            if (scores == null) return false;
+            bool any = false;
+            int bestCards = 0;
+            for (int i = scores.Length - 1; i >= 0; i--) // 뒤(Mosh)부터 돌아 동률에서 Mosh 우선
+            {
+                int cardCount = cards != null && i < cards.Length ? cards[i] : 0;
+                if (!any || scores[i] > score || (scores[i] == score && cardCount > bestCards))
+                {
+                    any = true;
+                    top = (CrowdPreference)i;
+                    score = scores[i];
+                    bestCards = cardCount;
+                }
+            }
+            return any && (score != 0 || bestCards > 0);
+        }
         public bool HasCrisis => crisisCount > 0;
         public bool HasStageEvents => stageEventsTotal > 0;
         public bool HasBoss => isBoss && bossOutcome != BossOutcome.None;

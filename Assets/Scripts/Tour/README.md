@@ -19,7 +19,8 @@ TourRunManager: Map → Dialogue → Performance → Result → Reward → Map �
 | `TourMapConfig` | 맵 화면 아트·노드 좌표·연출 수치. `Resources/Tour/TourMapConfig.asset` |
 | `TourMapView` | 맵 선택 화면 (피그마 "맵 선택"). 아래 참고 |
 | `AugmentSelectionCoordinator` 등 | 증강 선택 (장우용 담당) |
-| `TourDebugInput` | 디버그 키 (Home 클리어 · Delete 실패 · F10 단계 진행). 씬 배치 불필요 |
+| `TourDebugInput` | 디버그 키 (Home 클리어 · Delete 실패 · F10 단계 진행 · F12 저장 초기화). 씬 배치 불필요 |
+| `TourEnding` / `TourEndingCatalog` | 엔딩 판정(`TourEndingSelector.Resolve`)과 엔딩별 제목·일러스트·요약 문구. 아래 "엔딩" 참고 |
 
 ## 맵 선택 화면 (TourMapView)
 
@@ -44,14 +45,33 @@ TourRunManager: Map → Dialogue → Performance → Result → Reward → Map �
 
 - 공연 종료 → `TourPerformanceBridge` 가 `PerformanceStatsRecorder.Freeze` 로 기록을 확정하고 `StageResult` 에 담아 제출 → `ResultHeadlineSelector.Compose` → `ResultNewspaperView.Show`
 - 지면은 `Docs/ArtDrafts/ResultNewspaper_20260910_v1` 초안 5장 (stage_01 골목일보 · 02 동물중앙 · 03 Rolling Hairballs · 04 Pitchfur · 05 The Animal Times). 03·04 는 배경 투명화가 안 된 초안이라 체크무늬가 보인다 — 아트 교체 시 `ResultNewspaperCatalog` 의 스킨 스프라이트만 바꾼다
-- 씬 계층 `Main/[TourPerformance]/[ResultNewspaper]` 의 텍스트·사진·도장 위치는 인스펙터에서 고친다 (지면 1672×941 기준 로컬 좌표). 스킨마다 칸 위치가 조금씩 달라 공통 좌표를 쓴다
+- 씬 계층 `Main/[TourPerformance]/[ResultNewspaper]` 의 텍스트·사진·도장 위치는 인스펙터에서 고친다 (지면 1672×941 기준 로컬 좌표). 스킨마다 칸 위치가 조금씩 달라 공통 좌표를 쓰고, 제호가 큰 지면은 카탈로그 스킨의 `headlineOffset`(헤드라인·부제 묶음) / `recordsOffset`(기록 칸 묶음) 으로만 옮긴다 (stage_03: −20 / −12)
 - 문구·임계값(부제를 쓸 최소 콤보 등)은 전부 카탈로그 에셋에 있다
 - 다음 진행 버튼: 성공 → "증강 선택하기" / 마지막 노드 성공 → "투어의 결말 보기" / 실패 → "투어 결과 확인". 재도전 버튼은 없다 (체크포인트 정책 미확정)
 - 아직 없음: 상세 기록 펼치기, 실제 하이라이트 캡처, 신문 이미지 저장, 밴드 동료 레이어(밴드 편성 시스템 자체가 아직 없다)
 
+## 엔딩
+
+투어 완료·실패 → `TourPrototypeUI.ShowEnding` → `TourEndingSelector.Resolve(run)` → 엔딩 대사(`Dialogue.TryPlay`) 1회 → 결말 요약(총점·랭크·가장 호응한 관객·이름 기록·타이틀로).
+
+| 판정 순서 | 조건 | 시퀀스 |
+|---|---|---|
+| 1 | 투어 실패 (보스전 패배 = 목표 미달 포함) | `ending_bad`. 첫 노드에서 실패하면 얼룩말 합류 전 버전 `ending_bad_before_join` |
+| 2 | 모든 공연 S 랭크 | `ending_all_s` |
+| 3 | 그 외: 투어 전체에서 반응 점수를 가장 많이 준 관객 성향 | `ending_mosh` / `ending_singalong` / `ending_chill` |
+
+- 성향별 점수는 `PerformanceReport.scoreByPreference` (관객 한 명의 반응값을 그 관객 성향에 합산, 음수 포함). 동률이면 그 성향을 겨냥한 카드 사용 횟수(`cardsByPreference`), 그래도 같으면 Mosh > Singalong > Chill
+- 같은 집계를 결과 신문 기사 끝에 "가장 뜨거웠던 관객은 SINGALONG (145점)" 으로 붙인다 (`ResultNewspaperCatalog.articleTopAudience`, 성향 이름도 카탈로그)
+- 엔딩 일러스트는 `Resources/Tour/TourEndingCatalog.asset` 의 `entries[*].illustration` 에 넣는다. 있으면 대화 배경으로 밝게 깔리고(`brightBackdrop`), 없으면 마지막 공연 배경을 어둡게 깐다. 제목·요약·버튼 문구도 이 에셋
+- 이름 기록은 로컬 순위(`LeaderboardStore`)에 먼저 쓰고 원격(`RemoteLeaderboardClient`)에 올린다. 한 런에 한 번
+- 결말 화면은 아직 임시 UI(TourPrototypeUI 패널)다. 화면 디자인이 오면 `ShowEndingSummary` 만 바꾸면 된다
+- 디버그 검증: 허브에서 F10 으로 단계를 넘기며 Performance 단계에서 `ReceiveStageResult` 에 원하는 랭크·성향 점수를 넣은 결과를 제출하면 어떤 엔딩이든 바로 볼 수 있다 (콘솔 `[TourEnding]` 로그가 판정 근거를 찍는다)
+
 ## 셋업
 
 ```
+Tools/Tour/Setup Ending Catalog     Resources/Tour/TourEndingCatalog.asset 생성 (있으면 유지, 빈 항목만 채움)
+Tools/Save/Reset All Save Data      튜토리얼 완료 기록·로컬 순위 등 저장 전부 삭제 (테스트 빌드 첫 실행 확인용, 런타임은 F12)
 Tools/Tour/Setup Result Newspaper   지면 초안 복사·임포트 + 카탈로그 + Main 씬 [ResultNewspaper] 계층 (있으면 유지)
 Tools/Tour/Rebuild Result Newspaper 계층을 지우고 다시 만든다 (씬에서 고친 위치는 사라짐)
 Tools/Tour/Setup Prototype Loop   StageDefinition 5개 · TourHub 씬 · Title 시작 버튼 연결

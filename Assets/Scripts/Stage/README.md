@@ -20,7 +20,7 @@ StageDefinition (Settings/Tour/Stage0x.asset)
 | `IStageRule` / `StageRuleBehaviour` | 룰 인터페이스와 공통 뼈대. `Activate(StageRuleContext)` / `Deactivate()` 중복 호출 안전 |
 | `Rules/BuskingWalkInRule` | `busking_walk_in` — Stage 1. 기본 상태(특별 관객·위기 OFF) 그대로, 자연 유입 수만 센다 |
 | `Rules/SpecialAudienceRequestsRule` | `special_audience_requests` — Stage 2~. 기존 `SpecialAudienceManager` 를 켜고 스테이지별 Config(Stage 2 = 18/24/8초)를 주입 |
-| `Rules/CrisisEventRule` | `festival_nearby_concert`(확정 1회) / `arena_adaptive_event`(적응형) — 기존 `NearbyConcertCrisisDirector` 에 Config 주입 후 활성화 |
+| `Rules/CrisisEventRule` | 폐기된 옆 공연/힙스터 지원 이벤트의 호환용 코드. Stage 3/4 룰 목록에서 제거했으며 `NearbyConcertCrisisDirector.IsRetired`로 실행 차단 |
 | `Rules/RivalCrowdChallengeRule` | `rival_crowd_challenge` — Boss. 30/65/100초에 성향을 예고(7초)하고 최대 2명 위협. 호응 60+ 또는 해당 성향 Special Hit 로 방어. 기존 AudienceCrisis* 이벤트를 재발행해 외곽선·경고 UI 를 재사용 |
 | `Rules/RivalAttackNoticeUI` | 보스 공격 문구 (라이벌 이름·성향). 런타임에 캔버스를 스스로 만든다 |
 
