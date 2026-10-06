@@ -26,13 +26,15 @@ namespace ContextStage
     {
         [SerializeField, Tooltip("비우면 룰이 Begin 에서 넘겨준다")] BossBattleConfig config;
         [SerializeField, Tooltip("보스전 동안 랭크·점수·시간 HUD 를 숨긴다 (관객 쟁탈전에서는 보여준다)")] bool hideScoreHud = false;
+        [SerializeField, Tooltip("보스전 동안 왼쪽 위 공연 시간 바만 숨긴다 (화면 기획 09-18: 보스전 화면에는 시간 바가 없다)")] bool hideTimerHud = true;
         [SerializeField, Tooltip("틴트 캔버스 Sorting Order (보스 UI 155 아래, 손패 위)")] int tintSortingOrder = 150;
 
         [Header("엿보기 버튼")]
         [SerializeField, Tooltip("한글 폰트. 비우면 DialogueCatalog 스타일 폰트")] TMP_FontAsset font;
-        [SerializeField] string peekLabel = "<  라이벌 무대";
-        [SerializeField] string returnLabel = "우리 무대  >";
-        [SerializeField, Tooltip("화면 세로 위치(px, 1080 기준, 가운데 0)")] float peekButtonY = 40f;
+        [SerializeField] string peekLabel = "라이벌 무대 보기  [Tab]";
+        [SerializeField] string returnLabel = "우리 무대로  [Tab]";
+        [SerializeField, Tooltip("화면 세로 위치(px, 1080 기준, 가운데 0). 오른쪽 가장자리에 붙는다")] float peekButtonY = 40f;
+        [SerializeField, Tooltip("키로도 전환한다 (화면 기획: 지정키를 누르면 위로 스크롤)")] bool peekWithTabKey = true;
 
         BossArenaLayout _arena;
         BossCameraDirector _camera;
@@ -77,6 +79,17 @@ namespace ContextStage
             if (!_began || _peekButton == null) return;
             bool allowed = _sequence == null && (_canPeek == null || _canPeek());
             _peekButton.interactable = allowed || _peeking;
+            if (peekWithTabKey && _peekButton.interactable && TabPressedThisFrame()) TogglePeek();
+        }
+
+        static bool TabPressedThisFrame()
+        {
+#if ENABLE_INPUT_SYSTEM
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            return keyboard != null && keyboard.tabKey.wasPressedThisFrame;
+#else
+            return Input.GetKeyDown(KeyCode.Tab);
+#endif
         }
 
         // ---------------- 수명 ----------------
@@ -92,6 +105,7 @@ namespace ContextStage
             _arena.Show();
             _hand = FindFirstObjectByType<CardHandUI>();
             if (hideScoreHud) HideScoreHud();
+            else if (hideTimerHud) HideTimerHud();
             EnsurePeekButton();
             _peekCanvas.gameObject.SetActive(true);
             SetPeekLabel(false);
@@ -212,10 +226,10 @@ namespace ContextStage
             if (_peekText != null) _peekText.text = peeking ? returnLabel : peekLabel;
             if (_peekRect != null)
             {
-                // 왼쪽 가장자리 ↔ 오른쪽 가장자리
-                _peekRect.anchorMin = _peekRect.anchorMax = new Vector2(peeking ? 1f : 0f, 0.5f);
-                _peekRect.pivot = new Vector2(peeking ? 1f : 0f, 0.5f);
-                _peekRect.anchoredPosition = new Vector2(peeking ? -16f : 16f, peekButtonY);
+                // 위아래 스크롤이라 좌우 이동 없이 오른쪽 가장자리에 고정
+                _peekRect.anchorMin = _peekRect.anchorMax = new Vector2(1f, 0.5f);
+                _peekRect.pivot = new Vector2(1f, 0.5f);
+                _peekRect.anchoredPosition = new Vector2(-16f, peekButtonY);
             }
         }
 
@@ -329,6 +343,23 @@ namespace ContextStage
             HideHudOf(FindFirstObjectByType<ScoreRankUI>());
             HideHudOf(FindFirstObjectByType<ScoreUI>());
             HideHudOf(FindFirstObjectByType<PerformanceTimerUI>());
+        }
+
+        /// <summary>시간 바만 숨긴다. 시간 바가 자기 캔버스 루트여도 CanvasGroup 으로 가린다 (손패가 그 아래에 있으면 건너뛴다).</summary>
+        void HideTimerHud()
+        {
+            _hiddenHud.Clear();
+            PerformanceTimerUI timer = FindFirstObjectByType<PerformanceTimerUI>();
+            if (timer == null) return;
+            GameObject go = timer.gameObject;
+            if (_hand != null && _hand.transform.IsChildOf(go.transform)) return;
+
+            CanvasGroup group = go.GetComponent<CanvasGroup>();
+            if (group == null) group = go.AddComponent<CanvasGroup>();
+            group.alpha = 0f;
+            group.blocksRaycasts = false;
+            group.interactable = false;
+            _hiddenHud.Add(group);
         }
 
         void HideHudOf(Component component)

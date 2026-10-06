@@ -56,7 +56,7 @@ TourRunManager: Map → Dialogue → Performance → Result → Reward → Map �
 
 | 판정 순서 | 조건 | 시퀀스 |
 |---|---|---|
-| 1 | 투어 실패 (보스전 패배 = 목표 미달 포함) | `ending_bad`. 첫 노드에서 실패하면 얼룩말 합류 전 버전 `ending_bad_before_join` |
+| 1 | 투어 실패 (보스전 패배 = 목표 미달 포함) | `ending_bad`. 첫 노드에서 실패하면 스컹크 합류 전 버전 `ending_bad_before_join` |
 | 2 | 모든 공연 S 랭크 | `ending_all_s` |
 | 3 | 그 외: 투어 전체에서 반응 점수를 가장 많이 준 관객 성향 | `ending_mosh` / `ending_singalong` / `ending_chill` |
 

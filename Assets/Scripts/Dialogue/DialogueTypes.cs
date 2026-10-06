@@ -17,7 +17,7 @@ namespace ContextStage
     [Serializable]
     public sealed class DialogueLine
     {
-        [Tooltip("화자 ID (raccoon / hedgehog / zebra / rival). 이름과 초상화를 비우면 상황 지문")]
+        [Tooltip("화자 ID (raccoon / hedgehog / skunk / rival). 이름과 초상화를 비우면 상황 지문")]
         public string speakerId = "";
 
         [Tooltip("화면에 표시할 화자 이름")]

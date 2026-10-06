@@ -17203,7 +17203,7 @@ MonoBehaviour:
   duoSpacing: 2.4
   duoSize: 0.9
   fanRowY: -1.6
-  fansPerRow: 7
+  fansPerRow: 5
   fanSize: 0.45
   fanSpacingX: 0.8
   fanSpacingY: 0.6
@@ -17216,6 +17216,14 @@ MonoBehaviour:
   duoAColor: {r: 0.9411765, g: 0.30980393, b: 0.47058824, a: 1}
   duoBColor: {r: 0.1882353, g: 0.88235295, b: 0.7254902, a: 1}
   fanColor: {r: 0.78039217, g: 0.8627451, b: 0.8156863, a: 0.6901961}
+  duoFrames:
+  - {fileID: 21300000, guid: d7840cb44949fb540b55bd154ef4c418, type: 3}
+  - {fileID: 21300000, guid: e07f10a4a6a93e442900eb6128e5974e, type: 3}
+  - {fileID: 21300000, guid: 2d3b70d0abb06564b9bff697854162e5, type: 3}
+  duoFrameInterval: 0.45
+  duoSpriteScale: 0.65
+  duoSpriteOffset: {x: 0, y: 0}
+  duoFlashColor: {r: 1, g: 0.6901961, b: 0.78431374, a: 1}
 --- !u!114 &1242502039
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18190,6 +18198,8 @@ MonoBehaviour:
   stageEventsSucceeded: 0
   stageEventsTotal: 0
   bossOutcome: 0
+  scoreByPreference: 000000000000000000000000
+  cardsByPreference: 000000000000000000000000
 --- !u!1 &1382135861
 GameObject:
   m_ObjectHideFlags: 0

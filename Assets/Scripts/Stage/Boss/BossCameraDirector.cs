@@ -4,7 +4,7 @@ using UnityEngine;
 namespace ContextStage
 {
     /// <summary>
-    /// 보스전 카메라. Main Camera 의 x 만 구역 사이로 옮긴다 (y·크기 고정, SmoothStep).
+    /// 보스전 카메라. Main Camera 를 구역 중심(라이벌 무대는 위쪽) 사이로 옮긴다 (z·크기 고정, SmoothStep).
     /// 자유 스크롤은 없다. 연출 담당(BossStagePresentation)만 호출하고, 해제·게임 종료 때는 즉시 제자리로 돌아온다.
     /// </summary>
     [DisallowMultipleComponent]
@@ -54,7 +54,7 @@ namespace ContextStage
 
             Vector3 from = cam.transform.position;
             Vector3 anchor = _arena.AnchorOf(zone);
-            Vector3 to = new Vector3(anchor.x, from.y, from.z);
+            Vector3 to = new Vector3(anchor.x, anchor.y, from.z);
             float elapsed = 0f;
             while (elapsed < duration)
             {
@@ -74,7 +74,7 @@ namespace ContextStage
             if (cam != null && _arena != null && _arena.IsBuilt)
             {
                 Vector3 anchor = _arena.AnchorOf(zone);
-                cam.transform.position = new Vector3(anchor.x, cam.transform.position.y, cam.transform.position.z);
+                cam.transform.position = new Vector3(anchor.x, anchor.y, cam.transform.position.z);
             }
             CurrentZone = zone;
         }

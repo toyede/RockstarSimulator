@@ -30,8 +30,8 @@ MonoBehaviour:
     text: "\uD615, \uC774 \uBC34\uB4DC\uC5D0\uB3C4 \uC788\uC5C8\uC5B4\uC694?"
     side: 0
     sfxId: 
-  - speakerId: zebra
-    speakerName: "\uC5BC\uB8E9\uB9D0"
+  - speakerId: skunk
+    speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
     text: "\uADF8\uAC78 \uC5B4\uB514\uC11C \uCC3E\uC558\uC5B4?"
@@ -45,8 +45,8 @@ MonoBehaviour:
       \uBA87 \uAC1C\uC608\uC694?"
     side: 0
     sfxId: 
-  - speakerId: zebra
-    speakerName: "\uC5BC\uB8E9\uB9D0"
+  - speakerId: skunk
+    speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
     text: "\uADF8\uB9CC \uC880 \uB118\uACA8."
@@ -60,8 +60,8 @@ MonoBehaviour:
       \uC548 \uB098\uC624\uB294\uB370."
     side: 0
     sfxId: 
-  - speakerId: zebra
-    speakerName: "\uC5BC\uB8E9\uB9D0"
+  - speakerId: skunk
+    speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
     text: "\uC548 \uB0C8\uC5B4."
@@ -74,8 +74,8 @@ MonoBehaviour:
     text: "\uC65C\uC694? \uAD1C\uCC2E\uC740\uB370."
     side: 1
     sfxId: 
-  - speakerId: zebra
-    speakerName: "\uC5BC\uB8E9\uB9D0"
+  - speakerId: skunk
+    speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
     text: "\uC804\uC5D0 \uC798\uB41C \uACE1\uC774 \uC788\uC5C8\uAC70\uB4E0. \uADF8\uB7F0
@@ -89,8 +89,8 @@ MonoBehaviour:
     text: "\uADF8\uB7FC \uC774\uAC74\uC694?"
     side: 0
     sfxId: 
-  - speakerId: zebra
-    speakerName: "\uC5BC\uB8E9\uB9D0"
+  - speakerId: skunk
+    speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
     text: "\uB098\uC911\uC5D0 \uD558\uC790\uB354\uB77C."
@@ -103,8 +103,8 @@ MonoBehaviour:
     text: "\uACB0\uAD6D \uC548 \uD588\uC5B4\uC694?"
     side: 0
     sfxId: 
-  - speakerId: zebra
-    speakerName: "\uC5BC\uB8E9\uB9D0"
+  - speakerId: skunk
+    speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
     text: "\uC751. \uB2E4\uB978 \uACE1 \uAC00\uC838\uAC00\uB3C4 \uBE44\uC2B7\uD588\uACE0."
@@ -117,8 +117,8 @@ MonoBehaviour:
     text: "\uADF8\uB798\uC11C \uB098\uC628 \uAC70\uC608\uC694?"
     side: 0
     sfxId: 
-  - speakerId: zebra
-    speakerName: "\uC5BC\uB8E9\uB9D0"
+  - speakerId: skunk
+    speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
     text: "...\uB4E4\uC5B4\uB294 \uBCF4\uACE0 \uBC14\uAFB8\uB77C\uB4E0\uAC00."
@@ -128,12 +128,12 @@ MonoBehaviour:
     speakerName: 
     portrait: {fileID: 0}
     emotionId: 
-    text: "\uB108\uAD6C\uB9AC\uAC00 \uC601\uC0C1\uC744 \uBA48\uCD98\uB2E4. \uC5BC\uB8E9\uB9D0\uC740
+    text: "\uB108\uAD6C\uB9AC\uAC00 \uC601\uC0C1\uC744 \uBA48\uCD98\uB2E4. \uC2A4\uCEF9\uD06C\uB294
       \uD734\uB300\uC804\uD654\uC5D0\uC11C \uC2DC\uC120\uC744 \uB5C0\uB2E4."
     side: 0
     sfxId: 
-  - speakerId: zebra
-    speakerName: "\uC5BC\uB8E9\uB9D0"
+  - speakerId: skunk
+    speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
     text: "\uC6B0\uB9AC \uC21C\uC11C\uB098 \uBD10."
@@ -166,12 +166,12 @@ MonoBehaviour:
     speakerName: 
     portrait: {fileID: 0}
     emotionId: 
-    text: "\uC5BC\uB8E9\uB9D0\uC774 \uC791\uC740 \uBB34\uB300 \uC55E\uC5D0 \uB0A8\uC544
+    text: "\uC2A4\uCEF9\uD06C\uAC00 \uC791\uC740 \uBB34\uB300 \uC55E\uC5D0 \uB0A8\uC544
       \uC788\uB294 \uC0AC\uB78C\uB4E4\uC744 \uAC00\uB9AC\uD0A8\uB2E4."
     side: 0
     sfxId: 
-  - speakerId: zebra
-    speakerName: "\uC5BC\uB8E9\uB9D0"
+  - speakerId: skunk
+    speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
     text: "\uC800\uAE30 \uAE30\uB2E4\uB9AC\uC796\uC544. \uB4E4\uC5B4\uAC00\uC790."

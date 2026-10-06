@@ -47,8 +47,8 @@ MonoBehaviour:
   raccoonOffset: {x: 65, y: 25}
   rankSize: 90
   rankOffset: {x: 78, y: 44}
-  visitedDotSize: 40
-  futureDotSize: 64
+  visitedDotSize: 28
+  futureDotSize: 45
   visitedDotColor: {r: 1, g: 1, b: 1, a: 1}
   futureDotColor: {r: 0.85, g: 0.85, b: 0.9, a: 0.55}
   lockedDotColor: {r: 0.85, g: 0.85, b: 0.9, a: 0.3}
@@ -61,13 +61,13 @@ MonoBehaviour:
   travelSecondsPerSegment: 3
   travelStartDelay: 0.3
   pinPopDuration: 0.2
-  pinPopStartScale: 0.3
+  pinPopStartScale: 0.103
   pinBlinkInterval: 0.35
   arrivalBlinkDuration: 1.6
   pinHoverScale: 1.25
   pinHoverDuration: 0.12
-  introZoomScale: 1.55
-  introZoomCenter: {x: 0.31, y: 0.64}
+  introZoomScale: 1.5
+  introZoomCenter: {x: 0.38, y: 0.64}
   zoomOutDuration: 2
   pathRevealDuration: 0.6
   flipBusByDirection: 0

@@ -6,28 +6,45 @@ using UnityEngine;
 namespace ContextStage
 {
     /// <summary>
-    /// 라이벌 무대 임시 표현 (전부 Square). 아트가 오면 스프라이트만 교체한다.
+    /// 라이벌 무대 (화면 기획 2026-09-18 "보스 스테이지(보스팀)"). 우리 무대 **위쪽** 구역에 놓인다.
     ///
-    /// - 단상 + 듀오 2명 + 전광판. 같은 오브젝트에 BossArenaLayout 이 있으면 라이벌 무대 구역(왼쪽 화면)에, 없으면 카메라 자리에
-    /// - 라이벌 팬은 단상 앞에 줄지어 서 있고, 수는 룰(BossFanBalanceChanged)과 동기화된다
-    /// - 팬 이동(BossFanMoved): 우리 → 라이벌이면 오른쪽에서 걸어 들어오고, 라이벌 → 우리면 오른쪽으로 걸어 나간다
+    /// - 위쪽 가운데 단상 + LUX//FAUNA 듀오(duoFrames 프레임 교대, 없으면 Square 두 개)
+    /// - 그 아래로 라이벌 팬이 흩어져 서 있다. 관객 프리팹(AudienceMember)과 같은 성향별 대기 애니메이션을 쓰되
+    ///   어둡게 틴트한다. 뒷줄일수록 작고, 가장 뒷줄은 우리 화면 위쪽 가장자리에 걸쳐 "보스 팀 관객이 어둡고 작게" 보인다
+    /// - 팬 수는 룰(BossFanBalanceChanged)과 동기화. 이동(BossFanMoved)은 우리 → 라이벌이면 아래(우리 무대)에서 걸어 올라오고,
+    ///   라이벌 → 우리면 아래로 걸어 내려간다
     /// - 패턴 예고 중 듀오 점멸, REVENGE 진입 시 LED 진홍
-    /// 룰 참조 없이 EventBus 만 구독한다.
+    /// 룰 참조 없이 EventBus 만 구독한다. 같은 오브젝트에 BossArenaLayout 이 있으면 그 구역 좌표를, 없으면 카메라 자리를 쓴다.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class RivalStagePlaceholder : MonoBehaviour
     {
-        [Header("배치 (구역 중심 기준 월드 오프셋)")]
-        [SerializeField] Vector2 platformOffset = new Vector2(0f, 0.6f);
+        [Header("단상·듀오 (구역 중심 기준 로컬)")]
+        [SerializeField] Vector2 platformCenter = new Vector2(0f, 2.3f);
         [SerializeField] Vector2 platformSize = new Vector2(6.5f, 1.2f);
         [SerializeField] float duoSpacing = 2.4f;
         [SerializeField] float duoSize = 0.9f;
-        [SerializeField, Tooltip("팬 줄의 시작 y (구역 중심 기준)")] float fanRowY = -1.6f;
-        [SerializeField, Min(1)] int fansPerRow = 7;
-        [SerializeField] float fanSize = 0.45f;
-        [SerializeField] float fanSpacingX = 0.8f;
-        [SerializeField] float fanSpacingY = 0.6f;
+        [SerializeField] Sprite[] duoFrames;
+        [SerializeField, Min(0.05f)] float duoFrameInterval = 0.45f;
+        [SerializeField, Tooltip("듀오 일러스트 배율 (원본 3유닛 높이). 단상 위에서 화면 위쪽 끝에 닿지 않는 최대가 0.65")] float duoSpriteScale = 0.65f;
+        [SerializeField, Tooltip("단상 위 기본 자리에서의 추가 오프셋")] Vector2 duoSpriteOffset;
+        [SerializeField, Tooltip("패턴 예고 점멸 때 스프라이트에 입힐 색")] Color duoFlashColor = new Color32(0xFF, 0xB0, 0xC8, 0xFF);
+
+        [Header("라이벌 팬 (구역 중심 기준 로컬)")]
+        [SerializeField, Tooltip("앞줄(가장 아래, 0번 줄) y. 구역 간격이 8 이면 -4.2 는 우리 화면 위쪽(+3.8)에 들어와 우리 관객 뒤에 어둡게 보인다")] float fanFrontY = -4.2f;
+        [SerializeField, Tooltip("뒷줄(단상 바로 앞) y. 앞줄부터 이 높이까지 3줄 간격으로 채우고, 그 뒤 줄은 여기에 모인다")] float fanBackY = 1.0f;
+        [SerializeField, Min(1), Tooltip("한 줄 인원. 5면 시작 팬 14명이 3줄로 퍼진다")] int fansPerRow = 5;
+        [SerializeField, Tooltip("가로 퍼짐 폭")] float fanSpreadWidth = 13f;
+        [SerializeField, Tooltip("가장 뒷줄(단상 앞) 크기 — 관객 프리팹 기준 배율")] float fanScaleBack = 0.55f;
+        [SerializeField, Tooltip("가장 앞줄(우리 화면에 걸치는 줄) 크기")] float fanScaleFront = 0.4f;
+        [SerializeField, Range(0f, 1f), Tooltip("가로·세로 흐트러짐")] float fanJitter = 0.45f;
+        [SerializeField] int fanSeed = 1207;
+        [SerializeField, Tooltip("보스 팀 관객은 어둡게")] Color fanTint = new Color32(0x4E, 0x46, 0x5C, 0xFF);
         [SerializeField, Min(0.05f)] float fanWalkDuration = 0.9f;
+        [SerializeField, Tooltip("우리 무대 관객(5)보다 뒤, 배경·조명(0·1)보다 앞. 줄마다 +1")] int fanSortingOrder = 2;
+        [SerializeField, Tooltip("관객 프리팹이 없을 때(Square) 크기")] float fanSquareSize = 0.45f;
+
+        [Header("정렬")]
         [SerializeField] int sortingOrder = 1;
         [SerializeField] string sortingLayer = "Default";
 
@@ -39,17 +56,35 @@ namespace ContextStage
         [SerializeField] Color duoBColor = new Color32(0x30, 0xE1, 0xB9, 0xFF);
         [SerializeField] Color fanColor = new Color32(0xC7, 0xDC, 0xD0, 0xB0);
 
+        sealed class Fan
+        {
+            public SpriteRenderer Renderer;
+            public SpriteAnimationPlayer Player;
+            public Vector3 Slot;
+            public float Scale;
+            public Color BaseColor;
+        }
+
         Sprite _square;
         Transform _root;
         SpriteRenderer _platform;
         SpriteRenderer _led;
         SpriteRenderer _duoA;
         SpriteRenderer _duoB;
-        readonly List<SpriteRenderer> _fans = new List<SpriteRenderer>();
+        SpriteRenderer _duoSprite;
+        float _duoFrameTimer;
+        int _duoFrame;
+        readonly List<Fan> _fans = new List<Fan>();
+        AudienceMemberActor _fanVisualSource;
         Vector3 _ourStageAnchor;
         Coroutine _blinkRoutine;
         bool _built;
         bool _revenge;
+
+        bool UseDuoSprite => duoFrames != null && duoFrames.Length > 0 && duoFrames[0] != null;
+        Color DuoBaseA => UseDuoSprite ? Color.white : duoAColor;
+        Color DuoBaseB => UseDuoSprite ? Color.white : duoBColor;
+        Color DuoFlash => UseDuoSprite ? duoFlashColor : Color.white;
 
         void OnEnable()
         {
@@ -72,6 +107,27 @@ namespace ContextStage
             if (_root != null) _root.gameObject.SetActive(false);
         }
 
+        void Update()
+        {
+            if (_root == null || !_root.gameObject.activeInHierarchy) return;
+
+            // 듀오 프레임 교대
+            if (_duoSprite != null && duoFrames.Length > 1)
+            {
+                _duoFrameTimer += Time.deltaTime;
+                if (_duoFrameTimer >= duoFrameInterval)
+                {
+                    _duoFrameTimer = 0f;
+                    _duoFrame = (_duoFrame + 1) % duoFrames.Length;
+                    if (duoFrames[_duoFrame] != null) _duoSprite.sprite = duoFrames[_duoFrame];
+                }
+            }
+
+            // 팬 대기 애니메이션
+            for (int i = 0; i < _fans.Count; i++)
+                _fans[i].Player?.Tick(Time.deltaTime);
+        }
+
         // ---------------- 이벤트 ----------------
 
         void OnBalance(BossFanBalanceChanged e)
@@ -92,7 +148,7 @@ namespace ContextStage
             {
                 for (int i = 0; i < e.Count && _fans.Count > 0; i++)
                 {
-                    SpriteRenderer fan = _fans[_fans.Count - 1];
+                    Fan fan = _fans[_fans.Count - 1];
                     _fans.RemoveAt(_fans.Count - 1);
                     StartCoroutine(WalkOut(fan));
                 }
@@ -121,8 +177,8 @@ namespace ContextStage
                 StopCoroutine(_blinkRoutine);
                 _blinkRoutine = null;
             }
-            _duoA.color = duoAColor;
-            _duoB.color = duoBColor;
+            _duoA.color = DuoBaseA;
+            _duoB.color = DuoBaseB;
             _led.color = _revenge ? revengeLedColor : ledColor;
         }
 
@@ -139,58 +195,121 @@ namespace ContextStage
         {
             while (_fans.Count > target)
             {
-                SpriteRenderer extra = _fans[_fans.Count - 1];
+                Fan extra = _fans[_fans.Count - 1];
                 _fans.RemoveAt(_fans.Count - 1);
-                if (extra != null) Destroy(extra.gameObject);
+                if (extra?.Renderer != null) Destroy(extra.Renderer.gameObject);
             }
             while (_fans.Count < target) _fans.Add(CreateFan(_fans.Count));
         }
 
-        Vector2 FanSlot(int index)
+        /// <summary>줄 순서: 0번 줄이 앞줄(가장 아래, 우리 무대 쪽), 줄이 늘수록 위(단상 쪽)로 올라간다. 앞줄부터 채워야 우리 화면에 먼저 걸친다.</summary>
+        int RowOf(int index) => index / Mathf.Max(1, fansPerRow);
+
+        const int FanRowSteps = 3; // 앞줄 → 뒷줄까지 3칸
+
+        Vector3 FanSlotFor(int index, out float scale, out int order)
         {
-            int row = index / fansPerRow;
+            int row = RowOf(index);
             int col = index % fansPerRow;
-            int rowCount = Mathf.Min(fansPerRow, Mathf.Max(1, _fans.Count - row * fansPerRow));
-            float x = (col - (fansPerRow - 1) * 0.5f) * fanSpacingX;
-            float y = fanRowY - row * fanSpacingY;
-            return new Vector2(x, y);
+            int rowCount = Mathf.Max(1, fansPerRow);
+            float rowT = Mathf.Clamp01(row / (float)FanRowSteps); // 0 = 앞줄(우리 화면 쪽), 1 = 뒷줄(단상 앞)
+
+            var random = new System.Random(fanSeed + index * 7919);
+            float jx = ((float)random.NextDouble() - 0.5f) * fanJitter * (fanSpreadWidth / rowCount);
+            float jy = ((float)random.NextDouble() - 0.5f) * fanJitter * 0.6f;
+            float stagger = (row % 2 == 1) ? (fanSpreadWidth / rowCount) * 0.5f : 0f;
+
+            float x = (col - (rowCount - 1) * 0.5f) * (fanSpreadWidth / rowCount) + stagger + jx;
+            float y = Mathf.Lerp(fanFrontY, fanBackY, rowT) + jy;
+            scale = Mathf.Lerp(fanScaleFront, fanScaleBack, rowT);
+            order = fanSortingOrder + Mathf.Clamp(2 - row, 0, 2); // 앞줄(아래)이 뒷줄을 가린다, 관객(5) 아래로만
+            return new Vector3(x, y, 0f);
+        }
+
+        Fan CreateFan(int index)
+        {
+            Vector3 slot = FanSlotFor(index, out float scale, out int order);
+            var fan = new Fan { Slot = slot, Scale = scale };
+
+            var go = new GameObject($"RivalFan_{index}");
+            go.transform.SetParent(_root, false);
+            go.transform.localPosition = slot;
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sortingLayerName = sortingLayer;
+            renderer.sortingOrder = order;
+            fan.Renderer = renderer;
+
+            var preference = (CrowdPreference)(index % 3);
+            AudienceMemberActor source = FanVisualSource();
+            if (source != null && source.TryGetIdleVisual(preference, index, out SpriteAnimationClip clip, out Sprite still))
+            {
+                go.transform.localScale = Vector3.one * scale;
+                if (index % 2 == 1) renderer.flipX = true;
+                fan.BaseColor = fanTint;
+                if (clip != null && clip.IsValid)
+                {
+                    fan.Player = new SpriteAnimationPlayer(renderer);
+                    fan.Player.Play(clip, restart: true);
+                }
+                else
+                {
+                    renderer.sprite = still;
+                }
+            }
+            else
+            {
+                renderer.sprite = _square;
+                go.transform.localScale = Vector3.one * fanSquareSize;
+                fan.BaseColor = fanColor;
+            }
+            renderer.color = fan.BaseColor;
+            return fan;
+        }
+
+        /// <summary>관객 프리팹(AudienceRosterPresenter.MemberPrefab)의 대기 애니메이션을 빌려 쓴다. 없으면 Square.</summary>
+        AudienceMemberActor FanVisualSource()
+        {
+            if (_fanVisualSource != null) return _fanVisualSource;
+            AudienceRosterPresenter presenter = FindFirstObjectByType<AudienceRosterPresenter>(FindObjectsInactive.Include);
+            _fanVisualSource = presenter != null ? presenter.MemberPrefab : null;
+            return _fanVisualSource;
         }
 
         IEnumerator WalkIn(int slotIndex)
         {
-            SpriteRenderer fan = CreateFan(slotIndex);
+            Fan fan = CreateFan(slotIndex);
             _fans.Add(fan);
-            Vector3 to = fan.transform.position;
-            Vector3 from = new Vector3(_ourStageAnchor.x - 8f, to.y, 0f);
+            Vector3 to = fan.Renderer.transform.position;
+            Vector3 from = new Vector3(to.x, _ourStageAnchor.y + 3.5f, 0f); // 우리 무대 위쪽에서 올라온다
             yield return Walk(fan, from, to, false);
         }
 
-        IEnumerator WalkOut(SpriteRenderer fan)
+        IEnumerator WalkOut(Fan fan)
         {
-            if (fan == null) yield break;
-            Vector3 from = fan.transform.position;
-            Vector3 to = new Vector3(_ourStageAnchor.x - 8f, from.y, 0f);
+            if (fan?.Renderer == null) yield break;
+            Vector3 from = fan.Renderer.transform.position;
+            Vector3 to = new Vector3(from.x, _ourStageAnchor.y + 3.5f, 0f);
             yield return Walk(fan, from, to, true);
-            if (fan != null) Destroy(fan.gameObject);
+            if (fan.Renderer != null) Destroy(fan.Renderer.gameObject);
         }
 
-        IEnumerator Walk(SpriteRenderer fan, Vector3 from, Vector3 to, bool fadeOut)
+        IEnumerator Walk(Fan fan, Vector3 from, Vector3 to, bool fadeOut)
         {
             float elapsed = 0f;
-            Color baseColor = fanColor;
+            Color baseColor = fan.BaseColor;
             while (elapsed < fanWalkDuration)
             {
-                if (fan == null) yield break;
+                if (fan.Renderer == null) yield break;
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / fanWalkDuration);
                 float bob = Mathf.Abs(Mathf.Sin(t * Mathf.PI * 4f)) * 0.12f;
-                fan.transform.position = Vector3.Lerp(from, to, t) + new Vector3(0f, bob, 0f);
+                fan.Renderer.transform.position = Vector3.Lerp(from, to, t) + new Vector3(0f, bob, 0f);
                 Color c = baseColor;
                 c.a = fadeOut ? baseColor.a * (1f - t * 0.6f) : baseColor.a;
-                fan.color = c;
+                fan.Renderer.color = c;
                 yield return null;
             }
-            if (fan != null) fan.transform.position = to;
+            if (fan.Renderer != null) fan.Renderer.transform.position = to;
         }
 
         // ---------------- 연출 ----------------
@@ -203,14 +322,14 @@ namespace ContextStage
             while (elapsed < duration)
             {
                 on = !on;
-                _duoA.color = on ? Color.white : duoAColor;
-                _duoB.color = on ? Color.white : duoBColor;
+                _duoA.color = on ? DuoFlash : DuoBaseA;
+                _duoB.color = on ? DuoFlash : DuoBaseB;
                 _led.color = on ? Color.white : baseLed;
                 yield return new WaitForSeconds(0.25f);
                 elapsed += 0.25f;
             }
-            _duoA.color = duoAColor;
-            _duoB.color = duoBColor;
+            _duoA.color = DuoBaseA;
+            _duoB.color = DuoBaseB;
             _led.color = baseLed;
             _blinkRoutine = null;
         }
@@ -220,9 +339,9 @@ namespace ContextStage
             _revenge = false;
             _platform.color = platformColor;
             _led.color = ledColor;
-            _duoA.color = duoAColor;
-            _duoB.color = duoBColor;
-            for (int i = 0; i < _fans.Count; i++) if (_fans[i] != null) Destroy(_fans[i].gameObject);
+            _duoA.color = DuoBaseA;
+            _duoB.color = DuoBaseB;
+            for (int i = 0; i < _fans.Count; i++) if (_fans[i]?.Renderer != null) Destroy(_fans[i].Renderer.gameObject);
             _fans.Clear();
             _root.gameObject.SetActive(false);
         }
@@ -252,26 +371,31 @@ namespace ContextStage
             rootObject.transform.position = origin;
             _root = rootObject.transform;
 
-            _platform = CreateSquareRenderer("Platform", platformOffset, platformSize, platformColor, sortingOrder);
-            _led = CreateSquareRenderer("LED", platformOffset + new Vector2(0f, platformSize.y * 0.5f + 0.9f), new Vector2(3.2f, 0.5f), ledColor, sortingOrder);
-            _duoA = CreateSquareRenderer("Duo_Owl", platformOffset + new Vector2(-duoSpacing * 0.5f, platformSize.y * 0.5f + duoSize * 0.5f), Vector2.one * duoSize, duoAColor, sortingOrder + 1);
-            _duoB = CreateSquareRenderer("Duo_Leopard", platformOffset + new Vector2(duoSpacing * 0.5f, platformSize.y * 0.5f + duoSize * 0.5f), Vector2.one * duoSize, duoBColor, sortingOrder + 1);
-        }
+            float platformTop = platformCenter.y + platformSize.y * 0.5f;
+            _platform = CreateSquareRenderer("Platform", platformCenter, platformSize, platformColor, sortingOrder);
 
-        SpriteRenderer CreateFan(int index)
-        {
-            SpriteRenderer fan = CreateSquareRenderer($"RivalFan_{index}", Vector2.zero, Vector2.one * fanSize, fanColor, sortingOrder + 2);
-            fan.transform.localPosition = FanSlotFor(index);
-            return fan;
-        }
-
-        Vector3 FanSlotFor(int index)
-        {
-            int row = index / fansPerRow;
-            int col = index % fansPerRow;
-            float x = (col - (fansPerRow - 1) * 0.5f) * fanSpacingX;
-            float y = fanRowY - row * fanSpacingY;
-            return new Vector3(x, y, 0f);
+            if (UseDuoSprite)
+            {
+                // 듀오 일러스트 한 장 (프레임 교대). 발끝이 단상 위에 오도록 스프라이트 높이의 절반만큼 올린다
+                Sprite first = duoFrames[0];
+                float scale = Mathf.Max(0.05f, duoSpriteScale);
+                float duoHeight = first.bounds.size.y * scale;
+                Vector2 pos = new Vector2(platformCenter.x, platformTop + duoHeight * 0.5f) + duoSpriteOffset;
+                _duoSprite = CreateSquareRenderer("Duo", pos, Vector2.one * scale, Color.white, sortingOrder + 2);
+                _duoSprite.sprite = first;
+                _duoA = _duoSprite;
+                _duoB = _duoSprite;
+                _duoFrame = 0;
+                _duoFrameTimer = 0f;
+                // LED 는 듀오 뒤, 머리 높이
+                _led = CreateSquareRenderer("LED", new Vector2(platformCenter.x, platformTop + duoHeight * 0.75f), new Vector2(3.2f, 0.5f), ledColor, sortingOrder + 1);
+            }
+            else
+            {
+                _duoA = CreateSquareRenderer("Duo_Owl", platformCenter + new Vector2(-duoSpacing * 0.5f, platformSize.y * 0.5f + duoSize * 0.5f), Vector2.one * duoSize, duoAColor, sortingOrder + 1);
+                _duoB = CreateSquareRenderer("Duo_Leopard", platformCenter + new Vector2(duoSpacing * 0.5f, platformSize.y * 0.5f + duoSize * 0.5f), Vector2.one * duoSize, duoBColor, sortingOrder + 1);
+                _led = CreateSquareRenderer("LED", new Vector2(platformCenter.x, platformTop + duoSize + 0.5f), new Vector2(3.2f, 0.5f), ledColor, sortingOrder);
+            }
         }
 
         SpriteRenderer CreateSquareRenderer(string name, Vector2 offset, Vector2 size, Color color, int order)

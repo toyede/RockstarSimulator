@@ -35,8 +35,9 @@ Tools/Dialogue/Create Dialogue Panel Prefab          Resources/Dialogue/Dialogue
 `Resources/Dialogue/DialoguePanel.prefab` 의 배치와 `DialogueStyle.asset` 의 색·폰트·화살표 스프라이트만 바꾸면 된다.
 코드는 오브젝트 참조(`DialoguePanel` 인스펙터)만 알고 있다. 초상화는 `DialogueLine.portrait` 에 스프라이트를 넣으면 좌/우에 뜬다.
 
-- 초상화: `Rewrite Default Sequences` 가 화자 이름으로 `0910_art/스탠딩일러/{raccoon|hedgehog|lux_fauna}_standing` 을 자동 연결한다. 너구리는 왼쪽, 나머지는 오른쪽. **얼룩말 스탠딩은 현재 없어 이름과 대사만 표시**한다. 아트가 준비되면 시퀀스의 `portrait`에 연결하고 셋업의 `PortraitOf`에도 매핑을 추가한다.
-- 캐릭터 말투: 너구리 = 성공하고 싶지만 허술한 보컬/기타 / 고슴도치 = 실용적이고 짓궂은 오랜 친구, 드러머 / 얼룩말 = 여러 밴드를 거친 무뚝뚝한 선배 베이시스트 / LUX//FAUNA = 흥행과 즉각적인 관객 반응을 우선하는 프로 전자음악 듀오. 로봇 말투나 장르 자체를 악으로 취급하는 설정은 사용하지 않는다.
+- 초상화: `Rewrite Default Sequences` 가 화자 이름으로 `0910_art/스탠딩일러/{raccoon|hedgehog|lux_fauna}_standing` 을 자동 연결한다. 너구리는 왼쪽, 나머지는 오른쪽. **스컹크 스탠딩은 현재 없어 이름과 대사만 표시**한다. 아트가 준비되면 시퀀스의 `portrait`에 연결하고 셋업의 `PortraitOf`에도 매핑을 추가한다.
+- 표정·프레임 초상화: `Resources/Dialogue/DialoguePortraitCatalog.asset` (`Tools/Art/Apply 0918 Art` 가 만든다) 이 화자 ID + 표정 ID → 스프라이트(프레임)를 준다. 대화창은 줄마다 (speakerId, emotionId) 일치 → 화자 기본 → `DialogueLine.portrait` 순으로 고른다. 현재 너구리 happy(excited·relieved 포함)/angry/crying(sad), 고슴도치 angry, LUX//FAUNA 는 3프레임(0.45초 교대). 새 표정은 카탈로그에 항목만 추가하고 대사에 `Line(화자, 대사, "표정")` 로 붙인다.
+- 캐릭터 말투: 너구리 = 성공하고 싶지만 허술한 보컬/기타 / 고슴도치 = 실용적이고 짓궂은 오랜 친구, 드러머 / 스컹크 = 여러 밴드를 거친 무뚝뚝한 선배 베이시스트 / LUX//FAUNA = 흥행과 즉각적인 관객 반응을 우선하는 프로 전자음악 듀오. 로봇 말투나 장르 자체를 악으로 취급하는 설정은 사용하지 않는다.
 - 화살표: `DialogueStyle.arrowSprite` 가 비어 있으면 12×8 픽셀 삼각형을 런타임에 만든다. `arrowStepMotion` 을 켜면 계단식으로 튄다. `arrowFollowsText` 가 켜져 있으면 줄이 다 찍힌 뒤 마지막 글자 오른쪽(`arrowTextGap`)에 붙고, 꺼지면 고정 위치
 - 타이핑: `typingInterval`(자모당 간격), `punctuationDelay`(문장 부호 뒤 정지), `typingSoundId`(SoundLibrary ID).
 - DungGeunMo 에는 `▶` 글리프가 없다. 특수 기호는 ASCII(`>>`)를 쓰거나 폰트 폴백을 추가할 것.
@@ -44,13 +45,13 @@ Tools/Dialogue/Create Dialogue Panel Prefab          Resources/Dialogue/Dialogue
 ## 적용된 스토리 초안과 연결 범위
 
 주제는 **인디 아티스트의 고충과 성장, 자기 표현과 상업성 사이의 갈등**이다.
-처음에는 너구리와 고슴도치 둘뿐이며, Stage 2에서 얼룩말이 합류한다. 하이에나는 대사에 등장하지 않는다.
+처음에는 너구리와 고슴도치 둘뿐이며, Stage 2에서 스컹크가 합류한다. 하이에나는 대사에 등장하지 않는다.
 캐릭터에게 게임 규칙을 설명시키지 않고, 기존 스테이지 룰 카드·튜토리얼을 그대로 사용한다.
 
 | 시퀀스 ID | 내용 | 현재 연결 |
 |---|---|---|
 | `intro_stage_01` | 골목 버스킹, 꺼진 마이크, 라이벌 광고 | Stage 1 공연 전 |
-| `intro_stage_02` | 앰프 사고, 아마추어 둘을 보던 얼룩말의 합류 | Stage 2 공연 전 |
+| `intro_stage_02` | 앰프 사고, 아마추어 둘을 보던 스컹크의 합류 | Stage 2 공연 전 |
 | `intro_stage_03` | 내지 못한 곡과 전 밴드 이야기, 헤드라이너 예고 | Stage 3 공연 전 |
 | `intro_stage_04` | 세 사람 모두 처음인 생방송, 스타디움 파이널 예고 | Stage 4 공연 전 |
 | `intro_stage_05_boss` | 베이스 파트를 줄이라는 라이벌, 준비한 편곡으로 공연 | 보스 공연 전 |

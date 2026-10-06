@@ -53,10 +53,10 @@ Stage 4 목표 점수는 11,000 으로 올려 두었다 — 정전 보너스(1,6
 | `BossBattleRule` | 팬 = 우리 관객(로스터) + 라이벌 팬. 드레인 틱(`PerformanceTimer.Elapsed` 기준이라 예고 연출 중엔 멈추고 엿보기 중엔 흐름) · 패턴 스케줄 · 성공/실패 팬 이동(`StealFans`/`LoseOurFans`) · 자연 이탈은 라이벌로 건너감 · REVENGE 진입/해제. 승패 판정은 하지 않는다 |
 | `BossPattern` | B2B(덱의 Normal/Special 지목 카드 사용) · GUEST LIST(손패 Special 로 요청 성공) · BEATMATCH(콤보 유지 + 카드 N장) · KILL SWITCH(성향 봉인, 양수 반응 N번) · DROP(피버 진입, REVENGE 전용) |
 | `BossBattleUI` | 상단 **팬 쟁탈 바**(라이벌 | 우리, 인원) · 다음 감소 카운트다운 · 감소 팝업(−N) · 패턴 예고/카운트다운/진행도 · "REVENGE TIME!" 자막. 랭크·점수·시간 HUD 는 그대로 보인다 |
-| `RivalStagePlaceholder` | 라이벌 무대(단상·듀오·LED)와 그 앞에 줄지어 선 라이벌 팬을 Square 로. 팬 수는 룰과 동기화, 이동은 걸어서(우리 ↔ 라이벌) |
-| `BossArenaLayout` | 2화면 배치(백지): 라이벌 무대(x=−19.2) | 우리 무대(x=0). `rivalBackground` 에 스프라이트를 넣으면 Square 대신 사용 |
-| `BossCameraDirector` | Main Camera x 만 구역 사이로 팬(SmoothStep). 해제·종료 시 즉시 홈 |
-| `BossStagePresentation` | 연출 담당. **예고**: 카드 잠금 + 타이머·호응·몰입도 감소 정지 → 틴트 + 손패 하강 → 라이벌 무대 왕복 → 해제. **엿보기 버튼**(화면 왼쪽 "< 라이벌 무대"): 같은 연출이지만 타이머·드레인은 멈추지 않는다, 버튼을 다시 눌러 복귀, 패턴 중엔 비활성 |
+| `RivalStagePlaceholder` | 라이벌 무대 (화면 기획 09-18 "보스 스테이지(보스팀)"). 위쪽 가운데 단상 + LUX//FAUNA 듀오(`duoFrames` 3프레임 교대, 없으면 Square), 그 아래로 라이벌 팬이 앞줄(우리 화면 쪽)부터 흩어져 선다. 팬은 관객 프리팹(AudienceMember)의 성향별 대기 애니메이션을 빌려 어둡게 틴트(`fanTint`)하고 정렬 2~4 라 우리 관객(5) 뒤에 그려진다. 앞줄(`fanFrontY` −4.2 = 세계 +3.8)은 **우리 화면 위쪽에 어둡고 작게** 보인다. 팬 수는 룰과 동기화, 이동은 아래(우리 무대)에서 걸어 올라오고 내려간다 |
+| `BossArenaLayout` | 2화면 **세로** 배치(백지): 라이벌 무대(y=+8) 위 / 우리 무대(y=0) 아래. 구역 간격 `zoneSpacing` 8 은 한 화면(10)보다 짧아 두 무대가 이어져 보인다. 라이벌 배경은 우리 배경 위쪽 끝(+5)부터 라이벌 화면 위쪽 끝(+13)까지. `rivalBackground` 에 스프라이트를 넣으면 Square 대신 사용 |
+| `BossCameraDirector` | Main Camera 를 구역 중심 사이로 팬(SmoothStep, 위아래). 해제·종료 시 즉시 홈 |
+| `BossStagePresentation` | 연출 담당. **예고**: 카드 잠금 + 타이머·호응·몰입도 감소 정지 → 틴트 + 손패 하강 → 위로 스크롤해 라이벌 무대 왕복 → 해제. **엿보기**(오른쪽 가장자리 버튼 "라이벌 무대 보기 [Tab]" 또는 Tab 키): 같은 연출이지만 타이머·드레인은 멈추지 않는다, 다시 눌러 복귀, 패턴 중엔 비활성 |
 | `Editor/BossBattleSetup` | `Tools/Tour/Setup Boss Battle`: 설정 에셋 · Stage05Boss 룰 ID · Main 씬 `[StageRuntime]/Rule_BossBattle` |
 
 패턴 흐름: 예고(`BossPatternAnnounced`, 연출 약 3.8초, 타이머 정지) → 복귀 후 창 시작(`BossPatternStarted`) → 판정(`BossPatternResolved`, 팬 이동 `BossFanMoved`). 팬 분포는 `BossFanBalanceChanged`, 드레인은 `BossDrainCountdown`/`BossDrainApplied`.

@@ -41,7 +41,7 @@ namespace ContextStage
     /// <summary>
     /// 엔딩 판정. 확정된 투어 상태(StageResult + PerformanceReport)만 읽는다.
     ///
-    ///   1. 투어 실패 → Bad. 얼룩말이 합류하기 전(첫 노드에서 실패)이면 ending_bad_before_join, 그 뒤면 ending_bad
+    ///   1. 투어 실패 → Bad. 스컹크가 합류하기 전(첫 노드에서 실패)이면 ending_bad_before_join, 그 뒤면 ending_bad
     ///   2. 성공 + 모든 공연 S 랭크 → AllS
     ///   3. 그 외 → 투어 전체에서 가장 많은 반응 점수를 준 관객 성향 (Mosh / Singalong / Chill)
     ///      동률이면 그 성향 카드 사용 횟수, 그래도 같으면 Mosh &gt; Singalong &gt; Chill
@@ -52,8 +52,8 @@ namespace ContextStage
     {
         public const string BadBeforeJoinId = "ending_bad_before_join";
 
-        /// <summary>얼룩말이 합류하는 노드 순번(0부터). 이 노드 이전에 실패하면 합류 전 배드 엔딩.</summary>
-        public const int ZebraJoinNodeIndex = 1;
+        /// <summary>스컹크가 합류하는 노드 순번(0부터). 이 노드 이전에 실패하면 합류 전 배드 엔딩.</summary>
+        public const int SkunkJoinNodeIndex = 1;
 
         public static TourEndingVerdict Resolve(TourRunState run)
         {
@@ -85,7 +85,7 @@ namespace ContextStage
             {
                 if (v.failedNodeIndex < 0) FindFailedNodeIndex(run, out v.failedNodeIndex);
                 v.kind = TourEndingKind.Bad;
-                v.sequenceId = v.failedNodeIndex >= 0 && v.failedNodeIndex < ZebraJoinNodeIndex
+                v.sequenceId = v.failedNodeIndex >= 0 && v.failedNodeIndex < SkunkJoinNodeIndex
                     ? BadBeforeJoinId
                     : SequenceIdFor(TourEndingKind.Bad);
                 return v;

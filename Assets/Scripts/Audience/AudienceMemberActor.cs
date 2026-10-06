@@ -508,6 +508,31 @@ namespace ContextStage
         static int PositiveModulo(int value, int divisor)
             => divisor <= 0 ? 0 : ((value % divisor) + divisor) % divisor;
 
+        /// <summary>
+        /// [읽기 전용] 이 프리팹의 성향별 대기(Calm) 애니메이션 클립과 정지 스프라이트.
+        /// 관객이 아닌 표현(보스전 라이벌 팬)이 같은 아트를 쓰기 위한 접근이며, 액터 상태는 건드리지 않는다.
+        /// </summary>
+        public bool TryGetIdleVisual(CrowdPreference preference, int seed, out SpriteAnimationClip clip, out Sprite staticSprite)
+        {
+            clip = null;
+            staticSprite = null;
+            switch (preference)
+            {
+                case CrowdPreference.Chill: staticSprite = chillSprite; break;
+                case CrowdPreference.Singalong: staticSprite = singalongSprite; break;
+                case CrowdPreference.Mosh: staticSprite = moshSprite; break;
+            }
+            for (int i = 0; i < animatedVariants.Count; i++)
+            {
+                AnimatedVariantGroup group = animatedVariants[i];
+                if (group.preference != preference || group.stage != AudienceEngagementStage.Calm) continue;
+                if (group.variants != null && group.variants.Length > 0)
+                    clip = group.variants[PositiveModulo(seed, group.variants.Length)];
+                break;
+            }
+            return (clip != null && clip.IsValid) || staticSprite != null;
+        }
+
         void UpdateWarning()
         {
             bool visible =

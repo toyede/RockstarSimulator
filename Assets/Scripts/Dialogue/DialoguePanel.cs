@@ -143,13 +143,16 @@ namespace ContextStage
         int _lineIndex = -1;
         Coroutine _typingRoutine;
         Coroutine _fadeRoutine;
+        Coroutine _portraitRoutine;          // 프레임 초상화(LUX//FAUNA) 교대
+        DialoguePortraitCatalog _portraits;  // 화자·표정 → 초상화. 없으면 DialogueLine.portrait
+        bool _portraitsLoaded;
         RectTransform _arrowRect;
         Vector2 _arrowBasePosition;
         Sprite _generatedArrow;
 
         [Header("화살표 위치")]
-        [SerializeField, Tooltip("줄이 끝날 때마다 화살표를 마지막 글자 옆으로 옮긴다. 끄면 씬에 둔 위치 고정")]
-        bool arrowFollowsText = true;
+        [SerializeField, Tooltip("줄이 끝날 때마다 화살표를 마지막 글자 옆으로 옮긴다. 끄면 프리팹의 NextArrow RectTransform 위치에 고정 (기본: 고정, 대사 상자 오른쪽 아래)")]
+        bool arrowFollowsText = false;
         [SerializeField, Tooltip("마지막 글자 기준선 오른쪽 아래에서의 오프셋(px)")]
         Vector2 arrowTextGap = new Vector2(22f, 4f);
         bool _completeInvoked;
@@ -329,6 +332,7 @@ namespace ContextStage
         void PrepareHidden()
         {
             _state = State.Hidden;
+            StopPortraitAnimation();
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 0f;
@@ -548,6 +552,7 @@ namespace ContextStage
 
         void ResetPortraits()
         {
+            StopPortraitAnimation();
             if (portraitLeft != null) portraitLeft.enabled = false;
             if (portraitRight != null) portraitRight.enabled = false;
         }
@@ -557,13 +562,19 @@ namespace ContextStage
             Image active = line.side == DialogueSpeakerSide.Left ? portraitLeft : portraitRight;
             Image other = line.side == DialogueSpeakerSide.Left ? portraitRight : portraitLeft;
 
+            StopPortraitAnimation();
             if (active != null)
             {
-                if (line.portrait != null)
+                // 화자·표정에 맞는 초상화가 카탈로그에 있으면 그것을, 없으면 줄에 박힌 초상화
+                DialoguePortraitCatalog.Entry entry = ResolvePortrait(line);
+                Sprite first = entry != null ? entry.frames[0] : line.portrait;
+                if (first != null)
                 {
-                    active.sprite = line.portrait;
+                    active.sprite = first;
                     active.enabled = true;
                     active.color = Color.white;
+                    if (entry != null && entry.frames.Count > 1 && isActiveAndEnabled)
+                        _portraitRoutine = StartCoroutine(AnimatePortrait(active, entry));
                 }
                 else
                 {
@@ -573,6 +584,41 @@ namespace ContextStage
 
             if (other != null && other.enabled)
                 other.color = style != null ? style.InactivePortraitColor : new Color(0.45f, 0.45f, 0.5f, 1f);
+        }
+
+        DialoguePortraitCatalog.Entry ResolvePortrait(DialogueLine line)
+        {
+            if (!_portraitsLoaded)
+            {
+                _portraitsLoaded = true;
+                _portraits = DialoguePortraitCatalog.LoadDefault();
+            }
+            return _portraits != null ? _portraits.Resolve(line.speakerId, line.emotionId) : null;
+        }
+
+        IEnumerator AnimatePortrait(Image target, DialoguePortraitCatalog.Entry entry)
+        {
+            int index = 0;
+            float interval = Mathf.Max(0.05f, entry.frameInterval);
+            while (target != null && target.enabled)
+            {
+                float elapsed = 0f;
+                while (elapsed < interval)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    yield return null;
+                }
+                index = (index + 1) % entry.frames.Count;
+                if (entry.frames[index] != null) target.sprite = entry.frames[index];
+            }
+            _portraitRoutine = null;
+        }
+
+        void StopPortraitAnimation()
+        {
+            if (_portraitRoutine == null) return;
+            StopCoroutine(_portraitRoutine);
+            _portraitRoutine = null;
         }
 
         void ApplyStyle()

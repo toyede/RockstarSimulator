@@ -83,14 +83,14 @@ MonoBehaviour:
   - speakerId: raccoon
     speakerName: "\uB108\uAD6C\uB9AC"
     portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
-    emotionId: neutral
+    emotionId: crying
     text: "\uC870\uAE08\uC529 \uC62E\uAE30\uBA74..."
     side: 0
     sfxId: 
   - speakerId: hedgehog
     speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
     portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
-    emotionId: neutral
+    emotionId: angry
     text: "\uB410\uC5B4. \uBC18\uB300\uCABD \uC7A1\uC544."
     side: 1
     sfxId: 
@@ -106,11 +106,11 @@ MonoBehaviour:
     speakerName: 
     portrait: {fileID: 0}
     emotionId: 
-    text: "\uC5BC\uB8E9\uB9D0\uC774 \uCD9C\uC785\uBB38\uC744 \uC7A1\uC544\uC900\uB2E4."
+    text: "\uC2A4\uCEF9\uD06C\uAC00 \uCD9C\uC785\uBB38\uC744 \uC7A1\uC544\uC900\uB2E4."
     side: 0
     sfxId: 
-  - speakerId: zebra
-    speakerName: "\uC5BC\uB8E9\uB9D0"
+  - speakerId: skunk
+    speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
     text: "\uCC9C\uCC9C\uD788. \uBB38\uD131 \uC788\uC5B4."
@@ -123,8 +123,8 @@ MonoBehaviour:
     text: "...\uD615 \uC570\uD504\uB3C4 \uC81C\uAC00 \uC62E\uAE38\uAC8C\uC694."
     side: 0
     sfxId: 
-  - speakerId: zebra
-    speakerName: "\uC5BC\uB8E9\uB9D0"
+  - speakerId: skunk
+    speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
     text: "\uB0B4 \uAC74 \uB0B4\uAC00 \uB4E4\uC5B4. \uB124 \uAE30\uD0C0\uBD80\uD130
@@ -135,7 +135,7 @@ MonoBehaviour:
     speakerName: 
     portrait: {fileID: 0}
     emotionId: 
-    text: "\uC5BC\uB8E9\uB9D0\uC740 \uB450 \uC0AC\uB78C\uC774 \uB098\uC62C \uB54C\uAE4C\uC9C0
+    text: "\uC2A4\uCEF9\uD06C\uB294 \uB450 \uC0AC\uB78C\uC774 \uB098\uC62C \uB54C\uAE4C\uC9C0
       \uBB38\uC744 \uC7A1\uACE0 \uAE30\uB2E4\uB9B0\uB2E4."
     side: 0
     sfxId: 

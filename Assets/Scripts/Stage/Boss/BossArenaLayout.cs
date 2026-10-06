@@ -3,29 +3,34 @@ using UnityEngine;
 
 namespace ContextStage
 {
-    /// <summary>보스전 2화면의 구역. 구역 중심 x = 홈 x − 구역 폭 × 값.</summary>
+    /// <summary>보스전 2화면의 구역. 구역 중심 y = 홈 y + 구역 간격 × 값.</summary>
     public enum BossZone
     {
-        /// <summary>너구리 밴드 무대. 현재 플레이 화면 그대로 (x = 0).</summary>
+        /// <summary>너구리 밴드 무대. 현재 플레이 화면 그대로 (y = 0).</summary>
         OurStage = 0,
-        /// <summary>라이벌 무대 (바로 왼쪽 화면). 라이벌 팬이 그 앞에 서 있다.</summary>
+        /// <summary>라이벌 무대 (바로 위 화면). 위로 스크롤하면 보인다. 라이벌 팬이 그 앞에 서 있다.</summary>
         RivalStage = 1,
     }
 
     /// <summary>
-    /// 보스전 2화면 배치 (백지). 현재 플레이 화면(x = 0)은 건드리지 않고 왼쪽에 라이벌 무대 구역을 덧붙인다.
+    /// 보스전 2화면 세로 배치 (화면 기획 2026-09-18). 현재 플레이 화면(y = 0)은 건드리지 않고 **위쪽**에 라이벌 무대 구역을 덧붙인다.
     ///
-    ///   x = -W  라이벌 무대     x = 0  너구리 밴드 무대(조작)
+    ///   y = +H  라이벌 무대 (위로 스크롤)
+    ///   y =  0  너구리 밴드 무대 (조작)
     ///
-    /// 구역 폭 W 는 배경 아트 규격(1920px, PPU 100 = 19.2 유닛)과 같다.
-    /// 아트가 오면 구역 스프라이트를 넣기만 하면 Square 대신 그것을 쓴다.
+    /// 구역 간격 H 는 한 화면(카메라 세로 10유닛)보다 조금 짧게 둔다. 그러면 라이벌 팬의 뒷줄이 우리 화면 위쪽 가장자리에
+    /// 어둡고 작게 걸치고, 라이벌 화면 아래쪽에는 우리 관객의 머리가 걸친다 — 두 무대가 이어진 한 공간으로 읽힌다.
+    /// 라이벌 구역 배경은 우리 배경(1920×1080, 위쪽 끝 y ≈ +5.4) 바로 위부터 라이벌 화면 위쪽 끝까지 채운다.
+    /// 아트가 오면 rivalBackground 에 넣기만 하면 Square 대신 그것을 쓴다.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class BossArenaLayout : MonoBehaviour
     {
         [Header("구역")]
-        [SerializeField, Min(1f), Tooltip("구역 한 칸 폭(유닛). 배경 아트 1920px / PPU 100")] float zoneWidth = 19.2f;
-        [SerializeField, Min(1f), Tooltip("구역 높이(유닛). 백지 사각형 크기")] float zoneHeight = 10.8f;
+        [SerializeField, Min(1f), Tooltip("구역 폭(유닛). 배경 아트 1920px / PPU 100")] float zoneWidth = 19.2f;
+        [SerializeField, Min(1f), Tooltip("우리 무대 중심에서 라이벌 무대 중심까지의 세로 거리(유닛). 카메라 세로 10 보다 짧게")] float zoneSpacing = 8f;
+        [SerializeField, Min(1f), Tooltip("카메라 세로 크기(유닛). 라이벌 배경을 화면 위쪽 끝까지 채우는 데 쓴다")] float viewHeight = 10f;
+        [SerializeField, Tooltip("우리 배경 위쪽 끝 (홈 기준 y). 여기서부터 라이벌 배경이 시작된다")] float ourBackgroundTop = 5f;
         [SerializeField, Tooltip("백지 배경 Sorting Order (우리 무대 배경 0 보다 아래)")] int backgroundSortingOrder = -1;
         [SerializeField] string sortingLayer = "Default";
 
@@ -43,13 +48,15 @@ namespace ContextStage
         bool _built;
 
         public float ZoneWidth => zoneWidth;
+        public float ZoneSpacing => zoneSpacing;
+        public float ViewHeight => viewHeight;
         public bool IsBuilt => _built;
 
         /// <summary>우리 무대(구역 0)의 월드 중심. 카메라가 처음 있던 자리.</summary>
         public Vector3 Home => _home;
 
-        /// <summary>구역 중심 월드 좌표.</summary>
-        public Vector3 AnchorOf(BossZone zone) => _home + new Vector3(-zoneWidth * (int)zone, 0f, 0f);
+        /// <summary>구역 중심 월드 좌표 (라이벌 무대는 위).</summary>
+        public Vector3 AnchorOf(BossZone zone) => _home + new Vector3(0f, zoneSpacing * (int)zone, 0f);
 
         /// <summary>구역을 만들고 보인다. 기준점은 첫 호출 때 카메라 위치.</summary>
         public void Show()
@@ -78,31 +85,39 @@ namespace ContextStage
             rootObject.transform.position = Vector3.zero;
             _root = rootObject.transform;
 
-            BuildZone(BossZone.RivalStage, "Zone_RivalStage", "라이벌 무대 (임시)", rivalBackground, rivalColor, rivalFloorColor);
+            BuildRivalZone();
         }
 
-        void BuildZone(BossZone zone, string name, string label, Sprite art, Color color, Color floorColor)
+        void BuildRivalZone()
         {
-            var zoneObject = new GameObject(name);
+            var zoneObject = new GameObject("Zone_RivalStage");
             zoneObject.transform.SetParent(_root, false);
-            zoneObject.transform.position = AnchorOf(zone);
+            Vector3 anchor = AnchorOf(BossZone.RivalStage);
+            zoneObject.transform.position = anchor;
 
-            if (art != null)
+            // 우리 배경 위쪽 끝부터 라이벌 화면 위쪽 끝까지 (구역 로컬 y)
+            float bottom = ourBackgroundTop - zoneSpacing;
+            float top = viewHeight * 0.5f;
+            float height = Mathf.Max(1f, top - bottom);
+            float centerY = (top + bottom) * 0.5f;
+
+            if (rivalBackground != null)
             {
-                CreateRenderer(zoneObject.transform, "Background", art, Vector3.zero, Vector3.one, Color.white, backgroundSortingOrder);
+                CreateRenderer(zoneObject.transform, "Background", rivalBackground, new Vector3(0f, centerY, 0f), Vector3.one, Color.white, backgroundSortingOrder);
             }
             else
             {
                 Sprite square = SquareSprite.Get();
-                CreateRenderer(zoneObject.transform, "Background", square, Vector3.zero, new Vector3(zoneWidth, zoneHeight, 1f), color, backgroundSortingOrder);
-                CreateRenderer(zoneObject.transform, "Floor", square, new Vector3(0f, -zoneHeight * 0.5f + 1.1f, 0f), new Vector3(zoneWidth, 2.2f, 1f), floorColor, backgroundSortingOrder);
-                CreateRenderer(zoneObject.transform, "FloorLine", square, new Vector3(0f, -zoneHeight * 0.5f + 2.2f, 0f), new Vector3(zoneWidth, 0.06f, 1f), new Color(1f, 1f, 1f, 0.15f), backgroundSortingOrder);
+                CreateRenderer(zoneObject.transform, "Background", square, new Vector3(0f, centerY, 0f), new Vector3(zoneWidth, height, 1f), rivalColor, backgroundSortingOrder);
+                // 바닥 띠: 라이벌 팬이 서는 아래쪽
+                CreateRenderer(zoneObject.transform, "Floor", square, new Vector3(0f, bottom + 1.6f, 0f), new Vector3(zoneWidth, 3.2f, 1f), rivalFloorColor, backgroundSortingOrder);
+                CreateRenderer(zoneObject.transform, "FloorLine", square, new Vector3(0f, bottom + 3.2f, 0f), new Vector3(zoneWidth, 0.06f, 1f), new Color(1f, 1f, 1f, 0.15f), backgroundSortingOrder);
             }
 
-            CreateLabel(zoneObject.transform, label);
+            CreateLabel(zoneObject.transform, "라이벌 무대 (임시)", new Vector3(-zoneWidth * 0.5f + 3.2f, top - 0.7f, 0f));
         }
 
-        void CreateLabel(Transform parent, string text)
+        void CreateLabel(Transform parent, string text, Vector3 localPosition)
         {
             TMP_FontAsset font = labelFont;
             if (font == null)
@@ -113,15 +128,14 @@ namespace ContextStage
 
             var go = new GameObject("Label", typeof(TextMeshPro));
             go.transform.SetParent(parent, false);
-            // 바닥 띠 안쪽 (단상·듀오가 있는 위쪽과 겹치지 않게)
-            go.transform.localPosition = new Vector3(0f, -zoneHeight * 0.5f + 1.1f, 0f);
+            go.transform.localPosition = localPosition;
             var tmp = go.GetComponent<TextMeshPro>();
             if (font != null) tmp.font = font;
             tmp.text = text;
-            tmp.fontSize = 6f;
+            tmp.fontSize = 4f;
             tmp.color = labelColor;
             tmp.alignment = TextAlignmentOptions.Center;
-            tmp.rectTransform.sizeDelta = new Vector2(zoneWidth, 2f);
+            tmp.rectTransform.sizeDelta = new Vector2(6f, 1.2f);
             var renderer = go.GetComponent<MeshRenderer>();
             renderer.sortingLayerName = sortingLayer;
             renderer.sortingOrder = backgroundSortingOrder + 1;

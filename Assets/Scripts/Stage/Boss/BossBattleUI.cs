@@ -24,6 +24,8 @@ namespace ContextStage
         [SerializeField, Min(0f)] float resultHoldDuration = 1.6f;
         [SerializeField, Min(0f), Tooltip("바가 목표값을 따라가는 속도")] float fillLerpSpeed = 6f;
         [SerializeField, Tooltip("상단에서의 위치(px, 1080 기준). 점수·랭크 HUD 아래")] float topOffset = 118f;
+        [SerializeField, Tooltip("패턴(미션) 패널 위치 — 왼쪽 위 기준(px, 1920×1080)")] Vector2 patternPanelPosition = new Vector2(24f, -24f);
+        [SerializeField, Tooltip("패턴(미션) 패널 크기(px)")] Vector2 patternPanelSize = new Vector2(480f, 118f);
 
         Canvas _canvas;
         Image _barBack;
@@ -320,8 +322,10 @@ namespace ContextStage
             _drainPopup.fontStyle = FontStyles.Bold;
             _drainPopup.gameObject.SetActive(false);
 
-            // 패턴 패널
-            _patternPanel = CreateRect(canvasObject.transform, "Pattern", new Vector2(0.5f, 1f), new Vector2(0f, -topOffset - 96f), new Vector2(1000f, 118f));
+            // 패턴(미션) 패널 — 화면 기획 09-18: 왼쪽 위 모달 (시간 바 자리)
+            _patternPanel = CreateRect(canvasObject.transform, "Pattern", new Vector2(0f, 1f), patternPanelPosition, patternPanelSize);
+            _patternPanel.pivot = new Vector2(0f, 1f); // 왼쪽 위 모서리 기준
+            _patternPanel.anchoredPosition = patternPanelPosition;
             _patternBackground = _patternPanel.gameObject.AddComponent<Image>();
             _patternBackground.color = new Color(0.08f, 0.05f, 0.1f, 0.92f);
             _patternBackground.raycastTarget = false;
