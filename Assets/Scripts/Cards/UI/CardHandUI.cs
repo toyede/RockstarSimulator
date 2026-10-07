@@ -44,6 +44,12 @@ namespace ContextStage
         Coroutine _stowRoutine;
         Vector2 _baseAnchoredPosition;
         bool _capturedBasePosition;
+        AugmentCardVFX _augmentVfx;
+        PerformanceTimerUI _timerUI;
+        CardAugmentVisual _pendingHandVisual;
+        Vector2 _pendingSource;
+        int _pendingDrawStart;
+        int _pendingBonusStart;
 
         /// <summary>연출 때문에 손패가 화면 아래로 내려가 있는지.</summary>
         public bool IsStowed { get; private set; }
@@ -64,6 +70,8 @@ namespace ContextStage
 
         void OnEnable()
         {
+            _timerUI = FindFirstObjectByType<PerformanceTimerUI>();
+            EventBus.Subscribe<GameStateChanged>(OnVisualStateChanged);
             EventBus.Subscribe<HandChanged>(OnHandChanged);
             // CardSelected 는 HandChanged 보다 먼저 발행된다. 그 사이에 사용된 카드 뷰를
             // 손패 목록에서 빼내야 Refresh 가 그것을 곧바로 풀에 반납하지 않는다.
@@ -75,6 +83,9 @@ namespace ContextStage
 
         void OnDisable()
         {
+            EventBus.Unsubscribe<GameStateChanged>(OnVisualStateChanged);
+            _pendingHandVisual = CardAugmentVisual.None;
+            if (_augmentVfx != null) _augmentVfx.Clear();
             EventBus.Unsubscribe<HandChanged>(OnHandChanged);
             EventBus.Unsubscribe<CardSelected>(OnCardSelected);
             EventBus.Unsubscribe<FeverStateChanged>(OnFeverStateChanged);
@@ -83,7 +94,37 @@ namespace ContextStage
             ResetHandSpacing();
         }
 
-        void OnHandChanged(HandChanged _) => Refresh();
+        void OnHandChanged(HandChanged _)
+        {
+            Refresh();
+            PlayPendingHandVisual();
+        }
+
+        void OnVisualStateChanged(GameStateChanged e)
+        {
+            if (e.Current != GameState.Ready && e.Current != GameState.GameOver) return;
+            _pendingHandVisual = CardAugmentVisual.None;
+            if (_augmentVfx != null) _augmentVfx.Clear();
+            ReleaseDissolvingViews();
+        }
+
+        void OnDestroy()
+        {
+            if (_augmentVfx != null) Destroy(_augmentVfx.gameObject);
+        }
+
+        void PlayPendingHandVisual()
+        {
+            CardAugmentVisual visual = _pendingHandVisual;
+            _pendingHandVisual = CardAugmentVisual.None;
+            if (_augmentVfx == null || visual == CardAugmentVisual.None) return;
+            if (visual == CardAugmentVisual.Reroll)
+                _augmentVfx.SweepHand((cardContainer != null ? cardContainer : transform) as RectTransform);
+            for (int i = _pendingDrawStart; i < _activeViews.Count; i++)
+                if (_activeViews[i] != null)
+                    _augmentVfx.SplitToCard(_pendingSource, _activeViews[i].transform as RectTransform,
+                        i >= _pendingBonusStart, i - _pendingDrawStart);
+        }
 
         // ---------------- 손패 하강 (보스 연출) ----------------
 
@@ -153,13 +194,39 @@ namespace ContextStage
             if (e.HandIndex < 0 || e.HandIndex >= _activeViews.Count) return;
 
             var view = _activeViews[e.HandIndex];
+            int handCountBefore = _activeViews.Count;
             _activeViews.RemoveAt(e.HandIndex); // Refresh 가 회수하지 않도록 목록에서 제외
             if (view == null) return;
 
-            PlayDissolve(view, e.Judgement);
+            var card = view.GetComponent<CardDefinition>();
+            var upgrade = AugmentRuntime.Current.ResolveCardUpgrade(e.CardId);
+            CardAugmentVisual visual = AugmentCardVFX.Resolve(card, upgrade);
+            if (visual != CardAugmentVisual.None)
+            {
+                if (_augmentVfx == null) _augmentVfx = AugmentCardVFX.Create(transform);
+                Vector2 source = AugmentCardVFX.ScreenCenter((RectTransform)view.transform);
+                if (_augmentVfx != null)
+                {
+                    _augmentVfx.PlayCollapse(source, visual);
+                    if (visual == CardAugmentVisual.Encore)
+                    {
+                        if (_timerUI == null) _timerUI = FindFirstObjectByType<PerformanceTimerUI>();
+                        if (_timerUI != null) _augmentVfx.FlyToTimer(source, _timerUI.VisualAnchor);
+                    }
+                    else if (visual == CardAugmentVisual.Draw || visual == CardAugmentVisual.Reroll)
+                    {
+                        _pendingSource = source;
+                        _pendingHandVisual = visual;
+                        _pendingDrawStart = visual == CardAugmentVisual.Draw ? handCountBefore - 1 : 0;
+                        _pendingBonusStart = visual == CardAugmentVisual.Draw
+                            ? _pendingDrawStart + card.DrawCount : handCountBefore;
+                    }
+                }
+            }
+            PlayDissolve(view, e.Judgement, visual);
         }
 
-        void PlayDissolve(CardSlotUI view, HypeJudgement judgement)
+        void PlayDissolve(CardSlotUI view, HypeJudgement judgement, CardAugmentVisual visual)
         {
             var go = view.gameObject;
 
@@ -176,8 +243,8 @@ namespace ContextStage
 
             _dissolvingViews.Add(view);
             view.PlayUpgradeUseFlash();
-            effect.SetEdgeColor(EdgeColorFor(judgement));
-            effect.PlayDissolve(() => ReleaseDissolvedView(view));
+            effect.SetEdgeColor(visual == CardAugmentVisual.None ? EdgeColorFor(judgement) : AugmentCardVFX.Gold);
+            effect.PlayDissolve(() => ReleaseDissolvedView(view), visual);
         }
 
         Color EdgeColorFor(HypeJudgement judgement)

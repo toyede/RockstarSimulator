@@ -92,6 +92,8 @@ namespace ContextStage
         Material[] _instances;      // 이 카드 전용 Material. 다른 카드와 공유하지 않는다
         Material[] _originalMaterials;
         Vector3 _originalScale;
+        Quaternion _originalRotation;
+        CardAugmentVisual _augmentVisual;
         float[] _originalAlphas;
         float _originalGroupAlpha = 1f;
 
@@ -186,6 +188,9 @@ namespace ContextStage
 
         /// <summary>디졸브를 재생한다. 이미 재생 중이면 무시한다 (중복 호출 방지).</summary>
         public void PlayDissolve(Action onCompleted)
+            => PlayDissolve(onCompleted, CardAugmentVisual.None);
+
+        public void PlayDissolve(Action onCompleted, CardAugmentVisual visual)
         {
             Initialize();
 
@@ -204,6 +209,8 @@ namespace ContextStage
             }
 
             _onCompleted = onCompleted;
+            _augmentVisual = visual;
+            _originalRotation = scaleTarget.localRotation;
             ApplyMaterials();
             _routine = StartCoroutine(DissolveRoutine());
         }
@@ -220,6 +227,9 @@ namespace ContextStage
             DissolveAmount = 0f;
 
             scaleTarget.localScale = _originalScale;
+            if (_augmentVisual == CardAugmentVisual.Reroll)
+                scaleTarget.localRotation = _originalRotation;
+            _augmentVisual = CardAugmentVisual.None;
 
             if (textCanvasGroup != null) textCanvasGroup.alpha = _originalGroupAlpha;
             else if (fadeGraphics != null && _originalAlphas != null)
@@ -255,6 +265,17 @@ namespace ContextStage
             {
                 t += Time.unscaledDeltaTime;
                 float k = dissolveDuration <= 0f ? 1f : Mathf.Clamp01(t / dissolveDuration);
+                if (_augmentVisual == CardAugmentVisual.Reroll)
+                {
+                    scaleTarget.localScale = _originalScale * Mathf.Lerp(scaleMultiplier, 0.05f, k * k);
+                    scaleTarget.localRotation = _originalRotation * Quaternion.Euler(0f, 0f, -300f * k * k);
+                }
+                else if (_augmentVisual == CardAugmentVisual.StageControl)
+                {
+                    float scale = k < 0.4f ? Mathf.Lerp(scaleMultiplier, 0.55f, k / 0.4f)
+                        : Mathf.Lerp(0.55f, 1.3f, (k - 0.4f) / 0.6f);
+                    scaleTarget.localScale = _originalScale * scale;
+                }
                 ApplyProgress(Mathf.Lerp(startDissolve, endDissolve, k));
                 yield return null;
             }
@@ -322,9 +343,9 @@ namespace ContextStage
                 var mat = _instances[i];
                 mat.SetFloat(EdgeWidthId, edgeWidth);
                 mat.SetColor(EdgeColorId, edgeColor);
-                mat.SetFloat(PixelSizeId, pixelBlockCount);
+                mat.SetFloat(PixelSizeId, _augmentVisual == CardAugmentVisual.Draw ? 10f : pixelBlockCount);
                 mat.SetFloat(NoiseScaleId, noiseScale);
-                mat.SetFloat(DirectionId, direction);
+                mat.SetFloat(DirectionId, _augmentVisual == CardAugmentVisual.Encore ? 1f : direction);
                 mat.SetVector(NoiseOffsetId, _seed);
                 mat.SetFloat(DissolveAmountId, startDissolve);
 

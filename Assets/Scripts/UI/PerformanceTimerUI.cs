@@ -29,6 +29,16 @@ namespace ContextStage
 
         UIPixelBurstEmitter _pixelVfx;
         float _nextDustAt;
+        AugmentCardVFX _extensionVfx;
+        RectTransform _pulseRoot;
+        Vector3 _baseScale;
+        Quaternion _baseRotation;
+        Color _baseFillColor;
+        Color _baseTextColor;
+        float _pulseStart = -1f;
+        bool _pulsing;
+        public RectTransform VisualAnchor => valueText != null
+            ? valueText.rectTransform : handleRect != null ? handleRect : transform as RectTransform;
 
         void OnEnable()
         {
@@ -41,6 +51,8 @@ namespace ContextStage
             _nextDustAt = 0f;
 
             EventBus.Subscribe<PerformanceTimeChanged>(OnTimeChanged);
+            EventBus.Subscribe<PerformanceTimeExtended>(OnTimeExtended);
+            EventBus.Subscribe<GameStateChanged>(OnVisualStateChanged);
 
             // 씬 로드 직후 이벤트가 오기 전에도 현재값과 동기화
             if (PerformanceTimerSystem.HasInstance)
@@ -54,7 +66,79 @@ namespace ContextStage
             }
         }
 
-        void OnDisable() => EventBus.Unsubscribe<PerformanceTimeChanged>(OnTimeChanged);
+        void OnDisable()
+        {
+            EventBus.Unsubscribe<PerformanceTimeChanged>(OnTimeChanged);
+            EventBus.Unsubscribe<PerformanceTimeExtended>(OnTimeExtended);
+            EventBus.Unsubscribe<GameStateChanged>(OnVisualStateChanged);
+            ResetExtensionVisual();
+        }
+
+        void OnDestroy()
+        {
+            if (_extensionVfx != null) Destroy(_extensionVfx.gameObject);
+        }
+
+        void OnVisualStateChanged(GameStateChanged e)
+        {
+            if (e.Current == GameState.Ready || e.Current == GameState.GameOver) ResetExtensionVisual();
+        }
+
+        void OnTimeExtended(PerformanceTimeExtended e)
+        {
+            if (e.Seconds <= 0f) return;
+            RestorePulse();
+            if (_extensionVfx == null) _extensionVfx = AugmentCardVFX.Create(transform);
+            if (_extensionVfx != null)
+                _extensionVfx.FloatPluses(VisualAnchor, Mathf.RoundToInt(e.Seconds), 0.48f);
+            if (!_pulsing)
+            {
+                _pulseRoot = transform as RectTransform;
+                if (_pulseRoot == null) return;
+                _baseScale = _pulseRoot.localScale;
+                _baseRotation = _pulseRoot.localRotation;
+                if (fillImage != null) _baseFillColor = fillImage.color;
+                if (valueText != null) _baseTextColor = valueText.color;
+            }
+            _pulsing = true;
+            _pulseStart = Time.unscaledTime + 0.48f;
+        }
+
+        void Update()
+        {
+            if (!_pulsing || _pulseRoot == null) return;
+            float elapsed = Time.unscaledTime - _pulseStart;
+            if (elapsed < 0f) return;
+            float t = Mathf.Clamp01(elapsed / 0.85f);
+            float envelope = Mathf.Sin(Mathf.PI * Mathf.Min(1f, t * 2f)) * (1f - t);
+            _pulseRoot.localScale = _baseScale * (1f + envelope * 0.2f);
+            _pulseRoot.localRotation = _baseRotation * Quaternion.Euler(0f, 0f,
+                Mathf.Sin(t * Mathf.PI * 8f) * 4f * (1f - t));
+            Color flash = Color.Lerp(Color.white, AugmentCardVFX.Gold,
+                0.5f + Mathf.Sin(elapsed * 24f) * 0.5f);
+            if (fillImage != null) fillImage.color = Color.Lerp(_baseFillColor, flash, (1f - t) * 0.8f);
+            if (valueText != null) valueText.color = Color.Lerp(_baseTextColor, flash, 1f - t);
+            if (t >= 1f) RestorePulse();
+        }
+
+        void RestorePulse()
+        {
+            if (!_pulsing) return;
+            if (_pulseRoot != null)
+            {
+                _pulseRoot.localScale = _baseScale;
+                _pulseRoot.localRotation = _baseRotation;
+            }
+            if (fillImage != null) fillImage.color = _baseFillColor;
+            if (valueText != null) valueText.color = _baseTextColor;
+            _pulsing = false;
+        }
+
+        void ResetExtensionVisual()
+        {
+            RestorePulse();
+            if (_extensionVfx != null) _extensionVfx.Clear();
+        }
 
         void OnTimeChanged(PerformanceTimeChanged e) => Refresh(e.Elapsed, e.Duration, e.Normalized);
 

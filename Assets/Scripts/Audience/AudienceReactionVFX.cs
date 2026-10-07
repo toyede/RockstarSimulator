@@ -1,4 +1,5 @@
 using UnityEngine;
+using GameJamKit;
 
 namespace ContextStage
 {
@@ -41,6 +42,9 @@ namespace ContextStage
         ParticleSystem _boredSystem;
         ParticleSystem _feverSystem;
         ParticleSystem _departureSystem;
+        ParticleSystem _augmentStars;
+        AudienceMemberActor _actor;
+        float _augmentWaveAt = -1f;
         SpriteRenderer _flashRenderer;
         SpriteRenderer _ellipsisRenderer;
         SpriteRenderer _frustrationRenderer;
@@ -86,6 +90,8 @@ namespace ContextStage
             IsAlive(_boredSystem) ||
             IsAlive(_feverSystem) ||
             IsAlive(_departureSystem) ||
+            IsAlive(_augmentStars) ||
+            _augmentWaveAt >= 0f ||
             _ellipsisRemaining > 0f ||
             _frustrationRemaining > 0f ||
             _arrowRemaining > 0f ||
@@ -93,14 +99,68 @@ namespace ContextStage
 
         void Awake()
         {
+            _actor = GetComponent<AudienceMemberActor>();
             EnsureVisuals();
             ResetVisual();
         }
 
-        void OnDisable() => ResetVisual();
+        void OnEnable()
+        {
+            EventBus.Subscribe<CardPresentationStarted>(OnAugmentCard);
+            EventBus.Subscribe<GameStateChanged>(OnVisualStateChanged);
+        }
+
+        void OnDisable()
+        {
+            EventBus.Unsubscribe<CardPresentationStarted>(OnAugmentCard);
+            EventBus.Unsubscribe<GameStateChanged>(OnVisualStateChanged);
+            ResetVisual();
+        }
+
+        void OnVisualStateChanged(GameStateChanged e)
+        {
+            if (e.Current == GameState.Ready || e.Current == GameState.GameOver) ResetVisual();
+        }
+
+        void OnAugmentCard(CardPresentationStarted e)
+        {
+            if (e.AudienceBonus <= 0 || _actor == null || !_actor.IsBound) return;
+            if (e.Role != CardRole.Utility) return;
+            // 관객마다 조금씩 늦춰 각자에게서 작은 별빛이 퍼지도록 한다.
+            _augmentWaveAt = Time.unscaledTime + 0.12f + Mathf.Repeat(transform.position.x * 0.071f, 0.15f);
+        }
+
+        void PlayAugmentStars()
+        {
+            if (_augmentStars == null)
+            {
+                _augmentStars = CreateParticleSystem("AugmentStarWave", headLocalPosition,
+                    new[] { ShapeSprite.Star }, CreateGradient(LoveWhite, LoveGold), 0f, 24);
+                var main = _augmentStars.main;
+                main.useUnscaledTime = true;
+            }
+            SetParticleSorting(_augmentStars, _sortingLayerName, _sortingOrder + 2);
+            for (int i = 0; i < 8; i++)
+            {
+                float angle = i * Mathf.PI * 0.25f;
+                _augmentStars.Emit(new ParticleSystem.EmitParams
+                {
+                    position = _augmentStars.transform.position,
+                    velocity = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * 0.7f,
+                    startLifetime = 0.55f,
+                    startSize = 0.12f,
+                    startColor = i % 2 == 0 ? Color.white : LoveGold
+                }, 1);
+            }
+        }
 
         void Update()
         {
+            if (_augmentWaveAt >= 0f && Time.unscaledTime >= _augmentWaveAt)
+            {
+                _augmentWaveAt = -1f;
+                if (_actor != null && _actor.IsBound) PlayAugmentStars();
+            }
             float deltaTime = Time.deltaTime;
 
             if (_flashHideFrame >= 0 && Time.frameCount >= _flashHideFrame)
@@ -168,6 +228,7 @@ namespace ContextStage
             SetParticleSorting(_boredSystem, _sortingLayerName, _sortingOrder);
             SetParticleSorting(_feverSystem, _sortingLayerName, _sortingOrder + 1);
             SetParticleSorting(_departureSystem, _sortingLayerName, _sortingOrder);
+            SetParticleSorting(_augmentStars, _sortingLayerName, _sortingOrder + 2);
             SetSpriteSorting(_flashRenderer, _sortingLayerName, _sortingOrder + 2);
             SetSpriteSorting(_ellipsisRenderer, _sortingLayerName, _sortingOrder + 2);
             SetSpriteSorting(_frustrationRenderer, _sortingLayerName, _sortingOrder + 1);
@@ -300,6 +361,8 @@ namespace ContextStage
             StopAndClear(_boredSystem);
             StopAndClear(_feverSystem);
             StopAndClear(_departureSystem);
+            StopAndClear(_augmentStars);
+            _augmentWaveAt = -1f;
 
             _ellipsisRemaining = 0f;
             _frustrationRemaining = 0f;

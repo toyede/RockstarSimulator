@@ -277,7 +277,8 @@ namespace ContextStage
                     card.Id,
                     card.Role,
                     card.TargetStage,
-                    card.CardColor));
+                    card.CardColor,
+                    cardUpgrade.AudienceReactionBonus));
 
                 _hand.RemoveAt(index);
                 int rawScore = gainedScore + specialBonusScore;

@@ -117,6 +117,36 @@ Do not modify these unless the task explicitly requires it:
 - Use `eval` only for narrow diagnostics or operations not covered by a typed command.
 - Save scene changes explicitly and inspect the resulting Git diff.
 
+### CLI discovery recovery (verified 2026-10-07)
+
+- A CLI discovery failure does not prove that the Editor or Pipeline server is stopped.
+  The user's terminal and the agent's sandbox can report different results. If the
+  user's `unity pipeline list` reports a connected server, first retry the CLI
+  outside the sandbox through the tool's normal approval mechanism. This restored
+  access to the existing Editor in this project; do not repeatedly request restarts.
+- The Pipeline 0.8 connection descriptor is
+  `Library/Pipeline/.unity-pipeline-port`, not a file at the repository root.
+  Check existence only; its contents include an authentication token and must not
+  be printed, committed, fabricated, or copied into documentation.
+- In the observed failure the server still listened on localhost:7800 while the
+  descriptor was missing. An unauthenticated HTTP 401 proves a responding server,
+  not successful CLI authentication. The cause of descriptor removal was not proven.
+- If the descriptor is absent, one **Window > Pipeline > Stop Server**, then
+  **Start Server** in the existing Editor regenerated it. Verify file existence
+  before and after `unity --non-interactive --format json status`, then run
+  `command --project-path . editor_status` from the working execution environment.
+  Use the discovered port; 7800 was this session's port, not a fixed requirement.
+- Do not launch another Editor, kill the existing process, reinstall packages,
+  or edit Library files to recover discovery.
+- Entering Play Mode or recompiling can briefly reset the connection during domain
+  reload. Wait for `editor_status` to respond with compilation/reload finished,
+  then retry the interrupted command; this does not require restarting the server.
+- Discover console commands for the installed Pipeline version. Version 0.8 uses
+  `console --level error --tail 100`, not `get_console_logs`. Historical buffered
+  entries can survive a successful compile: compare `recompile_status`, console
+  `groundTruth`, and entries after the recorded session/cursor before diagnosing
+  a current compile failure.
+
 ## Compile Verification
 
 After changing Unity scripts:
@@ -124,7 +154,7 @@ After changing Unity scripts:
 ```powershell
 unity --non-interactive --format json command --project-path . recompile
 unity --non-interactive --format json command --project-path . recompile_status
-unity --non-interactive --format json command --project-path . get_console_logs --severity error --limit 100
+unity --non-interactive --format json command --project-path . console --level error --tail 100
 ```
 
 Unity compilation and the Unity Console are the source of truth.

@@ -80,8 +80,10 @@ namespace ContextStage
             seconds = Mathf.Max(0f, seconds);
             if (_ended || seconds <= 0f) return false;
 
-            _runtimeDuration = Mathf.Max(1f, Duration + seconds);
+            float previousDuration = Duration;
+            _runtimeDuration = Mathf.Max(1f, previousDuration + seconds);
             RaiseChanged();
+            EventBus.Raise(new PerformanceTimeExtended(_runtimeDuration - previousDuration));
             return true;
         }
 

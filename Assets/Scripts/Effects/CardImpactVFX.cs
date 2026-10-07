@@ -37,6 +37,8 @@ namespace ContextStage
         ParticleSystem _radialSystem;
         SpriteRenderer _flashRenderer;
         SpriteRenderer _ringRenderer;
+        SpriteRenderer _controlWave;
+        Coroutine _controlRoutine;
         Coroutine _routine;
         Bloom _bloom;
         float _bloomBaseline;
@@ -46,6 +48,7 @@ namespace ContextStage
         static Texture2D _ringTexture;
         static Sprite _pixelSprite;
         static Sprite _ringSprite;
+        static Sprite _controlWaveSprite;
         static Material _particleMaterial;
 
         public Color LastImpactColor { get; private set; } = Color.white;
@@ -58,12 +61,17 @@ namespace ContextStage
             HideSprites();
         }
 
-        void OnEnable() =>
+        void OnEnable()
+        {
             EventBus.Subscribe<CardPresentationStarted>(OnCardPresentationStarted);
+            EventBus.Subscribe<GameStateChanged>(OnVisualStateChanged);
+        }
 
         void OnDisable()
         {
             EventBus.Unsubscribe<CardPresentationStarted>(OnCardPresentationStarted);
+            EventBus.Unsubscribe<GameStateChanged>(OnVisualStateChanged);
+            StopControlWave();
             StopCurrent();
             HideSprites();
         }
@@ -72,6 +80,79 @@ namespace ContextStage
         {
             Color familyColor = CardVFXPalette.ResolveFamily(e.Role, e.TargetStage);
             Play(familyColor);
+            if (AugmentCardVFX.IsStageControl(e.CardId))
+            {
+                StopControlWave();
+                _controlRoutine = StartCoroutine(ControlWaveRoutine());
+            }
+        }
+
+        void OnVisualStateChanged(GameStateChanged e)
+        {
+            if (e.Current != GameState.Ready && e.Current != GameState.GameOver) return;
+            StopCurrent();
+            StopControlWave();
+            HideSprites();
+            if (_radialSystem != null) _radialSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+
+        void StopControlWave()
+        {
+            if (_controlRoutine != null) StopCoroutine(_controlRoutine);
+            _controlRoutine = null;
+            if (_controlWave != null) _controlWave.enabled = false;
+        }
+
+        IEnumerator ControlWaveRoutine()
+        {
+            yield return new WaitForSecondsRealtime(0.16f);
+            if (_controlWave == null)
+                _controlWave = CreateRenderer("StageControlWave", ControlWaveSprite(), sortingOrder + 3);
+            _controlWave.transform.position = ResolveImpactPosition();
+            Camera camera = Camera.main;
+            float diameter = camera != null && camera.orthographic
+                ? camera.orthographicSize * 2f * Mathf.Max(1f, camera.aspect) : 18f;
+            _controlWave.enabled = true;
+            float elapsed = 0f;
+            while (elapsed < 0.65f)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / 0.65f);
+                float size = Mathf.Lerp(0.5f, diameter, EaseOutCubic(t));
+                _controlWave.transform.localScale = new Vector3(size, size * 0.55f, 1f);
+                Color tint = Color.Lerp(Color.white, AugmentCardVFX.Gold, t);
+                tint.a = (1f - t) * 0.6f;
+                _controlWave.color = tint;
+                yield return null;
+            }
+            _controlWave.enabled = false;
+            _controlRoutine = null;
+        }
+
+        static Sprite ControlWaveSprite()
+        {
+            if (_controlWaveSprite != null) return _controlWaveSprite;
+            // 화면 전체로 커져도 기존 작은 임팩트 링처럼 테두리가 두꺼워지지 않게 한다.
+            const int size = 128;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                name = "StageControlWave",
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Clamp,
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            var pixels = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float radius = new Vector2(x - 63.5f, y - 63.5f).magnitude;
+                    if (radius >= 61f && radius <= 62.5f)
+                        pixels[y * size + x] = new Color32(255, 255, 255, 255);
+                }
+            texture.SetPixels32(pixels);
+            texture.Apply(false, true);
+            _controlWaveSprite = CreateSprite(texture, size);
+            return _controlWaveSprite;
         }
 
         public void Play(Color familyColor)

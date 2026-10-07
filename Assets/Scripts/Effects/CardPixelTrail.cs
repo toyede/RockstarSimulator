@@ -21,6 +21,7 @@ namespace ContextStage
         RectTransform _dragLayer;
         Color _color = Color.white;
         bool _useGoldAccent;
+        CardAugmentVisual _style;
 
         public int PixelCount =>
             _graphic != null ? _graphic.PixelCount : 0;
@@ -29,8 +30,10 @@ namespace ContextStage
             RectTransform dragLayer,
             CardRole role,
             HeatStage stage,
-            Color cardColor)
+            Color cardColor,
+            CardAugmentVisual style = CardAugmentVisual.None)
         {
+            _style = style;
             _dragLayer = dragLayer;
             _color = CardVFXPalette.ResolveTrail(role, stage, cardColor);
             _useGoldAccent = role == CardRole.Special;
@@ -43,7 +46,8 @@ namespace ContextStage
                 lifetime,
                 headSize,
                 tailSize,
-                maximumPixels);
+                maximumPixels,
+                _style);
         }
 
         public void Begin(RectTransform source)
@@ -101,7 +105,8 @@ namespace ContextStage
                 lifetime,
                 headSize,
                 tailSize,
-                maximumPixels);
+                maximumPixels,
+                _style);
         }
 
         bool TryResolveTrailPosition(
@@ -145,6 +150,9 @@ namespace ContextStage
             public Vector2 Position;
             public float Age;
             public float Rotation;
+            public Vector2 Direction;
+            public float Phase;
+            public float Distance;
         }
 
         readonly List<Pixel> _pixels = new List<Pixel>(32);
@@ -156,6 +164,13 @@ namespace ContextStage
         bool _emitting;
         Color _accentColor = Color.white;
         bool _useAccent;
+        CardAugmentVisual _style;
+        Vector2 _lastPosition;
+        Vector2 _direction = Vector2.up;
+        float _distance;
+
+        bool IsAugmentTrail =>
+            _style == CardAugmentVisual.Encore || _style == CardAugmentVisual.StageControl;
 
         public int PixelCount => _pixels.Count;
 
@@ -167,13 +182,20 @@ namespace ContextStage
             float lifetime,
             float headSize,
             float tailSize,
-            int maximumPixels)
+            int maximumPixels,
+            CardAugmentVisual style = CardAugmentVisual.None)
         {
+            _style = style;
             color = trailColor;
             _accentColor = accentColor;
             _useAccent = useAccent;
             _sampleDistance = Mathf.Max(1f, sampleDistance);
             _lifetime = Mathf.Max(0.01f, lifetime);
+            if (IsAugmentTrail)
+            {
+                _sampleDistance *= 3f;
+                _lifetime *= 1.8f;
+            }
             _headSize = Mathf.Max(1f, headSize);
             _tailSize = Mathf.Max(1f, tailSize);
             _maximumPixels = Mathf.Clamp(maximumPixels, 4, 64);
@@ -183,6 +205,9 @@ namespace ContextStage
         public void Begin(Vector2 position)
         {
             _pixels.Clear();
+            _lastPosition = position;
+            _distance = 0f;
+            _direction = Vector2.up;
             _emitting = true;
             gameObject.SetActive(true);
             AddPixel(position);
@@ -191,12 +216,26 @@ namespace ContextStage
         public void AddPoint(Vector2 position)
         {
             if (!_emitting) return;
-            if (_pixels.Count > 0 &&
-                Vector2.Distance(_pixels[_pixels.Count - 1].Position, position) <
-                _sampleDistance)
+            if (!IsAugmentTrail)
+            {
+                if (_pixels.Count == 0 || Vector2.Distance(_pixels[_pixels.Count - 1].Position, position) >= _sampleDistance)
+                    AddPixel(position);
                 return;
-
-            AddPixel(position);
+            }
+            Vector2 delta = position - _lastPosition;
+            float distance = delta.magnitude;
+            // 느린 이동에서도 같은 위치에 불씨가 겹치지 않도록 이동 간격을 유지한다.
+            if (distance < _sampleDistance) return;
+            _direction = delta / distance;
+            // 빠른 드래그에서도 나선이 끊기지 않도록 경로를 보간한다.
+            int steps = Mathf.Min(24, Mathf.FloorToInt(distance / _sampleDistance));
+            Vector2 start = _lastPosition;
+            for (int i = 1; i <= steps; i++)
+            {
+                _distance += distance / steps;
+                AddPixel(Vector2.Lerp(start, position, i / (float)steps));
+            }
+            _lastPosition = position;
         }
 
         public void End() => _emitting = false;
@@ -234,9 +273,45 @@ namespace ContextStage
                 Color32 vertexColor = _useAccent && i % 4 == 0
                     ? _accentColor
                     : color;
+                float fade = normalizedAge;
+                if (IsAugmentTrail)
+                {
+                    // 빠른 이동으로 개수 제한에 닿아도 꼬리가 진한 채 잘리지 않게 한다.
+                    float distanceFade = Mathf.Clamp01(
+                        (_distance - pixel.Distance) / (_sampleDistance * (_maximumPixels - 1)));
+                    fade = Mathf.Max(fade, distanceFade);
+                }
                 vertexColor.a = (byte)Mathf.RoundToInt(
-                    255f * Mathf.Pow(1f - normalizedAge, 1.4f));
-                AddQuad(vh, pixel.Position, size, pixel.Rotation, vertexColor);
+                    255f * Mathf.Pow(1f - fade, IsAugmentTrail ? 2f : 1.4f));
+                if (_style == CardAugmentVisual.Encore)
+                {
+                    Vector2 normal = new Vector2(-pixel.Direction.y, pixel.Direction.x);
+                    float phase = pixel.Phase + Time.unscaledTime * 8f;
+                    Vector2 offset = normal * (Mathf.Sin(phase) * 19f) +
+                        pixel.Direction * (Mathf.Cos(phase) * 5f);
+                    for (int strand = 0; strand < 2; strand++)
+                    {
+                        float sign = strand == 0 ? 1f : -1f;
+                        Color flame = Color.Lerp(new Color(1f, 0.65f, 0.12f), Color.white,
+                            0.5f + 0.5f * Mathf.Cos(phase + strand * Mathf.PI));
+                        flame.a = vertexColor.a / 255f;
+                        Vector2 center = pixel.Position + offset * sign + Vector2.up * normalizedAge * 14f;
+                        AddQuad(vh, center, size * 0.7f, 0f, flame);
+                        if (i % 3 == 0)
+                            AddQuad(vh, center + normal * sign * normalizedAge * 12f,
+                                size * 0.24f, 0f, flame);
+                    }
+                }
+                else if (_style == CardAugmentVisual.StageControl)
+                {
+                    AddQuad(vh, pixel.Position, size * 0.945f, 0f, vertexColor);
+                    Color spark = Color.Lerp(new Color(1f, 0.72f, 0.1f), Color.white, 0.8f);
+                    spark.a = vertexColor.a / 255f;
+                    Vector2 normal = new Vector2(-pixel.Direction.y, pixel.Direction.x);
+                    float zigzag = Mathf.Sin(pixel.Phase * 3f + Time.unscaledTime * 23f);
+                    AddQuad(vh, pixel.Position + normal * zigzag * 25f, size * 0.39f, 45f, spark);
+                }
+                else AddQuad(vh, pixel.Position, size, pixel.Rotation, vertexColor);
             }
         }
 
@@ -248,6 +323,9 @@ namespace ContextStage
             _pixels.Add(new Pixel
             {
                 Position = position,
+                Direction = _direction,
+                Phase = _distance * 0.04f,
+                Distance = _distance,
                 Age = 0f,
                 Rotation = Random.Range(0, 4) * 90f
             });

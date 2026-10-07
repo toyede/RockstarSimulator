@@ -94,6 +94,7 @@ namespace ContextStage
 
         void OnDisable()
         {
+            if (_pixelTrail != null) _pixelTrail.End();
             StopScaleAnimation();
             RemovePlaceholder();
             ResetVisualState();
@@ -130,7 +131,8 @@ namespace ContextStage
                     dragLayer,
                     _card.Role,
                     _card.TargetStage,
-                    _card.CardColor);
+                    _card.CardColor,
+                    AugmentCardVFX.Resolve(_card, default));
             }
         }
 
