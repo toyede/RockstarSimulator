@@ -65,7 +65,7 @@ TourRunManager: Map → Dialogue → Performance → Result → Reward → Map �
 - 엔딩 일러스트는 `Resources/Tour/TourEndingCatalog.asset` 의 `entries[*].illustration` 에 넣는다. 있으면 대화 배경으로 밝게 깔리고(`brightBackdrop`), 없으면 마지막 공연 배경을 어둡게 깐다. 제목·요약·버튼 문구도 이 에셋
 - 이름 기록은 로컬 순위(`LeaderboardStore`)에 먼저 쓰고 원격(`RemoteLeaderboardClient`)에 올린다. 한 런에 한 번
 - 결말 화면은 아직 임시 UI(TourPrototypeUI 패널)다. 화면 디자인이 오면 `ShowEndingSummary` 만 바꾸면 된다
-- 디버그 검증: 허브에서 F10 으로 단계를 넘기며 Performance 단계에서 `ReceiveStageResult` 에 원하는 랭크·성향 점수를 넣은 결과를 제출하면 어떤 엔딩이든 바로 볼 수 있다 (콘솔 `[TourEnding]` 로그가 판정 근거를 찍는다)
+- 디버그 검증: 허브에서 F10은 Map → 대화 → 공연을 건너뛴 결과 → 증강 선택 순서로 진행하며 Main 씬을 로드하지 않는다. 증강은 직접 선택한다. 일반 대화 완료는 기존처럼 Main으로 진입한다. 다른 랭크·성향의 엔딩을 확인하려면 `ReceiveStageResult`에 해당 결과를 제출한다 (콘솔 `[TourEnding]` 로그가 판정 근거를 찍는다).
 
 ## 셋업
 

@@ -32,6 +32,11 @@ namespace ContextStage
     [DisallowMultipleComponent]
     public sealed class TutorialFlow : MonoBehaviour
     {
+        [Header("체험형 교육 비교 옵션")]
+        [SerializeField, Tooltip("기존 흐름을 유지하려면 끔. 켜면 총 반응·실패 설명을 다음 행동 단계에 합친다.")]
+        bool compactExperience = false;
+        int _lastRawAudienceScore;
+        int _lastGainedScore;
         public const string TutorialDoneKey = "tutorial_done";
         public const string SpecialTutorialDoneKey = "tutorial_special_done";
         bool _specialLesson;
@@ -95,7 +100,8 @@ namespace ContextStage
         bool _allowAllCards;
         bool _hoverTaught;
         float _hoverInspectionTimer;
-        AudienceId _crowdChangeHoverTargetId;
+        AudienceId _inspectionTargetId;
+        AudienceMemberActor _inspectionActor;
 
         // 최종 미니 공연 집계
         int _finalScore;
@@ -151,16 +157,18 @@ namespace ContextStage
 
             if (!IsRunning) return;
             _phaseTimer += Time.deltaTime;
+            if ((_phase == Phase.HoverHint || _phase == Phase.CrowdChange) && !_hoverTaught)
+                BindInspectionGuide();
 
             switch (_phase)
             {
                 case Phase.CrowdChange:
                     bool isInspectingNewAudience =
                         !_hoverTaught &&
-                        _crowdChangeHoverTargetId.IsValid &&
+                        _inspectionTargetId.IsValid &&
                         _hoverController != null &&
                         _hoverController.RevealedActor != null &&
-                        _hoverController.RevealedActor.BoundId == _crowdChangeHoverTargetId;
+                        _hoverController.RevealedActor.BoundId == _inspectionTargetId;
 
                     if (isInspectingNewAudience)
                     {
@@ -168,6 +176,7 @@ namespace ContextStage
                         if (_hoverInspectionTimer >= hoverInspectionDuration)
                         {
                             _hoverTaught = true;
+                            _dragGuide?.Hide();
                             overlay?.ShowMessage(
                                 "새 관객의 정보를 확인했습니다.",
                                 "관객 구성이 바뀌면 호응을 크게 이끌어낼 카드도 달라집니다. " +
@@ -182,13 +191,16 @@ namespace ContextStage
                     break;
 
                 case Phase.HoverHint:
-                    bool isInspecting = _hoverController != null && _hoverController.RevealedActor != null;
+                    bool isInspecting = _inspectionTargetId.IsValid && _hoverController != null &&
+                        _hoverController.RevealedActor != null &&
+                        _hoverController.RevealedActor.BoundId == _inspectionTargetId;
                     if (!_hoverTaught && isInspecting)
                     {
                         _hoverInspectionTimer += Time.unscaledDeltaTime;
                         if (_hoverInspectionTimer >= hoverInspectionDuration)
                         {
                             _hoverTaught = true;
+                            _dragGuide?.Hide();
                             overlay?.ShowMessage(
                                 "관객의 힌트를 확인했습니다.",
                                 "테두리 색은 선호하는 카드 계열을, 말풍선은 원하는 행동과 현재 기분을 알려줍니다. " +
@@ -327,6 +339,7 @@ namespace ContextStage
 
         void ReleaseControl()
         {
+            EndInspection();
             IsRunning = false;
 
             if (AudienceRosterSystem.HasInstance)
@@ -469,6 +482,7 @@ namespace ContextStage
 
         bool FilterCard(int handIndex)
         {
+            if (_phase == Phase.HoverHint || _phase == Phase.CrowdChange) return false;
             if (_specialLesson && _phase != Phase.SpecialUse) return false;
             if (_allowAllCards) return true;
             if (!CardSystem.HasInstance) return true;
@@ -490,6 +504,7 @@ namespace ContextStage
 
         bool FilterRequest(int handIndex, SpecialCardRequest request)
         {
+            if (_phase == Phase.HoverHint || _phase == Phase.CrowdChange) return false;
             if (!_specialLesson) return true;
             return _phase == Phase.SpecialUse && request.IsActive &&
                    request.RequestedStage == HeatStage.Singalong &&
@@ -519,6 +534,7 @@ namespace ContextStage
         void OnContinueClicked()
         {
             if (!IsRunning) return;
+            if ((_phase == Phase.HoverHint || _phase == Phase.CrowdChange) && !_hoverTaught) return;
             switch (_phase)
             {
                 case Phase.Intro:        EnterPrefMosh(); break;
@@ -545,8 +561,16 @@ namespace ContextStage
                 case Phase.PrefMosh:      EnterPrefSingalong(); break;
                 case Phase.PrefSingalong: EnterPrefChill(); break;
                 case Phase.PrefChill:     EnterHoverHint(); break;
-                case Phase.CrossUse:      EnterCrossExplain(e.GainedScore); break;
-                case Phase.Excitement:    EnterGameOverExplain(); break;
+                case Phase.CrossUse:
+                    _lastRawAudienceScore = e.RawAudienceScore;
+                    _lastGainedScore = e.GainedScore;
+                    if (compactExperience) EnterExcitement();
+                    else EnterCrossExplain(e.RawAudienceScore, e.GainedScore);
+                    break;
+                case Phase.Excitement:
+                    if (compactExperience) EnterCrowdChange();
+                    else EnterGameOverExplain();
+                    break;
                 case Phase.FeverIntro:    EnterFeverExplain(e.GainedScore); break;
                 case Phase.SpecialUse:
                     if (e.IsSpecialHit) EnterSpecialExplain();
@@ -563,6 +587,7 @@ namespace ContextStage
 
         void SetPhase(Phase phase)
         {
+            EndInspection();
             _phase = phase;
             _phaseTimer = 0f;
         }
@@ -629,10 +654,15 @@ namespace ContextStage
             SetPhase(Phase.HoverHint);
             _hoverTaught = false;
             _hoverInspectionTimer = 0f;
+            // 직전 카드의 점프·반동이 남은 관객 대신 새 관객으로 확인을 연습한다.
+            _blockedHint = "카드는 잠시 기다려주세요. 새 관객 위에서 2초 동안 마음을 확인하세요.";
+            SetRoster((CrowdPreference.Chill, middleEngagement));
+            if (_spawned.Count > 0) _inspectionTargetId = _spawned[0];
+            BindInspectionGuide();
             overlay?.ShowMessage(
-                "관객 위에 마우스를 올리거나 길게 누르면 관객의 마음을 알 수 있습니다.",
-                $"말풍선과 테두리색을 통해 좋아하는 행동과 현재 기분을 확인할 수 있습니다. " +
-                $"{hoverInspectionDuration:0.#}초 동안 유지해 힌트를 확인하세요.",
+                "새 관객 위에 마우스를 올려보세요.",
+                $"모바일에서는 길게 누르세요.\n{hoverInspectionDuration:0.#}초 동안 유지하며 " +
+                "테두리색과 말풍선으로 관객의 마음을 확인하세요.",
                 false);
         }
 
@@ -653,13 +683,13 @@ namespace ContextStage
                 false);
         }
 
-        void EnterCrossExplain(int gainedScore)
+        void EnterCrossExplain(int rawAudienceScore, int gainedScore)
         {
             SetPhase(Phase.CrossExplain);
             _allowAllCards = false;
             overlay?.ShowMessage(
-                "총 반응은 모든 관객의 반응을 합친 점수입니다.",
-                $"방금 카드의 총 반응은 {gainedScore:+0;-0;0}입니다. " +
+                "관객 반응의 합이 양수면 콤보가 이어집니다.",
+                $"방금 관객 반응 합계 {rawAudienceScore:+0;-0;0}, 최종 획득 점수 {gainedScore:+0;-0;0}. " +
                 "누구의 호응을 얻고 누구의 실망을 감수할지 판단하세요. (클릭해서 계속)",
                 true);
         }
@@ -667,6 +697,7 @@ namespace ContextStage
         void EnterExcitement()
         {
             SetPhase(Phase.Excitement);
+            _allowAllCards = false;
             _expectedPref = CrowdPreference.Chill;
             _blockedHint = "지루해진 CHILL 관객이 떠나기 전에 CHILL 계열 카드로 관심을 되찾으세요.";
 
@@ -685,8 +716,9 @@ namespace ContextStage
             SpotlightPref(CrowdPreference.Chill, AudienceEngagementStage.Calm);
             overlay?.ShowMessage(
                 "옷차림은 취향, 움직임은 현재 호응 상태를 뜻합니다.",
-                "CHILL 관객의 움직임이 줄어 지루해하고 있습니다. " +
-                "떠나기 전에 CHILL 계열 카드로 관심을 되찾으세요.",
+                (compactExperience ? $"방금 반응 합계 {_lastRawAudienceScore:+0;-0;0}, 획득 {_lastGainedScore:+0;-0;0}점. " : "") +
+                "움직임이 줄어든 CHILL 관객에게 CHILL 카드를 내세요. " +
+                (compactExperience ? "모든 관객이 떠나면 즉시 실패합니다." : "떠나기 전에 관심을 되찾으세요."),
                 false);
         }
 
@@ -696,17 +728,14 @@ namespace ContextStage
             _allowAllCards = true;
             _hoverTaught = false;
             _hoverInspectionTimer = 0f;
-            _crowdChangeHoverTargetId = default;
+            _blockedHint = "새로 들어온 SINGALONG 관객 위에서 2초 동안 마음을 확인하세요.";
 
             bool added = AudienceRosterSystem.Instance.TryAdd(
-                CrowdPreference.Singalong, excitedEngagement,
+                CrowdPreference.Singalong, middleEngagement,
                 AudienceJoinReason.RuntimeCommand, out var snapshot);
 
-            if (added) _crowdChangeHoverTargetId = snapshot.Id;
-
-            overlay?.SetDim(true);
-            if (added && _presenter != null && _presenter.TryGetActor(snapshot.Id, out var actor))
-                overlay?.Spotlight(actor);
+            if (added) _inspectionTargetId = snapshot.Id;
+            BindInspectionGuide();
 
             overlay?.ShowMessage(
                 "새로운 SINGALONG 관객이 들어왔습니다.",
@@ -714,6 +743,28 @@ namespace ContextStage
                 $"새 관객 위에 마우스를 올리거나 길게 누르고 {hoverInspectionDuration:0.#}초 동안 " +
                 "옷차림·움직임·말풍선을 확인하세요.",
                 false);
+        }
+
+        void BindInspectionGuide()
+        {
+            if (_inspectionActor != null || !_inspectionTargetId.IsValid || _presenter == null || overlay == null)
+                return;
+            if (!_presenter.TryGetActor(_inspectionTargetId, out var actor)) return;
+            _inspectionActor = actor;
+            actor.SetTutorialInspectionPose(true);
+            overlay.SetDim(true);
+            overlay.Spotlight(actor);
+            if (_dragGuide == null) _dragGuide = overlay.gameObject.AddComponent<TutorialDragGuideUI>();
+            _dragGuide.ShowInspection(overlay, actor, hoverInspectionDuration);
+        }
+
+        void EndInspection()
+        {
+            if (_inspectionActor != null && _inspectionActor.BoundId == _inspectionTargetId)
+                _inspectionActor.SetTutorialInspectionPose(false);
+            _inspectionActor = null;
+            _inspectionTargetId = default;
+            _dragGuide?.Hide();
         }
 
         void EnterGameOverExplain()

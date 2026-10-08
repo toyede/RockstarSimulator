@@ -11,7 +11,7 @@ namespace ContextStage
     [CreateAssetMenu(fileName = "TourMapConfig", menuName = "ContextStage/Tour/Map Config")]
     public sealed class TourMapConfig : ScriptableObject
     {
-        public const string ResourcesPath = "Tour/TourMapConfig";
+        public const string ResourcesPath = "Augments/Tour/TourMapConfig";
 
         [Serializable]
         public struct RankSprite

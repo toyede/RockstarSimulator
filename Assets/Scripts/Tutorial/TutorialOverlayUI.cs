@@ -28,11 +28,11 @@ namespace ContextStage
         [SerializeField] Button skipButton;
 
         [Header("타이포그래피")]
-        [SerializeField, Min(10)] int titleFontSize = 34;
-        [SerializeField, Min(10)] int titleMinFontSize = 26;
-        [SerializeField, Min(10)] int bodyFontSize = 25;
+        [SerializeField, Min(10)] int titleFontSize = 28;
+        [SerializeField, Min(10)] int titleMinFontSize = 24;
+        [SerializeField, Min(10)] int bodyFontSize = 22;
         [SerializeField, Min(10)] int bodyMinFontSize = 20;
-        [SerializeField, Min(10)] int continueFontSize = 19;
+        [SerializeField, Min(10)] int continueFontSize = 20;
 
         [Header("딤")]
         [SerializeField, Range(0f, 1f), Tooltip("월드 딤 어둡기")] float dimAlpha = 0.6f;
@@ -57,6 +57,7 @@ namespace ContextStage
         float _dimCurrent;
         Button _fullScreenContinueButton;
         bool _continueArmed;
+        Text _cueSheetLabel;
 
         // 스포트라이트로 끌어올린 렌더러들의 원래 sortingOrder
         readonly List<(SpriteRenderer renderer, int order)> _boosted =
@@ -80,7 +81,7 @@ namespace ContextStage
             SetSkipVisible(false);
         }
 
-        /// <summary>메시지 패널 배경. 보스 패턴 경고 등 다른 UI 가 같은 모양을 빌려 쓴다.</summary>
+        /// <summary>튜토리얼 전용 종이 배경. 미션 슬레이트와는 독립적이다.</summary>
         public Image PanelImage => panelRoot != null ? panelRoot.GetComponent<Image>() : null;
         public int TitleFontSize => titleFontSize;
         public int BodyFontSize => bodyFontSize;
@@ -118,19 +119,12 @@ namespace ContextStage
             if (_specialLayout != null || panelRoot == null || mainText == null || subText == null) return;
             var panel = (RectTransform)panelRoot.transform;
             _specialLayout = new[] { new RectState(panel), new RectState(mainText.rectTransform), new RectState(subText.rectTransform) };
-            panel.anchorMin = new Vector2(0.015f, 0.38f);
-            panel.anchorMax = new Vector2(0.35f, 0.67f);
+            panel.anchorMin = new Vector2(0.015f, 0.33f);
+            panel.anchorMax = new Vector2(0.35f, 0.73f);
             panel.pivot = new Vector2(0.5f, 0.5f);
             panel.anchoredPosition = Vector2.zero;
             panel.sizeDelta = Vector2.zero;
-            mainText.rectTransform.anchorMin = new Vector2(0f, 0.60f);
-            mainText.rectTransform.anchorMax = new Vector2(1f, 1f);
-            mainText.rectTransform.offsetMin = new Vector2(16f, 0f);
-            mainText.rectTransform.offsetMax = new Vector2(-16f, -12f);
-            subText.rectTransform.anchorMin = new Vector2(0f, 0f);
-            subText.rectTransform.anchorMax = new Vector2(1f, 0.60f);
-            subText.rectTransform.offsetMin = new Vector2(20f, 50f);
-            subText.rectTransform.offsetMax = new Vector2(-20f, -6f);
+            ConfigureMessageLayout();
         }
 
         /// <summary>
@@ -139,33 +133,55 @@ namespace ContextStage
         /// </summary>
         void ConfigureMessageLayout()
         {
+            Image paper = PanelImage;
+            Sprite sprite = Resources.Load<Sprite>("UI/CueSheets/TutorialPaper");
+            if (paper != null && sprite != null)
+            {
+                paper.sprite = sprite; paper.type = Image.Type.Simple; paper.color = Color.white;
+                foreach (Shadow effect in paper.GetComponents<Shadow>()) effect.enabled = false;
+                if (_cueSheetLabel == null)
+                {
+                    var label = new GameObject("CueSheetLabel", typeof(RectTransform), typeof(Text));
+                    label.transform.SetParent(panelRoot.transform, false);
+                    _cueSheetLabel = label.GetComponent<Text>();
+                    _cueSheetLabel.font = mainText != null ? mainText.font : GuideFont;
+                    _cueSheetLabel.fontSize = 22; _cueSheetLabel.alignment = TextAnchor.MiddleCenter;
+                    _cueSheetLabel.color = new Color32(0xFF, 0xD6, 0x66, 0xFF); _cueSheetLabel.raycastTarget = false;
+                    _cueSheetLabel.text = "공연 가이드 · CUE SHEET";
+                    var r = _cueSheetLabel.rectTransform;
+                    r.anchorMin = new Vector2(.14f, .75f); r.anchorMax = new Vector2(.94f, .86f);
+                    r.offsetMin = r.offsetMax = Vector2.zero;
+                }
+            }
             if (mainText != null)
             {
                 var rect = mainText.rectTransform;
-                rect.anchorMin = new Vector2(0f, 1f);
-                rect.anchorMax = new Vector2(1f, 1f);
-                rect.pivot = new Vector2(0.5f, 1f);
-                rect.anchoredPosition = new Vector2(0f, -14f);
-                rect.sizeDelta = new Vector2(-32f, 88f);
+                rect.anchorMin = new Vector2(.10f, .49f);
+                rect.anchorMax = new Vector2(.90f, .70f);
+                rect.offsetMin = rect.offsetMax = Vector2.zero;
+                mainText.color = new Color32(0x71, 0x36, 0x97, 0xFF);
+                mainText.supportRichText = true;
+                foreach (Shadow effect in mainText.GetComponents<Shadow>()) effect.enabled = false;
 
                 mainText.fontSize = titleFontSize;
                 mainText.resizeTextForBestFit = true;
                 mainText.resizeTextMinSize = titleMinFontSize;
                 mainText.resizeTextMaxSize = titleFontSize;
-                mainText.alignment = TextAnchor.UpperCenter;
+                mainText.alignment = TextAnchor.MiddleCenter;
                 mainText.horizontalOverflow = HorizontalWrapMode.Wrap;
                 mainText.verticalOverflow = VerticalWrapMode.Overflow;
-                mainText.lineSpacing = 0.9f;
+                mainText.lineSpacing = 1.15f;
             }
 
             if (subText != null)
             {
                 var rect = subText.rectTransform;
-                rect.anchorMin = new Vector2(0f, 1f);
-                rect.anchorMax = new Vector2(1f, 1f);
-                rect.pivot = new Vector2(0.5f, 1f);
-                rect.anchoredPosition = new Vector2(0f, -108f);
-                rect.sizeDelta = new Vector2(-40f, 190f);
+                rect.anchorMin = new Vector2(.10f, .16f);
+                rect.anchorMax = new Vector2(.90f, .43f);
+                rect.offsetMin = rect.offsetMax = Vector2.zero;
+                subText.color = MissionCueSheetView.Ink;
+                subText.supportRichText = true;
+                foreach (Shadow effect in subText.GetComponents<Shadow>()) effect.enabled = false;
 
                 subText.fontSize = bodyFontSize;
                 subText.resizeTextForBestFit = true;
@@ -174,7 +190,7 @@ namespace ContextStage
                 subText.alignment = TextAnchor.UpperCenter;
                 subText.horizontalOverflow = HorizontalWrapMode.Wrap;
                 subText.verticalOverflow = VerticalWrapMode.Overflow;
-                subText.lineSpacing = 0.9f;
+                subText.lineSpacing = 1.15f;
             }
 
             if (continueHint != null)
@@ -182,16 +198,18 @@ namespace ContextStage
                 var rect = continueHint.transform as RectTransform;
                 if (rect != null)
                 {
-                    rect.anchorMin = new Vector2(1f, 0f);
-                    rect.anchorMax = new Vector2(1f, 0f);
+                    rect.anchorMin = new Vector2(1f, .08f);
+                    rect.anchorMax = new Vector2(1f, .08f);
                     rect.pivot = new Vector2(1f, 0f);
-                    rect.anchoredPosition = new Vector2(-18f, 14f);
+                    rect.anchoredPosition = new Vector2(-30f, 0f);
                     rect.sizeDelta = new Vector2(280f, 32f);
                 }
 
                 var hintText = continueHint.GetComponent<Text>();
                 if (hintText != null)
                 {
+                    hintText.color = new Color32(0x24, 0x61, 0xAB, 0xFF);
+                    foreach (Shadow effect in hintText.GetComponents<Shadow>()) effect.enabled = false;
                     hintText.fontSize = continueFontSize;
                     hintText.resizeTextForBestFit = true;
                     hintText.resizeTextMinSize = 16;
@@ -240,10 +258,10 @@ namespace ContextStage
         public void ShowMessage(string main, string sub, bool clickToContinue)
         {
             if (panelRoot != null) panelRoot.SetActive(true);
-            if (mainText != null) mainText.text = main ?? "";
+            if (mainText != null) mainText.text = EmphasizeGuide(main);
             if (subText != null)
             {
-                subText.text = sub ?? "";
+                subText.text = EmphasizeGuide(sub);
                 subText.gameObject.SetActive(!string.IsNullOrEmpty(sub));
             }
             if (continueHint != null) continueHint.SetActive(clickToContinue);
@@ -260,8 +278,22 @@ namespace ContextStage
         public void FlashSub(string sub)
         {
             if (subText == null) return;
-            subText.text = sub ?? "";
+            subText.text = EmphasizeGuide(sub);
             subText.gameObject.SetActive(!string.IsNullOrEmpty(sub));
+        }
+
+        // 종이 위에서도 대비가 유지되는 성향/행동 강조색. 이미 작성된 리치 텍스트는 보존한다.
+        static string EmphasizeGuide(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+            if (text.IndexOf('<') >= 0) return text;
+            string[] words = { "CHILL", "Chill", "SINGALONG", "Singalong", "MOSH", "Mosh", "FEVER", "Fever",
+                "피버", "특별 관객", "총 반응", "2초", "10초", "1,000점", "카드를", "콤보" };
+            string[] colors = { "087B86", "087B86", "6632A6", "6632A6", "B72835", "B72835", "986000", "986000",
+                "986000", "A52B6C", "176EB2", "176EB2", "176EB2", "176EB2", "176EB2", "986000" };
+            for (int i = 0; i < words.Length; i++)
+                text = text.Replace(words[i], $"<color=#{colors[i]}>{words[i]}</color>");
+            return text;
         }
 
         public void SetDim(bool on) => _dimTarget = on ? dimAlpha : 0f;

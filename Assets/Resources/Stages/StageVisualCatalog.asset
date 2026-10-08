@@ -52,7 +52,7 @@ MonoBehaviour:
       \uAD00\uAC1D\uC758 \uD638\uC751\uB3C4\uB97C \uC62C\uB9AC\uAC70\uB098 Special
       \uCE74\uB4DC\uB85C \uBD99\uC7A1\uC73C\uC138\uC694."
   - stageId: stage_04
-    backgroundBase: {fileID: 21300000, guid: f0cd407445c1156429951a6c1ba2ca47, type: 3}
+    backgroundBase: {fileID: 21300000, guid: 555ec4f602586894bbb291dd9912b8a7, type: 3}
     lightOverlays: []
     foregroundLeft: {fileID: 0}
     foregroundRight: {fileID: 0}

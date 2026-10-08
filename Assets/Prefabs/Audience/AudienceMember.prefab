@@ -461,7 +461,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 120c58074d361974c8b841cce02ada00, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -552,7 +552,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 120c58074d361974c8b841cce02ada00, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2918,6 +2918,8 @@ MonoBehaviour:
     spriteCycleFps: 0
   motionBlendDuration: 0.6
   allowHorizontalFlip: 1
+  cardMotionDuration: 0.9
+  moshSpreadDistance: 1
 --- !u!114 &4750493014263167139
 MonoBehaviour:
   m_ObjectHideFlags: 0

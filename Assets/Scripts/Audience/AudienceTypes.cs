@@ -57,7 +57,8 @@ namespace ContextStage
     public enum AudienceExitStyle
     {
         Default,
-        NearbyConcert
+        NearbyConcert,
+        RivalStage
     }
 
     public readonly struct AudienceSnapshot

@@ -19,6 +19,10 @@ namespace ContextStage
         Text _hint;
         Canvas _canvas;
         CardDragHandler _source;
+        AudienceMemberActor _inspectionActor;
+        AudienceId _inspectionId;
+        Camera _inspectionCamera;
+        float _inspectionSeconds;
         Coroutine _binding;
         float _clock;
         bool _showing, _wasDragging, _inside;
@@ -32,6 +36,8 @@ namespace ContextStage
             _showing = true;
             _clock = 0f;
             _wasDragging = false;
+            _hint.text = "여기로 전달";
+            _press.rectTransform.localScale = Vector3.one;
             _root.gameObject.SetActive(true);
             _binding = StartCoroutine(BindCard());
         }
@@ -42,10 +48,29 @@ namespace ContextStage
             if (_binding != null) StopCoroutine(_binding);
             _binding = null;
             _source = null;
+            _inspectionActor = null;
+            _inspectionId = default;
+            _inspectionCamera = null;
             if (_root != null) _root.gameObject.SetActive(false);
         }
 
         void OnDisable() => Hide();
+
+        /// <summary>일반 관객에게 이동한 뒤 머무르는 시각 안내. 실제 입력은 생성하지 않는다.</summary>
+        public void ShowInspection(TutorialOverlayUI overlay, AudienceMemberActor actor, float seconds)
+        {
+            Hide();
+            if (_root == null) Build(overlay);
+            if (_root == null || actor == null) return;
+            _inspectionActor = actor;
+            _inspectionId = actor.BoundId;
+            _inspectionCamera = Camera.main;
+            _inspectionSeconds = Mathf.Max(.5f, seconds);
+            _clock = 0f;
+            _showing = true;
+            _hint.text = $"여기서 {_inspectionSeconds:0.#}초 확인";
+            _root.gameObject.SetActive(true);
+        }
         void OnDestroy() { if (_root != null) Destroy(_root.gameObject); }
 
         IEnumerator BindCard()
@@ -130,6 +155,11 @@ namespace ContextStage
         void LateUpdate()
         {
             if (!_showing) return;
+            if (_inspectionActor != null)
+            {
+                UpdateInspection();
+                return;
+            }
             var target = SpecialAudience.CurrentDropTarget;
             bool valid = _source != null && target != null && target.IsActive && target.HitCollider != null && target.WorldCamera != null;
             _ghost.enabled = valid;
@@ -175,6 +205,32 @@ namespace ContextStage
             _ghost.color = new Color(1f, 1f, 1f, 0.5f * fade);
             _press.enabled = visible && t >= pointSeconds && t < pointSeconds + pressSeconds;
             _press.rectTransform.anchoredPosition = start;
+        }
+
+        void UpdateInspection()
+        {
+            if (!_inspectionActor.IsBound || _inspectionActor.BoundId != _inspectionId)
+            {
+                Hide();
+                return;
+            }
+            if (_inspectionCamera == null) { Hide(); return; }
+            Vector2 end = Local(_inspectionCamera.WorldToScreenPoint(_inspectionActor.PreferenceHoverCenter));
+            _target.anchoredPosition = end;
+            _target.gameObject.SetActive(true);
+            _target.localScale = Vector3.one;
+            _ghost.enabled = false;
+            _clock += Time.unscaledDeltaTime;
+            float travel = .9f;
+            float t = _clock % (travel + _inspectionSeconds + restSeconds);
+            bool visible = t < travel + _inspectionSeconds;
+            _hand.gameObject.SetActive(visible);
+            _hand.localScale = Vector3.one;
+            _hand.anchoredPosition = Vector2.Lerp(end + new Vector2(100f, -80f), end,
+                Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / travel)));
+            _press.enabled = visible && t >= travel;
+            _press.rectTransform.anchoredPosition = end;
+            _press.rectTransform.localScale = Vector3.one * (1f + Mathf.Sin(Time.unscaledTime * 4f) * .15f);
         }
     }
 }

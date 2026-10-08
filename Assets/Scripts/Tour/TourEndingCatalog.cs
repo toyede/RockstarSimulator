@@ -12,7 +12,7 @@ namespace ContextStage
     [CreateAssetMenu(fileName = "TourEndingCatalog", menuName = "ContextStage/Tour/Ending Catalog")]
     public sealed class TourEndingCatalog : ScriptableObject
     {
-        public const string ResourcesPath = "Tour/TourEndingCatalog";
+        public const string ResourcesPath = "Augments/Tour/TourEndingCatalog";
 
         [Serializable]
         public sealed class Entry

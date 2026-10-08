@@ -1,0 +1,11 @@
+ContextStage.TutorialFlow.SuppressForTests=true;
+var gm=GameJamKit.GameManager.Instance;gm.ResetGame();
+var stage=UnityEditor.AssetDatabase.LoadAssetAtPath<ContextStage.StageDefinition>("Assets/Settings/Tour/Stage01.asset");
+ContextStage.StageRuntimeDirector.Active.ApplyStage(stage);gm.StartGame();
+ContextStage.PerformanceTimer.SetPaused(true);gm.Pause();
+var report=new ContextStage.PerformanceReport{targetScore=stage.TargetScore,maxCombo=12,feverCount=2,audienceRemaining=5,audienceCapacity=8,audiencePeak=8};
+var result=new ContextStage.StageResult("visual",stage.StageId,true,16500,"A",12){report=report};
+var data=ContextStage.ResultHeadlineSelector.Compose(result,stage,1,ContextStage.ResultNextAction.Augment,ContextStage.ResultNewspaperCatalog.LoadDefault());
+var view=UnityEngine.Object.FindFirstObjectByType<ContextStage.ResultNewspaperView>(UnityEngine.FindObjectsInactive.Include);
+view.Show(data,null);view.CompleteImmediately();
+return "Synthetic report preview; gameplay scores, saved results and authored layout unchanged.";

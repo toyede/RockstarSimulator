@@ -17,7 +17,7 @@ namespace ContextStage.EditorTools
     {
         const string ArtFolder = "Assets/Sprites/0823_art";
         const string RankFolder = "Assets/Sprites/UI/Rank";
-        const string ResourceFolder = "Assets/Resources/Tour";
+        const string ResourceFolder = "Assets/Resources/Augments/Tour";
         const string ConfigPath = ResourceFolder + "/TourMapConfig.asset";
 
         /// <summary>이 화면(맵·대화)이 쓰는 아트만 교정한다. 2_* 는 증강 담당 소유라 건드리지 않는다.</summary>

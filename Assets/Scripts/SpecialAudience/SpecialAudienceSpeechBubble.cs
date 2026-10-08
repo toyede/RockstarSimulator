@@ -99,7 +99,7 @@ namespace ContextStage
         [SerializeField, Tooltip("본체보다 앞에 그려지도록 하는 정렬 보정")]
         int sortingOrderBonus = 20;
 
-        [SerializeField] string sortingLayer = "Default";
+        [SerializeField] string sortingLayer = "Effects";
 
         [SerializeField, Min(0.1f)] float fontSize = 3f;
 
@@ -131,8 +131,11 @@ namespace ContextStage
             bubbleText.enableWordWrapping = false;
             bubbleText.raycastTarget = false;
             bubbleText.fontSize = fontSize;
-            if (!string.IsNullOrEmpty(sortingLayer))
-                bubbleText.renderer.sortingLayerName = sortingLayer;
+            // Legacy prefabs used Default. Speech is UI, not part of the venue wash.
+            string layer = string.IsNullOrEmpty(sortingLayer) || sortingLayer == "Default"
+                ? "Effects" : sortingLayer;
+            bubbleText.renderer.sortingLayerName = layer;
+            if (bubbleBackground != null) bubbleBackground.sortingLayerName = layer;
         }
 
         void OnEnable()

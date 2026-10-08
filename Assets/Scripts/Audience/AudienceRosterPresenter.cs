@@ -35,6 +35,36 @@ namespace ContextStage
         public AudienceMemberActor MemberPrefab => memberPrefab;
         public Transform MemberRoot => memberRoot;
         public int VisibleCount => _actors.Count;
+        sealed class ReactionGroup
+        {
+            public float Sum, Min = float.PositiveInfinity, Max = float.NegativeInfinity;
+            public int Count;
+            public float StartedAt;
+        }
+        ReactionGroup _reactionGroup = new ReactionGroup();
+
+        public void PlayRainProtection()
+        {
+            foreach (var actor in _actors.Values)
+                if (actor != null) actor.ReactionVFX.PlayProtection();
+        }
+        // CardResolved는 개별 AudienceCardReacted가 모두 발행된 뒤 온다.
+        void OnGestureCardResolved(CardResolved e) => _reactionGroup = new ReactionGroup();
+        void OnBossFanArrival(BossFanMoved e)
+        {
+            if (e.ToRival || e.Count <= 0) return;
+            // Recruit는 Join을 먼저 발행한다. 가장 최근 생성된 ID만 도착 파장을 예약한다.
+            int below = int.MaxValue;
+            for (int i = 0; i < e.Count; i++)
+            {
+                AudienceMemberActor newest = null;
+                foreach (var actor in _actors.Values)
+                    if (actor != null && actor.BoundId.Value < below &&
+                        (newest == null || actor.BoundId.Value > newest.BoundId.Value)) newest = actor;
+                if (newest == null) break;
+                below = newest.BoundId.Value; newest.MarkBossArrivalCue();
+            }
+        }
 
         /// <summary>
         /// 모든 현재/신규 일반 관객의 취향 테두리를 상시 표시한다.
@@ -114,6 +144,8 @@ namespace ContextStage
         void OnEnable()
         {
             EventBus.Subscribe<AudienceJoined>(OnAudienceJoined);
+            EventBus.Subscribe<CardResolved>(OnGestureCardResolved);
+            EventBus.Subscribe<BossFanMoved>(OnBossFanArrival);
             EventBus.Subscribe<AudienceStateChanged>(OnAudienceStateChanged);
             EventBus.Subscribe<AudienceCardReacted>(OnAudienceCardReacted);
             EventBus.Subscribe<FeverBonusAwarded>(OnFeverBonusAwarded);
@@ -141,7 +173,10 @@ namespace ContextStage
 
         void OnDisable()
         {
+            StopAllCoroutines();
             EventBus.Unsubscribe<AudienceJoined>(OnAudienceJoined);
+            EventBus.Unsubscribe<CardResolved>(OnGestureCardResolved);
+            EventBus.Unsubscribe<BossFanMoved>(OnBossFanArrival);
             EventBus.Unsubscribe<AudienceStateChanged>(OnAudienceStateChanged);
             EventBus.Unsubscribe<AudienceCardReacted>(OnAudienceCardReacted);
             EventBus.Unsubscribe<FeverBonusAwarded>(OnFeverBonusAwarded);
@@ -198,10 +233,18 @@ namespace ContextStage
             if (FeverSystem.HasInstance && FeverSystem.Instance.IsActive)
                 return;
 
-            StartCoroutine(PlayReactionAfterDelay(e));
+            ReactionGroup group = _reactionGroup;
+            if (group.Count == 0) group.StartedAt = Time.time;
+            if (e.ReactionValue > 0)
+            {
+                float x = actor.LayoutLocalPosition.x;
+                group.Sum += x; group.Count++;
+                group.Min = Mathf.Min(group.Min, x); group.Max = Mathf.Max(group.Max, x);
+            }
+            StartCoroutine(PlayReactionAfterDelay(e, group));
         }
 
-        IEnumerator PlayReactionAfterDelay(AudienceCardReacted reaction)
+        IEnumerator PlayReactionAfterDelay(AudienceCardReacted reaction, ReactionGroup group)
         {
             if (cardReactionPresentationDelay > 0f)
                 yield return new WaitForSecondsRealtime(
@@ -217,6 +260,9 @@ namespace ContextStage
                 actor.PlayReaction(
                     reaction.ReactionValue,
                     reaction.EngagementDelta);
+                actor.PlayCardMotion(reaction.CardId, reaction.ReactionValue,
+                    group.Count > 0 ? group.Sum / group.Count : actor.LayoutLocalPosition.x,
+                    group.Min, group.Max, group.StartedAt);
             }
         }
 
@@ -254,7 +300,8 @@ namespace ContextStage
             // 이탈 텍스트(PlayDeparture)는 단일 결과 UI 원칙으로 제거됨 — 퇴장 애니메이션(PlayExit)만 남긴다
             AudienceExitStyle exitStyle =
                 e.Reason == AudienceDepartureReason.NearbyConcert
-                    ? AudienceExitStyle.NearbyConcert
+                    ? StageRuntimeDirector.CurrentStage != null && StageRuntimeDirector.CurrentStage.IsBoss
+                        ? AudienceExitStyle.RivalStage : AudienceExitStyle.NearbyConcert
                     : AudienceExitStyle.Default;
             actor.PlayExit(exitStyle, () =>
             {

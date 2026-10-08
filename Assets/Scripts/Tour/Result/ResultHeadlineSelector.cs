@@ -122,14 +122,14 @@ namespace ContextStage
             }
             else if (success)
             {
-                p.headline = catalog.HeadlineForRank(rank);
+                p.headline = catalog.HeadlineForStage(result.stageId, rank, true);
                 p.stampText = catalog.StampSuccess;
                 p.caption = rank == "S" || rank == "A" ? catalog.CaptionHigh : catalog.CaptionNormal;
                 p.subtitle = PickRecordSubtitle(report, percent, catalog);
             }
             else
             {
-                p.headline = catalog.HeadlineFail;
+                p.headline = catalog.HeadlineForStage(result.stageId, rank, false);
                 p.stampText = catalog.StampFail;
                 p.caption = catalog.CaptionFail;
                 int shortfall = Mathf.Max(0, target - result.score);

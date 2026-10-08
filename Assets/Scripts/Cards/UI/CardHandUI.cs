@@ -50,6 +50,10 @@ namespace ContextStage
         Vector2 _pendingSource;
         int _pendingDrawStart;
         int _pendingBonusStart;
+        readonly List<CardDefinition> _knownHand = new List<CardDefinition>();
+        bool _consumedSinceRefresh;
+        UIPixelBurstEmitter _arrivalPixels;
+        int _handVisualVersion;
 
         /// <summary>연출 때문에 손패가 화면 아래로 내려가 있는지.</summary>
         public bool IsStowed { get; private set; }
@@ -83,6 +87,15 @@ namespace ContextStage
 
         void OnDisable()
         {
+            StopAllCoroutines();
+            _stowRoutine = null;
+            if (_capturedBasePosition && transform is RectTransform handRect)
+                handRect.anchoredPosition = _baseAnchoredPosition;
+            IsStowed = false;
+            _handVisualVersion++;
+            _knownHand.Clear();
+            _consumedSinceRefresh = false;
+            if (_arrivalPixels != null) _arrivalPixels.enabled = false;
             EventBus.Unsubscribe<GameStateChanged>(OnVisualStateChanged);
             _pendingHandVisual = CardAugmentVisual.None;
             if (_augmentVfx != null) _augmentVfx.Clear();
@@ -96,13 +109,58 @@ namespace ContextStage
 
         void OnHandChanged(HandChanged _)
         {
+            _handVisualVersion++; // Discard delayed bursts for an already-replaced layout.
+            // Multiset comparison: duplicate card types must not all sparkle as "new".
+            var remaining = new List<CardDefinition>(_knownHand);
+            var arrivals = new List<int>();
+            if (CardSystem.HasInstance && (_knownHand.Count > 0 || _consumedSinceRefresh) && _pendingHandVisual == CardAugmentVisual.None &&
+                GameManager.HasInstance && GameManager.Instance.IsPlaying)
+            {
+                var hand = CardSystem.Instance;
+                for (int i = 0; i < hand.HandCount; i++)
+                {
+                    CardDefinition card = hand.GetCard(i);
+                    int old = remaining.IndexOf(card);
+                    if (old >= 0) remaining.RemoveAt(old);
+                    else if (card != null) arrivals.Add(i);
+                }
+            }
+            _consumedSinceRefresh = false;
             Refresh();
             PlayPendingHandVisual();
+            if (arrivals.Count > 0) StartCoroutine(SparkleNewCards(arrivals, _handVisualVersion));
+        }
+
+        System.Collections.IEnumerator SparkleNewCards(List<int> arrivals, int version)
+        {
+            yield return null; // Layout first: avoid an emission at the previous pooled position.
+            if (version != _handVisualVersion || IsStowed || !isActiveAndEnabled ||
+                !GameManager.HasInstance || !GameManager.Instance.IsPlaying) yield break;
+            if (_arrivalPixels == null) _arrivalPixels = GetComponent<UIPixelBurstEmitter>();
+            if (_arrivalPixels == null) _arrivalPixels = gameObject.AddComponent<UIPixelBurstEmitter>();
+            _arrivalPixels.enabled = true;
+            foreach (int index in arrivals)
+            {
+                if (version != _handVisualVersion || IsStowed || !isActiveAndEnabled) yield break;
+                if (index >= 0 && index < _activeViews.Count && _activeViews[index] != null)
+                {
+                    var view = _activeViews[index];
+                    var tint = new Color32(0xC7, 0xDC, 0xD0, 255);
+                    view.PlayArrivalFeedback(tint);
+                    var rect = view.transform as RectTransform;
+                    _arrivalPixels.EmitBurstAtNormalizedPoint(rect, new Vector2(0, 1), tint, 4, 35f, 85f, 3f, 5f, 0.2f, 0.35f);
+                    _arrivalPixels.EmitBurstAtNormalizedPoint(rect, new Vector2(1, 1), tint, 4, 35f, 85f, 3f, 5f, 0.2f, 0.35f);
+                }
+                yield return new WaitForSeconds(0.06f);
+            }
         }
 
         void OnVisualStateChanged(GameStateChanged e)
         {
             if (e.Current != GameState.Ready && e.Current != GameState.GameOver) return;
+            _handVisualVersion++;
+            _consumedSinceRefresh = false;
+            if (_arrivalPixels != null) _arrivalPixels.enabled = false;
             _pendingHandVisual = CardAugmentVisual.None;
             if (_augmentVfx != null) _augmentVfx.Clear();
             ReleaseDissolvingViews();
@@ -190,6 +248,13 @@ namespace ContextStage
         /// </summary>
         void OnCardSelected(CardSelected e)
         {
+            // Card definitions are shared assets, so an identical replacement would
+            // otherwise look unchanged. Remove only the consumed slot before diffing.
+            if (e.HandIndex >= 0 && e.HandIndex < _knownHand.Count)
+            {
+                _knownHand.RemoveAt(e.HandIndex);
+                _consumedSinceRefresh = true;
+            }
             if (!useDissolveOnPlay) return;
             if (e.HandIndex < 0 || e.HandIndex >= _activeViews.Count) return;
 
@@ -280,6 +345,8 @@ namespace ContextStage
 
         void Refresh()
         {
+            _handVisualVersion++;
+            _knownHand.Clear();
             ReleaseViews();
 
             if (!CardSystem.HasInstance)
@@ -295,6 +362,7 @@ namespace ContextStage
             {
                 var card = system.GetCard(i);
                 if (card == null) continue;
+                _knownHand.Add(card);
 
                 var instance = PoolManager.Spawn(card.gameObject, Vector3.zero, Quaternion.identity, parent);
                 if (instance == null) continue;

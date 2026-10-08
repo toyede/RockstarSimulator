@@ -1,0 +1,806 @@
+fileFormatVersion: 2
+guid: c043ff58f8a5e5d499cc6218467e5794
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -122191100505009604
+    second: Stage01_HandwrittenTitle_v1_0
+  - first:
+      213: 8675267320366390491
+    second: Stage01_HandwrittenTitle_v1_1
+  - first:
+      213: 6200789028495317748
+    second: Stage01_HandwrittenTitle_v1_2
+  - first:
+      213: -124953584450719173
+    second: Stage01_HandwrittenTitle_v1_3
+  - first:
+      213: 5981882268670603582
+    second: Stage01_HandwrittenTitle_v1_4
+  - first:
+      213: 2741043491388061024
+    second: Stage01_HandwrittenTitle_v1_5
+  - first:
+      213: 4530901022266555334
+    second: Stage01_HandwrittenTitle_v1_6
+  - first:
+      213: 9104556191065625701
+    second: Stage01_HandwrittenTitle_v1_7
+  - first:
+      213: -1562984758916450291
+    second: Stage01_HandwrittenTitle_v1_8
+  - first:
+      213: 1664983265797228943
+    second: Stage01_HandwrittenTitle_v1_9
+  - first:
+      213: -8325246394692625781
+    second: Stage01_HandwrittenTitle_v1_10
+  - first:
+      213: 732984409288103962
+    second: Stage01_HandwrittenTitle_v1_11
+  - first:
+      213: 7102822836583420994
+    second: Stage01_HandwrittenTitle_v1_12
+  - first:
+      213: 8907279339861757396
+    second: Stage01_HandwrittenTitle_v1_13
+  - first:
+      213: 4628161551721468900
+    second: Stage01_HandwrittenTitle_v1_14
+  - first:
+      213: 2664827455329535329
+    second: Stage01_HandwrittenTitle_v1_15
+  - first:
+      213: 671099367305666011
+    second: Stage01_HandwrittenTitle_v1_16
+  - first:
+      213: 283238649203166735
+    second: Stage01_HandwrittenTitle_v1_17
+  - first:
+      213: -3787927977909703883
+    second: Stage01_HandwrittenTitle_v1_18
+  - first:
+      213: -5900649206590074807
+    second: Stage01_HandwrittenTitle_v1_19
+  - first:
+      213: -7034958702922980564
+    second: Stage01_HandwrittenTitle_v1_20
+  - first:
+      213: -5014370968199727780
+    second: Stage01_HandwrittenTitle_v1_21
+  - first:
+      213: -8143723070619517724
+    second: Stage01_HandwrittenTitle_v1_22
+  - first:
+      213: 8797841590266895855
+    second: Stage01_HandwrittenTitle_v1_23
+  - first:
+      213: -9070567871581005520
+    second: Stage01_HandwrittenTitle_v1_24
+  - first:
+      213: 7442340505069264177
+    second: Stage01_HandwrittenTitle_v1_25
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_0
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 701
+        width: 263
+        height: 281
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c325fab67d3ed4ef0800000000000000
+      internalID: -122191100505009604
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_1
+      rect:
+        serializedVersion: 2
+        x: 349
+        y: 601
+        width: 292
+        height: 257
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bdc5ef11aadb46870800000000000000
+      internalID: 8675267320366390491
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_2
+      rect:
+        serializedVersion: 2
+        x: 472
+        y: 815
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4fa5a9aa4c0ad0650800000000000000
+      internalID: 6200789028495317748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_3
+      rect:
+        serializedVersion: 2
+        x: 478
+        y: 815
+        width: 11
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3237618063144ef0800000000000000
+      internalID: -124953584450719173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_4
+      rect:
+        serializedVersion: 2
+        x: 656
+        y: 407
+        width: 295
+        height: 566
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e31b150ea3ae30350800000000000000
+      internalID: 5981882268670603582
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_5
+      rect:
+        serializedVersion: 2
+        x: 910
+        y: 820
+        width: 9
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 065f41268842a0620800000000000000
+      internalID: 2741043491388061024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_6
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 419
+        width: 246
+        height: 407
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6cbf6a8597ef0ee30800000000000000
+      internalID: 4530901022266555334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_7
+      rect:
+        serializedVersion: 2
+        x: 1256
+        y: 789
+        width: 49
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 564dc062e91e95e70800000000000000
+      internalID: 9104556191065625701
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_8
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 465
+        width: 361
+        height: 278
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d087f6f84a92f4ae0800000000000000
+      internalID: -1562984758916450291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_9
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 374
+        width: 187
+        height: 230
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8940d275753b1710800000000000000
+      internalID: 1664983265797228943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_10
+      rect:
+        serializedVersion: 2
+        x: 416
+        y: 454
+        width: 258
+        height: 149
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8a9eb85388c67c80800000000000000
+      internalID: -8325246394692625781
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_11
+      rect:
+        serializedVersion: 2
+        x: 1187
+        y: 359
+        width: 338
+        height: 425
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a18548dcf651c2a00800000000000000
+      internalID: 732984409288103962
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_12
+      rect:
+        serializedVersion: 2
+        x: 1450
+        y: 505
+        width: 57
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 244561dccbb429260800000000000000
+      internalID: 7102822836583420994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_13
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 149
+        width: 311
+        height: 285
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ddc2a7ed530d9b70800000000000000
+      internalID: 8907279339861757396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_14
+      rect:
+        serializedVersion: 2
+        x: 374
+        y: 400
+        width: 17
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e39a7509688a3040800000000000000
+      internalID: 4628161551721468900
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_15
+      rect:
+        serializedVersion: 2
+        x: 390
+        y: 408
+        width: 7
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16500a6a37e5bf420800000000000000
+      internalID: 2664827455329535329
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_16
+      rect:
+        serializedVersion: 2
+        x: 414
+        y: 177
+        width: 207
+        height: 256
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bdd5e35a159305900800000000000000
+      internalID: 671099367305666011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_17
+      rect:
+        serializedVersion: 2
+        x: 694
+        y: 285
+        width: 146
+        height: 133
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f0e8a600d044ee300800000000000000
+      internalID: 283238649203166735
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_18
+      rect:
+        serializedVersion: 2
+        x: 863
+        y: 149
+        width: 212
+        height: 256
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53bade9c2939e6bc0800000000000000
+      internalID: -3787927977909703883
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_19
+      rect:
+        serializedVersion: 2
+        x: 1038
+        y: 207
+        width: 119
+        height: 173
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 94012014fceac1ea0800000000000000
+      internalID: -5900649206590074807
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_20
+      rect:
+        serializedVersion: 2
+        x: 1136
+        y: 87
+        width: 253
+        height: 302
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c23abbe155ece5e90800000000000000
+      internalID: -7034958702922980564
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_21
+      rect:
+        serializedVersion: 2
+        x: 1213
+        y: 263
+        width: 129
+        height: 141
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c557c64fb20696ab0800000000000000
+      internalID: -5014370968199727780
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_22
+      rect:
+        serializedVersion: 2
+        x: 1410
+        y: 335
+        width: 27
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ecf19ab30fabfe80800000000000000
+      internalID: -8143723070619517724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_23
+      rect:
+        serializedVersion: 2
+        x: 606
+        y: 279
+        width: 12
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fed140a3056381a70800000000000000
+      internalID: 8797841590266895855
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_24
+      rect:
+        serializedVersion: 2
+        x: 667
+        y: 133
+        width: 214
+        height: 159
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 039d757249ede1280800000000000000
+      internalID: -9070567871581005520
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stage01_HandwrittenTitle_v1_25
+      rect:
+        serializedVersion: 2
+        x: 1428
+        y: 255
+        width: 31
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 13d97261241884760800000000000000
+      internalID: 7442340505069264177
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Stage01_HandwrittenTitle_v1_0: -122191100505009604
+      Stage01_HandwrittenTitle_v1_1: 8675267320366390491
+      Stage01_HandwrittenTitle_v1_10: -8325246394692625781
+      Stage01_HandwrittenTitle_v1_11: 732984409288103962
+      Stage01_HandwrittenTitle_v1_12: 7102822836583420994
+      Stage01_HandwrittenTitle_v1_13: 8907279339861757396
+      Stage01_HandwrittenTitle_v1_14: 4628161551721468900
+      Stage01_HandwrittenTitle_v1_15: 2664827455329535329
+      Stage01_HandwrittenTitle_v1_16: 671099367305666011
+      Stage01_HandwrittenTitle_v1_17: 283238649203166735
+      Stage01_HandwrittenTitle_v1_18: -3787927977909703883
+      Stage01_HandwrittenTitle_v1_19: -5900649206590074807
+      Stage01_HandwrittenTitle_v1_2: 6200789028495317748
+      Stage01_HandwrittenTitle_v1_20: -7034958702922980564
+      Stage01_HandwrittenTitle_v1_21: -5014370968199727780
+      Stage01_HandwrittenTitle_v1_22: -8143723070619517724
+      Stage01_HandwrittenTitle_v1_23: 8797841590266895855
+      Stage01_HandwrittenTitle_v1_24: -9070567871581005520
+      Stage01_HandwrittenTitle_v1_25: 7442340505069264177
+      Stage01_HandwrittenTitle_v1_3: -124953584450719173
+      Stage01_HandwrittenTitle_v1_4: 5981882268670603582
+      Stage01_HandwrittenTitle_v1_5: 2741043491388061024
+      Stage01_HandwrittenTitle_v1_6: 4530901022266555334
+      Stage01_HandwrittenTitle_v1_7: 9104556191065625701
+      Stage01_HandwrittenTitle_v1_8: -1562984758916450291
+      Stage01_HandwrittenTitle_v1_9: 1664983265797228943
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

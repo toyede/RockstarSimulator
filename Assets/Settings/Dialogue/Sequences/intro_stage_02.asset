@@ -23,13 +23,16 @@ MonoBehaviour:
       \uC788\uB2E4."
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: raccoon
     speakerName: "\uB108\uAD6C\uB9AC"
     portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
-    emotionId: neutral
-    text: "\uC65C \uC548 \uB098\uC9C0. \uC774\uCABD\uC774 \uC548 \uAF42\uD614\uB098?"
+    emotionId: nervous
+    text: "\uAE30\uD0C0 \uC570\uD504\uC5D0\uC11C \uC18C\uB9AC\uAC00 \uC548 \uB098.
+      \uC785\uB825 \uCF00\uC774\uBE14\uC774 \uD5D0\uAC70\uC6B4\uAC00?"
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: hedgehog
     speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
     portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
@@ -37,22 +40,26 @@ MonoBehaviour:
     text: "\uC544\uAE4C\uB294 \uB0AC\uC796\uC544."
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: 
     speakerName: 
     portrait: {fileID: 0}
     emotionId: 
-    text: "\uB108\uAD6C\uB9AC\uAC00 \uCF00\uC774\uBE14\uC744 \uBF51\uB294\uB2E4.\n\uD391!
-      \uC2A4\uD53C\uCEE4\uC5D0\uC11C \uD070 \uC18C\uB9AC\uC640 \uD568\uAED8 \uBA3C\uC9C0\uAC00
-      \uD284\uB2E4."
+    text: "\uB108\uAD6C\uB9AC\uAC00 \uBCFC\uB968\uC744 \uCF20 \uCC44 \uC785\uB825
+      \uCF00\uC774\uBE14\uC744 \uBF51\uB294\uB2E4.\n\uD391! \uC570\uD504\uC5D0\uC11C
+      \uD070 \uC18C\uB9AC\uAC00 \uB098\uBA70 \uBA3C\uC9C0\uAC00 \uD284\uB2E4."
     side: 0
-    sfxId: 
+    sfxId: guitar_stroke
+    presentationCue: cable_pop
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
-    text: "\uBB50 \uBF51\uC558\uC5B4?"
+    text: "\uBCFC\uB968 \uCF20 \uCC44\uB85C \uC785\uB825 \uCF00\uC774\uBE14\uC744
+      \uBF51\uC740 \uAC70\uC57C?"
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: raccoon
     speakerName: "\uB108\uAD6C\uB9AC"
     portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
@@ -60,6 +67,7 @@ MonoBehaviour:
     text: "\uC18C\uB9AC\uAC00 \uC548 \uB098\uC11C\uC694."
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
@@ -67,6 +75,7 @@ MonoBehaviour:
     text: "\uADF8\uB798\uC11C \uADF8\uB0E5 \uBF51\uC558\uC5B4?"
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: raccoon
     speakerName: "\uB108\uAD6C\uB9AC"
     portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
@@ -74,13 +83,16 @@ MonoBehaviour:
     text: "...\uB124."
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
-    text: "\uC77C\uB2E8 \uC190 \uB5BC."
+    text: "\uC570\uD504 \uBCFC\uB968\uBD80\uD130 \uB0B4\uB824. \uCF00\uC774\uBE14\uC740
+      \uB0B4\uAC00 \uAF42\uC744\uAC8C."
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: hedgehog
     speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
     portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
@@ -88,6 +100,7 @@ MonoBehaviour:
     text: "\uACE0\uC7A5 \uB09C \uAC70\uC608\uC694?"
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
@@ -95,6 +108,7 @@ MonoBehaviour:
     text: "\uC7A0\uAE50."
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: 
     speakerName: 
     portrait: {fileID: 0}
@@ -103,6 +117,7 @@ MonoBehaviour:
       \uACE0\uC2B4\uB3C4\uCE58 \uCABD\uC73C\uB85C \uBC14\uC9DD \uBD99\uB294\uB2E4."
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: raccoon
     speakerName: "\uB108\uAD6C\uB9AC"
     portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
@@ -110,6 +125,7 @@ MonoBehaviour:
     text: "\uC774\uAC70 \uBE44\uC2F8 \uBCF4\uC774\uB0D0?"
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: hedgehog
     speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
     portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
@@ -117,13 +133,16 @@ MonoBehaviour:
     text: "\uB098\uD55C\uD14C \uBB3C\uC5B4\uBCF4\uC9C0 \uB9C8."
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
-    text: "\uB4E4\uB9B0\uB2E4."
+    text: "\uC785\uB825 \uC7AD \uB2E4\uC2DC \uAF42\uC558\uC5B4. \uAE30\uD0C0 \uC904
+      \uD55C \uBC88 \uD295\uACA8\uBD10."
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: 
     speakerName: 
     portrait: {fileID: 0}
@@ -133,6 +152,7 @@ MonoBehaviour:
       \uC6B8\uB9B0\uB2E4."
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: raccoon
     speakerName: "\uB108\uAD6C\uB9AC"
     portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
@@ -140,6 +160,7 @@ MonoBehaviour:
     text: "...\uB2E4\uD589\uC774\uB2E4."
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
@@ -147,6 +168,7 @@ MonoBehaviour:
     text: "\uB0B4\uAC00 \uD560 \uB9D0\uC774\uACE0. \uB0B4 \uC570\uD504\uC57C."
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
@@ -154,6 +176,7 @@ MonoBehaviour:
     text: "\uC624\uB298 \uACF5\uC5F0\uD558\uB294 \uC560\uB4E4\uC774 \uB108\uD76C\uC57C?"
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: hedgehog
     speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
     portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
@@ -161,6 +184,7 @@ MonoBehaviour:
     text: "\uB124."
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
@@ -168,6 +192,7 @@ MonoBehaviour:
     text: "\uBA87 \uC2DC?"
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: hedgehog
     speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
     portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
@@ -175,6 +200,7 @@ MonoBehaviour:
     text: "\uC2ED \uBD84 \uB4A4\uC694."
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
@@ -182,6 +208,7 @@ MonoBehaviour:
     text: "\uBCA0\uC774\uC2A4\uB294 \uC5B4\uB514 \uC788\uB294\uB370?"
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: raccoon
     speakerName: "\uB108\uAD6C\uB9AC"
     portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
@@ -189,13 +216,16 @@ MonoBehaviour:
     text: "\uC544\uC9C1 \uBABB \uAD6C\uD588\uC5B4\uC694."
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
-    text: "...\uC77C\uB2E8 \uCCAB \uACE1 \uD574\uBD10."
+    text: "\uCCAB \uACE1 \uC778\uD2B8\uB85C \uC5EC\uB35F \uB9C8\uB514\uB9CC \uB9DE\uCDB0\uBCF4\uC790.
+      \uBCA0\uC774\uC2A4\uB294 \uB0B4\uAC00 \uB123\uC744\uAC8C."
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: 
     speakerName: 
     portrait: {fileID: 0}
@@ -205,6 +235,7 @@ MonoBehaviour:
       \uC55E\uC744 \uBCF4\uB77C\uB294 \uB208\uC9D3\uC774 \uB3CC\uC544\uC628\uB2E4."
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: raccoon
     speakerName: "\uB108\uAD6C\uB9AC"
     portrait: {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
@@ -213,6 +244,7 @@ MonoBehaviour:
       \uB3FC\uC694?"
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
@@ -220,6 +252,7 @@ MonoBehaviour:
     text: "\uC9C0\uAE08?"
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: hedgehog
     speakerName: "\uACE0\uC2B4\uB3C4\uCE58"
     portrait: {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
@@ -227,6 +260,7 @@ MonoBehaviour:
     text: "\uC9C0\uAE08 \uC544\uB2C8\uBA74 \uB2E4\uC74C \uC0AC\uB78C\uC774 \uC5C6\uC5B4\uC694."
     side: 1
     sfxId: 
+    presentationCue: 
   - speakerId: 
     speakerName: 
     portrait: {fileID: 0}
@@ -235,10 +269,13 @@ MonoBehaviour:
       \uB0B4\uB824\uB193\uC9C0 \uC54A\uB294\uB2E4."
     side: 0
     sfxId: 
+    presentationCue: 
   - speakerId: skunk
     speakerName: "\uC2A4\uCEF9\uD06C"
     portrait: {fileID: 0}
     emotionId: neutral
-    text: "\uACE1 \uC21C\uC11C \uC918."
+    text: "\uACE1 \uC21C\uC11C\uB791 \uD6C4\uB834 \uB4E4\uC5B4\uAC00\uB294 \uB9C8\uB514
+      \uC801\uC5B4\uC918. \uC624\uB298 \uBCA0\uC774\uC2A4\uB294 \uB0B4\uAC00 \uB9E1\uC744\uAC8C."
     side: 1
     sfxId: 
+    presentationCue: 

@@ -26,6 +26,9 @@ namespace ContextStage
         TMP_Text _title;
         TMP_Text _body;
         TMP_Text _timer;
+        TMP_Text _progress;
+        MissionCueSheetView _view;
+        string _eventId;
         Coroutine _hideRoutine;
         bool _active;
 
@@ -35,6 +38,7 @@ namespace ContextStage
             EventBus.Subscribe<StageEventProgress>(OnProgress);
             EventBus.Subscribe<StageEventResolved>(OnResolved);
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
+            EventBus.Subscribe<StageRuntimeApplied>(OnStageApplied);
         }
 
         void OnDisable()
@@ -43,6 +47,7 @@ namespace ContextStage
             EventBus.Unsubscribe<StageEventProgress>(OnProgress);
             EventBus.Unsubscribe<StageEventResolved>(OnResolved);
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
+            EventBus.Unsubscribe<StageRuntimeApplied>(OnStageApplied);
             Hide();
         }
 
@@ -50,37 +55,44 @@ namespace ContextStage
         {
             if (!_active || _background == null) return;
             float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 6f);
-            _background.color = Color.Lerp(new Color(0.08f, 0.05f, 0.1f, 0.9f), titleColor * 0.5f, pulse * 0.35f);
+            _title.color = Color.Lerp(titleColor, Color.white, pulse * 0.18f);
         }
 
         void OnStarted(StageEventStarted e)
         {
+            if (BossBattleUI.HandlesStageEvent(e.EventId)) return;
             EnsureView();
             StopHide();
+            _eventId = e.EventId;
             _active = true;
             _panel.gameObject.SetActive(true);
             _title.text = e.Title;
             _title.color = titleColor;
             _body.text = e.Instruction;
             _timer.text = $"{e.Duration:0.0}s";
+            _progress.text = "";
+            _view.SetSecondary("");
         }
 
         void OnProgress(StageEventProgress e)
         {
-            if (_timer == null) return;
-            _timer.text = string.IsNullOrEmpty(e.ProgressText) ? $"{e.Remaining:0.0}s" : $"{e.ProgressText}   {e.Remaining:0.0}s";
+            if (BossBattleUI.HandlesStageEvent(e.EventId) || !_active || _eventId != e.EventId || _timer == null) return;
+            _timer.text = $"{e.Remaining:0.0}s";
+            _progress.text = e.ProgressText;
+            _view.SetSecondary("");
         }
 
         void OnResolved(StageEventResolved e)
         {
-            EnsureView();
+            if (BossBattleUI.HandlesStageEvent(e.EventId) || !_active || _eventId != e.EventId) return;
             _active = false;
-            _background.color = new Color(0.08f, 0.05f, 0.1f, 0.9f);
             _panel.gameObject.SetActive(true);
             _title.text = e.Success ? $"{e.Title}  성공!" : $"{e.Title}  실패";
             _title.color = e.Success ? successColor : failColor;
             _body.text = e.ResultText;
             _timer.text = "";
+            _progress.text = "";
+            _view.SetSecondary("");
             StopHide();
             _hideRoutine = StartCoroutine(HideAfter(resultHoldDuration));
         }
@@ -88,11 +100,14 @@ namespace ContextStage
         void OnGameStateChanged(GameStateChanged e)
         {
             if (e.Current == GameState.Ready || e.Current == GameState.GameOver) Hide();
+            else if (_canvas != null) _canvas.gameObject.SetActive(e.Current != GameState.Paused);
         }
+
+        void OnStageApplied(StageRuntimeApplied e) => Hide();
 
         IEnumerator HideAfter(float seconds)
         {
-            yield return new WaitForSecondsRealtime(seconds);
+            yield return new WaitForSeconds(seconds);
             Hide();
         }
 
@@ -107,6 +122,7 @@ namespace ContextStage
         {
             StopHide();
             _active = false;
+            _eventId = null;
             if (_panel != null) _panel.gameObject.SetActive(false);
         }
 
@@ -137,45 +153,22 @@ namespace ContextStage
             _panel.anchorMin = _panel.anchorMax = new Vector2(0.5f, 1f);
             _panel.pivot = new Vector2(0.5f, 1f);
             _panel.anchoredPosition = new Vector2(0f, -topOffset);
-            _panel.sizeDelta = new Vector2(1000f, 84f);
+            _panel.sizeDelta = new Vector2(1000f, 256f);
             _background = panelObject.GetComponent<Image>();
-            _background.color = new Color(0.08f, 0.05f, 0.1f, 0.9f);
-            _background.raycastTarget = false;
-
-            _title = CreateText(_panel, "Title", resolvedFont, 26f, TextAlignmentOptions.MidlineLeft, titleColor);
-            SetRect(_title.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -6f), new Vector2(-240f, 34f));
-            _timer = CreateText(_panel, "Timer", resolvedFont, 24f, TextAlignmentOptions.MidlineRight, Color.white);
-            SetRect(_timer.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -6f), new Vector2(420f, 34f));
-            _body = CreateText(_panel, "Body", resolvedFont, 22f, TextAlignmentOptions.MidlineLeft, Color.white);
-            SetRect(_body.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 6f), new Vector2(-40f, 36f));
+            var view = _view = MissionCueSheetView.Create(_panel, resolvedFont);
+            _title = view.Title; _body = view.Body; _timer = view.Timer; _progress = view.Progress;
+            view.SetSecondary("");
+            _title.fontSize = _title.fontSizeMax = 26f;
+            _body.fontSize = _body.fontSizeMax = 24f;
+            _title.fontSizeMin = 24f;
+            // 일반 무대의 기존 상단 중앙 위치는 보존한다. 지시문에는 종이 면적을 넓게 준다.
+            _body.rectTransform.anchorMin = new Vector2(.06f, .27f);
+            _progress.rectTransform.anchorMin = new Vector2(.06f, .10f);
+            _progress.rectTransform.anchorMax = new Vector2(.94f, .25f);
 
             _panel.gameObject.SetActive(false);
         }
 
-        static TMP_Text CreateText(Transform parent, string name, TMP_FontAsset font, float size, TextAlignmentOptions alignment, Color color)
-        {
-            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-            go.transform.SetParent(parent, false);
-            var text = go.GetComponent<TextMeshProUGUI>();
-            if (font != null) text.font = font;
-            text.fontSize = size;
-            text.alignment = alignment;
-            text.color = color;
-            text.raycastTarget = false;
-            text.textWrappingMode = TextWrappingModes.Normal;
-            text.outlineWidth = 0.15f;
-            text.outlineColor = new Color32(0x16, 0x12, 0x1C, 0xFF);
-            return text;
-        }
-
-        static void SetRect(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 position, Vector2 size)
-        {
-            rect.anchorMin = anchorMin;
-            rect.anchorMax = anchorMax;
-            rect.pivot = pivot;
-            rect.anchoredPosition = position;
-            rect.sizeDelta = size;
-        }
 
 #if UNITY_EDITOR
         /// <summary>[에디터 셋업 전용]</summary>

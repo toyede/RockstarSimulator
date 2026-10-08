@@ -13,6 +13,28 @@ namespace ContextStage
     /// </summary>
     public class OptionsPopup : UIPopup
     {
+        PausePopup _coveredPause;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            OnClosed += RestorePauseMenu;
+        }
+
+        protected override void OnOpen()
+        {
+            _coveredPause = UIManager.Instance.Get<PausePopup>();
+            if (_coveredPause != null && _coveredPause.IsOpen) _coveredPause.SetMenuCovered(true);
+            PausePopup.RaiseOverlay(this);
+        }
+
+        void OnDisable() => RestorePauseMenu();
+
+        void RestorePauseMenu()
+        {
+            if (_coveredPause != null) _coveredPause.SetMenuCovered(false);
+            _coveredPause = null;
+        }
         public void OnClickClose() => Close();
     }
 }

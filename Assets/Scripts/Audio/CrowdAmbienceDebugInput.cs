@@ -30,6 +30,7 @@ namespace ContextStage
         void Update()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!TourDebugInput.AllowInCurrentContext) return;
 #if ENABLE_INPUT_SYSTEM
             var kb = Keyboard.current;
             if (kb == null) return;
@@ -80,6 +81,7 @@ namespace ContextStage
         void OnGUI()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!TourDebugInput.AllowInCurrentContext) return;
             if (!showOnScreenInfo || !CrowdAmbienceSystem.HasInstance) return;
 
             var system = CrowdAmbienceSystem.Instance;

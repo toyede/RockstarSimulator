@@ -39,6 +39,7 @@ namespace ContextStage
             if (roster == null) return;
             roster.ApplyFeverEngagementPulse(umbrellaGain);
             _umbrellas++;
+            EventBus.Raise(new RainAudienceProtected());
         }
 
         protected override bool CheckSuccess() => false; // 창이 끝날 때 판정

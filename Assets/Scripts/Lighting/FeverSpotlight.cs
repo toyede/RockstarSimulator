@@ -65,6 +65,9 @@ namespace ContextStage
         [SerializeField, Range(0f, 1f), Tooltip("실제 Light2D 가 담당할 밝기 비율")]
         float smoothLightContribution = 0.85f;
 
+        [SerializeField] StageLightController blackoutController;
+        [SerializeField, Range(0f, 1f)] float showIntensityScale = 0.85f;
+
         Light2D _light;
         PixelSpotlight2D _pixelSpotlight;
 
@@ -183,7 +186,8 @@ namespace ContextStage
             if (_light == null) return;
 
             float blend = ramp <= 0f ? 0f : EvaluateBlink();
-            float intensity = Mathf.Lerp(minIntensity, peakIntensity, blend) * ramp;
+            float intensity = Mathf.Lerp(minIntensity, peakIntensity, blend) * ramp * showIntensityScale;
+            if (blackoutController != null && blackoutController.IsBlackout) intensity = 0;
 
             _light.color = color;
             _light.intensity = intensity * smoothLightContribution;
@@ -205,6 +209,7 @@ namespace ContextStage
         }
 
 #if UNITY_EDITOR
+        public void EditorConfigureBlackout(StageLightController controller) => blackoutController = controller;
         [ContextMenu("Debug/Toggle Fever Spotlight")]
         void DebugToggle()
         {

@@ -18,6 +18,7 @@ namespace ContextStage
         void Update()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!TourDebugInput.AllowInCurrentContext) return;
             if (!GameManager.HasInstance || IsUiInputFocused()) return;
             GameManager gameManager = GameManager.Instance;
 
@@ -52,6 +53,7 @@ namespace ContextStage
         void OnGUI()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!TourDebugInput.AllowInCurrentContext) return;
             if (!showOnScreenHelp || !GameManager.HasInstance) return;
 
             string message;

@@ -21,6 +21,7 @@ namespace ContextStage
             public float Remaining;
             public float Lifetime;
             public float RotationSpeed;
+            public float BaseAlpha;
         }
 
         readonly List<Pixel> _pixels = new List<Pixel>(MaximumParticles);
@@ -157,7 +158,7 @@ namespace ContextStage
                 pixel.Rect.Rotate(0f, 0f, pixel.RotationSpeed * deltaTime);
 
                 Color color = pixel.Image.color;
-                color.a = Mathf.Clamp01(pixel.Remaining / pixel.Lifetime);
+                color.a = pixel.BaseAlpha * Mathf.Clamp01(pixel.Remaining / pixel.Lifetime);
                 pixel.Image.color = color;
             }
         }
@@ -185,6 +186,7 @@ namespace ContextStage
             pixel.Rect.sizeDelta = new Vector2(size, size);
             pixel.Rect.localRotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 90f));
             pixel.Image.color = color;
+            pixel.BaseAlpha = color.a;
             pixel.Velocity = velocity;
             pixel.Lifetime = Mathf.Max(0.05f, lifetime);
             pixel.Remaining = pixel.Lifetime;

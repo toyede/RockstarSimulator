@@ -1,0 +1,14 @@
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+bool dark=UnityEditor.SessionState.GetBool("LightingShotDark",false);
+var director=UnityEngine.Object.FindFirstObjectByType<ContextStage.StageShowDirector>();
+var hint=UnityEngine.Object.FindFirstObjectByType<ContextStage.StageLightController>();
+hint.SetBlackout(dark);
+if(dark)hint.GetType().GetField("_blackoutBlend",flags).SetValue(hint,1f);
+hint.GetType().GetMethod("ApplyLights",flags).Invoke(hint,null);
+director.GetType().GetField("_fever",flags).SetValue(director,true);
+director.GetType().GetField("_energy",flags).SetValue(director,1.3f);
+director.GetType().GetMethod("LateUpdate",flags).Invoke(director,null);
+foreach(var f in UnityEngine.Object.FindObjectsByType<ContextStage.FeverSpotlight>(UnityEngine.FindObjectsSortMode.None))f.GetType().GetMethod("ApplyLight",flags).Invoke(f,new object[]{1f});
+GameJamKit.GameManager.Instance.Pause();
+UnityEditor.EditorApplication.isPaused=false;
+return dark?"blackout with Fever":"Fever reduced";

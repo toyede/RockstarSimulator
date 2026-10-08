@@ -1,5 +1,13 @@
 namespace ContextStage
 {
+    /// <summary>라이벌 무대 체류의 표시용 진행도. 판정/제한시간에는 관여하지 않는다.</summary>
+    public readonly struct BossLightingHoldProgress
+    {
+        public BossLightingHoldProgress(float normalized, bool active)
+        { Normalized=normalized;Active=active; }
+        public float Normalized { get; }
+        public bool Active { get; }
+    }
     /// <summary>팬 분포가 바뀔 때 (시작·이동·이탈). 팬 쟁탈 바가 구독한다.</summary>
     public readonly struct BossFanBalanceChanged
     {

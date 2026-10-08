@@ -29,6 +29,7 @@ namespace ContextStage
         void Update()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!TourDebugInput.AllowInCurrentContext) return;
             var gm = GameManager.Instance;
             if (gm == null) return;
 
@@ -81,6 +82,7 @@ namespace ContextStage
         void OnGUI()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!TourDebugInput.AllowInCurrentContext) return;
             if (!showOnScreenHelp || !GameManager.HasInstance) return;
 
             string msg;

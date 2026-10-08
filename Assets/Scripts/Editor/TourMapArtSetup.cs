@@ -25,7 +25,7 @@ namespace ContextStage.EditorTools
         const string ArtRoot = "Assets/Sprites/0910_art";
         const string HubScenePath = "Assets/Scenes/TourHub.unity";
         const string MainScenePath = "Assets/Scenes/Main.unity";
-        const string ConfigPath = "Assets/Resources/Tour/TourMapConfig.asset";
+        const string ConfigPath = "Assets/Resources/" + TourMapConfig.ResourcesPath + ".asset";
 
         // 새 맵(3300×1856)에서의 노드 위치 (정규화, 왼쪽 아래 원점)
         static readonly Vector2[] NodePositions =

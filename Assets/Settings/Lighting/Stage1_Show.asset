@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16655ee368eef894bae6de75d5910d73, type: 3}
+  m_Name: Stage1_Show
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.StageLightingProfile
+  stageId: stage_01
+  venue: 1
+  rival: 0
+  primary: {r: 0.56078434, g: 0.827451, b: 1, a: 1}
+  secondary: {r: 0.56078434, g: 0.827451, b: 1, a: 1}
+  beamIntensity: 0.3
+  sweepDegrees: 2
+  sweepPeriod: 7
+  ledStep: 0.5
+  transitionSeconds: 0.3
+  smokeInterval: 4
+  smokeParticlesPerEmitter: 10
+  beamMaterial: {fileID: 2100000, guid: 92527246ac34f1446ad2ead55dcbdb81, type: 2}
+  laserMaterial: {fileID: 2100000, guid: b24091c8382034d418c9c83bfdc870e1, type: 2}
+  ambientFloor: 1.05
+  fixtureMaterial: {fileID: 2100000, guid: 27ff965c8ffa1764eb5d6217d953bb7c, type: 2}
+  smokeMaterial: {fileID: 2100000, guid: 4be9a0708270aa9408acedeba8d32425, type: 2}
+  feverBoost: 1.3
+  washAlpha: 0.12
+  washPeakAlpha: 0.24
+  washCueDuration: 1
+  washCueCooldown: 3
+  audienceSweepInterval: 12
+  audienceSweepDuration: 2.5
+  studioStepSeconds: 0.22
+  rimDuration: 0.8
+  rimStrength: 0.5
+  dropQuietFraction: 0.45
+  normalLasers: 4
+  dropLasers: 6
+  peakLasers: 8

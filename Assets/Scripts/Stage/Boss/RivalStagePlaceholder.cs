@@ -55,6 +55,9 @@ namespace ContextStage
         [SerializeField] Color duoAColor = new Color32(0xF0, 0x4F, 0x78, 0xFF);
         [SerializeField] Color duoBColor = new Color32(0x30, 0xE1, 0xB9, 0xFF);
         [SerializeField] Color fanColor = new Color32(0xC7, 0xDC, 0xD0, 0xB0);
+        [Header("보스 HP 공통 관객 상태 (표시 전용)")]
+        [SerializeField, Range(0, 1)] float calmHpThreshold = 0.33f;
+        [SerializeField, Range(0, 1)] float hypeHpThreshold = 0.66f;
 
         sealed class Fan
         {
@@ -63,6 +66,11 @@ namespace ContextStage
             public Vector3 Slot;
             public float Scale;
             public Color BaseColor;
+            public CrowdPreference Preference;
+            public int Seed;
+            public float Fade = 1f;
+            public bool Walking;
+            public CrowdMotionEvaluator.Variance Variance;
         }
 
         Sprite _square;
@@ -75,11 +83,21 @@ namespace ContextStage
         float _duoFrameTimer;
         int _duoFrame;
         readonly List<Fan> _fans = new List<Fan>();
+        readonly List<Fan> _outgoing = new List<Fan>();
+        AudienceEngagementStage _audienceStage;
+        CrowdMotionProfile _motionFrom, _motionTo;
+        float _motionBlend = 1f;
+        public AudienceEngagementStage AudienceStage => _audienceStage;
         AudienceMemberActor _fanVisualSource;
         Vector3 _ourStageAnchor;
         Coroutine _blinkRoutine;
         bool _built;
         bool _revenge;
+        RivalArrivalVFX _arrivalVfx;
+        [SerializeField, Tooltip("StageShowDirector가 LED/조명 큐를 맡는다. 팬·듀오 애니메이션은 유지")]
+        bool externalLightingShow;
+        [SerializeField] StageShowDirector lightingShow;
+        bool UsesExternalShow => externalLightingShow && lightingShow != null && lightingShow.isActiveAndEnabled && lightingShow.HasRivalShow;
 
         bool UseDuoSprite => duoFrames != null && duoFrames.Length > 0 && duoFrames[0] != null;
         Color DuoBaseA => UseDuoSprite ? Color.white : duoAColor;
@@ -98,18 +116,22 @@ namespace ContextStage
 
         void OnDisable()
         {
+            StopAllCoroutines();
+            _blinkRoutine = null;
             EventBus.Unsubscribe<BossFanBalanceChanged>(OnBalance);
             EventBus.Unsubscribe<BossFanMoved>(OnFanMoved);
             EventBus.Unsubscribe<BossRevengeChanged>(OnRevenge);
             EventBus.Unsubscribe<BossPatternStarted>(OnPatternStarted);
             EventBus.Unsubscribe<BossPatternResolved>(OnPatternResolved);
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
-            if (_root != null) _root.gameObject.SetActive(false);
+            if (_built) ResetVisual();
         }
 
         void Update()
         {
             if (_root == null || !_root.gameObject.activeInHierarchy) return;
+            if (_led != null) _led.enabled = !UsesExternalShow;
+            if (_platform != null) _platform.enabled = !UsesExternalShow;
 
             // 듀오 프레임 교대
             if (_duoSprite != null && duoFrames.Length > 1)
@@ -126,6 +148,65 @@ namespace ContextStage
             // 팬 대기 애니메이션
             for (int i = 0; i < _fans.Count; i++)
                 _fans[i].Player?.Tick(Time.deltaTime);
+            for (int i = 0; i < _outgoing.Count; i++)
+                _outgoing[i].Player?.Tick(Time.deltaTime);
+            _motionBlend = Mathf.Min(1, _motionBlend + Time.deltaTime / 0.25f);
+        }
+
+        void LateUpdate()
+        {
+            for (int i = 0; i < _fans.Count; i++) ApplyFan(_fans[i]);
+            for (int i = 0; i < _outgoing.Count; i++) ApplyFan(_outgoing[i]);
+        }
+
+        void ApplyFan(Fan fan)
+        {
+            if (fan.Renderer == null) return;
+            Color color = Color.Lerp(fan.BaseColor, Color.black, 1f - BossCameraDirector.RivalViewBlend);
+            color = Color.Lerp(color, AudienceMemberActor.SilhouetteColor, AudienceMemberActor.SilhouetteBlend);
+            color.a = fan.BaseColor.a * fan.Fade;
+            fan.Renderer.color = color;
+            if (fan.Walking || _motionTo == null) return;
+            float clock = (Time.time + fan.Seed * 0.173f) * fan.Variance.SpeedMultiplier;
+            CrowdMotionEvaluator.EvaluateBlended(_motionFrom, _motionTo, _motionBlend, clock,
+                out float bob, out float sway, out float squash);
+            var pose = fan.Renderer.transform;
+            pose.localPosition = fan.Slot + Vector3.up * bob;
+            pose.localRotation = Quaternion.Euler(0, 0, sway * fan.Variance.Flip);
+            pose.localScale = new Vector3(fan.Scale * (1 + squash * 0.5f), fan.Scale * (1 - squash), 1);
+        }
+
+        void SetAudienceStage(float hpRatio)
+        {
+            AudienceEngagementStage stage = hpRatio > hypeHpThreshold ? AudienceEngagementStage.Excited
+                : hpRatio > calmHpThreshold ? AudienceEngagementStage.Middle : AudienceEngagementStage.Calm;
+            var source = FanVisualSource();
+            if (stage == _audienceStage && _motionTo != null) return;
+            _audienceStage = stage;
+            _motionFrom = _motionTo ?? source?.PresentationMotion(stage);
+            _motionTo = source?.PresentationMotion(stage);
+            _motionBlend = _motionFrom == null ? 1 : 0;
+            foreach (var fan in _fans) SetFanVisual(fan, source);
+            foreach (var fan in _outgoing) SetFanVisual(fan, source);
+        }
+
+        void SetFanVisual(Fan fan, AudienceMemberActor source)
+        {
+            if (source == null || fan.Renderer == null ||
+                !source.TryGetPresentationVisual(fan.Preference, _audienceStage, fan.Seed,
+                    out SpriteAnimationClip clip, out Sprite still, out Color original)) return;
+            fan.BaseColor = original;
+            fan.Renderer.sharedMaterial = source.CharacterRenderer.sharedMaterial;
+            if (clip != null && clip.IsValid)
+            {
+                if (fan.Player == null) fan.Player = new SpriteAnimationPlayer(fan.Renderer);
+                fan.Player.Play(clip, restart: true);
+            }
+            else
+            {
+                fan.Player?.Stop();
+                if (still != null) fan.Renderer.sprite = still;
+            }
         }
 
         // ---------------- 이벤트 ----------------
@@ -134,6 +215,7 @@ namespace ContextStage
         {
             EnsureBuilt();
             _root.gameObject.SetActive(true);
+            SetAudienceStage(e.RivalRatio);
             SyncFanCount(e.Rival);
         }
 
@@ -150,6 +232,7 @@ namespace ContextStage
                 {
                     Fan fan = _fans[_fans.Count - 1];
                     _fans.RemoveAt(_fans.Count - 1);
+                    _outgoing.Add(fan);
                     StartCoroutine(WalkOut(fan));
                 }
             }
@@ -159,12 +242,13 @@ namespace ContextStage
         {
             EnsureBuilt();
             _revenge = e.Active;
-            _led.color = _revenge ? revengeLedColor : ledColor;
+            if (!UsesExternalShow) _led.color = _revenge ? revengeLedColor : ledColor;
         }
 
         void OnPatternStarted(BossPatternStarted e)
         {
             EnsureBuilt();
+            if (UsesExternalShow) { _led.enabled = false; return; }
             if (_blinkRoutine != null) StopCoroutine(_blinkRoutine);
             _blinkRoutine = StartCoroutine(Blink(e.Duration));
         }
@@ -179,7 +263,7 @@ namespace ContextStage
             }
             _duoA.color = DuoBaseA;
             _duoB.color = DuoBaseB;
-            _led.color = _revenge ? revengeLedColor : ledColor;
+            if (!UsesExternalShow) _led.color = _revenge ? revengeLedColor : ledColor;
         }
 
         void OnGameStateChanged(GameStateChanged e)
@@ -229,7 +313,8 @@ namespace ContextStage
         Fan CreateFan(int index)
         {
             Vector3 slot = FanSlotFor(index, out float scale, out int order);
-            var fan = new Fan { Slot = slot, Scale = scale };
+            var fan = new Fan { Slot = slot, Scale = scale, Seed = index,
+                Preference = (CrowdPreference)(index % 3), Variance = CrowdMotionEvaluator.MakeVariance(index + fanSeed, 0.2f) };
 
             var go = new GameObject($"RivalFan_{index}");
             go.transform.SetParent(_root, false);
@@ -241,11 +326,13 @@ namespace ContextStage
 
             var preference = (CrowdPreference)(index % 3);
             AudienceMemberActor source = FanVisualSource();
-            if (source != null && source.TryGetIdleVisual(preference, index, out SpriteAnimationClip clip, out Sprite still))
+            if (source != null && source.TryGetPresentationVisual(preference, _audienceStage, index,
+                out SpriteAnimationClip clip, out Sprite still, out Color original))
             {
                 go.transform.localScale = Vector3.one * scale;
                 if (index % 2 == 1) renderer.flipX = true;
-                fan.BaseColor = fanTint;
+                fan.BaseColor = original;
+                renderer.sharedMaterial = source.CharacterRenderer.sharedMaterial;
                 if (clip != null && clip.IsValid)
                 {
                     fan.Player = new SpriteAnimationPlayer(renderer);
@@ -262,7 +349,7 @@ namespace ContextStage
                 go.transform.localScale = Vector3.one * fanSquareSize;
                 fan.BaseColor = fanColor;
             }
-            renderer.color = fan.BaseColor;
+            ApplyFan(fan);
             return fan;
         }
 
@@ -282,6 +369,11 @@ namespace ContextStage
             Vector3 to = fan.Renderer.transform.position;
             Vector3 from = new Vector3(to.x, _ourStageAnchor.y + 3.5f, 0f); // 우리 무대 위쪽에서 올라온다
             yield return Walk(fan, from, to, false);
+            if (fan.Renderer != null)
+            {
+                if (_arrivalVfx == null) _arrivalVfx = gameObject.AddComponent<RivalArrivalVFX>();
+                _arrivalVfx.Emit(fan.Renderer.bounds.center + Vector3.down * fan.Renderer.bounds.extents.y, fan.Scale);
+            }
         }
 
         IEnumerator WalkOut(Fan fan)
@@ -291,25 +383,27 @@ namespace ContextStage
             Vector3 to = new Vector3(from.x, _ourStageAnchor.y + 3.5f, 0f);
             yield return Walk(fan, from, to, true);
             if (fan.Renderer != null) Destroy(fan.Renderer.gameObject);
+            _outgoing.Remove(fan);
         }
 
         IEnumerator Walk(Fan fan, Vector3 from, Vector3 to, bool fadeOut)
         {
             float elapsed = 0f;
-            Color baseColor = fan.BaseColor;
-            while (elapsed < fanWalkDuration)
+            fan.Walking = true;
+            float duration = Mathf.Max(0.05f, fanWalkDuration * (0.9f + Mathf.Abs(fan.Slot.x % 1f) * 0.2f));
+            if (fan.Renderer != null) fan.Renderer.transform.position = from;
+            while (elapsed < duration)
             {
                 if (fan.Renderer == null) yield break;
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / fanWalkDuration);
+                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
                 float bob = Mathf.Abs(Mathf.Sin(t * Mathf.PI * 4f)) * 0.12f;
                 fan.Renderer.transform.position = Vector3.Lerp(from, to, t) + new Vector3(0f, bob, 0f);
-                Color c = baseColor;
-                c.a = fadeOut ? baseColor.a * (1f - t * 0.6f) : baseColor.a;
-                fan.Renderer.color = c;
+                fan.Fade = fadeOut ? 1f - t * 0.6f : 1f;
                 yield return null;
             }
             if (fan.Renderer != null) fan.Renderer.transform.position = to;
+            fan.Walking = false;
         }
 
         // ---------------- 연출 ----------------
@@ -336,13 +430,22 @@ namespace ContextStage
 
         void ResetVisual()
         {
+            if (_arrivalVfx != null) _arrivalVfx.Clear();
+            StopAllCoroutines();
+            _blinkRoutine = null;
+            if (_root != null)
+                foreach (Transform child in _root)
+                    if (child.name.StartsWith("RivalFan_")) Destroy(child.gameObject);
             _revenge = false;
             _platform.color = platformColor;
             _led.color = ledColor;
+            _led.enabled = !UsesExternalShow;
             _duoA.color = DuoBaseA;
             _duoB.color = DuoBaseB;
-            for (int i = 0; i < _fans.Count; i++) if (_fans[i]?.Renderer != null) Destroy(_fans[i].Renderer.gameObject);
             _fans.Clear();
+            _outgoing.Clear();
+            _audienceStage = AudienceEngagementStage.Calm;
+            _motionFrom = _motionTo = null;
             _root.gameObject.SetActive(false);
         }
 

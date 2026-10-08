@@ -17,6 +17,8 @@ namespace ContextStage
 
         public BossZone CurrentZone { get; private set; } = BossZone.OurStage;
         public bool IsMoving => _routine != null;
+        /// <summary>표시 전용 공통 보간. 0=우리 화면, 1=보스 화면. HP/판정은 변경하지 않는다.</summary>
+        public static float RivalViewBlend { get; private set; }
 
         Camera Cam => targetCamera != null ? targetCamera : Camera.main;
 
@@ -48,11 +50,13 @@ namespace ContextStage
             if (cam == null || _arena == null)
             {
                 CurrentZone = zone;
+                RivalViewBlend = zone == BossZone.RivalStage ? 1f : 0f;
                 _routine = null;
                 yield break;
             }
 
             Vector3 from = cam.transform.position;
+            float fromBlend = RivalViewBlend;
             Vector3 anchor = _arena.AnchorOf(zone);
             Vector3 to = new Vector3(anchor.x, anchor.y, from.z);
             float elapsed = 0f;
@@ -61,10 +65,12 @@ namespace ContextStage
                 elapsed += Time.deltaTime;
                 float t = duration <= 0f ? 1f : Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
                 cam.transform.position = Vector3.Lerp(from, to, t);
+                RivalViewBlend = Mathf.Lerp(fromBlend, zone == BossZone.RivalStage ? 1f : 0f, t);
                 yield return null;
             }
             cam.transform.position = to;
             CurrentZone = zone;
+            RivalViewBlend = zone == BossZone.RivalStage ? 1f : 0f;
             _routine = null;
         }
 
@@ -77,6 +83,7 @@ namespace ContextStage
                 cam.transform.position = new Vector3(anchor.x, anchor.y, cam.transform.position.z);
             }
             CurrentZone = zone;
+            RivalViewBlend = zone == BossZone.RivalStage ? 1f : 0f;
         }
 
         void OnDisable() => SnapHome();

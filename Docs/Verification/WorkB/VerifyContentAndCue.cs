@@ -1,0 +1,43 @@
+var checks = new System.Collections.Generic.List<string>();
+System.Action<bool,string> check=(ok,label)=>checks.Add((ok?"PASS ":"FAIL ")+label);
+var catalog=ContextStage.ResultNewspaperCatalog.LoadDefault();
+check(catalog!=null,"newspaper catalog resource resolved");
+for(int n=1;n<=4;n++)
+{
+    var stage=UnityEditor.AssetDatabase.LoadAssetAtPath<ContextStage.StageDefinition>("Assets/Settings/Tour/Stage0"+n+".asset");
+    var report=new ContextStage.PerformanceReport { targetScore=5000,maxCombo=11,feverCount=2,audienceRemaining=3,audienceCapacity=8 };
+    var result=new ContextStage.StageResult("test",stage.StageId,true,9000,"S",11){report=report};
+    var presentation=ContextStage.ResultHeadlineSelector.Compose(result,stage,n,ContextStage.ResultNextAction.Augment,catalog);
+    check(presentation.headline==catalog.HeadlineForStage(stage.StageId,"S",true),"stage "+n+" rank headline");
+    result.cleared=false;
+    presentation=ContextStage.ResultHeadlineSelector.Compose(result,stage,n,ContextStage.ResultNextAction.Failed,catalog);
+    check(!presentation.success && presentation.headline==catalog.HeadlineForStage(stage.StageId,"S",false),"stage "+n+" high score failure stays failure");
+}
+var boss=UnityEditor.AssetDatabase.LoadAssetAtPath<ContextStage.StageDefinition>("Assets/Settings/Tour/Stage05Boss.asset");
+var bossReport=new ContextStage.PerformanceReport {isBoss=true,targetScore=boss.TargetScore,bossOutcome=ContextStage.BossOutcome.Won,bossPatternsSucceeded=2,bossFansRecruited=0};
+var bossResult=new ContextStage.StageResult("boss",boss.StageId,true,0,"F",0){report=bossReport};
+var bossPresentation=ContextStage.ResultHeadlineSelector.Compose(bossResult,boss,5,ContextStage.ResultNextAction.Ending,catalog);
+check(bossPresentation.success && !bossPresentation.subtitle.Contains("상대 팬"),"zero recruited fans not fabricated");
+var flags=System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance;
+var seq=UnityEditor.AssetDatabase.LoadAssetAtPath<ContextStage.DialogueSequence>("Assets/Settings/Dialogue/Sequences/intro_stage_02.asset");
+check(seq.Lines.Count(x=>x.presentationCue=="cable_pop")==1,"Stage2 single cable-pop cue");
+var cue=seq.Lines.First(x=>x.presentationCue=="cable_pop");
+var library=UnityEngine.Resources.Load<GameJamKit.SoundLibrary>("SoundLibrary");
+check(library.Find(cue.sfxId).clips[0].length<2f,"cable pop uses short SFX not long music");
+var panel=UnityEngine.Object.FindFirstObjectByType<ContextStage.DialoguePanel>(UnityEngine.FindObjectsInactive.Include);
+if(panel==null)panel=ContextStage.DialoguePanelFactory.Create(null,null);
+var testSequence=UnityEngine.ScriptableObject.CreateInstance<ContextStage.DialogueSequence>();
+testSequence.EditorInitialize("cue_test",new System.Collections.Generic.List<ContextStage.DialogueLine>{cue,new ContextStage.DialogueLine{text="배경 복구 확인"}});
+panel.Play(testSequence,new ContextStage.DialoguePresentationContext(),null);
+var flash=(UnityEngine.UI.Image)panel.GetType().GetField("_lineCueFlash",flags).GetValue(panel);
+check(flash!=null && flash.color.a>0f && !flash.raycastTarget,"cue visible and non-blocking");
+panel.Advance();panel.Advance();
+check(flash.color.a==0f && !(bool)panel.GetType().GetField("_cueMovingBackdrop",flags).GetValue(panel),"next line clears cue");
+panel.Play(testSequence,new ContextStage.DialoguePresentationContext(),null);panel.Skip();
+check(flash.color.a==0f,"skip clears cue immediately");
+panel.HideImmediate();
+check(!panel.IsPlaying && flash.color.a==0f,"hide clears cue");
+UnityEngine.Object.Destroy(testSequence);
+var pointers=UnityEngine.Object.FindObjectsByType<ContextStage.PointerPixelFeedback>(UnityEngine.FindObjectsInactive.Include,UnityEngine.FindObjectsSortMode.None);
+check(pointers.Length>0 && pointers.All(p=>!(bool)p.GetType().GetField("showPointerPixels",flags).GetValue(p)),"optional cursor prototype off by default");
+return new{pass=checks.Count(x=>x.StartsWith("PASS")),fail=checks.Count(x=>x.StartsWith("FAIL")),checks=checks.ToArray()};

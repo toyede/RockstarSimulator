@@ -24,8 +24,8 @@ namespace ContextStage
         [SerializeField, Min(0f)] float resultHoldDuration = 1.6f;
         [SerializeField, Min(0f), Tooltip("바가 목표값을 따라가는 속도")] float fillLerpSpeed = 6f;
         [SerializeField, Tooltip("상단에서의 위치(px, 1080 기준). 점수·랭크 HUD 아래")] float topOffset = 118f;
-        [SerializeField, Tooltip("패턴(미션) 패널 위치 — 왼쪽 위 기준(px, 1920×1080)")] Vector2 patternPanelPosition = new Vector2(24f, -24f);
-        [SerializeField, Tooltip("패턴(미션) 패널 크기(px)")] Vector2 patternPanelSize = new Vector2(480f, 118f);
+        [SerializeField, Tooltip("미션 패널 위치 — 왼쪽 중단 기준(px, 1920×1080)")] Vector2 patternPanelPosition = new Vector2(32f, 0f);
+        [SerializeField, Tooltip("미션 패널 크기(px)")] Vector2 patternPanelSize = new Vector2(512f, 384f);
 
         Canvas _canvas;
         Image _barBack;
@@ -36,17 +36,35 @@ namespace ContextStage
         TMP_Text _drainText;
         TMP_Text _drainPopup;
         RectTransform _patternPanel;
-        Image _patternBackground;
         TMP_Text _patternTitle;
         TMP_Text _patternBody;
         TMP_Text _patternProgress;
         TMP_Text _patternTimer;
         TMP_Text _bigText;
+        MissionCueSheetView _missionView;
+
+        const string StandingFanEventId = "stadium_contested_fan";
+        // 표시는 독립적인 두 채널로 보관한다. 보상/실패 판정에는 관여하지 않는다.
+        sealed class MissionDisplay
+        {
+            public string Id, Title, Body, Progress, Timer;
+            public bool Active;
+            public bool Achieved;
+            public float ResultRemaining;
+            public Color Color;
+            public bool Visible => Active || ResultRemaining > 0f;
+            public void Clear() { Id = null; Active = false; ResultRemaining = 0f; }
+        }
+        readonly MissionDisplay _pattern = new MissionDisplay();
+        readonly MissionDisplay _standing = new MissionDisplay();
+        bool _paused;
+        int _bigVersion;
+
+        public static bool HandlesStageEvent(string eventId) => eventId == StandingFanEventId &&
+            StageRuntimeDirector.CurrentStage != null && StageRuntimeDirector.CurrentStage.IsBoss;
 
         float _targetRivalRatio = 1f;
-        bool _patternActive;
         bool _revenge;
-        Coroutine _hideRoutine;
         Coroutine _popupRoutine;
 
         void OnEnable()
@@ -60,6 +78,10 @@ namespace ContextStage
             EventBus.Subscribe<BossPatternProgress>(OnPatternProgress);
             EventBus.Subscribe<BossPatternResolved>(OnPatternResolved);
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
+            EventBus.Subscribe<StageEventStarted>(OnStandingStarted);
+            EventBus.Subscribe<StageEventProgress>(OnStandingProgress);
+            EventBus.Subscribe<StageEventResolved>(OnStandingResolved);
+            EventBus.Subscribe<StageRuntimeApplied>(OnStageApplied);
         }
 
         void OnDisable()
@@ -73,7 +95,11 @@ namespace ContextStage
             EventBus.Unsubscribe<BossPatternProgress>(OnPatternProgress);
             EventBus.Unsubscribe<BossPatternResolved>(OnPatternResolved);
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
-            if (_canvas != null) _canvas.gameObject.SetActive(false);
+            EventBus.Unsubscribe<StageEventStarted>(OnStandingStarted);
+            EventBus.Unsubscribe<StageEventProgress>(OnStandingProgress);
+            EventBus.Unsubscribe<StageEventResolved>(OnStandingResolved);
+            EventBus.Unsubscribe<StageRuntimeApplied>(OnStageApplied);
+            ResetView();
         }
 
         void Update()
@@ -84,19 +110,13 @@ namespace ContextStage
                 ? _targetRivalRatio
                 : Mathf.MoveTowards(_rivalFill.fillAmount, _targetRivalRatio, fillLerpSpeed * Time.unscaledDeltaTime);
 
-            if (_patternActive && _patternBackground != null)
+            if (!_paused)
             {
-                float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 8f);
-                if (_panelStyledFromTutorial)
+                if (_pattern.ResultRemaining > 0f || _standing.ResultRemaining > 0f)
                 {
-                    // 튜토리얼 패널 모양을 빌린 경우 배경은 그대로 두고 제목만 맥동
-                    _patternTitle.color = Color.Lerp(_revenge ? revengeColor : warningColor, Color.white, pulse * 0.35f);
-                }
-                else
-                {
-                    Color color = Color.Lerp(new Color(0.08f, 0.05f, 0.1f, 0.92f), warningColor * 0.7f, pulse * 0.6f);
-                    color.a = 0.92f;
-                    _patternBackground.color = color;
+                    _pattern.ResultRemaining = Mathf.Max(0f, _pattern.ResultRemaining - Time.deltaTime);
+                    _standing.ResultRemaining = Mathf.Max(0f, _standing.ResultRemaining - Time.deltaTime);
+                    RefreshMission();
                 }
             }
         }
@@ -106,7 +126,7 @@ namespace ContextStage
         void OnBalance(BossFanBalanceChanged e)
         {
             EnsureView();
-            _canvas.gameObject.SetActive(true);
+            _canvas.gameObject.SetActive(!_paused);
             _targetRivalRatio = e.RivalRatio;
             _rivalText.text = $"{rivalName}  {e.Rival}";
             _ourText.text = $"{e.Ours}  {ourName}";
@@ -164,8 +184,8 @@ namespace ContextStage
         void OnPatternAnnounced(BossPatternAnnounced e)
         {
             EnsureView();
-            StopHide();
-            _patternPanel.gameObject.SetActive(false);
+            _pattern.Clear();
+            RefreshMission();
             string title = e.Enhanced ? $"{e.Title}  ▲" : e.Title;
             ShowBig(title, _revenge ? revengeColor : warningColor, Mathf.Max(0.5f, e.DisplaySeconds));
         }
@@ -173,61 +193,123 @@ namespace ContextStage
         void OnPatternStarted(BossPatternStarted e)
         {
             EnsureView();
-            StopHide();
             if (_bigText != null) _bigText.gameObject.SetActive(false);
-            _patternActive = true;
-            _patternPanel.gameObject.SetActive(true);
-            _patternTitle.text = e.Enhanced ? $"{e.Title}  ▲" : e.Title;
-            _patternTitle.color = _revenge ? revengeColor : warningColor;
-            _patternBody.text = e.Instruction;
-            _patternProgress.text = "";
-            _patternTimer.text = $"{e.Duration:0.0}s";
+            _bigVersion++;
+            _pattern.Id = e.PatternId;
+            _pattern.Active = true; _pattern.ResultRemaining = 0f; _pattern.Achieved = false;
+            _pattern.Title = e.Enhanced ? $"{e.Title}  ▲" : e.Title;
+            _pattern.Color = _revenge ? revengeColor : warningColor;
+            _pattern.Body = e.Instruction;
+            _pattern.Progress = "";
+            _pattern.Timer = $"{e.Duration:0.0}s";
+            RefreshMission();
         }
 
         void OnPatternProgress(BossPatternProgress e)
         {
-            if (_patternProgress == null) return;
-            _patternProgress.text = e.ProgressText;
-            _patternTimer.text = $"{e.Remaining:0.0}s";
-            _patternProgress.color = e.Achieved ? successColor : Color.white;
+            if (!_pattern.Active || _pattern.Id != e.PatternId) return;
+            _pattern.Progress = e.ProgressText;
+            _pattern.Achieved = e.Achieved;
+            _pattern.Timer = $"{e.Remaining:0.0}s";
+            RefreshMission();
         }
 
         void OnPatternResolved(BossPatternResolved e)
         {
-            EnsureView();
-            _patternActive = false;
-            if (!_panelStyledFromTutorial) _patternBackground.color = new Color(0.08f, 0.05f, 0.1f, 0.92f);
+            if (!_pattern.Active || _pattern.Id != e.PatternId) return;
+            _pattern.Active = false;
+            _pattern.ResultRemaining = resultHoldDuration;
 
             if (e.Success)
             {
-                _patternTitle.text = $"{e.Title}  성공!";
-                _patternTitle.color = successColor;
-                _patternBody.text = e.FansMoved > 0
+                _pattern.Title = $"{e.Title}  성공!";
+                _pattern.Color = successColor;
+                _pattern.Body = e.FansMoved > 0
                     ? $"라이벌 팬 {e.FansMoved}명이 우리 무대로 · 보너스 +{e.BonusScore:N0}"
                     : $"만석! 보너스 +{e.BonusScore:N0}";
             }
             else
             {
-                _patternTitle.text = $"{e.Title}  실패";
-                _patternTitle.color = warningColor;
-                _patternBody.text = e.FansMoved > 0
+                _pattern.Title = $"{e.Title}  실패";
+                _pattern.Color = warningColor;
+                _pattern.Body = e.FansMoved > 0
                     ? $"우리 팬 {e.FansMoved}명이 라이벌 무대로… 감소가 커집니다"
                     : "기회를 놓쳤습니다";
             }
-            _patternProgress.text = "";
-            _patternTimer.text = "";
+            _pattern.Progress = _pattern.Timer = "";
+            RefreshMission();
+        }
 
-            StopHide();
-            _hideRoutine = StartCoroutine(HidePatternAfter(resultHoldDuration));
+        void OnStandingStarted(StageEventStarted e)
+        {
+            if (!HandlesStageEvent(e.EventId)) return;
+            EnsureView();
+            _standing.Id = e.EventId; _standing.Active = true; _standing.ResultRemaining = 0;
+            _standing.Title = e.Title; _standing.Body = e.Instruction;
+            _standing.Color = warningColor; _standing.Progress = "";
+            _standing.Timer = $"{e.Duration:0.0}s";
+            RefreshMission();
+        }
+
+        void OnStandingProgress(StageEventProgress e)
+        {
+            if (!HandlesStageEvent(e.EventId) || !_standing.Active || _standing.Id != e.EventId) return;
+            _standing.Progress = e.ProgressText;
+            _standing.Timer = $"{e.Remaining:0.0}s";
+            RefreshMission();
+        }
+
+        void OnStandingResolved(StageEventResolved e)
+        {
+            if (!HandlesStageEvent(e.EventId) || !_standing.Active || _standing.Id != e.EventId) return;
+            _standing.Active = false; _standing.ResultRemaining = resultHoldDuration;
+            _standing.Title = $"{e.Title} · {(e.Success ? "성공!" : "실패")}";
+            _standing.Body = e.ResultText;
+            _standing.Color = e.Success ? successColor : warningColor;
+            _standing.Progress = _standing.Timer = "";
+            RefreshMission();
+        }
+
+        void RefreshMission()
+        {
+            if (_missionView == null) return;
+            MissionDisplay primary = _pattern.Active ? _pattern : _standing.Active ? _standing :
+                _pattern.Visible ? _pattern : _standing.Visible ? _standing : null;
+            _patternPanel.gameObject.SetActive(primary != null);
+            if (primary == null) return;
+            MissionDisplay other = primary == _pattern ? _standing : _pattern;
+            _patternPanel.sizeDelta = new Vector2(patternPanelSize.x, other.Visible ? Mathf.Max(480f, patternPanelSize.y) :
+                Mathf.Max(384f, patternPanelSize.y));
+            _patternTitle.text = primary.Title; _patternTitle.color = primary.Color;
+            _patternBody.text = primary.Body;
+            _patternProgress.text = primary.Progress;
+            _patternProgress.color = primary.Achieved ? new Color32(0x20, 0x7A, 0x4C, 0xFF) : new Color32(0x1B, 0x64, 0x9C, 0xFF);
+            _patternTimer.text = primary.Timer;
+            string secondary = other.Visible ? other.Active
+                ? $"{other.Body}\n{other.Progress}  {other.Timer}"
+                : $"{other.Title}\n{other.Body}" : "";
+            _missionView.SetSecondary(secondary);
+            _canvas.gameObject.SetActive(!_paused);
+        }
+
+        void OnStageApplied(StageRuntimeApplied e) => ResetView();
+
+        void ResetView()
+        {
+            StopAllCoroutines(); _popupRoutine = null; _bigVersion++;
+            _pattern.Clear(); _standing.Clear(); _paused = false;
+            _targetRivalRatio = 1f; _revenge = false;
+            if (_patternPanel != null) _patternPanel.gameObject.SetActive(false);
+            if (_bigText != null) _bigText.gameObject.SetActive(false);
+            if (_drainPopup != null) _drainPopup.gameObject.SetActive(false);
+            if (_canvas != null) _canvas.gameObject.SetActive(false);
         }
 
         void OnGameStateChanged(GameStateChanged e)
         {
-            if (e.Current != GameState.GameOver && e.Current != GameState.Ready) return;
-            _patternActive = false;
-            _targetRivalRatio = 1f;
-            _revenge = false;
-            if (_canvas != null) _canvas.gameObject.SetActive(false);
+            if (e.Current == GameState.GameOver || e.Current == GameState.Ready) { ResetView(); return; }
+            _paused = e.Current == GameState.Paused;
+            if (_canvas != null) _canvas.gameObject.SetActive(!_paused && StageRuntimeDirector.CurrentStage != null && StageRuntimeDirector.CurrentStage.IsBoss);
         }
 
         // ---------------- 표시 ----------------
@@ -237,27 +319,13 @@ namespace ContextStage
             _bigText.text = text;
             _bigText.color = color;
             _bigText.gameObject.SetActive(true);
-            StartCoroutine(HideBigAfter(hold));
+            StartCoroutine(HideBigAfter(hold, ++_bigVersion));
         }
 
-        IEnumerator HideBigAfter(float seconds)
+        IEnumerator HideBigAfter(float seconds, int version)
         {
             yield return new WaitForSecondsRealtime(seconds);
-            if (_bigText != null) _bigText.gameObject.SetActive(false);
-        }
-
-        IEnumerator HidePatternAfter(float seconds)
-        {
-            yield return new WaitForSecondsRealtime(seconds);
-            if (_patternPanel != null) _patternPanel.gameObject.SetActive(false);
-            _hideRoutine = null;
-        }
-
-        void StopHide()
-        {
-            if (_hideRoutine == null) return;
-            StopCoroutine(_hideRoutine);
-            _hideRoutine = null;
+            if (_bigText != null && version == _bigVersion) _bigText.gameObject.SetActive(false);
         }
 
         void EnsureView()
@@ -322,24 +390,14 @@ namespace ContextStage
             _drainPopup.fontStyle = FontStyles.Bold;
             _drainPopup.gameObject.SetActive(false);
 
-            // 패턴(미션) 패널 — 화면 기획 09-18: 왼쪽 위 모달 (시간 바 자리)
-            _patternPanel = CreateRect(canvasObject.transform, "Pattern", new Vector2(0f, 1f), patternPanelPosition, patternPanelSize);
-            _patternPanel.pivot = new Vector2(0f, 1f); // 왼쪽 위 모서리 기준
+            // 미션만 좌측 중단으로 이동. 상단 팬 게이지 배치는 유지한다.
+            _patternPanel = CreateRect(canvasObject.transform, "Pattern", new Vector2(0f, .5f), patternPanelPosition, patternPanelSize);
+            _patternPanel.pivot = new Vector2(0f, .5f);
             _patternPanel.anchoredPosition = patternPanelPosition;
-            _patternBackground = _patternPanel.gameObject.AddComponent<Image>();
-            _patternBackground.color = new Color(0.08f, 0.05f, 0.1f, 0.92f);
-            _patternBackground.raycastTarget = false;
-
-            _patternTitle = CreateText(_patternPanel, "Title", resolvedFont, 32f, TextAlignmentOptions.MidlineLeft, warningColor);
-            SetRect(_patternTitle.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -8f), new Vector2(-40f, 40f));
-            _patternTimer = CreateText(_patternPanel, "Timer", resolvedFont, 28f, TextAlignmentOptions.MidlineRight, Color.white);
-            SetRect(_patternTimer.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -8f), new Vector2(200f, 40f));
-            _patternBody = CreateText(_patternPanel, "Body", resolvedFont, 24f, TextAlignmentOptions.MidlineLeft, Color.white);
-            SetRect(_patternBody.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(-40f, 34f));
-            _patternProgress = CreateText(_patternPanel, "Progress", resolvedFont, 24f, TextAlignmentOptions.MidlineLeft, Color.white);
-            SetRect(_patternProgress.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 8f), new Vector2(-40f, 30f));
+            _missionView = MissionCueSheetView.Create(_patternPanel, resolvedFont);
+            _patternTitle = _missionView.Title; _patternTimer = _missionView.Timer;
+            _patternBody = _missionView.Body; _patternProgress = _missionView.Progress;
             _patternPanel.gameObject.SetActive(false);
-            ApplyTutorialPanelStyle();
 
             // 큰 자막 (예고 · REVENGE)
             _bigText = CreateText(canvasObject.transform, "Big", resolvedFont, 56f, TextAlignmentOptions.Center, successColor);
@@ -349,43 +407,6 @@ namespace ContextStage
             _bigText.gameObject.SetActive(false);
         }
 
-        /// <summary>패턴 경고 패널을 튜토리얼 메시지 패널과 같은 모양(배경 스프라이트·색·테두리·글자 크기)으로 맞춘다.</summary>
-        void ApplyTutorialPanelStyle()
-        {
-            TutorialOverlayUI tutorial = FindFirstObjectByType<TutorialOverlayUI>(FindObjectsInactive.Include);
-            Image source = tutorial != null ? tutorial.PanelImage : null;
-            if (source == null) return;
-
-            _patternBackground.sprite = source.sprite;
-            _patternBackground.type = source.type;
-            _patternBackground.pixelsPerUnitMultiplier = source.pixelsPerUnitMultiplier;
-            _patternBackground.color = source.color;
-            _panelStyledFromTutorial = true;
-
-            Outline outline = source.GetComponent<Outline>();
-            if (outline != null)
-            {
-                Outline copy = _patternPanel.gameObject.AddComponent<Outline>();
-                copy.effectColor = outline.effectColor;
-                copy.effectDistance = outline.effectDistance;
-                copy.useGraphicAlpha = outline.useGraphicAlpha;
-            }
-
-            Shadow shadow = source.GetComponent<Shadow>();
-            if (shadow != null && !(shadow is Outline))
-            {
-                Shadow copy = _patternPanel.gameObject.AddComponent<Shadow>();
-                copy.effectColor = shadow.effectColor;
-                copy.effectDistance = shadow.effectDistance;
-            }
-
-            _patternTitle.fontSize = tutorial.TitleFontSize;
-            _patternBody.fontSize = tutorial.BodyFontSize;
-            _patternProgress.fontSize = tutorial.BodyFontSize;
-            _patternTimer.fontSize = tutorial.BodyFontSize + 2;
-        }
-
-        bool _panelStyledFromTutorial;
 
         static RectTransform CreateRect(Transform parent, string name, Vector2 anchor, Vector2 position, Vector2 size)
         {

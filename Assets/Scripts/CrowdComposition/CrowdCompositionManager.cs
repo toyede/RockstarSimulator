@@ -48,6 +48,7 @@ namespace ContextStage
         void Update()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!TourDebugInput.AllowInCurrentContext) return;
             if (!enableDebugInput) return;
 
 #if ENABLE_INPUT_SYSTEM

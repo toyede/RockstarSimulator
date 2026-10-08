@@ -26,10 +26,11 @@ namespace ContextStage
     {
         [SerializeField, Tooltip("비우면 룰이 Begin 에서 넘겨준다")] BossBattleConfig config;
         [SerializeField, Tooltip("보스전 동안 랭크·점수·시간 HUD 를 숨긴다 (관객 쟁탈전에서는 보여준다)")] bool hideScoreHud = false;
-        [SerializeField, Tooltip("보스전 동안 왼쪽 위 공연 시간 바만 숨긴다 (화면 기획 09-18: 보스전 화면에는 시간 바가 없다)")] bool hideTimerHud = true;
+        [SerializeField, Tooltip("보스전 동안 공연 시계를 숨긴다. 기본은 표시") ] bool hideTimerHud = false;
         [SerializeField, Tooltip("틴트 캔버스 Sorting Order (보스 UI 155 아래, 손패 위)")] int tintSortingOrder = 150;
 
         [Header("엿보기 버튼")]
+        [SerializeField, Tooltip("카메라 전환 버튼 아트. boss_camera 스프라이트를 연결한다")] Sprite peekButtonSprite;
         [SerializeField, Tooltip("한글 폰트. 비우면 DialogueCatalog 스타일 폰트")] TMP_FontAsset font;
         [SerializeField] string peekLabel = "라이벌 무대 보기  [Tab]";
         [SerializeField] string returnLabel = "우리 무대로  [Tab]";
@@ -77,8 +78,8 @@ namespace ContextStage
         void Update()
         {
             if (!_began || _peekButton == null) return;
-            bool allowed = _sequence == null && (_canPeek == null || _canPeek());
-            _peekButton.interactable = allowed || _peeking;
+            bool allowed = _sequence == null && (_peeking || _canPeek == null || _canPeek());
+            _peekButton.interactable = allowed && !MenuBlocksPeek();
             if (peekWithTabKey && _peekButton.interactable && TabPressedThisFrame()) TogglePeek();
         }
 
@@ -154,12 +155,21 @@ namespace ContextStage
 
             float fade = config.CinematicFadeDuration;
             EnsureTint();
-            StartCoroutine(FadeTint(config.CinematicTintAlpha, fade));
+            // The non-viewed audience is dimmed by camera blend; do not blacken the viewed stage.
+            StartCoroutine(FadeTint(0f, fade));
             if (_hand != null) _hand.SetStowed(true, fade, config.HandStowDistance);
             yield return Wait(fade);
 
             yield return _camera.PanRoutine(BossZone.RivalStage, config.CinematicPanOutDuration);
-            yield return Wait(hold);
+            float holdElapsed=0;
+            EventBus.Raise(new BossLightingHoldProgress(0,true));
+            while(holdElapsed<hold)
+            {
+                holdElapsed+=Time.deltaTime;
+                EventBus.Raise(new BossLightingHoldProgress(hold<=0?1:Mathf.Clamp01(holdElapsed/hold),true));
+                yield return null;
+            }
+            EventBus.Raise(new BossLightingHoldProgress(1,false));
             yield return _camera.PanRoutine(BossZone.OurStage, config.CinematicPanBackDuration);
 
             StartCoroutine(FadeTint(0f, fade));
@@ -177,10 +187,13 @@ namespace ContextStage
         /// <summary>버튼: 라이벌 무대 보기 ↔ 우리 무대로 돌아가기.</summary>
         public void TogglePeek()
         {
-            if (!IsReady || _sequence != null) return;
+            if (!IsReady || _sequence != null || MenuBlocksPeek()) return;
             if (_peeking) EndPeek();
             else if (_canPeek == null || _canPeek()) BeginPeek();
         }
+
+        static bool MenuBlocksPeek() => Time.timeScale <= 0f ||
+            (UIManager.HasInstance && UIManager.Instance.AnyPopupOpen);
 
         void BeginPeek()
         {
@@ -204,7 +217,7 @@ namespace ContextStage
             {
                 Lock(pauseTimer: false); // 엿보기는 타이머·드레인을 멈추지 않는다
                 EventBus.Raise(new BossCinematicStarted(BossCinematicKind.Peek));
-                StartCoroutine(FadeTint(config.CinematicTintAlpha, fade));
+                StartCoroutine(FadeTint(0f, fade));
                 if (_hand != null) _hand.SetStowed(true, fade, config.HandStowDistance);
                 yield return Wait(fade);
                 yield return _camera.PanRoutine(BossZone.RivalStage, config.PeekPanDuration);
@@ -311,6 +324,7 @@ namespace ContextStage
         /// <summary>연출을 끊고 카메라·틴트·손패·잠금을 즉시 되돌린다.</summary>
         void RestoreImmediate()
         {
+            EventBus.Raise(new BossLightingHoldProgress(0,false));
             StopAllCoroutines();
             _sequence = null;
             _peeking = false;
@@ -342,7 +356,7 @@ namespace ContextStage
             _hiddenHud.Clear();
             HideHudOf(FindFirstObjectByType<ScoreRankUI>());
             HideHudOf(FindFirstObjectByType<ScoreUI>());
-            HideHudOf(FindFirstObjectByType<PerformanceTimerUI>());
+            if (hideTimerHud) HideHudOf(FindFirstObjectByType<PerformanceTimerUI>());
         }
 
         /// <summary>시간 바만 숨긴다. 시간 바가 자기 캔버스 루트여도 CanvasGroup 으로 가린다 (손패가 그 아래에 있으면 건너뛴다).</summary>
@@ -443,15 +457,20 @@ namespace ContextStage
             var buttonObject = new GameObject("PeekButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             _peekRect = buttonObject.GetComponent<RectTransform>();
             _peekRect.SetParent(canvasObject.transform, false);
-            _peekRect.sizeDelta = new Vector2(240f, 56f);
+            _peekRect.sizeDelta = peekButtonSprite != null
+                ? new Vector2(240f, 240f * peekButtonSprite.rect.height / peekButtonSprite.rect.width)
+                : new Vector2(240f, 56f);
             var image = buttonObject.GetComponent<Image>();
-            image.color = new Color(0.1f, 0.07f, 0.12f, 0.9f);
+            image.sprite = peekButtonSprite;
+            image.preserveAspect = true;
+            image.color = peekButtonSprite != null ? Color.white : new Color(0.1f, 0.07f, 0.12f, 0.9f);
             _peekButton = buttonObject.GetComponent<Button>();
             var colors = _peekButton.colors;
             colors.highlightedColor = new Color(0.85f, 0.8f, 0.88f, 1f);
             colors.pressedColor = new Color(0.65f, 0.6f, 0.68f, 1f);
             colors.disabledColor = new Color(1f, 1f, 1f, 0.35f);
             _peekButton.colors = colors;
+            _peekButton.navigation = new Navigation { mode = Navigation.Mode.None };
             _peekButton.onClick.AddListener(TogglePeek);
 
             var textObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
@@ -461,6 +480,13 @@ namespace ContextStage
             textRect.anchorMax = Vector2.one;
             textRect.offsetMin = Vector2.zero;
             textRect.offsetMax = Vector2.zero;
+            if (peekButtonSprite != null)
+            {
+                textRect.anchorMin = textRect.anchorMax = new Vector2(0.5f, 0f);
+                textRect.pivot = new Vector2(0.5f, 1f);
+                textRect.anchoredPosition = new Vector2(0f, -8f);
+                textRect.sizeDelta = new Vector2(280f, 34f);
+            }
             _peekText = textObject.GetComponent<TextMeshProUGUI>();
             if (resolvedFont != null) _peekText.font = resolvedFont;
             _peekText.fontSize = 24f;

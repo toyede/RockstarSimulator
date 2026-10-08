@@ -63,7 +63,7 @@ namespace ContextStage
         [SerializeField, Min(0f)] float paperFlyDuration = 0.5f;
         [SerializeField] float paperStartOffsetY = -1200f;
         [SerializeField] float paperStartTilt = -7f;
-        [SerializeField] float paperRestTilt = -1.5f;
+        [SerializeField] float paperRestTilt = 0f;
         [SerializeField, Min(0f)] float headlineAt = 0.6f;
         [SerializeField, Min(0f)] float stampAt = 0.9f;
         [SerializeField, Min(0f)] float stampPunchDuration = 0.15f;
@@ -175,7 +175,8 @@ namespace ContextStage
 
             Set(mastheadInfo, d.mastheadInfo);
             Set(headline, d.headline);
-            Set(subtitle, d.subtitle);
+            // 보스 판정은 부제에서 명확히 표시하고, 하단 통계 기사와 공간을 분리한다.
+            Set(subtitle, string.IsNullOrEmpty(d.outcomeLine) ? d.subtitle : $"{d.subtitle} · {d.outcomeLine}");
             Set(caption, d.caption);
 
             if (photoBackground != null)
@@ -216,8 +217,27 @@ namespace ContextStage
             Set(statFever, d.statFever);
             Set(statAudience, d.statAudience);
             Set(articleTitle, d.articleTitle);
-            Set(articleBody, string.IsNullOrEmpty(d.outcomeLine) ? d.articleBody : $"{d.articleBody}  ·  {d.outcomeLine}");
+            Set(articleBody, d.articleBody);
+            // Keep the authored box, but start short articles at its top edge:
+            // middle alignment made a single line overlap the newspaper's bottom rule.
+            if (articleBody != null) articleBody.verticalAlignment = VerticalAlignmentOptions.Top;
             Set(primaryLabel, d.buttonLabel);
+            FitTypography();
+        }
+
+        void FitTypography()
+        {
+            TMP_Text[] labels = { mastheadInfo, headline, subtitle, caption, stampText, scoreText, targetText,
+                ratioText, statCombo, statFever, statAudience, articleTitle, articleBody, primaryLabel };
+            foreach (TMP_Text label in labels)
+            {
+                if (label == null) continue;
+                // 가짜 볼드/외곽선이 얇은 픽셀 획을 뭉개지 않게 한다.
+                label.fontStyle &= ~FontStyles.Bold;
+                label.outlineWidth = 0f;
+                label.extraPadding = true;
+                PixelTextFit.Apply(label);
+            }
         }
 
         static void Set(TMP_Text text, string value)

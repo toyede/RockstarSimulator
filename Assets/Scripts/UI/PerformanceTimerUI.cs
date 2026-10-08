@@ -37,11 +37,25 @@ namespace ContextStage
         Color _baseTextColor;
         float _pulseStart = -1f;
         bool _pulsing;
+        [Header("마지막 시간 경고 (BGM 속도는 유지)")]
+        [SerializeField] bool urgencyVisual = true;
+        float _remaining;
+        bool _urgentCaptured;
+        Vector3 _urgentScale;
+        Color _urgentFillColor;
+        Color _urgentTextColor;
         public RectTransform VisualAnchor => valueText != null
             ? valueText.rectTransform : handleRect != null ? handleRect : transform as RectTransform;
 
         void OnEnable()
         {
+            if (!_urgentCaptured)
+            {
+                _urgentScale = transform.localScale;
+                _urgentFillColor = fillImage != null ? fillImage.color : Color.white;
+                _urgentTextColor = valueText != null ? valueText.color : Color.white;
+                _urgentCaptured = true;
+            }
             if (_pixelVfx == null)
             {
                 _pixelVfx = GetComponent<UIPixelBurstEmitter>();
@@ -88,6 +102,7 @@ namespace ContextStage
         {
             if (e.Seconds <= 0f) return;
             RestorePulse();
+            RestoreUrgency();
             if (_extensionVfx == null) _extensionVfx = AugmentCardVFX.Create(transform);
             if (_extensionVfx != null)
                 _extensionVfx.FloatPluses(VisualAnchor, Mathf.RoundToInt(e.Seconds), 0.48f);
@@ -106,7 +121,11 @@ namespace ContextStage
 
         void Update()
         {
-            if (!_pulsing || _pulseRoot == null) return;
+            if (!_pulsing || _pulseRoot == null)
+            {
+                UpdateUrgency();
+                return;
+            }
             float elapsed = Time.unscaledTime - _pulseStart;
             if (elapsed < 0f) return;
             float t = Mathf.Clamp01(elapsed / 0.85f);
@@ -137,13 +156,39 @@ namespace ContextStage
         void ResetExtensionVisual()
         {
             RestorePulse();
+            RestoreUrgency();
             if (_extensionVfx != null) _extensionVfx.Clear();
+        }
+
+        void RestoreUrgency()
+        {
+            if (!_urgentCaptured) return;
+            transform.localScale = _urgentScale;
+            if (fillImage != null) fillImage.color = _urgentFillColor;
+            if (valueText != null) valueText.color = _urgentTextColor;
+        }
+
+        void UpdateUrgency()
+        {
+            if (!GameManager.HasInstance || !GameManager.Instance.IsPlaying) return;
+            if (!urgencyVisual || _remaining <= 0f || _remaining > 15f || TutorialFlow.IsRunning)
+            {
+                RestoreUrgency();
+                return;
+            }
+            bool critical = _remaining <= 5f;
+            float pulse = 0.5f + Mathf.Sin(Time.time * (critical ? 12f : 6f)) * 0.5f;
+            transform.localScale = _urgentScale * (1f + pulse * (critical ? 0.09f : 0.035f));
+            Color warning = critical ? new Color32(0xEA, 0x4F, 0x36, 255) : new Color32(0xF9, 0xC2, 0x2B, 255);
+            if (fillImage != null) fillImage.color = Color.Lerp(_urgentFillColor, warning, pulse * 0.7f);
+            if (valueText != null) valueText.color = Color.Lerp(_urgentTextColor, warning, pulse * 0.85f);
         }
 
         void OnTimeChanged(PerformanceTimeChanged e) => Refresh(e.Elapsed, e.Duration, e.Normalized);
 
         void Refresh(float elapsed, float duration, float normalized)
         {
+            _remaining = Mathf.Max(0f, duration - elapsed);
             float t = countDown ? 1f - normalized : normalized;
 
             if (fillImage != null) fillImage.fillAmount = t;

@@ -11,7 +11,7 @@ namespace ContextStage
     [CreateAssetMenu(fileName = "ResultNewspaperCatalog", menuName = "ContextStage/Tour/Result Newspaper Catalog")]
     public sealed class ResultNewspaperCatalog : ScriptableObject
     {
-        public const string ResourcesPath = "Tour/ResultNewspaperCatalog";
+        public const string ResourcesPath = "Augments/Tour/ResultNewspaperCatalog";
 
         [Serializable]
         public sealed class Skin
@@ -31,6 +31,32 @@ namespace ContextStage
         {
             public string label = "F";
             public Sprite icon;
+        }
+
+        [Serializable]
+        public sealed class StageHeadline
+        {
+            public string stageId;
+            public string s;
+            public string a;
+            public string b;
+            public string c;
+            public string d;
+            public string fail;
+        }
+
+        [SerializeField] List<StageHeadline> stageHeadlines = new List<StageHeadline>();
+
+        public string HeadlineForStage(string stageId, string rank, bool success)
+        {
+            foreach (StageHeadline entry in stageHeadlines)
+            {
+                if (entry == null || entry.stageId != stageId) continue;
+                string text = !success ? entry.fail : rank == "S" ? entry.s : rank == "A" ? entry.a
+                    : rank == "B" ? entry.b : rank == "C" ? entry.c : entry.d;
+                if (!string.IsNullOrWhiteSpace(text)) return text;
+            }
+            return success ? HeadlineForRank(rank) : headlineFail;
         }
 
         [Header("스킨 (stageId 별). 없으면 첫 항목")]
@@ -213,6 +239,13 @@ namespace ContextStage
         }
 
 #if UNITY_EDITOR
+        public void EditorAddStageHeadline(StageHeadline entry)
+        {
+            if (entry == null) return;
+            foreach (StageHeadline existing in stageHeadlines)
+                if (existing != null && existing.stageId == entry.stageId) return;
+            stageHeadlines.Add(entry);
+        }
         /// <summary>[에디터 셋업 전용] 스킨을 추가하거나(있으면) 비어 있는 스프라이트만 채운다.</summary>
         public void EditorSetSkin(string stageId, Sprite paper, string paperName, Color accent)
         {

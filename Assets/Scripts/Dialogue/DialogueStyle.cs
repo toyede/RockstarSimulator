@@ -72,7 +72,7 @@ namespace ContextStage
         [SerializeField, Tooltip("본문 가운데 정렬 (끄면 좌상단)")]
         bool centerBodyText = true;
         [SerializeField, Tooltip("상자 우하단 기준 화살표 위치")]
-        Vector2 arrowOffset = new Vector2(-34f, 28f);
+        Vector2 arrowOffset = new Vector2(-80f, 42f);
 
         [Header("스킵 (우하단)")]
         [SerializeField, Tooltip("키 아이콘(1_f_key). 비우면 글자만")]

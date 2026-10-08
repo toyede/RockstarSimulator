@@ -1,0 +1,2 @@
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+return UnityEngine.Object.FindObjectsByType<UnityEngine.SpriteRenderer>(UnityEngine.FindObjectsInactive.Include,UnityEngine.FindObjectsSortMode.None).Where(r=>r.name.Contains("Friends")||r.name.Contains("Raccoon")||r.name.Contains("Band")||r.name.Contains("Zebra")||r.name.Contains("Hedge")).Select(r=>r.name+" parent="+r.transform.parent?.name+" active="+r.gameObject.activeInHierarchy+" enabled="+r.enabled+" sprite="+r.sprite?.name).ToArray();

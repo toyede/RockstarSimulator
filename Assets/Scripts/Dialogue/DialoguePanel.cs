@@ -150,11 +150,6 @@ namespace ContextStage
         Vector2 _arrowBasePosition;
         Sprite _generatedArrow;
 
-        [Header("화살표 위치")]
-        [SerializeField, Tooltip("줄이 끝날 때마다 화살표를 마지막 글자 옆으로 옮긴다. 끄면 프리팹의 NextArrow RectTransform 위치에 고정 (기본: 고정, 대사 상자 오른쪽 아래)")]
-        bool arrowFollowsText = false;
-        [SerializeField, Tooltip("마지막 글자 기준선 오른쪽 아래에서의 오프셋(px)")]
-        Vector2 arrowTextGap = new Vector2(22f, 4f);
         bool _completeInvoked;
         bool _listenersBound;
 
@@ -331,6 +326,7 @@ namespace ContextStage
         /// <summary>오브젝트는 켜 둔 채 아무것도 보이지 않게 한다.</summary>
         void PrepareHidden()
         {
+            ResetLineCue();
             _state = State.Hidden;
             StopPortraitAnimation();
             if (canvasGroup != null)
@@ -349,6 +345,7 @@ namespace ContextStage
 
         void ShowLine(int index)
         {
+            ResetLineCue();
             StopTyping();
             _lineIndex = index;
             DialogueLine line = _sequence.Lines[index];
@@ -365,6 +362,7 @@ namespace ContextStage
             else ApplyPortraits(line);
 
             if (!string.IsNullOrEmpty(line.sfxId)) Sound.Play(line.sfxId);
+            if (line.presentationCue == "cable_pop") _lineCueRoutine = StartCoroutine(CablePopCue());
 
             if (arrowImage != null) arrowImage.enabled = false;
 
@@ -414,39 +412,74 @@ namespace ContextStage
             OnLineComplete();
         }
 
-        /// <summary>한 줄이 다 찍혔다. 화살표를 켜고, 마지막 글자 바로 오른쪽 아래에 붙인다 (본문 길이와 상관없이 잘 보이도록).</summary>
+        /// <summary>한 줄이 다 찍히면 상자 우하단의 흰 모서리에 다음 표시를 켠다.</summary>
         void OnLineComplete()
         {
             _state = State.LineComplete;
             if (arrowImage == null) return;
             arrowImage.enabled = true;
-            if (!arrowFollowsText || bodyText == null) return;
-            if (_arrowRect == null) CacheArrow();
-            if (_arrowRect == null) return;
-
-            bodyText.ForceMeshUpdate();
-            TMP_TextInfo info = bodyText.textInfo;
-            int last = -1;
-            for (int i = info.characterCount - 1; i >= 0; i--)
-            {
-                if (info.characterInfo[i].isVisible) { last = i; break; }
-            }
-            if (last < 0) return;
-
-            TMP_CharacterInfo ch = info.characterInfo[last];
-            Vector3 world = bodyText.transform.TransformPoint(new Vector3(ch.bottomRight.x, ch.baseLine, 0f));
-            _arrowRect.position = world;
-            _arrowRect.anchoredPosition += arrowTextGap;
-            _arrowBasePosition = _arrowRect.anchoredPosition;
+            PositionFixedArrow();
         }
 
         void EndLines()
         {
+            ResetLineCue();
             StopTyping();
             if (arrowImage != null) arrowImage.enabled = false;
             if (_context.HasRuleCard) ShowRuleCard();
             else Finish();
         }
+
+        Coroutine _lineCueRoutine;
+        Image _lineCueFlash;
+        Vector2 _cueBackdropPosition;
+        bool _cueMovingBackdrop;
+
+        IEnumerator CablePopCue()
+        {
+            if (_lineCueFlash == null)
+            {
+                var go = new GameObject("CablePopFlash", typeof(RectTransform), typeof(Image));
+                go.transform.SetParent(transform, false);
+                _lineCueFlash = go.GetComponent<Image>();
+                _lineCueFlash.raycastTarget = false;
+                var rect = _lineCueFlash.rectTransform;
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = rect.offsetMax = Vector2.zero;
+                // Above scenery, below portraits and readable dialogue text.
+                go.transform.SetSiblingIndex(backdropImage != null ? backdropImage.transform.GetSiblingIndex() + 1 : 0);
+            }
+            if (backdropImage != null)
+            {
+                _cueBackdropPosition = backdropImage.rectTransform.anchoredPosition;
+                _cueMovingBackdrop = true;
+            }
+            float elapsed = 0f;
+            while (elapsed < 0.24f)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float strength = 1f - Mathf.Clamp01(elapsed / 0.24f);
+                _lineCueFlash.color = new Color(1f, 0.88f, 0.68f, strength * 0.18f);
+                if (_cueMovingBackdrop && backdropImage != null)
+                    backdropImage.rectTransform.anchoredPosition = _cueBackdropPosition +
+                        new Vector2(Mathf.Sin(elapsed * 90f), Mathf.Cos(elapsed * 75f)) * strength * 6f;
+                yield return null;
+            }
+            ResetLineCue();
+        }
+
+        void ResetLineCue()
+        {
+            if (_lineCueRoutine != null) StopCoroutine(_lineCueRoutine);
+            _lineCueRoutine = null;
+            if (_lineCueFlash != null) _lineCueFlash.color = Color.clear;
+            if (_cueMovingBackdrop && backdropImage != null)
+                backdropImage.rectTransform.anchoredPosition = _cueBackdropPosition;
+            _cueMovingBackdrop = false;
+        }
+
+        void OnDisable() => ResetLineCue();
 
         void ShowRuleCard()
         {
@@ -733,6 +766,20 @@ namespace ContextStage
             if (arrowImage == null) return;
             _arrowRect = arrowImage.rectTransform;
             _arrowBasePosition = _arrowRect.anchoredPosition;
+        }
+
+        void PositionFixedArrow()
+        {
+            if (_arrowRect == null) CacheArrow();
+            if (_arrowRect == null) return;
+            // 상자 배치는 유지하고, 잘못 저장된 화살표 앵커만 바로잡는다.
+            Transform parent = boxBackground != null ? boxBackground.transform : boxRoot != null ? boxRoot.transform : null;
+            if (parent != null && _arrowRect.parent != parent) _arrowRect.SetParent(parent, false);
+            _arrowRect.anchorMin = _arrowRect.anchorMax = new Vector2(1f, 0f);
+            _arrowRect.pivot = new Vector2(1f, 0f);
+            _arrowBasePosition = style != null ? style.ArrowOffset : new Vector2(-80f, 42f);
+            _arrowRect.anchoredPosition = _arrowBasePosition;
+            _arrowRect.SetAsLastSibling();
         }
 
         void AnimateArrow()

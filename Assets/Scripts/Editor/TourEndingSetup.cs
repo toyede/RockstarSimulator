@@ -11,14 +11,13 @@ namespace ContextStage.EditorTools
     /// </summary>
     public static class TourEndingSetup
     {
-        const string ResourcesFolder = "Assets/Resources/Tour";
+        const string ResourcesFolder = "Assets/Resources/Augments/Tour";
         const string CatalogPath = ResourcesFolder + "/TourEndingCatalog.asset";
 
         [MenuItem("Tools/Tour/Setup Ending Catalog", false, 24)]
         public static void SetupCatalog()
         {
-            if (!AssetDatabase.IsValidFolder("Assets/Resources")) AssetDatabase.CreateFolder("Assets", "Resources");
-            if (!AssetDatabase.IsValidFolder(ResourcesFolder)) AssetDatabase.CreateFolder("Assets/Resources", "Tour");
+            EditorSetupUtility.EnsureFolder(ResourcesFolder);
 
             var catalog = AssetDatabase.LoadAssetAtPath<TourEndingCatalog>(CatalogPath);
             bool created = catalog == null;

@@ -19,7 +19,7 @@ namespace ContextStage
     ///
     ///   투어 허브(TourHub)
     ///     F10         : 현재 단계를 자동으로 한 칸 진행
-    ///                   (Map → 노드 선택 / Dialogue → 완료 / Performance → 공연 없이 클리어 결과 제출 / Result → 확인)
+    ///                   (Map → 노드 선택 / Dialogue → 공연 없이 클리어 결과 / Result → 확인)
     ///                   증강 선택 화면은 직접 고른다.
     ///     F12         : 저장 데이터 전부 삭제 (튜토리얼 완료 기록·로컬 순위) — 테스트 빌드 첫 실행 확인용
     ///
@@ -30,6 +30,32 @@ namespace ContextStage
     public sealed class TourDebugInput : MonoBehaviour
     {
         const float SRankRatio = 5f; // ScoreRankUI 기본 티어: S = 목표의 500%
+
+        // 개발 중에는 기존 디버그 키·안내를 기본 제공한다.
+        public static bool EnabledForTour { get; private set; } = true;
+        // 동기 StateChanged 콜백 동안만 유지. 정상 대화 완료의 Main 진입은 막지 않는다.
+        public static bool SkippingPerformance { get; private set; }
+        public static bool AllowInCurrentContext => EnabledForTour ||
+            !TourRunManager.HasInstance || TourRunManager.Instance.CurrentRun == null;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetDebugPermission()
+        {
+            EnabledForTour = true;
+            SkippingPerformance = false;
+        }
+
+#if UNITY_EDITOR
+        [UnityEditor.MenuItem("Tools/Tour/Enable Debug Controls")]
+        static void ToggleDebugPermission() => EnabledForTour = !EnabledForTour;
+
+        [UnityEditor.MenuItem("Tools/Tour/Enable Debug Controls", true)]
+        static bool ValidateDebugPermission()
+        {
+            UnityEditor.Menu.SetChecked("Tools/Tour/Enable Debug Controls", EnabledForTour);
+            return UnityEditor.EditorApplication.isPlaying;
+        }
+#endif
 
         [SerializeField] bool showOnScreenHelp = true;
 
@@ -44,6 +70,7 @@ namespace ContextStage
 
         void Update()
         {
+            if (!EnabledForTour) return;
             if (IsUiInputFocused()) return;
 
             bool home, shift, delete, f10;
@@ -146,6 +173,7 @@ namespace ContextStage
 
             // Main 씬에서 공연 중이면 허브 진행 대신 공연 클리어 키(Home)를 쓰게 한다
             if (GameManager.HasInstance && GameManager.Instance.IsPlaying) return;
+            if (SceneLoader.IsLoading) return;
 
             switch (run.phase)
             {
@@ -161,16 +189,17 @@ namespace ContextStage
 
                 case RunPhase.Dialogue:
                     Dialogue.HideImmediate();
-                    manager.CompleteDialogue();
+                    SkippingPerformance = true;
+                    try
+                    {
+                        if (manager.CompleteDialogue()) SubmitSkippedPerformance(manager);
+                    }
+                    finally { SkippingPerformance = false; }
                     break;
 
                 case RunPhase.Performance:
                 {
-                    RunNodeState node = run.CurrentNode;
-                    StageDefinition stage = manager.CurrentStageDefinition;
-                    if (node == null) return;
-                    int score = stage != null ? stage.TargetScore : 0;
-                    manager.ReceiveStageResult(new StageResult(node.nodeId, node.stageId, true, score, "D", 0));
+                    SubmitSkippedPerformance(manager);
                     break;
                 }
 
@@ -186,10 +215,19 @@ namespace ContextStage
             Debug.Log($"[TourDebug] 투어 단계 자동 진행 → {manager.CurrentRun?.phase}");
         }
 
+        static void SubmitSkippedPerformance(TourRunManager manager)
+        {
+            RunNodeState node = manager.CurrentRun?.CurrentNode;
+            if (node == null) return;
+            int score = manager.CurrentStageDefinition != null ? manager.CurrentStageDefinition.TargetScore : 0;
+            manager.ReceiveStageResult(new StageResult(node.nodeId, node.stageId, true, score, "D", 0));
+        }
+
         // ---------------- 표시 ----------------
 
         void OnGUI()
         {
+            if (!EnabledForTour) return;
             if (!showOnScreenHelp) return;
 
             string message = BuildHelpMessage();

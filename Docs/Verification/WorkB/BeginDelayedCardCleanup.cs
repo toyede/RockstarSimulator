@@ -1,0 +1,14 @@
+var gm=GameJamKit.GameManager.Instance;gm.ResetGame();gm.StartGame();
+var hand=UnityEngine.Object.FindFirstObjectByType<ContextStage.CardHandUI>();
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+var card=ContextStage.CardSystem.Instance.GetCard(0);
+ContextStage.CardSystem.Instance.SetHand(new[]{card});
+hand.GetType().GetField("useDissolveOnPlay",flags).SetValue(hand,false);
+hand.GetType().GetMethod("OnCardSelected",flags).Invoke(hand,new object[]{new GameJamKit.CardSelected{HandIndex=0,CardId=card.Id}});
+bool oneCard=(bool)hand.GetType().GetField("_consumedSinceRefresh",flags).GetValue(hand);
+GameJamKit.EventBus.Raise(new GameJamKit.HandChanged());
+GameJamKit.EventBus.Raise(new GameJamKit.HandChanged());
+hand.GetType().GetField("useDissolveOnPlay",flags).SetValue(hand,true);
+gm.GameOver();
+UnityEditor.SessionState.SetBool("WorkBOneCardConsumed",oneCard);
+return "Queued replacement VFX, replaced layout twice, then ended game before next frame.";

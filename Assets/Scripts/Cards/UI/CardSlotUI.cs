@@ -35,6 +35,7 @@ namespace ContextStage
         bool _specialIdleActive;
         CardUpgradeFrame _upgradeFrame;
         CardUpgradeVFX _grantedCardVfx;
+        CardArrivalFeedback _arrivalFeedback;
 
         void Awake()
         {
@@ -75,6 +76,7 @@ namespace ContextStage
 
         public void Bind(CardDefinition card, int handIndex = 0)
         {
+            if (_arrivalFeedback != null) _arrivalFeedback.Clear();
             if (card == null)
             {
                 gameObject.SetActive(false);
@@ -118,7 +120,14 @@ namespace ContextStage
 
         public void PlayUpgradeUseFlash()
         {
+            if (_arrivalFeedback != null) _arrivalFeedback.Clear();
             if (_grantedCardVfx != null) _grantedCardVfx.PlayUseFlash();
+        }
+
+        public void PlayArrivalFeedback(Color tint)
+        {
+            if (_arrivalFeedback == null) _arrivalFeedback = gameObject.AddComponent<CardArrivalFeedback>();
+            _arrivalFeedback.Play(artwork, tint);
         }
 
         public void SetFeverVisual(bool active)

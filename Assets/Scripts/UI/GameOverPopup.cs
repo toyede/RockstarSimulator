@@ -79,7 +79,10 @@ namespace ContextStage
         void OnGameStateChanged(GameStateChanged e)
         {
             // 게임 규칙 또는 디버그 흐름이 GameOver 상태로 전환하면 여기로 통지가 온다.
-            if (e.Current == GameState.GameOver) Open();
+            if (e.Current != GameState.GameOver) return;
+            // 투어 결과는 TourPerformanceBridge가 담당한다. 단독 Main의 기존 경로는 유지.
+            if (TourRunManager.HasInstance && TourRunManager.Instance.CurrentRun != null) return;
+            Open();
         }
 
         protected override void OnOpen()

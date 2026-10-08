@@ -1,0 +1,56 @@
+if (!UnityEngine.Application.isPlaying) throw new System.InvalidOperationException("Play Mode required");
+UnityEditor.EditorApplication.isPaused = false;
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+var checks = new System.Collections.Generic.List<string>();
+System.Action<bool,string> check = (ok,name) => {
+    checks.Add((ok ? "PASS " : "FAIL ") + name);
+    UnityEditor.SessionState.SetString("VfxDropAccentChecks",string.Join("\n",checks));
+};
+UnityEditor.SessionState.SetBool("VfxDropAccentDone",false);
+var gm = GameJamKit.GameManager.Instance;
+ContextStage.TutorialFlow.SuppressForTests = true;
+var tutorial = UnityEngine.Object.FindFirstObjectByType<ContextStage.TutorialFlow>();
+if (tutorial != null) tutorial.enabled = false;
+gm.ResetGame();
+ContextStage.StageRuntimeDirector.Active.ApplyStage(UnityEditor.AssetDatabase.LoadAssetAtPath<ContextStage.StageDefinition>("Assets/Settings/Tour/Stage05Boss.asset"));
+gm.StartGame();
+var presentation = UnityEngine.Object.FindFirstObjectByType<ContextStage.BossStagePresentation>();
+presentation.GetType().GetMethod("RestoreImmediate",flags).Invoke(presentation,null);
+ContextStage.PerformanceTimer.SetPaused(true);
+ContextStage.AudienceRosterSystem.Instance.SuppressEngagementDecay = true;
+var rig = UnityEngine.Object.FindObjectsByType<ContextStage.StageLightingRig>(UnityEngine.FindObjectsSortMode.None).First(x=>x.Profile.rival);
+var show = UnityEngine.Object.FindFirstObjectByType<ContextStage.StageShowDirector>();
+System.Collections.IEnumerator Run()
+{
+    rig.Clear();
+    rig.Render(5,1,false,true,"drop",false,false,false,true,0,0,false,null,null,0,13,1);
+    check(rig.ParticleCount == 0,"drop preview emits no additional smoke/pixels");
+    rig.EmitSmoke(10,1);
+    var smoke = (UnityEngine.ParticleSystem[])rig.GetType().GetField("smoke",flags).GetValue(rig);
+    int before = smoke.Sum(x=>x!=null?x.particleCount:0);
+    rig.PlayDropImpact(10.1f);
+    var pixels = rig.GetComponentsInChildren<UnityEngine.ParticleSystem>().First(x=>x.name=="DropImpactPixels");
+    check(pixels.particleCount == 16 && pixels.main.maxParticles == 32,"drop impact bounded 16 pixels / capacity 32");
+    check(smoke.Sum(x=>x!=null?x.particleCount:0)>before,"start impact bypasses periodic smoke cooldown");
+    rig.SetPaused(true);
+    int paused = pixels.particleCount;
+    rig.PlayDropImpact(11);
+    check(pixels.isPaused && pixels.particleCount == paused,"pause freezes accent and blocks new burst");
+    rig.SetPaused(false);
+    yield return new UnityEngine.WaitForSeconds(0.7f);
+    check(pixels.particleCount == 0,"drop digital pixels naturally finish");
+    GameJamKit.EventBus.Raise(new ContextStage.BossPatternStarted("drop","DROP","test",5,false));
+    check(pixels.particleCount == 16,"actual drop start event triggers single digital burst");
+    rig.Render(12,1,true,false,"drop",true,true,false,true,1,1,false,null,null,0,13,-1,.15f);
+    check(rig.ParticleCount == 0,"blackout clears impact and smoke even during Fever");
+    rig.PlayDropImpact(13);
+    gm.ResetGame();
+    check(rig.ParticleCount == 0 && show.DropAge < 0,"restart clears drop accent and show state");
+    rig.PlayDropImpact(14);
+    rig.enabled = false;
+    check(rig.ParticleCount == 0,"rig disable clears drop accent");
+    rig.enabled = true;
+    UnityEditor.SessionState.SetBool("VfxDropAccentDone",true);
+}
+rig.StartCoroutine(Run());
+return "Started frame-based drop accent verification; read VfxDropAccentChecks.";

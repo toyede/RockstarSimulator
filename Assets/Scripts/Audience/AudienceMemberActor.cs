@@ -105,6 +105,49 @@ namespace ContextStage
         [SerializeField, Tooltip("좌우 반전을 개체마다 다르게 줘서 같은 스프라이트가 덜 반복돼 보이게 한다")]
         bool allowHorizontalFlip = true;
 
+        [Header("Card-specific presentation (score-neutral)")]
+        [SerializeField, Min(0.1f)] float cardMotionDuration = 0.9f;
+        [SerializeField, Min(0f)] float moshSpreadDistance = 1f;
+        float _cardMotionRemaining;
+        float _arrivalDelay;
+        string _motionCardId;
+        bool _bossArrival;
+        bool _arrivalCuePending;
+        public void MarkBossArrivalCue() => _arrivalCuePending = true;
+        float _gestureSide, _gestureSpread, _gestureDelay, _gestureStartedAt;
+        int _gestureCue;
+        static Material _warningMaterial;
+
+        /// <summary>Only positive reactions join the card's gesture; no engagement or score changes.</summary>
+        public void PlayCardMotion(string cardId, int reactionValue,
+            float groupCenter = 0f, float groupMin = 0f, float groupMax = 0f, float groupStart = -1f)
+        {
+            if (_exiting) return;
+            if (reactionValue <= 0) { ResetCardMotion(); return; }
+            _motionCardId = cardId;
+            float x = _currentLayoutPosition.x;
+            _gestureSide = Mathf.Abs(x - groupCenter) > 0.05f ? Mathf.Sign(x - groupCenter) : ((_boundId.Value & 1) == 0 ? -1f : 1f);
+            _gestureSpread = groupMax - groupMin > 0.05f ? Mathf.Max(0f, moshSpreadDistance) : 0.12f;
+            Camera camera = Camera.main;
+            if (camera != null && camera.orthographic)
+            {
+                float worldEdge = camera.transform.position.x + _gestureSide * camera.orthographicSize * camera.aspect;
+                float edge = transform.parent != null ? transform.parent.InverseTransformPoint(new Vector3(worldEdge, transform.position.y, 0)).x : worldEdge;
+                _gestureSpread = Mathf.Min(_gestureSpread, Mathf.Max(0, _gestureSide * (edge - x) - 0.4f));
+            }
+            _gestureDelay = cardId == "hands_up" && groupMax > groupMin ? Mathf.InverseLerp(groupMin, groupMax, x) * 0.25f : 0f;
+            _gestureStartedAt = groupStart >= 0 ? groupStart : Time.time;
+            _gestureCue = 0;
+            _cardMotionRemaining = cardMotionDuration + _gestureDelay;
+        }
+
+        void ResetCardMotion()
+        {
+            _cardMotionRemaining = 0f;
+            _motionCardId = null;
+            _gestureCue = 0;
+        }
+
         // 에셋 없이 코드만으로 그리는 호응도 바용 1x1 흰색 스프라이트.
         // pixelsPerUnit=1이라 localScale이 곧 월드 유닛 크기가 된다.
         static Sprite _solidSprite;
@@ -163,6 +206,19 @@ namespace ContextStage
         public AudienceReactionPopup ReactionPopup => reactionPopup;
         public AudienceReactionVFX ReactionVFX => reactionVFX;
         public Vector3 LayoutLocalPosition => _layoutPosition;
+        bool _tutorialInspectionPose;
+
+        /// <summary>관객 확인 교육에서만 자세를 안정화한다. 풀 재사용 시 해제된다.</summary>
+        public void SetTutorialInspectionPose(bool enabled)
+        {
+            _tutorialInspectionPose = enabled;
+            if (enabled)
+            {
+                ResetCardMotion();
+                _reactionPulseRemaining = _reactionJumpRemaining = 0f;
+            }
+            ApplyTransform();
+        }
         public float LayoutScale => _layoutScale;
         public int SortingOrder =>
             characterRenderer != null ? characterRenderer.sortingOrder : 0;
@@ -200,11 +256,18 @@ namespace ContextStage
             warningFillRenderer.sprite = SolidSprite;
             warningBackgroundRenderer.color = warningBackgroundColor;
             warningFillRenderer.color = warningFillColor;
+            if (_warningMaterial == null)
+                _warningMaterial = Resources.Load<Material>("Effects/AudienceWarningUnlit");
+            if (_warningMaterial != null)
+                warningBackgroundRenderer.sharedMaterial = warningFillRenderer.sharedMaterial = _warningMaterial;
             _animationPlayer.Bind(characterRenderer);
         }
 
         public void OnSpawned()
         {
+            _tutorialInspectionPose = false;
+            ResetCardMotion();
+            _arrivalDelay = 0f;
             _snapshot = default;
             _boundId = default;
             _visibility = 0f;
@@ -229,6 +292,8 @@ namespace ContextStage
 
         public void OnDespawned()
         {
+            _tutorialInspectionPose = false;
+            ResetCardMotion();
             _snapshot = default;
             _boundId = default;
             _exitCompleted = null;
@@ -251,6 +316,11 @@ namespace ContextStage
                 throw new ArgumentException("Audience snapshot requires a valid id.", nameof(snapshot));
 
             _boundId = snapshot.Id;
+            _tutorialInspectionPose = false;
+            ResetCardMotion();
+            _arrivalDelay = (snapshot.Id.Value & 3) * 0.04f;
+            _bossArrival = StageRuntimeDirector.CurrentStage != null && StageRuntimeDirector.CurrentStage.IsBoss;
+            _arrivalCuePending = false;
             _calmUpperBound = Mathf.Max(0.01f, calmUpperBound);
             _visibility = 0f;
             _exiting = false;
@@ -283,6 +353,8 @@ namespace ContextStage
             characterRenderer.sortingOrder = sortingOrder;
             warningBackgroundRenderer.sortingOrder = sortingOrder + 20;
             warningFillRenderer.sortingOrder = sortingOrder + 21;
+            warningBackgroundRenderer.sortingLayerName = "Effects";
+            warningFillRenderer.sortingLayerName = "Effects";
             reactionPopup.SetSortingOrder(sortingOrder + 30);
             reactionVFX.SetSorting(
                 characterRenderer.sortingLayerName,
@@ -347,6 +419,7 @@ namespace ContextStage
         {
             if (_exiting) return;
             _exiting = true;
+            ResetCardMotion();
             _exitStyle = style;
             _exitDirection = Mathf.Abs(_currentLayoutPosition.x) > 0.05f
                 ? Mathf.Sign(_currentLayoutPosition.x)
@@ -410,15 +483,32 @@ namespace ContextStage
             if (!IsBound) return;
 
             float deltaTime = Time.deltaTime;
-            _animationPlayer.Tick(deltaTime);
+            _cardMotionRemaining = Mathf.Max(0f, _cardMotionRemaining - deltaTime);
+            if (_cardMotionRemaining > 0f && _cardMotionRemaining <= cardMotionDuration && !_exiting)
+            {
+                float t = 1f - _cardMotionRemaining / Mathf.Max(0.1f, cardMotionDuration);
+                if (_motionCardId == "open_mosh_pit" && t >= 0.7f && _gestureCue == 0)
+                { reactionVFX.PlayMoshLanding(); _gestureCue = 1; }
+                else if (_motionCardId == "tempo_up")
+                {
+                    int beat = t >= 0.5f ? 2 : t >= 0.1f ? 1 : 0;
+                    if (beat > _gestureCue) { reactionVFX.PlayChillBeat(); _gestureCue = beat; }
+                }
+                else if (_motionCardId == "hands_up" && _gestureCue == 0)
+                { reactionVFX.PlaySingalongGesture(); _gestureCue = 1; }
+            }
+            if (!_tutorialInspectionPose || _exiting) _animationPlayer.Tick(deltaTime);
 
             // 단계 전환 블렌드 진행 (프로필 값이 툭 튀지 않게)
             if (_motionBlend < 1f && motionBlendDuration > 0f)
                 _motionBlend = Mathf.Min(1f, _motionBlend + deltaTime / motionBlendDuration);
 
             float followStep = layoutFollowSpeed * deltaTime;
-            _currentLayoutPosition = Vector3.MoveTowards(_currentLayoutPosition, _layoutPosition, followStep);
-            _currentLayoutScale = Mathf.MoveTowards(_currentLayoutScale, _layoutScale, followStep);
+            if (!_exiting)
+            {
+                _currentLayoutPosition = Vector3.MoveTowards(_currentLayoutPosition, _layoutPosition, followStep);
+                _currentLayoutScale = Mathf.MoveTowards(_currentLayoutScale, _layoutScale, followStep);
+            }
 
             if (_exiting)
             {
@@ -442,7 +532,13 @@ namespace ContextStage
             }
 
             float enterSpeed = enterDuration > 0f ? deltaTime / enterDuration : 1f;
-            _visibility = Mathf.MoveTowards(_visibility, 1f, enterSpeed);
+            if (_arrivalDelay > 0f) _arrivalDelay = Mathf.Max(0f, _arrivalDelay - deltaTime);
+            else _visibility = Mathf.MoveTowards(_visibility, 1f, enterSpeed);
+            if (_arrivalCuePending && !_exiting && _visibility >= 1f)
+            {
+                _arrivalCuePending = false;
+                if (SilhouetteBlend < 0.5f) reactionVFX.PlayChillBeat();
+            }
             _reactionPulseRemaining = Mathf.Max(0f, _reactionPulseRemaining - deltaTime);
             _reactionJumpRemaining = Mathf.Max(0f, _reactionJumpRemaining - deltaTime);
             ApplyTransform();
@@ -513,9 +609,16 @@ namespace ContextStage
         /// 관객이 아닌 표현(보스전 라이벌 팬)이 같은 아트를 쓰기 위한 접근이며, 액터 상태는 건드리지 않는다.
         /// </summary>
         public bool TryGetIdleVisual(CrowdPreference preference, int seed, out SpriteAnimationClip clip, out Sprite staticSprite)
+            => TryGetPresentationVisual(preference, AudienceEngagementStage.Calm, seed, out clip, out staticSprite, out _);
+
+        public CrowdMotionProfile PresentationMotion(AudienceEngagementStage stage) => ProfileFor(stage);
+
+        public bool TryGetPresentationVisual(CrowdPreference preference, AudienceEngagementStage stage, int seed,
+            out SpriteAnimationClip clip, out Sprite staticSprite, out Color baseColor)
         {
             clip = null;
             staticSprite = null;
+            baseColor = ColorFor(preference);
             switch (preference)
             {
                 case CrowdPreference.Chill: staticSprite = chillSprite; break;
@@ -525,7 +628,7 @@ namespace ContextStage
             for (int i = 0; i < animatedVariants.Count; i++)
             {
                 AnimatedVariantGroup group = animatedVariants[i];
-                if (group.preference != preference || group.stage != AudienceEngagementStage.Calm) continue;
+                if (group.preference != preference || group.stage != stage) continue;
                 if (group.variants != null && group.variants.Length > 0)
                     clip = group.variants[PositiveModulo(seed, group.variants.Length)];
                 break;
@@ -619,9 +722,18 @@ namespace ContextStage
 
             // 입장은 뒤에서 작게 다가오고, 퇴장은 뒤로 물러나며 사라진다. (기획서 §9)
             float exitProgress = _exiting ? 1f - _visibility : 0f;
+            float arrivalProgress = Mathf.SmoothStep(0f, 1f, _visibility);
             Vector3 motionOffset;
             float sizeRatio;
-            if (_exiting &&
+            if (_exiting && _exitStyle == AudienceExitStyle.RivalStage)
+            {
+                float travel = Mathf.SmoothStep(0f, 1f, exitProgress);
+                motionOffset = new Vector3(_exitDirection * travel * 0.25f,
+                    travel * exitDistance * 2f, 0f);
+                sizeRatio = Mathf.Lerp(0.8f, 1f, _visibility);
+                transform.localRotation = Quaternion.Euler(0f, 0f, swayAngle * 0.5f);
+            }
+            else if (_exiting &&
                 _exitStyle == AudienceExitStyle.NearbyConcert)
             {
                 float travel = Mathf.Pow(exitProgress, 1.35f);
@@ -639,14 +751,71 @@ namespace ContextStage
             {
                 float depthOffset = _exiting
                     ? exitProgress * exitDistance
-                    : (1f - _visibility) * enterDistance;
-                motionOffset = new Vector3(0f, depthOffset, 0f);
+                    : (1f - arrivalProgress) * enterDistance * (_bossArrival ? 2.5f : 1f);
+                float side = Mathf.Abs(_currentLayoutPosition.x) > 0.05f
+                    ? Mathf.Sign(_currentLayoutPosition.x) : ((_boundId.Value & 1) == 0 ? -1f : 1f);
+                motionOffset = new Vector3(side * (_exiting ? exitProgress * 0.7f : (1f - arrivalProgress) * 0.4f), depthOffset, 0f);
                 sizeRatio = _exiting
-                    ? _visibility
-                    : Mathf.Lerp(enterStartScale, 1f, _visibility);
+                    ? Mathf.Lerp(0.75f, 1f, _visibility)
+                    : Mathf.Lerp(enterStartScale, 1f, arrivalProgress);
                 // 평상시에는 좌우로 기운다. (퇴장 연출은 위 분기가 자기 회전을 쓴다)
                 transform.localRotation = Quaternion.Euler(0f, 0f, swayAngle * _variance.Flip);
             }
+
+            if (_tutorialInspectionPose && !_exiting)
+            {
+                bob = pulse = reactionJump = squashAmount = 0f;
+                // 입장 페이드와 배치 보간은 유지하되, 클릭할 위치는 움직이지 않는다.
+                motionOffset = Vector3.zero;
+                sizeRatio = 1f;
+                transform.localRotation = Quaternion.identity;
+            }
+
+            float gestureSquash = 0f;
+            float gestureRotation = 0f;
+            // Compose with idle/entry/layout motion instead of competing transform tweens.
+            if (!_tutorialInspectionPose && _cardMotionRemaining > 0f && _cardMotionRemaining <= cardMotionDuration && !_exiting)
+            {
+                float t = 1f - Mathf.Clamp01(_cardMotionRemaining / cardMotionDuration);
+                float envelope = Mathf.Sin(t * Mathf.PI);
+                if (_motionCardId == "open_mosh_pit")
+                {
+                    float spread = t < 0.28f ? Mathf.SmoothStep(0, 1, t / 0.28f)
+                        : t < 0.4f ? 1f : 1f - Mathf.SmoothStep(0, 1, (t - 0.4f) / 0.35f);
+                    motionOffset.x += _gestureSide * _gestureSpread * spread;
+                    float leap = Mathf.Sin(Mathf.Clamp01((t - 0.4f) / 0.35f) * Mathf.PI) * 0.28f;
+                    bob *= 0.15f; reactionJump = Mathf.Max(reactionJump, leap);
+                    gestureRotation = -_gestureSide * envelope * 7f;
+                    gestureSquash = t >= 0.7f ? Mathf.Sin(Mathf.Clamp01((t - 0.7f) / 0.3f) * Mathf.PI) * 0.05f : 0;
+                }
+                else if (_motionCardId == "tempo_up")
+                {
+                    float beat = Mathf.Max(0f, Mathf.Sin(t * Mathf.PI * 4f));
+                    bob *= 0.15f; reactionJump *= 0.2f; pulse *= 0.25f;
+                    gestureSquash = beat * 0.045f;
+                    gestureRotation = beat * _gestureSide * 4f;
+                    motionOffset.x += Mathf.Sin(t * Mathf.PI * 4f) * 0.08f * envelope;
+                }
+                else if (_motionCardId == "hands_up")
+                {
+                    float leap = Mathf.Sin(Mathf.Clamp01(t / 0.3f) * Mathf.PI) * 0.2f;
+                    bob *= 0.15f; reactionJump = Mathf.Max(reactionJump, leap);
+                    float common = (Time.time - _gestureStartedAt) / Mathf.Max(0.1f, cardMotionDuration);
+                    gestureRotation = Mathf.Sin(common * Mathf.PI * 4f) * 7f * envelope;
+                    motionOffset.x += Mathf.Sin(common * Mathf.PI * 4f) * 0.1f * envelope;
+                }
+                else if (_motionCardId == "pass_mic" || _motionCardId == "response_call")
+                {
+                    motionOffset.y += envelope * (0.16f + 0.05f * Mathf.Sin(t * Mathf.PI * 4f + _phase));
+                }
+                else if (_snapshot.Preference == CrowdPreference.Chill)
+                {
+                    motionOffset.y += envelope * 0.06f;
+                }
+            }
+
+            transform.localRotation *= Quaternion.Euler(0, 0, gestureRotation);
+            squashAmount = Mathf.Clamp(squashAmount + gestureSquash, 0, 0.08f);
 
             transform.localPosition =
                 _currentLayoutPosition +
@@ -662,8 +831,17 @@ namespace ContextStage
                 scale * (1f + squashAmount * 0.5f),
                 scale * (1f - squashAmount),
                 1f);
+            // Hold the sprite's feet in place when rotating/squashing a center-pivot sprite.
+            float bottom = characterRenderer.sprite != null ? characterRenderer.sprite.bounds.min.y : 0;
+            Vector3 oldFoot = new Vector3(0, bottom * scale, 0);
+            Vector3 newFoot = transform.localRotation * new Vector3(0, bottom * transform.localScale.y, 0);
+            transform.localPosition += oldFoot - newFoot;
+            warningRoot.transform.rotation = Quaternion.identity;
+            reactionPopup.transform.rotation = Quaternion.identity;
 
             Color color = _characterColor;
+            if (BossCameraDirector.RivalViewBlend > 0f)
+                color = Color.Lerp(color, Color.black, BossCameraDirector.RivalViewBlend);
             // 정전 실루엣: 연출 담당이 정적 블렌드를 올리면 전 관객이 같은 검정으로 (색은 매 프레임 여기서 쓰므로 여기서 섞는다)
             if (SilhouetteBlend > 0f) color = Color.Lerp(color, SilhouetteColor, Mathf.Clamp01(SilhouetteBlend));
             color.a *= _visibility;

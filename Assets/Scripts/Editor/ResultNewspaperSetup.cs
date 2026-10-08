@@ -23,7 +23,7 @@ namespace ContextStage.EditorTools
     {
         const string DraftFolder = "Docs/ArtDrafts/ResultNewspaper_20260910_v1";
         const string SpriteFolder = "Assets/Sprites/UI/ResultNewspaper";
-        const string CatalogPath = "Assets/Resources/Tour/ResultNewspaperCatalog.asset";
+        const string CatalogPath = "Assets/Resources/" + ResultNewspaperCatalog.ResourcesPath + ".asset";
         const string MainScenePath = "Assets/Scenes/Main.unity";
         const string PerformanceRootName = "[TourPerformance]";
         const string ViewRootName = "[ResultNewspaper]";
@@ -113,7 +113,7 @@ namespace ContextStage.EditorTools
 
         static ResultNewspaperCatalog EnsureCatalog(List<Sprite> papers)
         {
-            EnsureFolder("Assets/Resources/Tour");
+            EnsureFolder("Assets/Resources/Augments/Tour");
             var catalog = AssetDatabase.LoadAssetAtPath<ResultNewspaperCatalog>(CatalogPath);
             if (catalog == null)
             {

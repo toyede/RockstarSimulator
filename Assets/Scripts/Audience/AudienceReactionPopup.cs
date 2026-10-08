@@ -84,6 +84,7 @@ namespace ContextStage
                 return;
             }
 
+            valueText.renderer.sortingLayerName = "Effects";
             _feverPool = new FloatingWorldTextPool(
                 transform,
                 valueText.font,

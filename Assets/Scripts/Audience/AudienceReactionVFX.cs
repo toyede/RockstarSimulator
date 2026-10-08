@@ -43,6 +43,7 @@ namespace ContextStage
         ParticleSystem _feverSystem;
         ParticleSystem _departureSystem;
         ParticleSystem _augmentStars;
+        ParticleSystem _gestureNotes, _gesturePixels;
         AudienceMemberActor _actor;
         float _augmentWaveAt = -1f;
         SpriteRenderer _flashRenderer;
@@ -91,6 +92,7 @@ namespace ContextStage
             IsAlive(_feverSystem) ||
             IsAlive(_departureSystem) ||
             IsAlive(_augmentStars) ||
+            IsAlive(_gestureNotes) || IsAlive(_gesturePixels) ||
             _augmentWaveAt >= 0f ||
             _ellipsisRemaining > 0f ||
             _frustrationRemaining > 0f ||
@@ -229,6 +231,8 @@ namespace ContextStage
             SetParticleSorting(_feverSystem, _sortingLayerName, _sortingOrder + 1);
             SetParticleSorting(_departureSystem, _sortingLayerName, _sortingOrder);
             SetParticleSorting(_augmentStars, _sortingLayerName, _sortingOrder + 2);
+            SetParticleSorting(_gestureNotes, "Effects", _sortingOrder + 2);
+            SetParticleSorting(_gesturePixels, "Effects", _sortingOrder + 1);
             SetSpriteSorting(_flashRenderer, _sortingLayerName, _sortingOrder + 2);
             SetSpriteSorting(_ellipsisRenderer, _sortingLayerName, _sortingOrder + 2);
             SetSpriteSorting(_frustrationRenderer, _sortingLayerName, _sortingOrder + 1);
@@ -354,6 +358,47 @@ namespace ContextStage
             _arrowRemaining = arrowDuration;
         }
 
+        public void PlayMoshLanding()
+        {
+            EnsureVisuals();
+            EmitBurst(_departureSystem, 5, 0.2f, 0.35f, 0.4f, 0.8f, 25f, 155f, 0.1f, 0.18f);
+        }
+
+        public void PlaySingalongGesture()
+        {
+            EnsureVisuals();
+            if (_gestureNotes == null)
+                _gestureNotes = CreateParticleSystem("SingalongGestureNotes", headLocalPosition,
+                    new[] { ShapeSprite.Note }, CreateGradient(Color.white, CardVFXPalette.Singalong), 0, 8);
+            SetParticleSorting(_gestureNotes, "Effects", _sortingOrder + 2);
+            EmitBurst(_gestureNotes, 2, 0.4f, 0.6f, 0.3f, 0.5f, 70f, 110f, 0.13f, 0.2f);
+        }
+
+        public void PlayChillBeat() => PlayGestureArc(false);
+        public void PlayProtection() => PlayGestureArc(true);
+
+        void PlayGestureArc(bool protection)
+        {
+            EnsureVisuals();
+            if (_gesturePixels == null)
+                _gesturePixels = CreateParticleSystem("GesturePixels", feetLocalPosition,
+                    new[] { ShapeSprite.Pixel }, CreateGradient(Color.white, Color.white), 0, 40);
+            SetParticleSorting(_gesturePixels, "Effects", _sortingOrder + 1);
+            float scale = Mathf.Max(0.25f, transform.lossyScale.x);
+            Vector3 center = transform.TransformPoint(protection ? headLocalPosition : feetLocalPosition);
+            for (int i = 0; i < 12; i++)
+            {
+                float angle = protection ? i * Mathf.PI / 11f : i * Mathf.PI * 2f / 12f;
+                Vector3 radius = new Vector3(Mathf.Cos(angle) * 0.55f, Mathf.Sin(angle) * (protection ? 0.35f : 0.12f), 0) * scale;
+                _gesturePixels.Emit(new ParticleSystem.EmitParams {
+                    position = center + radius,
+                    velocity = protection ? Vector3.up * 0.12f : radius * 1.1f,
+                    startLifetime = protection ? 0.4f : 0.3f, startSize = 0.08f * scale,
+                    startColor = CardVFXPalette.Chill
+                }, 1);
+            }
+        }
+
         public void ResetVisual()
         {
             StopAndClear(_loveSystem);
@@ -362,6 +407,8 @@ namespace ContextStage
             StopAndClear(_feverSystem);
             StopAndClear(_departureSystem);
             StopAndClear(_augmentStars);
+            StopAndClear(_gestureNotes);
+            StopAndClear(_gesturePixels);
             _augmentWaveAt = -1f;
 
             _ellipsisRemaining = 0f;

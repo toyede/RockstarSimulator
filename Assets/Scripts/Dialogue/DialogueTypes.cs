@@ -38,6 +38,9 @@ namespace ContextStage
         [Tooltip("이 줄이 시작될 때 재생할 사운드 ID (SoundLibrary). 비우면 없음")]
         public string sfxId = "";
 
+        [Tooltip("연출 큐. cable_pop: 짧은 배경 플래시. 비우면 없음. 게임 판정과 무관")]
+        public string presentationCue = "";
+
         public bool HasText => !string.IsNullOrWhiteSpace(text);
     }
 

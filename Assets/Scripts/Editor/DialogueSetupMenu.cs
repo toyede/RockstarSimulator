@@ -244,20 +244,20 @@ namespace ContextStage.EditorTools
 
                 CreateSequence("intro_stage_02", overwrite,
                     Narration("지하 라이브홀의 오프닝 무대.\n구석에서는 스컹크가 베이스와 장비를 정리하고 있다."),
-                    Line(Raccoon, "왜 안 나지. 이쪽이 안 꽂혔나?"),
+                    Line(Raccoon, "기타 앰프에서 소리가 안 나. 입력 케이블이 헐거운가?", "nervous"),
                     Line(Hedgehog, "아까는 났잖아."),
-                    Narration("너구리가 케이블을 뽑는다.\n펑! 스피커에서 큰 소리와 함께 먼지가 튄다."),
-                    Line(Skunk, "뭐 뽑았어?"),
+                    CablePopNarration(),
+                    Line(Skunk, "볼륨 켠 채로 입력 케이블을 뽑은 거야?"),
                     Line(Raccoon, "소리가 안 나서요.", "nervous"),
                     Line(Skunk, "그래서 그냥 뽑았어?"),
                     Line(Raccoon, "...네."),
-                    Line(Skunk, "일단 손 떼."),
+                    Line(Skunk, "앰프 볼륨부터 내려. 케이블은 내가 꽂을게."),
                     Line(Hedgehog, "고장 난 거예요?"),
                     Line(Skunk, "잠깐."),
                     Narration("스컹크가 앰프를 살핀다. 너구리는 고슴도치 쪽으로 바짝 붙는다."),
                     Line(Raccoon, "이거 비싸 보이냐?"),
                     Line(Hedgehog, "나한테 물어보지 마."),
-                    Line(Skunk, "들린다."),
+                    Line(Skunk, "입력 잭 다시 꽂았어. 기타 줄 한 번 튕겨봐."),
                     Narration("스컹크가 연결을 확인하고 자기 베이스를 튕긴다. 낮은 음이 정상적으로 울린다."),
                     Line(Raccoon, "...다행이다.", "relieved"),
                     Line(Skunk, "내가 할 말이고. 내 앰프야."),
@@ -267,13 +267,13 @@ namespace ContextStage.EditorTools
                     Line(Hedgehog, "십 분 뒤요."),
                     Line(Skunk, "베이스는 어디 있는데?"),
                     Line(Raccoon, "아직 못 구했어요."),
-                    Line(Skunk, "...일단 첫 곡 해봐."),
+                    Line(Skunk, "첫 곡 인트로 여덟 마디만 맞춰보자. 베이스는 내가 넣을게."),
                     Narration("합주가 시작되자 스컹크가 베이스를 얹는다.\n돌아보는 너구리에게 앞을 보라는 눈짓이 돌아온다."),
                     Line(Raccoon, "그대로 공연까지 해주시면 안 돼요?"),
                     Line(Skunk, "지금?"),
                     Line(Hedgehog, "지금 아니면 다음 사람이 없어요."),
                     Narration("스컹크는 시계를 보고도 베이스를 내려놓지 않는다."),
-                    Line(Skunk, "곡 순서 줘.")),
+                    Line(Skunk, "곡 순서랑 후렴 들어가는 마디 적어줘. 오늘 베이스는 내가 맡을게.")),
 
                 CreateSequence("intro_stage_03", overwrite,
                     Narration("페스티벌 대기 구역. 너구리가 휴대전화에서 오래된 공연 영상을 찾았다."),
@@ -286,11 +286,11 @@ namespace ContextStage.EditorTools
                     Line(Hedgehog, "왜요? 괜찮은데."),
                     Line(Skunk, "전에 잘된 곡이 있었거든. 그런 걸 먼저 내자고 해서."),
                     Line(Raccoon, "그럼 이건요?"),
-                    Line(Skunk, "나중에 하자더라."),
+                    Line(Skunk, "Verse 2 뒤 베이스 솔로를 빼자더라. 후렴을 한 번 더 넣으래."),
                     Line(Raccoon, "결국 안 했어요?"),
                     Line(Skunk, "응. 다른 곡 가져가도 비슷했고."),
                     Line(Raccoon, "그래서 나온 거예요?"),
-                    Line(Skunk, "...들어는 보고 바꾸라든가."),
+                    Line(Skunk, "솔로 여덟 마디는 들어보고 자르든가. 리허설도 하기 전에 빼자잖아."),
                     Narration("너구리가 영상을 멈춘다. 스컹크는 휴대전화에서 시선을 뗀다."),
                     Line(Skunk, "우리 순서나 봐."),
                     Narration("메인 무대 전광판에 'HEADLINER: LUX//FAUNA'가 뜬다.\n안내 방송을 들은 관객들이 이동하기 시작한다."),
@@ -330,16 +330,16 @@ namespace ContextStage.EditorTools
                     Narration("스타디움 파이널. 무대 입구에서 전자음악 듀오 LUX//FAUNA와 마주친다."),
                     Line(Rival, "방송 봤어요. 후렴 좋던데."),
                     Line(Raccoon, "아, 감사합니다."),
-                    Line(Rival, "앞에 베이스 나오는 부분은 줄이는 게 낫겠더라고요."),
+                    Line(Rival, "후렴 앞 베이스 솔로 여덟 마디, 네 마디로 줄여보세요."),
                     Line(Rival, "바로 후렴으로 들어가면 반응이 더 빠를 거예요."),
                     Narration("베이스를 만지던 스컹크의 손이 잠깐 멈춘다."),
                     Line(Raccoon, "오늘은 맞춰온 대로 하려고요."),
-                    Line(Rival, "그래요? 저희는 반응 안 나오는 부분은 바로 빼요."),
-                    Line(Raccoon, "저희는 그 부분도 좋아해서요."),
+                    Line(Rival, "그래요? 저희는 첫 드랍 전에 객석이 식으면 빌드업부터 잘라요."),
+                    Line(Raccoon, "그 베이스 솔로 듣고 만든 후렴이라서요. 같이 연주하려고요."),
                     Line(Rival, "그럼 공연 때 들어볼게요."),
                     Narration("LUX//FAUNA가 스태프를 따라 무대로 올라간다."),
                     Line(Hedgehog, "뭐래?"),
-                    Line(Raccoon, "앞에 좀 줄이래."),
+                    Line(Raccoon, "후렴 앞 베이스 솔로를 여덟 마디에서 네 마디로 줄이래."),
                     Line(Hedgehog, "지금 와서?", "angry"),
                     Line(Skunk, "안 줄여. 아까 맞춘 대로 가."),
                     Narration("맞은편 무대에서 첫 전자음이 울린다. 객석이 환호로 들썩인다."),
@@ -508,6 +508,13 @@ namespace ContextStage.EditorTools
 
         // 연출 에셋이 없는 행동/광고는 짧은 지문으로 전달한다. 캐릭터의 발화로 처리하지 않는다.
         static DialogueLine Narration(string text) => new DialogueLine { text = text };
+
+        static DialogueLine CablePopNarration() => new DialogueLine
+        {
+            text = "너구리가 볼륨을 켠 채 입력 케이블을 뽑는다.\n펑! 앰프에서 큰 소리가 나며 먼지가 튄다.",
+            sfxId = "guitar_stroke",
+            presentationCue = "cable_pop"
+        };
 
         /// <summary>스탠딩 일러 (Sprites/0910_art/스탠딩일러). 없는 화자는 null — 일러 없이 이름만 표시된다.</summary>
         static Sprite PortraitOf(string speaker)

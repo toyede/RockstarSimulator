@@ -1,5 +1,8 @@
 namespace ContextStage
 {
+    /// <summary>소나기 룰이 실제 우산 회복을 적용한 뒤 보내는 표시 전용 알림.</summary>
+    public readonly struct RainAudienceProtected { }
+
     /// <summary>스테이지 기믹 이벤트 시작. 알림 UI 가 구독한다.</summary>
     public readonly struct StageEventStarted
     {

@@ -48,6 +48,7 @@ namespace ContextStage
         void OnGUI()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!TourDebugInput.AllowInCurrentContext) return;
             if (!showDebugPanel || manager == null) return;
             EnsureStyles();
 

@@ -700,6 +700,10 @@ namespace ContextStage
 
         IEnumerator MoveBusTo(int targetIndex)
         {
+            var dust = GetComponent<UIPixelBurstEmitter>();
+            if (dust == null) dust = gameObject.AddComponent<UIPixelBurstEmitter>();
+            dust.enabled = true;
+            float nextDust = 0f;
             int step = targetIndex > _busIndex ? 1 : -1;
             while (_busIndex != targetIndex)
             {
@@ -713,7 +717,15 @@ namespace ContextStage
                 while (elapsed < duration)
                 {
                     elapsed += Time.unscaledDeltaTime;
-                    PlaceBus(Vector2.Lerp(from, to, Mathf.Clamp01(elapsed / duration))); // Linear
+                    float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                    Vector2 position = Vector2.Lerp(from, to, t);
+                    position.y += Mathf.Sin(t * Mathf.PI * 6f) * Mathf.Sin(t * Mathf.PI) * 3f;
+                    PlaceBus(position);
+                    if (busImage != null && Time.unscaledTime >= nextDust)
+                    {
+                        dust.EmitDust(busImage, new Color32(0xAB, 0x94, 0x7A, 160), 1);
+                        nextDust = Time.unscaledTime + 0.12f;
+                    }
                     yield return null;
                 }
 
@@ -840,6 +852,8 @@ namespace ContextStage
 
         void StopRoutines()
         {
+            var dust = GetComponent<UIPixelBurstEmitter>();
+            if (dust != null) dust.enabled = false;
             if (_travelRoutine != null || _arrivalRoutine != null || _zoomRoutine != null)
                 Trace($"stop routines: travel={_travelRoutine != null} arrival={_arrivalRoutine != null} zoom={_zoomRoutine != null}");
             if (_travelRoutine != null) StopCoroutine(_travelRoutine);

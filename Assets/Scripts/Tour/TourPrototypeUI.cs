@@ -63,6 +63,14 @@ namespace ContextStage
         {
             Bgm.StopPerformance();
             _manager = TourRunManager.Instance;
+            if (_manager != null)
+            {
+                var acquisition = _manager.GetComponent<DeckAcquisitionFeedback>();
+                if (acquisition == null) acquisition = _manager.gameObject.AddComponent<DeckAcquisitionFeedback>();
+                // 기존 증강 화면의 글꼴을 사용한다. 우용의 데이터/적용 계약은 변경하지 않는다.
+                var label = _augmentPopup != null ? _augmentPopup.GetComponentInChildren<Text>(true) : _bodyText;
+                if (label != null) acquisition.ConfigureFont(label.font);
+            }
             if (_manager != null) _manager.StateChanged += Refresh;
             _augmentCoordinator?.Bind(_manager);
             Refresh();
@@ -201,6 +209,16 @@ namespace ContextStage
 
             TourRunState run = _manager.CurrentRun;
 
+            // Performance는 중간 화면이 아니라 Main 로딩 상태다. 맵은 페이드 아래에
+            // 유지하고 임시 패널을 숨겨, 비동기 씬 전환 중 준비 화면이 번쩍이지 않게 한다.
+            if (run.phase == RunPhase.Performance)
+            {
+                if (_mainPanel != null) _mainPanel.gameObject.SetActive(false);
+                if (_background != null) _background.enabled = false;
+                EnterPerformance();
+                return;
+            }
+
             if (UsingSceneMap)
             {
                 if (UpdateSceneMap(run)) return;
@@ -229,11 +247,6 @@ namespace ContextStage
                     break;
                 case RunPhase.Dialogue:
                     ShowDialogue();
-                    break;
-                case RunPhase.Performance:
-                    SetHeader("PERFORMANCE READY", run.phase.ToString());
-                    _bodyText.text = "The selected performance is ready.";
-                    AddButton("ENTER PERFORMANCE", EnterPerformance);
                     break;
                 case RunPhase.Result:
                     ShowResultFallback(run);
@@ -596,11 +609,15 @@ namespace ContextStage
 
         void StartSelectedPerformance()
         {
-            if (_manager.CompleteDialogue()) EnterPerformance();
+            // StateChanged → Refresh가 패널을 숨긴 뒤 Main을 로드한다.
+            _manager.CompleteDialogue();
         }
 
         void EnterPerformance()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (TourDebugInput.SkippingPerformance) return;
+#endif
             if (!SceneLoader.IsLoading) SceneLoader.Load(MainSceneName);
         }
 

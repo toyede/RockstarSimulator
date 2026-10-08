@@ -262,7 +262,9 @@ namespace ContextStage
         {
             if (!sortBelowOwnerCanvas) return;
 
-            Canvas rootCanvas = backdropImage.canvas != null
+            UIPopup popup = GetComponentInParent<UIPopup>();
+            Canvas rootCanvas = popup != null ? popup.GetComponent<Canvas>() : null;
+            if (rootCanvas == null) rootCanvas = backdropImage.canvas != null
                 ? backdropImage.canvas.rootCanvas
                 : null;
             if (rootCanvas == null) return;
@@ -274,6 +276,8 @@ namespace ContextStage
             localCanvas.sortingLayerID = rootCanvas.sortingLayerID;
             localCanvas.sortingOrder = rootCanvas.sortingOrder + sortingOrderOffset;
         }
+
+        public void RefreshSorting() => ApplySorting();
 
         /// <summary>
         /// 팝업 RectTransform 이 아니라 <b>캔버스 전체</b>를 덮도록 크기·위치를 다시 잡는다.

@@ -1,0 +1,14 @@
+if(ContextStage.TourRunManager.Instance.CurrentStageDefinition.StageId!="stage_05_boss")throw new System.InvalidOperationException("Boss required");
+var gm=GameJamKit.GameManager.Instance;
+ContextStage.TutorialFlow.SuppressForTests=true;
+if(gm.State==GameJamKit.GameState.Ready)gm.StartGame();
+ContextStage.PerformanceTimer.SetPaused(true);
+var boss=UnityEngine.Object.FindFirstObjectByType<ContextStage.BossBattleRule>();
+var rival=UnityEngine.Object.FindFirstObjectByType<ContextStage.RivalStagePlaceholder>();
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+UnityEditor.SessionState.SetInt("WorkBBossTotal",boss.TotalFans);
+int before=boss.RivalFans;
+int recruited=boss.StealFans(2);
+UnityEditor.SessionState.SetInt("WorkBBossRecruited",recruited);
+var fans=(System.Collections.IList)rival.GetType().GetField("_fans",flags).GetValue(rival);
+return new{recruited,rivalBefore=before,rivalAfter=boss.RivalFans,visualCount=fans.Count,totalUnchanged=boss.TotalFans==UnityEditor.SessionState.GetInt("WorkBBossTotal",-1)};

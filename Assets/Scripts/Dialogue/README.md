@@ -38,7 +38,7 @@ Tools/Dialogue/Create Dialogue Panel Prefab          Resources/Dialogue/Dialogue
 - 초상화: `Rewrite Default Sequences` 가 화자 이름으로 `0910_art/스탠딩일러/{raccoon|hedgehog|lux_fauna}_standing` 을 자동 연결한다. 너구리는 왼쪽, 나머지는 오른쪽. **스컹크 스탠딩은 현재 없어 이름과 대사만 표시**한다. 아트가 준비되면 시퀀스의 `portrait`에 연결하고 셋업의 `PortraitOf`에도 매핑을 추가한다.
 - 표정·프레임 초상화: `Resources/Dialogue/DialoguePortraitCatalog.asset` (`Tools/Art/Apply 0918 Art` 가 만든다) 이 화자 ID + 표정 ID → 스프라이트(프레임)를 준다. 대화창은 줄마다 (speakerId, emotionId) 일치 → 화자 기본 → `DialogueLine.portrait` 순으로 고른다. 현재 너구리 happy(excited·relieved 포함)/angry/crying(sad), 고슴도치 angry, LUX//FAUNA 는 3프레임(0.45초 교대). 새 표정은 카탈로그에 항목만 추가하고 대사에 `Line(화자, 대사, "표정")` 로 붙인다.
 - 캐릭터 말투: 너구리 = 성공하고 싶지만 허술한 보컬/기타 / 고슴도치 = 실용적이고 짓궂은 오랜 친구, 드러머 / 스컹크 = 여러 밴드를 거친 무뚝뚝한 선배 베이시스트 / LUX//FAUNA = 흥행과 즉각적인 관객 반응을 우선하는 프로 전자음악 듀오. 로봇 말투나 장르 자체를 악으로 취급하는 설정은 사용하지 않는다.
-- 화살표: `DialogueStyle.arrowSprite` 가 비어 있으면 12×8 픽셀 삼각형을 런타임에 만든다. `arrowStepMotion` 을 켜면 계단식으로 튄다. `arrowFollowsText` 가 켜져 있으면 줄이 다 찍힌 뒤 마지막 글자 오른쪽(`arrowTextGap`)에 붙고, 꺼지면 고정 위치
+- 화살표: 줄이 끝나면 대화창 우하단 흰 모서리에 항상 고정한다. 위치는 `DialogueStyle.arrowOffset`으로 조절하며 본문 길이/줄 수를 참조하지 않는다. 과거 씬에 저장된 텍스트 따라가기 설정은 더 이상 사용하지 않는다. `arrowSprite`가 비어 있으면 12×8 픽셀 삼각형을 만들고, `arrowStepMotion`을 켜면 제자리에서 계단식으로 튄다.
 - 타이핑: `typingInterval`(자모당 간격), `punctuationDelay`(문장 부호 뒤 정지), `typingSoundId`(SoundLibrary ID).
 - DungGeunMo 에는 `▶` 글리프가 없다. 특수 기호는 ASCII(`>>`)를 쓰거나 폰트 폴백을 추가할 것.
 

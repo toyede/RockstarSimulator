@@ -46,7 +46,7 @@ MonoBehaviour:
   bodyAreaMin: {x: 0.06, y: 0.1}
   bodyAreaMax: {x: 0.94, y: 0.62}
   centerBodyText: 1
-  arrowOffset: {x: -34, y: 28}
+  arrowOffset: {x: -80, y: 42}
   skipKeySprite: {fileID: 21300000, guid: ff3befec3036aa447882976c2afd3961, type: 3}
   skipKeySize: {x: 48, y: 48}
   skipLabelText: "\uC2A4\uD0B5\uD558\uAE30"

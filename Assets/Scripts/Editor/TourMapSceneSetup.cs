@@ -26,10 +26,10 @@ namespace ContextStage.EditorTools
         [MenuItem("Tools/Tour/Setup Tour Map Scene", false, 22)]
         public static void Setup()
         {
-            var config = AssetDatabase.LoadAssetAtPath<TourMapConfig>("Assets/Resources/Tour/TourMapConfig.asset");
+            var config = AssetDatabase.LoadAssetAtPath<TourMapConfig>("Assets/Resources/" + TourMapConfig.ResourcesPath + ".asset");
             if (config == null)
             {
-                Debug.LogError("[TourMap] Resources/Tour/TourMapConfig.asset 이 없습니다. Tools/Tour/Setup Tour Map 을 먼저 실행하세요.");
+                Debug.LogError($"[TourMap] Resources/{TourMapConfig.ResourcesPath}.asset 이 없습니다. Tools/Tour/Setup Tour Map 을 먼저 실행하세요.");
                 return;
             }
 

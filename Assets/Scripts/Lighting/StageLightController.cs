@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using GameJamKit;
 
 namespace ContextStage
 {
@@ -43,6 +44,56 @@ namespace ContextStage
     [DisallowMultipleComponent]
     public sealed class StageLightController : MonoBehaviour
     {
+        [System.Serializable]
+        public sealed class StageGeometry
+        {
+            public string stageId;
+            public Vector3 leftPosition, rightPosition;
+            public Vector3 leftRotation, rightRotation;
+            public Vector2 angleRange;
+            public float radius = 11f, rightRadius = 11f;
+            public float sweep = 15f, speed = 0.22f;
+        }
+
+        [SerializeField, Tooltip("공연장별 조명 배치. 항목이 없는 Stage 1은 씬의 원래 배치 유지")]
+        StageGeometry[] stageGeometry = new StageGeometry[0];
+        StageGeometry _defaultGeometry;
+
+        StageGeometry CaptureGeometry() => new StageGeometry
+        {
+            leftPosition = leftStageLight.transform.localPosition,
+            rightPosition = rightStageLight.transform.localPosition,
+            leftRotation = leftStageLight.transform.localEulerAngles,
+            rightRotation = rightStageLight.transform.localEulerAngles,
+            angleRange = spotlightOuterAngleRange,
+            radius = leftStageLight.pointLightOuterRadius,
+            rightRadius = rightStageLight.pointLightOuterRadius,
+            sweep = spotlightSweepDegrees, speed = spotlightSweepSpeed,
+        };
+
+        void OnStageGeometryChanged(StageRuntimeApplied e) => ApplyStageGeometry(e.StageId);
+
+        public void ApplyStageGeometry(string stageId)
+        {
+            if (leftStageLight == null || rightStageLight == null) return;
+            if (_defaultGeometry == null) _defaultGeometry = CaptureGeometry();
+            StageGeometry geometry = _defaultGeometry;
+            foreach (StageGeometry candidate in stageGeometry)
+                if (candidate != null && candidate.stageId == stageId) { geometry = candidate; break; }
+            leftStageLight.transform.localPosition = geometry.leftPosition;
+            rightStageLight.transform.localPosition = geometry.rightPosition;
+            leftStageLight.transform.localEulerAngles = geometry.leftRotation;
+            rightStageLight.transform.localEulerAngles = geometry.rightRotation;
+            leftStageLight.pointLightOuterRadius = Mathf.Max(1f, geometry.radius);
+            rightStageLight.pointLightOuterRadius = Mathf.Max(1f, geometry.rightRadius);
+            spotlightOuterAngleRange = geometry.angleRange;
+            spotlightSweepDegrees = geometry.sweep;
+            spotlightSweepSpeed = geometry.speed;
+            _spotlightPoseCaptured = false;
+            CaptureSpotlightPose();
+            ApplyLights();
+        }
+
         [Header("조명 참조 (없으면 경고만 하고 계속 동작)")]
         [SerializeField, Tooltip("화면 전체를 덮는 Global Light 2D. 플래시도 이 조명을 쓴다")]
         Light2D globalLight;
@@ -58,6 +109,9 @@ namespace ContextStage
             "모든 조명 강도에 곱해지는 배율. 화면이 너무 어두우면 이 값만 올리면 된다. " +
             "단계별 프리셋 비율은 그대로 유지된다.")]
         float masterIntensity = 1f;
+        float _showAmbientFloor;
+        public Color HintColor => Color.Lerp(_from != null ? _from.color : Color.cyan, _to != null ? _to.color : Color.cyan, Mathf.Clamp01(_blend));
+        public void SetShowAmbientFloor(float value) => _showAmbientFloor = Mathf.Max(0,value);
 
         [SerializeField, Tooltip(
             "체크하면 이 컴포넌트가 Light2D 를 매 프레임 덮어쓰지 않는다. " +
@@ -203,6 +257,16 @@ namespace ContextStage
 
         public HeatStage CurrentStage => _stage;
         public bool IsFlashing => _flashing;
+        bool _showHintMode;
+
+        /// <summary>공연장 Rig가 테마를 맡을 때, 기존 판정은 작은 객석 힌트등으로 표시한다.</summary>
+        public void SetShowHintMode(bool on)
+        {
+            if (_showHintMode == on) return;
+            _showHintMode = on;
+            if (!on) ApplyStageGeometry(StageRuntimeDirector.CurrentStage != null
+                ? StageRuntimeDirector.CurrentStage.StageId : "stage_01");
+        }
 
         [Header("정전 (스테이지 이벤트가 SetBlackout 으로 켠다)")]
         [SerializeField, Tooltip("정전 중 Global Light 색 (짙은 남색). 배경만 희미하게 남긴다")]
@@ -285,16 +349,22 @@ namespace ContextStage
 
         void OnEnable()
         {
+            EventBus.Subscribe<StageRuntimeApplied>(OnStageGeometryChanged);
+            if (_defaultGeometry == null && leftStageLight != null && rightStageLight != null)
+                _defaultGeometry = CaptureGeometry();
             // 꺼졌다 켜져도 현재 단계 상태로 즉시 복구한다 (플래시 잔상 없음)
             _flashing = false;
             _flashElapsed = 0f;
             CaptureSpotlightPose();
             EnsurePixelSpotlights();
             ApplyLights();
+            if (StageRuntimeDirector.CurrentStage != null)
+                ApplyStageGeometry(StageRuntimeDirector.CurrentStage.StageId);
         }
 
         void OnDisable()
         {
+            EventBus.Unsubscribe<StageRuntimeApplied>(OnStageGeometryChanged);
             // Update 기반이라 정리할 코루틴이 없다. 조명만 현재 단계 값으로 되돌려 둔다.
             _flashing = false;
             _blend = 1f;
@@ -542,6 +612,13 @@ namespace ContextStage
             float pulseSpeed = Mathf.Lerp(_from.pulseSpeed, _to.pulseSpeed, blend);
             float pulseAmplitude = Mathf.Lerp(_from.pulseAmplitude, _to.pulseAmplitude, blend);
 
+            if (_showHintMode)
+            {
+                // 실제 Light2D 범위는 원래 넓은 배치 유지. 픽셀 빔만 Rig에서 같은 힌트색으로 그린다.
+                globalIntensity = Mathf.Max(globalIntensity, _showAmbientFloor);
+                baseIntensity *= 0.65f;
+            }
+
             // --- 정전 보간 (0 = 평소, 1 = 정전) ---
             _blackoutBlend = Mathf.MoveTowards(_blackoutBlend, _blackout ? 1f : 0f, Time.deltaTime / blackoutFadeDuration);
             float dark = _blackoutBlend;
@@ -552,10 +629,10 @@ namespace ContextStage
                 // Global 은 화면 전체를 균일하게 비추므로 단계 색을 100% 넣으면
                 // 관객·배경 스프라이트가 통째로 시안/보라로 물든다.
                 // 흰색과 섞어서 원래 색을 살리고, 색은 좌우 무대 조명이 담당한다.
-                Color color = Color.Lerp(Color.white, stageColor, Mathf.Clamp01(globalTintStrength));
+                Color color = Color.Lerp(Color.white, stageColor, _showHintMode ? 0f : Mathf.Clamp01(globalTintStrength));
                 float intensity = globalIntensity;
 
-                if (_flashing)
+                if (_flashing && !_showHintMode)
                 {
                     float k = FlashCurve(_flashElapsed);
                     // 지금 보이는 색에서 플래시 색으로 (stageColor 로 되돌리지 않는다)
@@ -578,8 +655,8 @@ namespace ContextStage
             ApplyStageLight(leftStageLight, stageColor, baseIntensity * (1f - dark), pulseSpeed, pulseAmplitude * (1f - dark), 0f);
             ApplyStageLight(
                 rightStageLight,
-                Color.Lerp(stageColor, emergencyLightColor, dark),
-                Mathf.Lerp(baseIntensity, emergencyLightIntensity, dark),
+                _showHintMode ? stageColor : Color.Lerp(stageColor, emergencyLightColor, dark),
+                Mathf.Lerp(baseIntensity, _showHintMode ? 0f : emergencyLightIntensity, dark),
                 pulseSpeed,
                 pulseAmplitude * (1f - dark),
                 rightPulsePhaseOffset);
@@ -619,7 +696,7 @@ namespace ContextStage
                 null;
             pixelSpotlight?.SetVisualLight(
                 color,
-                usePixelSpotlightShader ? finalIntensity * pixelSpotlightIntensity : 0f);
+                usePixelSpotlightShader && !_showHintMode ? finalIntensity * pixelSpotlightIntensity : 0f);
         }
 
         /// <summary>플래시 곡선. 0 → 1(치솟음) → 1(유지) → 0(복귀).</summary>
@@ -662,6 +739,7 @@ namespace ContextStage
         void HandleDebugKeys()
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!TourDebugInput.AllowInCurrentContext) return;
             if (!enableDebugKeys) return;
 
 #if ENABLE_INPUT_SYSTEM

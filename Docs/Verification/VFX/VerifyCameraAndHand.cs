@@ -1,0 +1,77 @@
+if (!UnityEngine.Application.isPlaying) throw new System.InvalidOperationException("Play Mode required");
+UnityEditor.EditorApplication.isPaused=false;
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+System.Func<object,string,object> get=(o,n)=>o.GetType().GetField(n,flags).GetValue(o);
+System.Action<object,string,object> set=(o,n,v)=>o.GetType().GetField(n,flags).SetValue(o,v);
+var checks=new System.Collections.Generic.List<string>();
+System.Action<bool,string> check=(ok,n)=>{checks.Add((ok?"PASS ":"FAIL ")+n);UnityEditor.SessionState.SetString("VfxAsyncChecks",string.Join("\n",checks));};
+UnityEditor.SessionState.SetBool("VfxAsyncDone",false);
+var gm=GameJamKit.GameManager.Instance;
+ContextStage.TutorialFlow.SuppressForTests=true;
+var tutorial=UnityEngine.Object.FindFirstObjectByType<ContextStage.TutorialFlow>();tutorial.enabled=false;
+gm.ResetGame();
+ContextStage.StageRuntimeDirector.Active.ApplyStage(UnityEditor.AssetDatabase.LoadAssetAtPath<ContextStage.StageDefinition>("Assets/Settings/Tour/Stage05Boss.asset"));
+gm.StartGame();ContextStage.PerformanceTimer.SetPaused(true);ContextStage.AudienceRosterSystem.Instance.SuppressEngagementDecay=true;
+var camera=UnityEngine.Object.FindFirstObjectByType<ContextStage.BossCameraDirector>();
+var rival=UnityEngine.Object.FindFirstObjectByType<ContextStage.RivalStagePlaceholder>();
+var actor=UnityEngine.Object.FindFirstObjectByType<ContextStage.AudienceMemberActor>();
+var hand=UnityEngine.Object.FindFirstObjectByType<ContextStage.CardHandUI>();
+var cards=ContextStage.CardSystem.Instance;
+System.Collections.IEnumerator Run()
+{
+    // Stop intro preview only for this isolation test; exercise the camera's actual pan coroutine.
+    var presentation=UnityEngine.Object.FindFirstObjectByType<ContextStage.BossStagePresentation>();
+    presentation.GetType().GetMethod("RestoreImmediate",flags).Invoke(presentation,null);
+    presentation.GetType().GetMethod("ShowScoreHud",flags).Invoke(presentation,null);
+    camera.SnapHome();
+    ContextStage.PerformanceTimer.SetPaused(true);ContextStage.AudienceRosterSystem.Instance.SuppressEngagementDecay=true;
+    yield return new UnityEngine.WaitForSeconds(0.1f);
+    int originalCount=ContextStage.AudienceRosterSystem.Instance.Count;
+    var fan=rival.GetComponentsInChildren<UnityEngine.SpriteRenderer>().First(x=>x.name.StartsWith("RivalFan_"));
+    set(actor,"_visibility",1f);
+    check(fan.color.r<0.01f && fan.color.g<0.01f && actor.CharacterRenderer.color.r>0.1f,"our view colors");
+    var walk = camera.StartCoroutine(camera.PanRoutine(ContextStage.BossZone.RivalStage,1.2f));
+    yield return null; // sample a real transition frame, independent of command compile latency
+    check(ContextStage.BossCameraDirector.RivalViewBlend>0 && ContextStage.BossCameraDirector.RivalViewBlend<1,"camera midpoint blend");
+    yield return walk;yield return null;
+    check(fan.color.r>0.1f && fan.color.g>0.1f,"rival original color restored");
+    check(actor.CharacterRenderer.color.r<0.01f && actor.CharacterRenderer.color.g<0.01f,"all our audience dimmed (not only arrivals)");
+    check(fan.sharedMaterial.shader.name.Contains("Lit") && !fan.sharedMaterial.shader.name.Contains("Unlit"),"rival retains lit material");
+    check(fan.GetComponent<ContextStage.AudienceMemberActor>()==null,"rival has no personal HP actor");
+    set(actor,"_visibility",0.45f);yield return null;
+    check(UnityEngine.Mathf.Abs(actor.CharacterRenderer.color.a-0.45f)<0.04f,"tint preserves entry/exit alpha");
+    ContextStage.AudienceMemberActor.SilhouetteBlend=1;yield return null;
+    check(fan.color.r<0.05f && fan.color.g<0.05f,"blackout separate from view tint");
+    ContextStage.AudienceMemberActor.SilhouetteBlend=0;yield return null;
+    check(fan.color.r>0.1f,"blackout release restores viewed side");
+    yield return camera.PanRoutine(ContextStage.BossZone.OurStage,0.3f);yield return null;
+    check(actor.CharacterRenderer.color.r>0.1f && fan.color.r<0.01f,"pan back restores colors");
+    check(ContextStage.AudienceRosterSystem.Instance.Count==originalCount,"view changes do not mutate roster");
+    var same=cards.GetCard(0);
+    cards.SetHand(new[]{same,same});yield return new UnityEngine.WaitForSeconds(0.4f);
+    cards.SetHand(new[]{same,same,same});yield return null;yield return null;
+    var views=(System.Collections.IList)get(hand,"_activeViews");
+    var added=(ContextStage.CardSlotUI)views[2];
+    check(added.GetComponent<ContextStage.CardArrivalFeedback>()!=null,"identical card multiset addition gets arrival VFX");
+    var pixels=hand.GetComponent<ContextStage.UIPixelBurstEmitter>();
+    check(pixels!=null && ((System.Collections.IList)get(pixels,"_pixels")).Count<=64,"hand pixel pool bounded");
+    var rootScale=added.transform.localScale;
+    yield return new UnityEngine.WaitForSeconds(0.1f);
+    check(added.transform.localScale==rootScale,"arrival does not scale drag/layout root");
+    var art=(UnityEngine.UI.Image)get(added,"artwork");
+    check(art.transform.localScale.x>1,"artwork pop visible");
+    yield return new UnityEngine.WaitForSeconds(0.4f);
+    check(UnityEngine.Vector3.Distance(art.transform.localScale,UnityEngine.Vector3.one)<0.001f,"arrival restores artwork scale");
+    check(!added.GetComponentsInChildren<UnityEngine.UI.Graphic>().Any(x=>x.name=="ArrivalBorder" && x.enabled),"arrival border cleared");
+    // Continuous use cancels/restarts gesture and returns to layout, rather than accumulating displacement.
+    actor.PlayCardMotion("open_mosh_pit",25,0,-4,4);
+    yield return new UnityEngine.WaitForSeconds(0.25f);actor.PlayCardMotion("hands_up",8,0,-4,4);
+    yield return new UnityEngine.WaitForSeconds(1.3f);
+    check((float)get(actor,"_cardMotionRemaining")==0,"gesture completes after repeated cards");
+    check(actor.ContainsPreferenceHoverPoint(actor.PreferenceHoverCenter),"hover follows transformed crowd");
+    gm.ResetGame();
+    check(ContextStage.BossCameraDirector.RivalViewBlend==0,"reset snaps camera tint home");
+    UnityEditor.SessionState.SetBool("VfxAsyncDone",true);
+}
+camera.StartCoroutine(Run());
+return "Started real frame-by-frame camera/hand test. Results in VfxAsyncChecks SessionState.";
