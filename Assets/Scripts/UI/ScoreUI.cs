@@ -19,6 +19,8 @@ namespace ContextStage
         [SerializeField] Text scoreText;
         [SerializeField, Tooltip("점수 앞에 붙는 라벨")] string prefix = "SCORE ";
         [SerializeField, Min(0f)] float cardPresentationDelay = 0.085f;
+        [SerializeField] private bool showTargetScore = true;
+        [SerializeField] private HudNumberFeedback numberFeedback;
 
         float _lastCardPresentationAt = float.NegativeInfinity;
         Coroutine _scoreRoutine;
@@ -59,6 +61,13 @@ namespace ContextStage
 
         void OnScoreChanged(ScoreChanged e)
         {
+            if (numberFeedback != null)
+            {
+                Refresh(e.Score);
+                if (GameManager.HasInstance && GameManager.Instance.IsPlaying)
+                    numberFeedback.Play(e.Delta);
+                return;
+            }
             // 카드 표시를 기다리는 사이 점수가 감소해도 과거 점수로 되돌아가지 않는다.
             if (_scoreRoutine != null) StopCoroutine(_scoreRoutine);
             _scoreRoutine = null;
@@ -76,6 +85,8 @@ namespace ContextStage
 
         void OnDrain(BossDrainApplied e)
         {
+            // 공통 증감 표시가 있으면 ScoreChanged에서 이미 표시했다.
+            if (numberFeedback != null) return;
             if (e.Amount <= 0 || scoreText == null) return;
             if (_drainText == null)
             {
@@ -108,7 +119,13 @@ namespace ContextStage
 
         void OnState(GameStateChanged e)
         {
-            if (e.Current == GameState.Ready || e.Current == GameState.GameOver) ClearDrain();
+            if (e.Current != GameState.Ready && e.Current != GameState.GameOver) return;
+            if (_scoreRoutine != null) StopCoroutine(_scoreRoutine);
+            _scoreRoutine = null;
+            _lastCardPresentationAt = float.NegativeInfinity;
+            ClearDrain();
+            if (numberFeedback != null) numberFeedback.Clear();
+            Refresh(GameManager.HasInstance ? GameManager.Instance.Score : 0);
         }
 
         void ClearDrain()
@@ -129,7 +146,7 @@ namespace ContextStage
         {
             if (scoreText == null) return;
             int target = PerformanceTimer.TargetScore;
-            scoreText.text = target > 0
+            scoreText.text = showTargetScore && target > 0
                 ? $"{prefix}{score} / {target}"
                 : prefix + score;
         }

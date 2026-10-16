@@ -21,6 +21,14 @@ namespace ContextStage
         TMP_Text recentGainText;
         [SerializeField] LegacyText legacyRecentGainText;
 
+        [Header("Compact HUD (optional)")]
+        [SerializeField] private LegacyText comboValueText;
+        [SerializeField] private LegacyText feverProgressText;
+        [SerializeField] private LegacyText feverValueText;
+        [SerializeField] private HudNumberFeedback numberFeedback;
+        int _displayedFeverSecond = -1;
+        bool Compact => comboValueText != null && feverProgressText != null;
+
         [Header("Presentation")]
         [FormerlySerializedAs("lostMessageDuration")]
         [SerializeField, Min(0.1f)] float resultMessageDuration = 0.9f;
@@ -47,6 +55,7 @@ namespace ContextStage
 
         void Awake()
         {
+            if (Compact) return;
             var rect = transform as RectTransform;
             if (rect != null && rect.sizeDelta.y < 90f)
                 rect.sizeDelta = new Vector2(rect.sizeDelta.x, 90f);
@@ -73,6 +82,7 @@ namespace ContextStage
             EventBus.Subscribe<ComboChanged>(OnComboChanged);
             EventBus.Subscribe<FeverStateChanged>(OnFeverStateChanged);
             EventBus.Subscribe<CardResolved>(OnCardResolved);
+            EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
 
             _currentCombo =
                 ComboSystem.HasInstance ? ComboSystem.Instance.CurrentCombo : 0;
@@ -82,7 +92,8 @@ namespace ContextStage
                 FeverSystem.HasInstance && FeverSystem.Instance.IsActive;
             _showingResult = false;
 
-            if (_showingFever) RefreshFever();
+            if (Compact) RefreshCompact();
+            else if (_showingFever) RefreshFever();
             else RefreshCombo();
         }
 
@@ -91,6 +102,8 @@ namespace ContextStage
             EventBus.Unsubscribe<ComboChanged>(OnComboChanged);
             EventBus.Unsubscribe<FeverStateChanged>(OnFeverStateChanged);
             EventBus.Unsubscribe<CardResolved>(OnCardResolved);
+            EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
+            if (numberFeedback != null) numberFeedback.Clear();
             CancelPresentation();
             if (_recentGainRoutine != null)
             {
@@ -103,6 +116,13 @@ namespace ContextStage
 
         void Update()
         {
+            if (Compact)
+            {
+                int seconds = FeverSystem.HasInstance && FeverSystem.Instance.IsActive
+                    ? Mathf.CeilToInt(FeverSystem.Instance.Remaining) : -1;
+                if (seconds != _displayedFeverSecond) RefreshCompact();
+                return;
+            }
             if (_showingFever)
             {
                 if (FeverSystem.HasInstance && FeverSystem.Instance.IsActive)
@@ -125,6 +145,14 @@ namespace ContextStage
         {
             _currentCombo = e.CurrentCombo;
             _currentMultiplier = e.Multiplier;
+            if (Compact)
+            {
+                RefreshCompact();
+                if (e.CurrentCombo > e.PreviousCombo && numberFeedback != null &&
+                    GameManager.HasInstance && GameManager.Instance.IsPlaying)
+                    numberFeedback.Play(e.CurrentCombo - e.PreviousCombo);
+                return;
+            }
             if (_showingFever) return;
 
             ApplyComboEmphasis();
@@ -136,6 +164,7 @@ namespace ContextStage
 
         void OnCardResolved(CardResolved e)
         {
+            if (Compact) return;
             _currentCombo = e.ComboCount;
             _currentMultiplier = e.ComboMultiplier;
 
@@ -223,7 +252,8 @@ namespace ContextStage
             CancelPresentation();
             _showingFever = e.IsActive;
             _showingResult = false;
-            if (_showingFever) RefreshFever();
+            if (Compact) RefreshCompact();
+            else if (_showingFever) RefreshFever();
             else RefreshCombo();
         }
 
@@ -241,6 +271,39 @@ namespace ContextStage
             SetText(
                 $"FEVER TIME!  {remaining:0.0}s  ·  COMBO {_currentCombo:00}\n" +
                 $"ALL CARDS GOLD · 관객당 +{scorePerAudience}");
+        }
+
+        void RefreshCompact()
+        {
+            comboValueText.text = Mathf.Max(0, _currentCombo).ToString();
+            SetText("COMBO");
+            SetColor(normalColor);
+            comboValueText.color = normalColor;
+            int interval = FeverSystem.HasInstance && FeverSystem.Instance.Config != null
+                ? Mathf.Max(1, FeverSystem.Instance.Config.FeverComboInterval) : 5;
+            bool active = FeverSystem.HasInstance && FeverSystem.Instance.IsActive;
+            _displayedFeverSecond = active ? Mathf.CeilToInt(FeverSystem.Instance.Remaining) : -1;
+            if (feverValueText != null)
+            {
+                feverProgressText.text = active ? "FEVER!" : "FEVER까지";
+                feverValueText.text = active
+                    ? $"{_displayedFeverSecond}s"
+                    : $"{Mathf.Max(0, _currentCombo) % interval}/{interval}";
+                feverValueText.color = normalColor;
+                return;
+            }
+            string yellow = ColorUtility.ToHtmlStringRGB(normalColor);
+            feverProgressText.text = active
+                ? $"FEVER! <color=#{yellow}>{_displayedFeverSecond}s</color>"
+                : $"FEVER까지 <color=#{yellow}>{Mathf.Max(0, _currentCombo) % interval}/{interval}</color>";
+        }
+
+        void OnGameStateChanged(GameStateChanged e)
+        {
+            if (!Compact || (e.Current != GameState.Ready && e.Current != GameState.GameOver)) return;
+            if (numberFeedback != null) numberFeedback.Clear();
+            _currentCombo = ComboSystem.HasInstance ? ComboSystem.Instance.CurrentCombo : 0;
+            RefreshCompact();
         }
 
         void RefreshCombo()
