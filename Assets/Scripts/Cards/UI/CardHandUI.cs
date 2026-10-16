@@ -35,6 +35,8 @@ namespace ContextStage
 
         readonly List<CardSlotUI> _activeViews = new List<CardSlotUI>();
 
+        public CardSlotUI GetView(int index) => index >= 0 && index < _activeViews.Count ? _activeViews[index] : null;
+
         /// <summary>디졸브 중이라 손패에서 빠졌지만 아직 풀에 반납하지 않은 카드들.</summary>
         readonly List<CardSlotUI> _dissolvingViews = new List<CardSlotUI>();
         bool _feverActive;
@@ -145,6 +147,7 @@ namespace ContextStage
                 if (index >= 0 && index < _activeViews.Count && _activeViews[index] != null)
                 {
                     var view = _activeViews[index];
+                    if (view.IsBreathingArrival) continue;
                     var tint = new Color32(0xC7, 0xDC, 0xD0, 255);
                     view.PlayArrivalFeedback(tint);
                     var rect = view.transform as RectTransform;

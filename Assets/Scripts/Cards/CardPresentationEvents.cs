@@ -2,6 +2,13 @@ using UnityEngine;
 
 namespace ContextStage
 {
+    /// <summary>지급과 손패 UI 갱신이 끝난 숨 고르기 카드만 알린다.</summary>
+    public readonly struct BreathingRoomCardAdded
+    {
+        public BreathingRoomCardAdded(int handIndex) { HandIndex = handIndex; }
+        public int HandIndex { get; }
+    }
+
     public readonly struct PerformanceTimeExtended
     {
         public PerformanceTimeExtended(float seconds) { Seconds = seconds; }

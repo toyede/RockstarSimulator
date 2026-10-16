@@ -275,7 +275,10 @@ namespace ContextStage
                 "UIPixelVFXCanvas",
                 typeof(RectTransform),
                 typeof(Canvas),
-                typeof(CanvasScaler));
+                typeof(CanvasScaler),
+                typeof(LayoutElement));
+            // 효과용 캔버스가 손패 등의 부모 레이아웃에 공간을 차지하지 않게 한다.
+            canvasObject.GetComponent<LayoutElement>().ignoreLayout = true;
             canvasObject.transform.SetParent(transform, false);
 
             _canvas = canvasObject.GetComponent<Canvas>();

@@ -37,6 +37,15 @@ namespace ContextStage
         CardUpgradeVFX _grantedCardVfx;
         CardArrivalFeedback _arrivalFeedback;
 
+        public bool IsBreathingArrival => _arrivalFeedback != null && _arrivalFeedback.IsBreathing;
+
+        public CardArrivalFeedback PlayBreathingArrival()
+        {
+            if (_arrivalFeedback == null) _arrivalFeedback = gameObject.AddComponent<CardArrivalFeedback>();
+            _arrivalFeedback.PlayBreathing(artwork);
+            return _arrivalFeedback;
+        }
+
         void Awake()
         {
             var rectTransform = transform as RectTransform;

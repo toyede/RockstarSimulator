@@ -47,8 +47,10 @@ namespace ContextStage
             while (_elapsedSeconds >= _intervalSeconds)
             {
                 _elapsedSeconds -= _intervalSeconds;
-                if (CardSystem.HasInstance)
-                    CardSystem.Instance.AddCards(1);
+                var cards = CardSystem.Instance;
+                int handIndex = cards.HandCount;
+                if (cards.AddCards(1) > 0)
+                    EventBus.Raise(new BreathingRoomCardAdded(handIndex));
                 if (CardSystem.Instance.IsHandFull)
                 {
                     _elapsedSeconds = 0f;

@@ -31089,6 +31089,7 @@ GameObject:
   - component: {fileID: 1541731746}
   - component: {fileID: 1541731748}
   - component: {fileID: 1541731749}
+  - component: {fileID: 1541731750}
   m_Layer: 5
   m_Name: CardHand
   m_TagString: Untagged
@@ -31190,6 +31191,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.PointerPixelFeedback
   showPointerPixels: 0
+--- !u!114 &1541731750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1541731744}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79f7c66a48da03345a1eb5269f03a12f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.BreathingRoomFeedback
+  raccoon: {fileID: 266755680}
+  stageCamera: {fileID: 519420031}
+  hand: {fileID: 1541731746}
+  breathDuration: 0.6
+  inhaleStretch: 0.12
+  exhaleSquash: 0.035
+  mouthOffset: {x: 0.22, y: 0.28}
+  exhaleDelay: 0.26
+  lightTravelDuration: 0.32
+  arrivalDuration: 0.5
+  arrivalScale: 0.08
 --- !u!1 &1548067907
 GameObject:
   m_ObjectHideFlags: 0
