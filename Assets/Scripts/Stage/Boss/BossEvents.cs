@@ -1,5 +1,8 @@
 namespace ContextStage
 {
+    /// <summary>미션 예고 중 라이벌 무대를 보고 있을 때의 드랍 임팩트. 조명·관객 표시 전용.</summary>
+    public readonly struct BossDropImpact { }
+
     /// <summary>라이벌 무대 체류의 표시용 진행도. 판정/제한시간에는 관여하지 않는다.</summary>
     public readonly struct BossLightingHoldProgress
     {

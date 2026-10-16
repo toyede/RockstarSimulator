@@ -1,0 +1,2 @@
+var a=typeof(UnityEditor.Editor).Assembly;
+return new{constructors=a.GetType("UnityEditor.GameViewSize").GetConstructors(System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Select(x=>x.ToString()).ToArray(),methods=a.GetType("UnityEditor.GameViewSizeGroup").GetMethods().Where(m=>m.Name.Contains("Custom")||m.Name.Contains("Total")||m.Name.Contains("Builtin")).Select(m=>m.ToString()).ToArray()};

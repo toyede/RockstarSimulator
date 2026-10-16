@@ -58,6 +58,11 @@ namespace ContextStage
         [Header("보스 HP 공통 관객 상태 (표시 전용)")]
         [SerializeField, Range(0, 1)] float calmHpThreshold = 0.33f;
         [SerializeField, Range(0, 1)] float hypeHpThreshold = 0.66f;
+        [Header("드랍 관객 반응 (표시 전용)")]
+        [SerializeField, Min(0f)] float dropJumpHeight = 0.5f;
+        [SerializeField, Min(0.1f)] float dropJumpDuration = 2.4f;
+        [SerializeField, Min(0.1f)] float dropJumpsPerSecond = 2.7f;
+        float _dropJumpAge = -1f;
 
         sealed class Fan
         {
@@ -112,6 +117,7 @@ namespace ContextStage
             EventBus.Subscribe<BossPatternStarted>(OnPatternStarted);
             EventBus.Subscribe<BossPatternResolved>(OnPatternResolved);
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
+            EventBus.Subscribe<BossDropImpact>(OnDropImpact);
         }
 
         void OnDisable()
@@ -124,12 +130,19 @@ namespace ContextStage
             EventBus.Unsubscribe<BossPatternStarted>(OnPatternStarted);
             EventBus.Unsubscribe<BossPatternResolved>(OnPatternResolved);
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
+            EventBus.Unsubscribe<BossDropImpact>(OnDropImpact);
+            _dropJumpAge = -1f;
             if (_built) ResetVisual();
         }
 
         void Update()
         {
             if (_root == null || !_root.gameObject.activeInHierarchy) return;
+            if (_dropJumpAge >= 0f)
+            {
+                _dropJumpAge += Time.deltaTime;
+                if (_dropJumpAge >= dropJumpDuration) _dropJumpAge = -1f;
+            }
             if (_led != null) _led.enabled = !UsesExternalShow;
             if (_platform != null) _platform.enabled = !UsesExternalShow;
 
@@ -166,10 +179,26 @@ namespace ContextStage
             color = Color.Lerp(color, AudienceMemberActor.SilhouetteColor, AudienceMemberActor.SilhouetteBlend);
             color.a = fan.BaseColor.a * fan.Fade;
             fan.Renderer.color = color;
-            if (fan.Walking || _motionTo == null) return;
+            if (fan.Walking) return;
             float clock = (Time.time + fan.Seed * 0.173f) * fan.Variance.SpeedMultiplier;
-            CrowdMotionEvaluator.EvaluateBlended(_motionFrom, _motionTo, _motionBlend, clock,
-                out float bob, out float sway, out float squash);
+            float bob=0, sway=0, squash=0;
+            if (_motionTo != null)
+                CrowdMotionEvaluator.EvaluateBlended(_motionFrom, _motionTo, _motionBlend, clock,
+                    out bob, out sway, out squash);
+            if (_dropJumpAge >= 0f)
+            {
+                float age = _dropJumpAge - (fan.Seed & 3) * 0.035f;
+                if (age >= 0f)
+                {
+                    float envelope = Mathf.SmoothStep(0, 1, age / 0.08f) *
+                        Mathf.SmoothStep(0, 1, (dropJumpDuration - _dropJumpAge) / 0.35f);
+                    float phase = Mathf.Repeat(age * dropJumpsPerSecond, 1f);
+                    bob += Mathf.Sin(phase * Mathf.PI) * dropJumpHeight *
+                        Mathf.Lerp(0.85f, 1.15f, (fan.Seed & 7) / 7f) * envelope;
+                    sway += Mathf.Sin(phase * Mathf.PI * 2) * 5f * fan.Variance.Flip * envelope;
+                    squash += Mathf.Cos(phase * Mathf.PI * 2) * 0.05f * envelope;
+                }
+            }
             var pose = fan.Renderer.transform;
             pose.localPosition = fan.Slot + Vector3.up * bob;
             pose.localRotation = Quaternion.Euler(0, 0, sway * fan.Variance.Flip);
@@ -253,6 +282,11 @@ namespace ContextStage
             _blinkRoutine = StartCoroutine(Blink(e.Duration));
         }
 
+        void OnDropImpact(BossDropImpact e)
+        {
+            if (_root != null && _root.gameObject.activeInHierarchy) _dropJumpAge = 0f;
+        }
+
         void OnPatternResolved(BossPatternResolved e)
         {
             EnsureBuilt();
@@ -268,6 +302,7 @@ namespace ContextStage
 
         void OnGameStateChanged(GameStateChanged e)
         {
+            if (e.Current == GameState.Ready || e.Current == GameState.GameOver) _dropJumpAge = -1f;
             if (!_built) return;
             if (e.Current == GameState.Ready) ResetVisual();
         }
@@ -430,6 +465,7 @@ namespace ContextStage
 
         void ResetVisual()
         {
+            _dropJumpAge = -1f;
             if (_arrivalVfx != null) _arrivalVfx.Clear();
             StopAllCoroutines();
             _blinkRoutine = null;

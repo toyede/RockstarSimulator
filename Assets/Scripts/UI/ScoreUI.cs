@@ -22,11 +22,20 @@ namespace ContextStage
 
         float _lastCardPresentationAt = float.NegativeInfinity;
         Coroutine _scoreRoutine;
+        Text _drainText;
+        Color _normalColor;
+        float _drainAge = -1f;
+        static ScoreUI _active;
+        public static bool HasDrainFeedback => _active != null && _active.isActiveAndEnabled && _active.scoreText != null;
 
         void OnEnable()
         {
             EventBus.Subscribe<ScoreChanged>(OnScoreChanged);
             EventBus.Subscribe<CardPresentationStarted>(OnCardPresentationStarted);
+            EventBus.Subscribe<BossDrainApplied>(OnDrain);
+            EventBus.Subscribe<GameStateChanged>(OnState);
+            _active = this;
+            if (scoreText != null) _normalColor = scoreText.color;
 
             // 씬 로드 직후 이벤트가 오기 전에도 현재 점수와 동기화
             if (GameManager.HasInstance) Refresh(GameManager.Instance.Score);
@@ -37,7 +46,12 @@ namespace ContextStage
         {
             EventBus.Unsubscribe<ScoreChanged>(OnScoreChanged);
             EventBus.Unsubscribe<CardPresentationStarted>(OnCardPresentationStarted);
+            EventBus.Unsubscribe<BossDrainApplied>(OnDrain);
+            EventBus.Unsubscribe<GameStateChanged>(OnState);
+            if (_active == this) _active = null;
+            if (_scoreRoutine != null) StopCoroutine(_scoreRoutine);
             _scoreRoutine = null;
+            ClearDrain();
         }
 
         void OnCardPresentationStarted(CardPresentationStarted _) =>
@@ -45,6 +59,9 @@ namespace ContextStage
 
         void OnScoreChanged(ScoreChanged e)
         {
+            // 카드 표시를 기다리는 사이 점수가 감소해도 과거 점수로 되돌아가지 않는다.
+            if (_scoreRoutine != null) StopCoroutine(_scoreRoutine);
+            _scoreRoutine = null;
             bool followsCard =
                 Time.unscaledTime - _lastCardPresentationAt < 0.1f;
             if (!followsCard || cardPresentationDelay <= 0f)
@@ -55,6 +72,50 @@ namespace ContextStage
 
             if (_scoreRoutine != null) StopCoroutine(_scoreRoutine);
             _scoreRoutine = StartCoroutine(RefreshAfterDelay(e.Score));
+        }
+
+        void OnDrain(BossDrainApplied e)
+        {
+            if (e.Amount <= 0 || scoreText == null) return;
+            if (_drainText == null)
+            {
+                var go = new GameObject("BossScoreLoss", typeof(RectTransform), typeof(Text));
+                go.transform.SetParent(scoreText.transform, false);
+                _drainText = go.GetComponent<Text>();
+                _drainText.font = scoreText.font; _drainText.fontSize = 30;
+                _drainText.alignment = TextAnchor.UpperRight; _drainText.raycastTarget = false;
+                _drainText.horizontalOverflow = HorizontalWrapMode.Overflow;
+                _drainText.verticalOverflow = VerticalWrapMode.Overflow;
+                var r = _drainText.rectTransform;
+                r.anchorMin = r.anchorMax = new Vector2(1f, 0f); r.pivot = new Vector2(1f, 1f);
+                r.sizeDelta = new Vector2(480f, 44f);
+            }
+            _drainText.text = $"−{e.Amount:N0}점";
+            _drainText.gameObject.SetActive(true); _drainAge = 0f;
+        }
+
+        void Update()
+        {
+            if (_drainAge < 0f || (GameManager.HasInstance && GameManager.Instance.State == GameState.Paused)) return;
+            _drainAge += Time.deltaTime;
+            if (_drainAge >= .8f) { ClearDrain(); return; }
+            float t = _drainAge / .8f;
+            var red = new Color32(0xFF, 0x77, 0x65, 0xFF);
+            scoreText.color = Color.Lerp(red, _normalColor, Mathf.Clamp01(t * 2f));
+            _drainText.color = new Color(red.r / 255f, red.g / 255f, red.b / 255f, 1f - t * t);
+            _drainText.rectTransform.anchoredPosition = new Vector2(0f, -8f - 24f * t);
+        }
+
+        void OnState(GameStateChanged e)
+        {
+            if (e.Current == GameState.Ready || e.Current == GameState.GameOver) ClearDrain();
+        }
+
+        void ClearDrain()
+        {
+            _drainAge = -1f;
+            if (scoreText != null) scoreText.color = _normalColor;
+            if (_drainText != null) _drainText.gameObject.SetActive(false);
         }
 
         IEnumerator RefreshAfterDelay(int score)

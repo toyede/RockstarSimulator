@@ -186,7 +186,7 @@ namespace ContextStage
             var renderer = prefab.AddComponent<MeshRenderer>();
             renderer.sharedMaterial = _sharedMaterial;
             renderer.sortingLayerName = LocalScreenEffectShader.SortingLayerName;
-            renderer.sortingOrder = 0;
+            renderer.sortingOrder = LocalScreenEffectShader.SortingOrder;
 
             prefab.AddComponent<LocalScreenEffectInstance>();
             return prefab;

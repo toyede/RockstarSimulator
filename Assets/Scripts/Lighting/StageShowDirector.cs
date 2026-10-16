@@ -23,6 +23,7 @@ namespace ContextStage
         HeatStage _lastHint;
         float _showAge=-1, _washStart=-100, _rimStart=-100, _dropHold=-1;
         float _dropAge=-1, _dropRecover=-1;
+        bool _dropCued;
         public float DropAge => _dropAge;
         public float PerformanceShowAge => _showAge;
         public float DropHoldProgress => _dropHold;
@@ -48,6 +49,7 @@ namespace ContextStage
             EventBus.Subscribe<StageEventResolved>(OnEventEnd);
             EventBus.Subscribe<CardResolved>(OnCard);
             EventBus.Subscribe<BossLightingHoldProgress>(OnHold);
+            EventBus.Subscribe<BossDropImpact>(OnDropImpact);
             EventBus.Subscribe<BossCinematicEnded>(OnCinematicEnd);
             ResetShow();
             _fever=FeverSystem.HasInstance && FeverSystem.Instance.IsActive;
@@ -68,6 +70,7 @@ namespace ContextStage
             EventBus.Unsubscribe<StageEventResolved>(OnEventEnd);
             EventBus.Unsubscribe<CardResolved>(OnCard);
             EventBus.Unsubscribe<BossLightingHoldProgress>(OnHold);
+            EventBus.Unsubscribe<BossDropImpact>(OnDropImpact);
             EventBus.Unsubscribe<BossCinematicEnded>(OnCinematicEnd);
             foreach(var r in rigs)if(r!=null)r.Clear();
             if(hintController!=null)hintController.SetShowHintMode(false);
@@ -80,6 +83,7 @@ namespace ContextStage
             _pulseZone=-1;_finalClear=null;
             _showAge=-1;_washStart=_rimStart=-100;_dropHold=-1;
             _dropAge=_dropRecover=-1;
+            _dropCued=false;
             _performanceStarted=_hintReady=_leadIn=false;
             foreach(var r in rigs)if(r!=null)r.Clear();
             foreach(var rim in bandRims)if(rim!=null)rim.SetVisual(Color.white,0);
@@ -105,11 +109,17 @@ namespace ContextStage
             if(p!=null && p.venue==2 && !_fever && _time-_washStart>=p.washCueCooldown)
             { _washStart=_time;_singleWash=true; }
         }
-        void OnAnnounce(BossPatternAnnounced e){_announce=e.DisplaySeconds;_pattern=e.PatternId;_leadIn=true;_dropHold=-1;_dropAge=_dropRecover=-1;}
+        void OnAnnounce(BossPatternAnnounced e){_announce=e.DisplaySeconds;_pattern=e.PatternId;_leadIn=true;_dropHold=-1;_dropAge=_dropRecover=-1;_dropCued=false;}
         void OnHold(BossLightingHoldProgress e)
         {
-            if(_pattern!="drop" || !_leadIn)return;
+            if(!_leadIn)return;
             _dropHold=e.Active?e.Normalized:-1;
+        }
+        void OnDropImpact(BossDropImpact e)
+        {
+            if(_stageId!="stage_05_boss" || _ended || _dropCued)return;
+            _dropCued=true;_dropAge=0;_dropRecover=-1;
+            foreach(var r in rigs)if(r!=null && r.Profile!=null && r.Profile.rival)r.PlayDropImpact(_time);
         }
         void OnCinematicEnd(BossCinematicEnded e)
         {if(e.Kind==BossCinematicKind.PatternAnnounce){_leadIn=false;_dropHold=-1;}}
@@ -129,12 +139,13 @@ namespace ContextStage
         {
             _announce=0;_leadIn=false;_dropHold=-1;_pattern=e.PatternId;_patternRemaining=e.Duration;_pulse=0.45f;
             _pulseZone=-1;
-            _dropAge=e.PatternId=="drop"?0:-1;_dropRecover=-1;
-            if(e.PatternId=="drop")foreach(var r in rigs)if(r!=null && r.Profile!=null && r.Profile.rival)r.PlayDropImpact(_time);
+            // 정상 예고에서는 이미 라이벌 체류 중 터졌다. 복귀 후 같은 임팩트를 재생하지 않는다.
+            if(!_dropCued)OnDropImpact(new BossDropImpact());
         }
         void OnResolved(BossPatternResolved e)
         {
             if(_dropAge>=0)_dropRecover=0;
+            _dropCued=false;
             _pattern=null;_patternRemaining=0;_pulse=0.5f;_pulseZone=e.Success?0:1;
         }
         void OnRevenge(BossRevengeChanged e)=>_revenge=e.Active;

@@ -47,6 +47,17 @@ namespace ContextStage
             if (_front == null) _front = Create("Rain_Front", 32, "Effects", 1);
             if (_splashes == null) _splashes = Create("Rain_Floor", 12, "Effects", 0);
             _raining = true;
+            _alpha = 1f;
+            // 기존 108개 상한 안에서 첫 소나기를 굵게 집중한다. 별도 비 시스템 없음.
+            for (int i = 0; i < 20; i++) Emit(_front, true);
+            _splashes.Play();
+            for (int i = 0; i < 12; i++)
+                _splashes.Emit(new ParticleSystem.EmitParams {
+                    position = _center + new Vector3(Random.Range(-_width*.42f, _width*.42f), Random.Range(-1.5f,.5f),0),
+                    velocity = new Vector3(Random.Range(-2f,2f),Random.Range(1f,2f),0),
+                    startSize3D = new Vector3(.12f,.06f,1), startLifetime = .45f,
+                    startColor = new Color(.75f,.88f,1f,.65f)
+                }, 1);
         }
         void OnEnd(StageEventResolved e) { if (e.EventId == EventId) _raining = false; }
         void OnProtected(RainAudienceProtected e) { if (_raining) _presenter?.PlayRainProtection(); }

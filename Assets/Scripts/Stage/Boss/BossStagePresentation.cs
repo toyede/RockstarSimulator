@@ -35,7 +35,10 @@ namespace ContextStage
         [SerializeField] string peekLabel = "라이벌 무대 보기  [Tab]";
         [SerializeField] string returnLabel = "우리 무대로  [Tab]";
         [SerializeField, Tooltip("화면 세로 위치(px, 1080 기준, 가운데 0). 오른쪽 가장자리에 붙는다")] float peekButtonY = 40f;
+        [SerializeField, Tooltip("우하단 기준 버튼 위치. 손패와 독립된 자리")] Vector2 peekButtonPosition = new Vector2(-24f, 158f);
         [SerializeField, Tooltip("키로도 전환한다 (화면 기획: 지정키를 누르면 위로 스크롤)")] bool peekWithTabKey = true;
+        [SerializeField, Range(0.1f, 0.85f), Tooltip("라이벌 무대 체류 중 드랍이 터지는 시점. 모든 미션 예고에 적용")]
+        float dropImpactAtHoldFraction = 0.55f;
 
         BossArenaLayout _arena;
         BossCameraDirector _camera;
@@ -162,13 +165,22 @@ namespace ContextStage
 
             yield return _camera.PanRoutine(BossZone.RivalStage, config.CinematicPanOutDuration);
             float holdElapsed=0;
+            bool dropEmitted = false;
             EventBus.Raise(new BossLightingHoldProgress(0,true));
             while(holdElapsed<hold)
             {
                 holdElapsed+=Time.deltaTime;
                 EventBus.Raise(new BossLightingHoldProgress(hold<=0?1:Mathf.Clamp01(holdElapsed/hold),true));
+                if (kind == BossCinematicKind.PatternAnnounce && !dropEmitted &&
+                    holdElapsed >= hold * dropImpactAtHoldFraction)
+                {
+                    dropEmitted = true;
+                    EventBus.Raise(new BossDropImpact());
+                }
                 yield return null;
             }
+            if (kind == BossCinematicKind.PatternAnnounce && !dropEmitted)
+                EventBus.Raise(new BossDropImpact());
             EventBus.Raise(new BossLightingHoldProgress(1,false));
             yield return _camera.PanRoutine(BossZone.OurStage, config.CinematicPanBackDuration);
 
@@ -239,10 +251,9 @@ namespace ContextStage
             if (_peekText != null) _peekText.text = peeking ? returnLabel : peekLabel;
             if (_peekRect != null)
             {
-                // 위아래 스크롤이라 좌우 이동 없이 오른쪽 가장자리에 고정
-                _peekRect.anchorMin = _peekRect.anchorMax = new Vector2(1f, 0.5f);
-                _peekRect.pivot = new Vector2(1f, 0.5f);
-                _peekRect.anchoredPosition = new Vector2(-16f, peekButtonY);
+                _peekRect.anchorMin = _peekRect.anchorMax = new Vector2(1f, 0f);
+                _peekRect.pivot = new Vector2(1f, 0f);
+                _peekRect.anchoredPosition = peekButtonPosition;
             }
         }
 

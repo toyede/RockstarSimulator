@@ -1,0 +1,10 @@
+var a=typeof(UnityEditor.Editor).Assembly;
+var sizes=a.GetType("UnityEditor.GameViewSizes");var instance=sizes.GetProperty("instance",System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.FlattenHierarchy).GetValue(null);
+var group=sizes.GetMethod("GetGroup").Invoke(instance,new[]{System.Enum.Parse(a.GetType("UnityEditor.GameViewSizeGroupType"),"Standalone")});
+var viewType=a.GetType("UnityEditor.GameView");var view=UnityEngine.Resources.FindObjectsOfTypeAll(viewType).First();
+var flags=System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance;var selected=viewType.GetProperty("selectedSizeIndex",flags);
+UnityEditor.SessionState.SetInt("PolishOriginalSize",(int)selected.GetValue(view));
+var texts=(string[])group.GetType().GetMethod("GetDisplayTexts").Invoke(group,null);
+int total=System.Array.FindIndex(texts,s=>s.Contains("Polish verification temporary"));
+var custom=System.Activator.CreateInstance(a.GetType("UnityEditor.GameViewSize"),new object[]{System.Enum.Parse(a.GetType("UnityEditor.GameViewSizeType"),"FixedResolution"),1280,720,"Polish verification temporary"});
+if(total<0){total=(int)group.GetType().GetMethod("GetTotalCount").Invoke(group,null);group.GetType().GetMethod("AddCustomSize").Invoke(group,new[]{custom});}UnityEditor.SessionState.SetInt("PolishTemporarySize",total);selected.SetValue(view,total);((UnityEditor.EditorWindow)view).Repaint();return new{selected=total};

@@ -1,0 +1,64 @@
+if(!UnityEditor.EditorApplication.isPlaying)throw new System.Exception("Play Main required");
+UnityEditor.EditorApplication.isPaused=false;
+var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+object Get(object o,string key)=>o.GetType().GetField(key,flags).GetValue(o);
+var checks=new System.Collections.Generic.List<string>();
+void Save(string state)=>UnityEditor.SessionState.SetString("PolishEventVerification",Newtonsoft.Json.JsonConvert.SerializeObject(new{state,pass=checks.Count(x=>x.StartsWith("PASS")),fail=checks.Count(x=>x.StartsWith("FAIL")),checks}));
+void Check(bool ok,string label){checks.Add((ok?"PASS ":"FAIL ")+label);Save("running");}
+var gm=GameJamKit.GameManager.Instance;
+var tutorial=UnityEngine.Object.FindFirstObjectByType<ContextStage.TutorialFlow>();if(tutorial!=null)tutorial.enabled=false;
+UnityEngine.Object.FindFirstObjectByType<ContextStage.TutorialOverlayUI>().HideAll();
+var vfx=UnityEngine.Object.FindFirstObjectByType<ContextStage.StageEventPresentationVFX>();
+void Apply(int n){gm.ResetGame();ContextStage.StageRuntimeDirector.Active.ApplyStage(UnityEditor.AssetDatabase.LoadAssetAtPath<ContextStage.StageDefinition>("Assets/Settings/Tour/Stage0"+n+".asset"));gm.StartGame();ContextStage.PerformanceTimer.SetPaused(true);ContextStage.AudienceRosterSystem.Instance.SuppressEngagementDecay=true;}
+void Expire(ContextStage.StageEventRule r)=>typeof(ContextStage.StageEventRule).GetField("_remaining",flags).SetValue(r,0f);
+System.Collections.IEnumerator Test(){
+ Apply(3);yield return null;
+ var flag=UnityEngine.Object.FindFirstObjectByType<ContextStage.FlagWaveRule>();
+ Check(flag.DebugTriggerNow(),"actual Stage3 flag rule begins");yield return null;
+ Check(vfx.ParticleCount>0,"rule start reaches VFX");
+ GameJamKit.EventBus.Raise(new GameJamKit.CardResolved{Judgement=GameJamKit.HypeJudgement.Good});
+ GameJamKit.EventBus.Raise(new GameJamKit.CardResolved{Judgement=GameJamKit.HypeJudgement.Perfect});yield return null;
+ Check(flag.EventsSucceeded==1&&!flag.IsEventActive,"Stage3 actual Good judgement success");
+ yield return new UnityEngine.WaitForSeconds(1f);
+ Check(flag.DebugTriggerNow(),"Stage3 failure rule begins");Expire(flag);yield return null;
+ Check(flag.EventsResolved==2&&flag.EventsSucceeded==1,"Stage3 actual window expiry failure");
+ Apply(4);yield return null;
+ var screen=UnityEngine.Object.FindFirstObjectByType<ContextStage.BigScreenRule>();
+ Check(screen.DebugTriggerNow(),"actual Stage4 camera rule begins");yield return null;
+ int initial=gm.Score;
+ var sequence=(ContextStage.CrowdPreference[])Get(screen,"_sequence");
+ foreach(var preference in sequence)GameJamKit.EventBus.Raise(new GameJamKit.CardResolved{TargetPreference=preference,Judgement=GameJamKit.HypeJudgement.Good});
+ yield return null;
+ Check(screen.EventsSucceeded==1&&gm.Score>initial,"actual camera sequence awards rule bonus");
+ yield return new UnityEngine.WaitForSeconds(1f);
+ Check(screen.DebugTriggerNow(),"Stage4 second longer sequence begins");yield return null;
+ var notice=UnityEngine.Object.FindFirstObjectByType<ContextStage.StageEventNoticeUI>();
+ var body=((ContextStage.MissionCueSheetView)Get(notice,"_view")).Body;body.ForceMeshUpdate();
+ Check(body.textBounds.size.y<=body.rectTransform.rect.height+2,"actual longer camera instruction fits");
+ int population=ContextStage.AudienceRosterSystem.Instance.Count;Expire(screen);yield return null;
+ Check(screen.EventsResolved==2&&screen.EventsSucceeded==1,"actual camera expiry failure");
+ Check(ContextStage.AudienceRosterSystem.Instance.Count==population-1,"failure penalty remains rule-owned");
+ yield return new UnityEngine.WaitForSeconds(1f);
+ var blackout=UnityEngine.Object.FindFirstObjectByType<ContextStage.ArenaBlackoutRule>();
+ Check(blackout.DebugTriggerNow(),"actual blackout begins");yield return new UnityEngine.WaitForSeconds(.3f);
+ Check(vfx.ParticleCount==0,"no sparks or smoke during actual blackout");
+ GameJamKit.EventBus.Raise(new GameJamKit.CardResolved{Judgement=GameJamKit.HypeJudgement.Good});Expire(blackout);yield return null;
+ Check(blackout.EventsSucceeded==1,"actual blackout success resolves");
+ float deadline=UnityEngine.Time.realtimeSinceStartup+4f;
+ while((UnityEngine.ParticleSystem)Get(vfx,"_smoke")==null||((UnityEngine.ParticleSystem)Get(vfx,"_smoke")).particleCount==0){if(UnityEngine.Time.realtimeSinceStartup>deadline)break;yield return null;}
+ var smoke=(UnityEngine.ParticleSystem)Get(vfx,"_smoke");
+ Check(smoke!=null&&smoke.particleCount>0,"thin smoke appears only after restoration");
+ Check(ContextStage.AudienceMemberActor.SilhouetteBlend<.02f,"smoke waits until silhouette restored");
+ Check(smoke!=null&&smoke.main.maxParticles==8,"smoke pool capped at eight");
+ gm.TogglePause();int held=vfx.ParticleCount;yield return new UnityEngine.WaitForSecondsRealtime(.15f);Check(vfx.ParticleCount==held,"restoration particles pause");gm.TogglePause();
+ yield return new UnityEngine.WaitForSeconds(1f);vfx.Clear();
+ int bursts=vfx.BurstCount;GameJamKit.EventBus.Raise(new ContextStage.AudienceCrisisResolved(2,0,2));Check(vfx.BurstCount==bursts,"zero retained does not fake a defense wave");
+ GameJamKit.EventBus.Raise(new ContextStage.AudienceCrisisResolved(2,2,0));
+ var pieces=(UnityEngine.ParticleSystem)Get(vfx,"_pieces");var particles=new UnityEngine.ParticleSystem.Particle[76];int count=pieces.GetParticles(particles);float cx=UnityEngine.Camera.main.transform.position.x;
+ Check(count==32,"successful defense emits 32 pooled wave pieces");
+ Check(particles.Take(count).All(p=>(p.position.x<cx&&p.velocity.x>0)||(p.position.x>cx&&p.velocity.x<0)),"wave moves inward on both sides");
+ for(int i=0;i<20;i++)GameJamKit.EventBus.Raise(new ContextStage.AudienceCrisisResolved(2,2,0));
+ Check(vfx.ParticleCount<=116&&pieces.main.maxParticles==76,"repeated results respect total particle pool");
+ gm.ResetGame();Check(vfx.ParticleCount==0,"Ready clears smoke notes and wave");Save("complete");
+}
+Save("starting");UnityEngine.Object.FindFirstObjectByType<ContextStage.TourDebugInput>().StartCoroutine(Test());return "Real rule checks started; synthetic card judgement inputs, not a natural-play test";

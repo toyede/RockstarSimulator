@@ -7,6 +7,8 @@ namespace ContextStage
     {
         public const string ShaderName = "ContextStage/Effects/Local Screen Effect";
         public const string SortingLayerName = "Effects";
+        // 캡처에는 Default 월드만 있다. 캡처를 덮은 뒤 워시(-150)·빔(-100)·역광(-80)을 합성한다.
+        public const int SortingOrder = -200;
 
         static readonly int EffectTypeId = Shader.PropertyToID("_EffectType");
         static readonly int ShapeTypeId = Shader.PropertyToID("_ShapeType");

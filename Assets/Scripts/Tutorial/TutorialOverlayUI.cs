@@ -159,7 +159,7 @@ namespace ContextStage
                 rect.anchorMin = new Vector2(.10f, .49f);
                 rect.anchorMax = new Vector2(.90f, .70f);
                 rect.offsetMin = rect.offsetMax = Vector2.zero;
-                mainText.color = new Color32(0x71, 0x36, 0x97, 0xFF);
+                mainText.color = Color.black;
                 mainText.supportRichText = true;
                 foreach (Shadow effect in mainText.GetComponents<Shadow>()) effect.enabled = false;
 
@@ -179,7 +179,8 @@ namespace ContextStage
                 rect.anchorMin = new Vector2(.10f, .16f);
                 rect.anchorMax = new Vector2(.90f, .43f);
                 rect.offsetMin = rect.offsetMax = Vector2.zero;
-                subText.color = MissionCueSheetView.Ink;
+                // 검은 미션 슬레이트의 흰 잉크를 밝은 튜토리얼 종이에 재사용하지 않는다.
+                subText.color = Color.black;
                 subText.supportRichText = true;
                 foreach (Shadow effect in subText.GetComponents<Shadow>()) effect.enabled = false;
 
@@ -198,17 +199,18 @@ namespace ContextStage
                 var rect = continueHint.transform as RectTransform;
                 if (rect != null)
                 {
-                    rect.anchorMin = new Vector2(1f, .08f);
-                    rect.anchorMax = new Vector2(1f, .08f);
+                    if (panelRoot != null && rect.parent != panelRoot.transform) rect.SetParent(panelRoot.transform, false);
+                    rect.anchorMin = new Vector2(1f, .17f);
+                    rect.anchorMax = new Vector2(1f, .17f);
                     rect.pivot = new Vector2(1f, 0f);
-                    rect.anchoredPosition = new Vector2(-30f, 0f);
+                    rect.anchoredPosition = new Vector2(-40f, 0f);
                     rect.sizeDelta = new Vector2(280f, 32f);
                 }
 
                 var hintText = continueHint.GetComponent<Text>();
                 if (hintText != null)
                 {
-                    hintText.color = new Color32(0x24, 0x61, 0xAB, 0xFF);
+                    hintText.color = Color.black;
                     foreach (Shadow effect in hintText.GetComponents<Shadow>()) effect.enabled = false;
                     hintText.fontSize = continueFontSize;
                     hintText.resizeTextForBestFit = true;

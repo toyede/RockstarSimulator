@@ -14,8 +14,10 @@ namespace ContextStage
 
         [Header("Layout")]
         [SerializeField, Min(1)] int maximumColumns = 5;
-        [SerializeField, Min(0.1f)] float horizontalSpacing = 1.35f;
-        [SerializeField, Min(0.1f)] float rowSpacing = 0.55f;
+        [SerializeField, Min(0.1f)] float horizontalSpacing = 2.6f;
+        [SerializeField, Min(0.1f)] float rowSpacing = 1.0f;
+        [SerializeField, Min(0f)] float layoutJitter = .14f;
+        [SerializeField, Min(1f)] float layoutHalfWidth = 6.2f;
         [SerializeField, Min(0.01f)] float frontRowScale = 0.58f;
         [SerializeField, Range(0.5f, 1f)] float rowScaleFalloff = 0.86f;
         [SerializeField] int baseSortingOrder = 5;
@@ -28,6 +30,8 @@ namespace ContextStage
         readonly List<AudienceId> _order = new List<AudienceId>(10);
 
         bool _started;
+        Camera _layoutCamera;
+        float _lastAspect, _lastCameraSize;
         bool _deferRelayout;
         bool _revealAllPreferences;
         AudiencePreferenceHoverConfig _preferenceRevealConfig;
@@ -167,6 +171,7 @@ namespace ContextStage
             }
 
             _started = true;
+            _layoutCamera = Camera.main;
             PoolManager.Prewarm(memberPrefab.gameObject, 10);
             SynchronizeFromRoster();
         }
@@ -422,6 +427,12 @@ namespace ContextStage
 
             int columns = Mathf.Max(1, maximumColumns);
             int rows = Mathf.CeilToInt(count / (float)columns);
+            float halfWidth = layoutHalfWidth;
+            if (_layoutCamera != null && _layoutCamera.orthographic)
+            {
+                _lastAspect = _layoutCamera.aspect; _lastCameraSize = _layoutCamera.orthographicSize;
+                halfWidth = Mathf.Min(halfWidth, Mathf.Max(1f, _lastCameraSize * _lastAspect - 1f));
+            }
             for (int index = 0; index < count; index++)
             {
                 AudienceId id = _order[index];
@@ -431,12 +442,25 @@ namespace ContextStage
                 int rowStart = row * columns;
                 int rowCount = Mathf.Min(columns, count - rowStart);
                 int column = index - rowStart;
-                float x = (column - (rowCount - 1) * 0.5f) * horizontalSpacing;
-                float y = row * rowSpacing;
+                // 뒷줄을 반 칸 비우고, ID 기반 오프셋으로 게임 난수를 소비하지 않는다.
+                uint hash = unchecked((uint)id.Value * 2654435761u);
+                float jitterX = ((hash & 255) / 255f * 2f - 1f) * layoutJitter;
+                float jitterY = (((hash >> 8) & 255) / 255f * 2f - 1f) * layoutJitter;
+                float stagger = (row & 1) == 1 ? horizontalSpacing * .5f : 0f;
+                float x = Mathf.Clamp((column - (rowCount - 1) * .5f) * horizontalSpacing + stagger + jitterX,
+                    -halfWidth, halfWidth);
+                float y = row * rowSpacing + jitterY;
                 float scale = frontRowScale * Mathf.Pow(rowScaleFalloff, row);
                 int sortingOrder = baseSortingOrder + (rows - row);
                 actor.SetLayout(new Vector3(x, y, 0f), scale, sortingOrder);
             }
+        }
+
+        void LateUpdate()
+        {
+            // 뷰 크기가 바뀔 때만 재배치한다. 매 프레임 관객/씬 검색은 하지 않는다.
+            if (_started && _layoutCamera != null &&
+                (!Mathf.Approximately(_lastAspect, _layoutCamera.aspect) || !Mathf.Approximately(_lastCameraSize, _layoutCamera.orthographicSize))) Relayout();
         }
 
         void ReleaseAllImmediate()

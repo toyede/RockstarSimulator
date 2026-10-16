@@ -53,6 +53,7 @@ namespace ContextStage
         StageLightController _lights;
 
         public bool IsActive => _active;
+        public bool IsRestoring => !_active && _fade != null;
 
         void OnEnable() => EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
 

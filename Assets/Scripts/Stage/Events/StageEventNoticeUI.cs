@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace ContextStage
 {
     /// <summary>
-    /// 기믹 이벤트 알림 (제목 · 지시문 · 남은 시간 · 진행도). 상단 중앙, 기존 위기 경고와 같은 자리.
+    /// 기믹 이벤트 알림 (제목 · 지시문 · 남은 시간 · 진행도). 보스 미션과 같은 왼쪽 중단.
     /// EventBus 만 구독하고 룰은 모른다. 런타임에 스스로 만든다.
     /// </summary>
     [DisallowMultipleComponent]
@@ -18,7 +18,8 @@ namespace ContextStage
         [SerializeField] Color successColor = new Color32(0x30, 0xE1, 0xB9, 0xFF);
         [SerializeField] Color failColor = new Color32(0xF5, 0x7D, 0x4A, 0xFF);
         [SerializeField, Min(0f)] float resultHoldDuration = 1.8f;
-        [SerializeField, Tooltip("상단에서의 위치(px, 1080 기준). 점수 HUD 아래, 관객 머리 위")] float topOffset = 92f;
+        [SerializeField] Vector2 panelPosition = MissionCueSheetLayout.Position;
+        [SerializeField] Vector2 panelSize = MissionCueSheetLayout.Size;
 
         Canvas _canvas;
         RectTransform _panel;
@@ -72,6 +73,7 @@ namespace ContextStage
             _timer.text = $"{e.Duration:0.0}s";
             _progress.text = "";
             _view.SetSecondary("");
+            _view.PlayEntrance();
         }
 
         void OnProgress(StageEventProgress e)
@@ -94,6 +96,7 @@ namespace ContextStage
             _progress.text = "";
             _view.SetSecondary("");
             StopHide();
+            _view.PlayResult(e.Success);
             _hideRoutine = StartCoroutine(HideAfter(resultHoldDuration));
         }
 
@@ -150,21 +153,14 @@ namespace ContextStage
             var panelObject = new GameObject("Panel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             _panel = panelObject.GetComponent<RectTransform>();
             _panel.SetParent(canvasObject.transform, false);
-            _panel.anchorMin = _panel.anchorMax = new Vector2(0.5f, 1f);
-            _panel.pivot = new Vector2(0.5f, 1f);
-            _panel.anchoredPosition = new Vector2(0f, -topOffset);
-            _panel.sizeDelta = new Vector2(1000f, 256f);
+            MissionCueSheetLayout.Apply(_panel, panelPosition, panelSize);
             _background = panelObject.GetComponent<Image>();
             var view = _view = MissionCueSheetView.Create(_panel, resolvedFont);
             _title = view.Title; _body = view.Body; _timer = view.Timer; _progress = view.Progress;
             view.SetSecondary("");
-            _title.fontSize = _title.fontSizeMax = 26f;
+            _title.fontSize = _title.fontSizeMax = 30f;
             _body.fontSize = _body.fontSizeMax = 24f;
             _title.fontSizeMin = 24f;
-            // 일반 무대의 기존 상단 중앙 위치는 보존한다. 지시문에는 종이 면적을 넓게 준다.
-            _body.rectTransform.anchorMin = new Vector2(.06f, .27f);
-            _progress.rectTransform.anchorMin = new Vector2(.06f, .10f);
-            _progress.rectTransform.anchorMax = new Vector2(.94f, .25f);
 
             _panel.gameObject.SetActive(false);
         }

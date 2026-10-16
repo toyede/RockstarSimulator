@@ -74,7 +74,7 @@ namespace ContextStage
             if(venueEvent=="festival_rain_shower")strength*=1.1f;
             if(venueEvent=="arena_big_screen")strength*=1.15f;
             if(fever && !profile.rival) { a=new Color(1,0.83f,0.25f); b=Color.Lerp(a,Color.white,0.25f); }
-            bool dropPreview=profile.rival && pattern=="drop" && announce;
+            bool dropPreview=profile.rival && announce && dropAge<0;
             bool quiet=dropPreview && (dropHold<0 || dropHold<profile.dropQuietFraction);
             // 예고/충전 때는 좁은 LED만. 패턴 시작 이벤트 이후에만 레이저 팬을 펼친다.
             float recover=dropRecover<0?0:Mathf.SmoothStep(0,1,Mathf.Clamp01(dropRecover/Mathf.Max(0.1f,profile.dropRecoverSeconds)));
@@ -106,7 +106,7 @@ namespace ContextStage
                 float fan=(i/2)*4f*(i%2==0?-1:1);
                 laser.transform.localRotation=_laserRest[i]*Quaternion.Euler(0,0,
                     dropPreview?0:Mathf.Lerp(sweep,sweep*0.25f,phrase)+fan*opening);
-                int active=announce?0:peak?profile.peakLasers:opening>0?profile.dropLasers:profile.normalLasers;
+                int active=announce && dropAge<0?0:peak?profile.peakLasers:opening>0?profile.dropLasers:profile.normalLasers;
                 float density=Mathf.Lerp(1,0.8f,opening);
                 float entrance=i>=profile.normalLasers?opening:1;
                 laser.SetVisual(i%2==0?a:b,!ended && i<active?strength*1.35f*density*entrance:0);

@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace ContextStage
 {
     /// <summary>
-    /// 보스전 HUD: 상단 팬 쟁탈 바(라이벌 | 우리) + 드레인 카운트다운·감소 팝업 + 패턴 예고/진행 + REVENGE TIME! 자막.
+    /// 보스전 HUD: 상단 팬 쟁탈 바(우리 | 라이벌) + 드레인 카운트다운 + 미션.
     /// 런타임에 스스로 만들고 EventBus 만 구독한다 (룰 참조 없음). 랭크·점수·시간 HUD 는 그대로 보인다.
     /// </summary>
     [DisallowMultipleComponent]
@@ -23,13 +23,20 @@ namespace ContextStage
         [SerializeField] Color successColor = new Color32(0x30, 0xE1, 0xB9, 0xFF);
         [SerializeField, Min(0f)] float resultHoldDuration = 1.6f;
         [SerializeField, Min(0f), Tooltip("바가 목표값을 따라가는 속도")] float fillLerpSpeed = 6f;
-        [SerializeField, Tooltip("상단에서의 위치(px, 1080 기준). 점수·랭크 HUD 아래")] float topOffset = 118f;
+        [SerializeField, Tooltip("상단에서의 위치(px, 1080 기준)")] float topOffset = 54f;
+        [SerializeField] Sprite fanBarBack;
+        [SerializeField] Sprite fanBarOurs;
+        [SerializeField] Sprite fanBarRival;
         [SerializeField, Tooltip("미션 패널 위치 — 왼쪽 중단 기준(px, 1920×1080)")] Vector2 patternPanelPosition = new Vector2(32f, 0f);
         [SerializeField, Tooltip("미션 패널 크기(px)")] Vector2 patternPanelSize = new Vector2(512f, 384f);
 
         Canvas _canvas;
         Image _barBack;
         Image _rivalFill;
+        Image _ourFill;
+        bool _balanceInitialized;
+        bool _hasFans = true;
+        float _drainAccent;
         TMP_Text _rivalText;
         TMP_Text _ourText;
         TMP_Text _revengeTag;
@@ -106,9 +113,14 @@ namespace ContextStage
         {
             if (_rivalFill == null) return;
 
+            if (_paused) return;
             _rivalFill.fillAmount = fillLerpSpeed <= 0f
                 ? _targetRivalRatio
-                : Mathf.MoveTowards(_rivalFill.fillAmount, _targetRivalRatio, fillLerpSpeed * Time.unscaledDeltaTime);
+                : Mathf.MoveTowards(_rivalFill.fillAmount, _targetRivalRatio, fillLerpSpeed * Time.deltaTime);
+            _ourFill.fillAmount = 1f - _rivalFill.fillAmount;
+            if (!_hasFans) _ourFill.fillAmount = _rivalFill.fillAmount = 0f;
+            _drainAccent = Mathf.Max(0f, _drainAccent - Time.deltaTime * 2f);
+            _rivalText.color = Color.Lerp(Color.white, warningColor, _drainAccent);
 
             if (!_paused)
             {
@@ -128,10 +140,17 @@ namespace ContextStage
             EnsureView();
             _canvas.gameObject.SetActive(!_paused);
             _targetRivalRatio = e.RivalRatio;
+            _hasFans = e.Total > 0;
+            if (!_balanceInitialized)
+            {
+                _rivalFill.fillAmount = _targetRivalRatio;
+                _ourFill.fillAmount = 1f - _targetRivalRatio;
+                _balanceInitialized = true;
+            }
+            if (e.Total <= 0) { _rivalFill.fillAmount = _ourFill.fillAmount = 0f; }
             _rivalText.text = $"{rivalName}  {e.Rival}";
-            _ourText.text = $"{e.Ours}  {ourName}";
+            _ourText.text = $"우리  {e.Ours}";
             _revenge = e.Revenge;
-            _rivalFill.color = _revenge ? revengeColor : rivalColor;
             _revengeTag.gameObject.SetActive(_revenge);
         }
 
@@ -139,16 +158,21 @@ namespace ContextStage
         {
             if (_drainText == null) return;
             _drainText.text = e.Active
-                ? $"다음 감소  −{e.Amount:N0}  {e.Remaining:0.0}s"
-                : "라이벌 팬 없음 · 감소 정지";
-            _drainText.color = e.Active && e.Remaining < 1f ? warningColor : new Color(1f, 1f, 1f, 0.85f);
+                ? $"다음 점수 감소까지 {Mathf.CeilToInt(e.Remaining) / 60:00}:{Mathf.CeilToInt(e.Remaining) % 60:00} · −{e.Amount:N0}점"
+                : "라이벌 팬 없음 · 점수 감소 정지";
+            _drainText.color = e.Active && e.Remaining <= 2f
+                ? Color.Lerp(warningColor, Color.white, .2f + .2f * Mathf.Sin(Time.time * 10f))
+                : new Color(1f, 1f, 1f, 0.9f);
         }
 
         void OnDrainApplied(BossDrainApplied e)
         {
             EnsureView();
             if (e.Amount <= 0) return;
-            _drainPopup.text = $"−{e.Amount:N0}";
+            _drainAccent = 1f;
+            // ScoreUI가 있는 실제 공연에서는 숫자를 점수 옆에서 한 번만 보여준다.
+            if (ScoreUI.HasDrainFeedback) return;
+            _drainPopup.text = $"−{e.Amount:N0}점";
             _drainPopup.gameObject.SetActive(true);
             if (_popupRoutine != null) StopCoroutine(_popupRoutine);
             _popupRoutine = StartCoroutine(DrainPopup());
@@ -177,7 +201,6 @@ namespace ContextStage
             EnsureView();
             _revenge = e.Active;
             _revengeTag.gameObject.SetActive(_revenge);
-            _rivalFill.color = _revenge ? revengeColor : rivalColor;
             if (e.Active) ShowBig("REVENGE TIME!", revengeColor, 1.6f);
         }
 
@@ -203,6 +226,7 @@ namespace ContextStage
             _pattern.Progress = "";
             _pattern.Timer = $"{e.Duration:0.0}s";
             RefreshMission();
+            _missionView.PlayEntrance();
         }
 
         void OnPatternProgress(BossPatternProgress e)
@@ -238,6 +262,7 @@ namespace ContextStage
             }
             _pattern.Progress = _pattern.Timer = "";
             RefreshMission();
+            _missionView.PlayResult(e.Success);
         }
 
         void OnStandingStarted(StageEventStarted e)
@@ -268,6 +293,7 @@ namespace ContextStage
             _standing.Color = e.Success ? successColor : warningColor;
             _standing.Progress = _standing.Timer = "";
             RefreshMission();
+            _missionView.PlayResult(e.Success);
         }
 
         void RefreshMission()
@@ -283,7 +309,7 @@ namespace ContextStage
             _patternTitle.text = primary.Title; _patternTitle.color = primary.Color;
             _patternBody.text = primary.Body;
             _patternProgress.text = primary.Progress;
-            _patternProgress.color = primary.Achieved ? new Color32(0x20, 0x7A, 0x4C, 0xFF) : new Color32(0x1B, 0x64, 0x9C, 0xFF);
+            _patternProgress.color = primary.Achieved ? new Color32(0x65, 0xE6, 0xA0, 0xFF) : new Color32(0x76, 0xD6, 0xFF, 0xFF);
             _patternTimer.text = primary.Timer;
             string secondary = other.Visible ? other.Active
                 ? $"{other.Body}\n{other.Progress}  {other.Timer}"
@@ -292,13 +318,16 @@ namespace ContextStage
             _canvas.gameObject.SetActive(!_paused);
         }
 
-        void OnStageApplied(StageRuntimeApplied e) => ResetView();
+        // 룰의 OnActivate가 StageRuntimeApplied보다 먼저 초기 팬 비율을 발행한다.
+        // 그 확정값을 뒤늦은 화면 초기화가 100% 라이벌로 되돌리면 안 된다.
+        void OnStageApplied(StageRuntimeApplied e) => ResetView(e.Stage == null || !e.Stage.IsBoss);
 
-        void ResetView()
+        void ResetView(bool clearBalance = true)
         {
             StopAllCoroutines(); _popupRoutine = null; _bigVersion++;
             _pattern.Clear(); _standing.Clear(); _paused = false;
-            _targetRivalRatio = 1f; _revenge = false;
+            if (clearBalance) { _targetRivalRatio = 1f; _revenge = false; _balanceInitialized = false; }
+            _drainAccent = 0f;
             if (_patternPanel != null) _patternPanel.gameObject.SetActive(false);
             if (_bigText != null) _bigText.gameObject.SetActive(false);
             if (_drainPopup != null) _drainPopup.gameObject.SetActive(false);
@@ -307,7 +336,7 @@ namespace ContextStage
 
         void OnGameStateChanged(GameStateChanged e)
         {
-            if (e.Current == GameState.GameOver || e.Current == GameState.Ready) { ResetView(); return; }
+            if (e.Current == GameState.GameOver || e.Current == GameState.Ready) { ResetView(e.Current == GameState.GameOver); return; }
             _paused = e.Current == GameState.Paused;
             if (_canvas != null) _canvas.gameObject.SetActive(!_paused && StageRuntimeDirector.CurrentStage != null && StageRuntimeDirector.CurrentStage.IsBoss);
         }
@@ -349,12 +378,14 @@ namespace ContextStage
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
 
-            // 팬 쟁탈 바: 배경(우리 색) 위에 라이벌 색이 왼쪽에서 차오른다
-            RectTransform bar = CreateRect(canvasObject.transform, "FanBar", new Vector2(0.5f, 1f), new Vector2(0f, -topOffset), new Vector2(900f, 26f));
+            // 아트 원본 202×10의 정수 3배. 채움 원본의 투명 테두리로 프레임을 보존한다.
+            RectTransform bar = CreateRect(canvasObject.transform, "FanBar", new Vector2(0.5f, 1f), new Vector2(0f, -topOffset), new Vector2(606f, 30f));
             _barBack = bar.gameObject.AddComponent<Image>();
-            _barBack.sprite = CreateSolidSprite();
-            _barBack.color = ourColor;
+            _barBack.sprite = fanBarBack != null ? fanBarBack : CreateSolidSprite();
+            _barBack.color = fanBarBack != null ? Color.white : Color.black;
             _barBack.raycastTarget = false;
+
+            _ourFill = CreateFanFill(bar, "OurFill", fanBarOurs, ourColor, 0);
 
             var fillObject = new GameObject("RivalFill", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             var fillRect = fillObject.GetComponent<RectTransform>();
@@ -364,20 +395,20 @@ namespace ContextStage
             fillRect.offsetMin = Vector2.zero;
             fillRect.offsetMax = Vector2.zero;
             _rivalFill = fillObject.GetComponent<Image>();
-            _rivalFill.sprite = CreateSolidSprite();
+            _rivalFill.sprite = fanBarRival != null ? fanBarRival : CreateSolidSprite();
             _rivalFill.type = Image.Type.Filled;
             _rivalFill.fillMethod = Image.FillMethod.Horizontal;
-            _rivalFill.fillOrigin = 0;
+            _rivalFill.fillOrigin = 1;
             _rivalFill.fillAmount = 1f;
-            _rivalFill.color = rivalColor;
+            _rivalFill.color = fanBarRival != null ? Color.white : rivalColor;
             _rivalFill.raycastTarget = false;
 
             _rivalText = CreateText(bar, "Rival", resolvedFont, 24f, TextAlignmentOptions.MidlineLeft, Color.white);
-            SetRect(_rivalText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(0f, 6f), new Vector2(420f, 30f));
+            SetRect(_rivalText.rectTransform, new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(0f, .5f), new Vector2(14f, 0f), new Vector2(250f, 36f));
             _ourText = CreateText(bar, "Ours", resolvedFont, 24f, TextAlignmentOptions.MidlineRight, Color.white);
-            SetRect(_ourText.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(1f, 0f), new Vector2(0f, 6f), new Vector2(420f, 30f));
+            SetRect(_ourText.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(1f, .5f), new Vector2(-14f, 0f), new Vector2(180f, 36f));
             _revengeTag = CreateText(bar, "Revenge", resolvedFont, 20f, TextAlignmentOptions.Center, revengeColor);
-            SetRect(_revengeTag.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 0f), new Vector2(0f, 6f), new Vector2(300f, 30f));
+            SetRect(_revengeTag.rectTransform, new Vector2(.5f,1f), new Vector2(.5f,1f), new Vector2(.5f,0f), new Vector2(0f,4f), new Vector2(300f,26f));
             _revengeTag.text = "REVENGE TIME!";
             _revengeTag.gameObject.SetActive(false);
 
@@ -392,8 +423,7 @@ namespace ContextStage
 
             // 미션만 좌측 중단으로 이동. 상단 팬 게이지 배치는 유지한다.
             _patternPanel = CreateRect(canvasObject.transform, "Pattern", new Vector2(0f, .5f), patternPanelPosition, patternPanelSize);
-            _patternPanel.pivot = new Vector2(0f, .5f);
-            _patternPanel.anchoredPosition = patternPanelPosition;
+            MissionCueSheetLayout.Apply(_patternPanel, patternPanelPosition, patternPanelSize);
             _missionView = MissionCueSheetView.Create(_patternPanel, resolvedFont);
             _patternTitle = _missionView.Title; _patternTimer = _missionView.Timer;
             _patternBody = _missionView.Body; _patternProgress = _missionView.Progress;
@@ -415,6 +445,19 @@ namespace ContextStage
             rect.SetParent(parent, false);
             SetRect(rect, anchor, anchor, new Vector2(0.5f, 1f), position, size);
             return rect;
+        }
+
+        static Image CreateFanFill(RectTransform parent, string name, Sprite sprite, Color fallback, int origin)
+        {
+            var rect = CreateRect(parent, name, Vector2.zero, Vector2.zero, Vector2.zero);
+            rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
+            rect.offsetMin = rect.offsetMax = Vector2.zero;
+            var image = rect.gameObject.AddComponent<Image>();
+            image.sprite = sprite != null ? sprite : CreateSolidSprite();
+            image.color = sprite != null ? Color.white : fallback;
+            image.type = Image.Type.Filled; image.fillMethod = Image.FillMethod.Horizontal;
+            image.fillOrigin = origin; image.fillAmount = 0f; image.raycastTarget = false;
+            return image;
         }
 
         static TMP_Text CreateText(Transform parent, string name, TMP_FontAsset font, float size, TextAlignmentOptions alignment, Color color)

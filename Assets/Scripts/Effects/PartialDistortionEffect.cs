@@ -109,7 +109,7 @@ namespace ContextStage
             }
 
             _meshRenderer.sortingLayerName = LocalScreenEffectShader.SortingLayerName;
-            _meshRenderer.sortingOrder = 0;
+            _meshRenderer.sortingOrder = LocalScreenEffectShader.SortingOrder;
             transform.localScale = new Vector3(
                 Mathf.Max(0.01f, areaSize.x),
                 Mathf.Max(0.01f, areaSize.y),

@@ -1,0 +1,9 @@
+var assembly=typeof(UnityEditor.Editor).Assembly;
+var flags=System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance;
+var type=assembly.GetType("UnityEditor.GameView");
+var view=UnityEngine.Resources.FindObjectsOfTypeAll(type).FirstOrDefault();
+var sizesType=assembly.GetType("UnityEditor.GameViewSizes");
+var instance=sizesType.GetProperty("instance",System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.FlattenHierarchy).GetValue(null);
+var groupType=assembly.GetType("UnityEditor.GameViewSizeGroupType");
+var group=sizesType.GetMethod("GetGroup").Invoke(instance,new[]{System.Enum.Parse(groupType,"Standalone")});
+return new{selected=type.GetProperty("selectedSizeIndex",flags).GetValue(view),texts=group.GetType().GetMethod("GetDisplayTexts").Invoke(group,null)};
