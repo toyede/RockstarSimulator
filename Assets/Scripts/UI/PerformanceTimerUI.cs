@@ -15,7 +15,7 @@ namespace ContextStage
     ///   fillAmount 만 갱신하므로 앵커가 어긋날 여지가 없다.
     /// - handleRect: 기타 아이콘. fillImage 와 같은 부모 밑에 두고 anchorMin/Max.x 를 진행률로 직접 옮긴다
     ///   (0 = 부모 좌측 끝, 1 = 부모 우측 끝. Slider 의 handleRect 이동 방식과 동일한 원리).
-    /// - valueText: 남은 시간을 m:ss 형식으로 표시
+    /// - valueText: 남은 시간을 mm:ss 형식으로 표시
     /// </summary>
     public class PerformanceTimerUI : MonoBehaviour
     {
@@ -202,9 +202,10 @@ namespace ContextStage
             if (valueText != null)
             {
                 float remaining = Mathf.Max(0f, duration - elapsed);
-                int minutes = Mathf.FloorToInt(remaining / 60f);
-                int seconds = Mathf.FloorToInt(remaining % 60f);
-                valueText.text = $"{minutes}:{seconds:00}";
+                int totalSeconds = Mathf.CeilToInt(remaining);
+                int minutes = totalSeconds / 60;
+                int seconds = totalSeconds % 60;
+                valueText.text = $"{minutes:00}:{seconds:00}";
             }
 
             EmitTimerDust(elapsed, duration);
