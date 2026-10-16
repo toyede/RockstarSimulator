@@ -2836,6 +2836,7 @@ GameObject:
   m_Component:
   - component: {fileID: 317807458}
   - component: {fileID: 317807459}
+  - component: {fileID: 317807460}
   m_Layer: 5
   m_Name: ComboResultGroup
   m_TagString: Untagged
@@ -2890,6 +2891,37 @@ MonoBehaviour:
   popupRise: 28
   gainColor: {r: 0.98, g: 0.94, b: 0.16, a: 1}
   lossColor: {r: 1, g: 0.3372549, b: 0.3372549, a: 1}
+--- !u!114 &317807460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 317807457}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c6273410299a1d44bef882fe735e71f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ContextStage.CompanionCoverFeedback
+  companions:
+  - {fileID: 1259268672}
+  - {fileID: 1173215778}
+  - {fileID: 1401260092}
+  raccoon: {fileID: 266755677}
+  stageCamera: {fileID: 519420031}
+  comboTarget: {fileID: 1386152751}
+  comboFeedback: {fileID: 317807459}
+  poseDuration: 0.48
+  squash: 0.1
+  stretch: 0.18
+  leanDegrees: 4
+  launchDelay: 0.18
+  flightDuration: 0.58
+  impactDuration: 0.42
+  instrumentOffset: {x: 0.1, y: -0.05}
+  coverColor: {r: 0.39215687, g: 0.85490197, b: 1, a: 1}
+  borderStrength: 0.8
+  coverMessage: COVER!
 --- !u!1 &318083880
 GameObject:
   m_ObjectHideFlags: 0
@@ -31447,7 +31479,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2135933040274056952, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2970080556729224127, guid: 9052b33084c70384d89c44ae07aacb84, type: 3}
       propertyPath: m_SizeDelta.x

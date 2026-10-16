@@ -49,13 +49,31 @@ namespace ContextStage
         public void Play(int delta)
         {
             if (delta == 0 || !isActiveAndEnabled) return;
+            if (!BeginPulse(delta < 0)) return;
+            ShowPopup(delta > 0 ? $"+{delta}" : delta.ToString(),
+                delta < 0 ? lossColor : gainColor, false);
+        }
+
+        public void PlayMessage(string message, Color color)
+        {
+            if (!isActiveAndEnabled || string.IsNullOrEmpty(message) || !BeginPulse(false)) return;
+            ShowPopup(message, color, true);
+        }
+
+        bool BeginPulse(bool loss)
+        {
             Initialize();
-            if (!_initialized) return;
+            if (!_initialized) return false;
             var rect = valueText.rectTransform;
             _startOffset = rect.anchoredPosition - _basePosition;
             _startScale = rect.localScale;
             _pulseAge = 0f;
-            _loss = delta < 0;
+            _loss = loss;
+            return true;
+        }
+
+        void ShowPopup(string message, Color color, bool compact)
+        {
             if (popupTemplate == null) return;
 
             // 연속 변화는 이전 표시를 지우지 않고 위로 밀어 구분한다.
@@ -71,8 +89,11 @@ namespace ContextStage
             popup.rectTransform.anchoredPosition = popupTemplate.rectTransform.anchoredPosition;
             popup.rectTransform.localRotation = Quaternion.identity;
             popup.transform.SetAsLastSibling();
-            popup.text = delta > 0 ? $"+{delta}" : delta.ToString();
-            popup.color = _loss ? lossColor : gainColor;
+            popup.text = message;
+            popup.color = color;
+            popup.fontSize = compact ? Mathf.Max(12, Mathf.RoundToInt(popupTemplate.fontSize * 0.65f))
+                : popupTemplate.fontSize;
+            popup.horizontalOverflow = compact ? HorizontalWrapMode.Overflow : popupTemplate.horizontalOverflow;
             _popups.Add(new Popup { Text = popup, Origin = popup.rectTransform.anchoredPosition,
                 Color = popup.color });
         }
