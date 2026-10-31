@@ -21,12 +21,18 @@ namespace ContextStage
         [SerializeField, Min(0f)] float cardPresentationDelay = 0.085f;
         [SerializeField] private bool showTargetScore = true;
         [SerializeField] private HudNumberFeedback numberFeedback;
+        [Header("완벽주의 점수 카운트업")]
+        [SerializeField, Min(0.1f)] private float perfectClearCountUpDuration = 1f;
+        [SerializeField, Tooltip("{0} = 배율")] private string perfectClearMessageFormat = "×{0}";
+        [SerializeField] private Color perfectClearMessageColor = new Color32(0xF9, 0xC2, 0x2B, 0xFF);
 
         float _lastCardPresentationAt = float.NegativeInfinity;
         Coroutine _scoreRoutine;
         Text _drainText;
         Color _normalColor;
         float _drainAge = -1f;
+        int _countFrom, _countTo;
+        float _countAge = -1f;
         static ScoreUI _active;
         public static bool HasDrainFeedback => _active != null && _active.isActiveAndEnabled && _active.scoreText != null;
 
@@ -36,6 +42,7 @@ namespace ContextStage
             EventBus.Subscribe<CardPresentationStarted>(OnCardPresentationStarted);
             EventBus.Subscribe<BossDrainApplied>(OnDrain);
             EventBus.Subscribe<GameStateChanged>(OnState);
+            EventBus.Subscribe<PerfectClearScoreApplied>(OnPerfectClearScoreApplied);
             _active = this;
             if (scoreText != null) _normalColor = scoreText.color;
 
@@ -50,7 +57,9 @@ namespace ContextStage
             EventBus.Unsubscribe<CardPresentationStarted>(OnCardPresentationStarted);
             EventBus.Unsubscribe<BossDrainApplied>(OnDrain);
             EventBus.Unsubscribe<GameStateChanged>(OnState);
+            EventBus.Unsubscribe<PerfectClearScoreApplied>(OnPerfectClearScoreApplied);
             if (_active == this) _active = null;
+            _countAge = -1f;
             if (_scoreRoutine != null) StopCoroutine(_scoreRoutine);
             _scoreRoutine = null;
             ClearDrain();
@@ -59,8 +68,20 @@ namespace ContextStage
         void OnCardPresentationStarted(CardPresentationStarted _) =>
             _lastCardPresentationAt = Time.unscaledTime;
 
+        void OnPerfectClearScoreApplied(PerfectClearScoreApplied e)
+        {
+            // 바로 이어지는 ScoreChanged 는 건너뛰고 Update 에서 숫자를 굴려 올린다.
+            _countFrom = e.PreviousScore;
+            _countTo = e.FinalScore;
+            _countAge = 0f;
+            if (numberFeedback != null)
+                numberFeedback.PlayMessage(string.Format(perfectClearMessageFormat, e.Multiplier.ToString("0.#")),
+                    perfectClearMessageColor);
+        }
+
         void OnScoreChanged(ScoreChanged e)
         {
+            if (_countAge >= 0f) return;
             if (numberFeedback != null)
             {
                 Refresh(e.Score);
@@ -107,6 +128,13 @@ namespace ContextStage
 
         void Update()
         {
+            if (_countAge >= 0f)
+            {
+                _countAge += Time.unscaledDeltaTime;
+                float countT = Mathf.Clamp01(_countAge / perfectClearCountUpDuration);
+                Refresh(Mathf.RoundToInt(Mathf.Lerp(_countFrom, _countTo, 1f - (1f - countT) * (1f - countT))));
+                if (countT >= 1f) _countAge = -1f;
+            }
             if (_drainAge < 0f || (GameManager.HasInstance && GameManager.Instance.State == GameState.Paused)) return;
             _drainAge += Time.deltaTime;
             if (_drainAge >= .8f) { ClearDrain(); return; }
@@ -124,6 +152,7 @@ namespace ContextStage
             _scoreRoutine = null;
             _lastCardPresentationAt = float.NegativeInfinity;
             ClearDrain();
+            _countAge = -1f;
             if (numberFeedback != null) numberFeedback.Clear();
             Refresh(GameManager.HasInstance ? GameManager.Instance.Score : 0);
         }

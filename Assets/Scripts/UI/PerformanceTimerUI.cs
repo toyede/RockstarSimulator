@@ -40,6 +40,13 @@ namespace ContextStage
         [Header("마지막 시간 경고 (BGM 속도는 유지)")]
         [SerializeField] bool urgencyVisual = true;
         float _remaining;
+        [Header("제한시간 단축 연출 (전력 질주)")]
+        [SerializeField, Min(0.1f), Tooltip("전력 질주 문구가 사라지기 시작하기 전에 끝나도록 짧게 둔다")] float shortenDuration = 0.4f;
+        [SerializeField] Color shortenColor = new Color32(0xEA, 0x4F, 0x36, 255);
+        float _shortenFrom, _shortenTo, _shortenAge = -1f;
+        Quaternion _shortenBaseRotation;
+        // 전력 질주처럼 시간이 줄면 게이지는 줄기 전 길이를 기준으로 그린다. 0이면 현재 길이 기준.
+        float _gaugeFullDuration;
         bool _urgentCaptured;
         Vector3 _urgentScale;
         Color _urgentFillColor;
@@ -66,6 +73,7 @@ namespace ContextStage
 
             EventBus.Subscribe<PerformanceTimeChanged>(OnTimeChanged);
             EventBus.Subscribe<PerformanceTimeExtended>(OnTimeExtended);
+            EventBus.Subscribe<PerformanceTimeShortened>(OnTimeShortened);
             EventBus.Subscribe<GameStateChanged>(OnVisualStateChanged);
 
             // 씬 로드 직후 이벤트가 오기 전에도 현재값과 동기화
@@ -84,8 +92,10 @@ namespace ContextStage
         {
             EventBus.Unsubscribe<PerformanceTimeChanged>(OnTimeChanged);
             EventBus.Unsubscribe<PerformanceTimeExtended>(OnTimeExtended);
+            EventBus.Unsubscribe<PerformanceTimeShortened>(OnTimeShortened);
             EventBus.Unsubscribe<GameStateChanged>(OnVisualStateChanged);
             ResetExtensionVisual();
+            EndShorten();
         }
 
         void OnDestroy()
@@ -96,6 +106,7 @@ namespace ContextStage
         void OnVisualStateChanged(GameStateChanged e)
         {
             if (e.Current == GameState.Ready || e.Current == GameState.GameOver) ResetExtensionVisual();
+            if (e.Current == GameState.Ready) _gaugeFullDuration = 0f;
         }
 
         void OnTimeExtended(PerformanceTimeExtended e)
@@ -119,8 +130,60 @@ namespace ContextStage
             _pulseStart = Time.unscaledTime + 0.48f;
         }
 
+        void OnTimeShortened(PerformanceTimeShortened e)
+        {
+            if (e.ToSeconds >= e.FromSeconds) return;
+            RestorePulse();
+            RestoreUrgency();
+            _shortenFrom = e.FromSeconds;
+            _shortenTo = e.ToSeconds;
+            _gaugeFullDuration = e.FromSeconds;
+            if (_shortenAge < 0f) _shortenBaseRotation = transform.localRotation;
+            _shortenAge = 0f;
+        }
+
+        /// <summary>남은 시간 숫자를 굴려 내리며 시계를 붉게 흔든다. 실제 시간은 이미 줄어 있다.</summary>
+        void UpdateShorten()
+        {
+            _shortenAge += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(_shortenAge / shortenDuration);
+            float eased = 1f - (1f - t) * (1f - t);
+            if (valueText != null)
+            {
+                int totalSeconds = Mathf.CeilToInt(Mathf.Lerp(_shortenFrom, _shortenTo, eased));
+                valueText.text = $"{totalSeconds / 60:00}:{totalSeconds % 60:00}";
+                valueText.color = Color.Lerp(shortenColor, _urgentTextColor, t * t);
+            }
+            // 숫자가 굴러 내려가는 만큼 게이지도 함께 움직여, 공연이 줄어든 지점에서 시작하게 보인다.
+            float shown = Mathf.Lerp(_shortenFrom, _shortenTo, eased);
+            ApplyGauge(GaugeFill(shown, _shortenTo));
+            if (fillImage != null) fillImage.color = Color.Lerp(shortenColor, _urgentFillColor, t * t);
+            float shake = Mathf.Sin(t * Mathf.PI * 10f) * 6f * (1f - t);
+            transform.localRotation = _shortenBaseRotation * Quaternion.Euler(0f, 0f, shake);
+            transform.localScale = _urgentScale * (1f + Mathf.Sin(t * Mathf.PI) * 0.12f);
+            if (t >= 1f) EndShorten();
+        }
+
+        void EndShorten()
+        {
+            if (_shortenAge < 0f) return;
+            _shortenAge = -1f;
+            transform.localRotation = _shortenBaseRotation;
+            RestoreUrgency();
+            if (PerformanceTimerSystem.HasInstance)
+            {
+                var timer = PerformanceTimerSystem.Instance;
+                Refresh(timer.Elapsed, timer.Duration, timer.Normalized);
+            }
+        }
+
         void Update()
         {
+            if (_shortenAge >= 0f)
+            {
+                UpdateShorten();
+                return;
+            }
             if (!_pulsing || _pulseRoot == null)
             {
                 UpdateUrgency();
@@ -189,15 +252,7 @@ namespace ContextStage
         void Refresh(float elapsed, float duration, float normalized)
         {
             _remaining = Mathf.Max(0f, duration - elapsed);
-            float t = countDown ? 1f - normalized : normalized;
-
-            if (fillImage != null) fillImage.fillAmount = t;
-
-            if (handleRect != null)
-            {
-                handleRect.anchorMin = new Vector2(t, handleRect.anchorMin.y);
-                handleRect.anchorMax = new Vector2(t, handleRect.anchorMax.y);
-            }
+            ApplyGauge(GaugeFill(_remaining, duration));
 
             if (valueText != null)
             {
@@ -209,6 +264,23 @@ namespace ContextStage
             }
 
             EmitTimerDust(elapsed, duration);
+        }
+
+        float GaugeFill(float remaining, float duration)
+        {
+            float full = Mathf.Max(duration, _gaugeFullDuration);
+            float left = full > 0f ? Mathf.Clamp01(remaining / full) : 0f;
+            return countDown ? left : 1f - left;
+        }
+
+        void ApplyGauge(float t)
+        {
+            if (fillImage != null) fillImage.fillAmount = t;
+            if (handleRect != null)
+            {
+                handleRect.anchorMin = new Vector2(t, handleRect.anchorMin.y);
+                handleRect.anchorMax = new Vector2(t, handleRect.anchorMax.y);
+            }
         }
 
         void EmitTimerDust(float elapsed, float duration)

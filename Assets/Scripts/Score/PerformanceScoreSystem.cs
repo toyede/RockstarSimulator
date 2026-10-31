@@ -54,6 +54,13 @@ namespace ContextStage
         /// 제한시간을 정상 소진한 순간에만 호출된다.
         /// GameOver 이전에 점수를 반영해 하이스코어와 스테이지 판정도 같은 값을 사용한다.
         /// </summary>
+        /// <summary>지금 시간이 끝나면 완벽주의 보상이 적용되는지. 마무리 연출 여부 판단용.</summary>
+        public bool WillApplyTimedPerformanceFinalRewards =>
+            !_finalRewardApplied &&
+            !_comboWasBroken &&
+            GameManager.HasInstance &&
+            AugmentRuntime.Current.PerfectClearScoreMultiplier > 1f;
+
         public bool ApplyTimedPerformanceFinalRewards()
         {
             if (_finalRewardApplied ||
@@ -66,6 +73,8 @@ namespace ContextStage
 
             int currentScore = GameManager.Instance.Score;
             int finalScore = Mathf.RoundToInt(currentScore * multiplier);
+            // 점수 HUD 가 이 이벤트로 카운트업을 준비한 뒤 ScoreChanged 를 받는다.
+            EventBus.Raise(new PerfectClearScoreApplied(currentScore, finalScore, multiplier));
             GameManager.Instance.AddScore(finalScore - currentScore);
             _finalRewardApplied = true;
             return true;

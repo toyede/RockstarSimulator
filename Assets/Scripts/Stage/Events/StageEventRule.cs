@@ -77,6 +77,7 @@ namespace ContextStage
         void Update()
         {
             if (!IsActive || !GameManager.HasInstance || !GameManager.Instance.IsPlaying) return;
+            if (PerfectClearFinishDirector.IsHolding) return; // 완벽주의 마무리 연출 중에는 진행을 멈춘다
 
             if (IsEventActive)
             {
