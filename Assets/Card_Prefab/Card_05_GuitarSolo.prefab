@@ -131,27 +131,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.calmScore
-      value: -40
-      objectReference: {fileID: 0}
-    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
-      propertyPath: audienceReaction.moshScore
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
-      propertyPath: audienceReaction.chillScore
-      value: -30
-      objectReference: {fileID: 0}
-    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
-      propertyPath: audienceReaction.middleScore
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
+      propertyPath: audienceReaction.moshScore
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
+      propertyPath: audienceReaction.chillScore
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
+      propertyPath: audienceReaction.middleScore
+      value: -15
+      objectReference: {fileID: 0}
+    - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.excitedScore
-      value: 21
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.singalongScore
-      value: -40
+      value: -20
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.appliesToAudience
@@ -159,7 +159,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: audienceReaction.engagementMultiplier
-      value: 0.8
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5178014537110562856, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: m_FontData.m_Font
