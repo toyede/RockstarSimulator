@@ -38,6 +38,8 @@ namespace ContextStage
             escPressed = Input.GetKeyDown(KeyCode.Escape);
 #endif
             if (!escPressed) return;
+            // 보유 증강 창이 열려 있으면 ESC 는 그 창만 닫는다 (OwnedAugmentHudButton 이 처리).
+            if (OwnedAugmentHudButton.IsModalOpen) return;
 
             var options = UIManager.Instance.Get<OptionsPopup>();
             if (options != null && options.IsOpen)
