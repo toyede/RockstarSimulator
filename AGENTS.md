@@ -121,9 +121,11 @@ Do not modify these unless the task explicitly requires it:
 
 - A CLI discovery failure does not prove that the Editor or Pipeline server is stopped.
   The user's terminal and the agent's sandbox can report different results. If the
-  user's `unity pipeline list` reports a connected server, first retry the CLI
+  user's `unity pipeline editors` reports a connected server, first retry the CLI
   outside the sandbox through the tool's normal approval mechanism. This restored
   access to the existing Editor in this project; do not repeatedly request restarts.
+- Unity CLI 1.0.0-beta.15 removed `unity pipeline list`; use `unity pipeline editors`
+  (Editor instances and Pipeline package status) or `unity status` instead.
 - The Pipeline 0.8 connection descriptor is
   `Library/Pipeline/.unity-pipeline-port`, not a file at the repository root.
   Check existence only; its contents include an authentication token and must not

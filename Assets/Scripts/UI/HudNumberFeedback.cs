@@ -46,12 +46,15 @@ namespace ContextStage
             _initialized = true;
         }
 
-        public void Play(int delta)
+        public void Play(int delta) => Play(delta, gainColor);
+
+        /// <summary>증가 표시 색만 바꿔 재생한다. 감소는 항상 lossColor 를 쓴다.</summary>
+        public void Play(int delta, Color positiveColor)
         {
             if (delta == 0 || !isActiveAndEnabled) return;
             if (!BeginPulse(delta < 0)) return;
             ShowPopup(delta > 0 ? $"+{delta}" : delta.ToString(),
-                delta < 0 ? lossColor : gainColor, false);
+                delta < 0 ? lossColor : positiveColor, false);
         }
 
         public void PlayMessage(string message, Color color)

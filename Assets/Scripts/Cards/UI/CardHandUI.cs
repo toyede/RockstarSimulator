@@ -82,6 +82,7 @@ namespace ContextStage
             // CardSelected 는 HandChanged 보다 먼저 발행된다. 그 사이에 사용된 카드 뷰를
             // 손패 목록에서 빼내야 Refresh 가 그것을 곧바로 풀에 반납하지 않는다.
             EventBus.Subscribe<CardSelected>(OnCardSelected);
+            EventBus.Subscribe<HandCardDiscarded>(OnHandCardDiscarded);
             EventBus.Subscribe<FeverStateChanged>(OnFeverStateChanged);
             _feverActive = FeverSystem.HasInstance && FeverSystem.Instance.IsActive;
             Refresh();
@@ -103,6 +104,7 @@ namespace ContextStage
             if (_augmentVfx != null) _augmentVfx.Clear();
             EventBus.Unsubscribe<HandChanged>(OnHandChanged);
             EventBus.Unsubscribe<CardSelected>(OnCardSelected);
+            EventBus.Unsubscribe<HandCardDiscarded>(OnHandCardDiscarded);
             EventBus.Unsubscribe<FeverStateChanged>(OnFeverStateChanged);
             ReleaseDissolvingViews();
             ReleaseViews();
@@ -116,7 +118,7 @@ namespace ContextStage
             var remaining = new List<CardDefinition>(_knownHand);
             var arrivals = new List<int>();
             if (CardSystem.HasInstance && (_knownHand.Count > 0 || _consumedSinceRefresh) && _pendingHandVisual == CardAugmentVisual.None &&
-                GameManager.HasInstance && GameManager.Instance.IsPlaying)
+                IsPresentingHand())
             {
                 var hand = CardSystem.Instance;
                 for (int i = 0; i < hand.HandCount; i++)
@@ -137,7 +139,7 @@ namespace ContextStage
         {
             yield return null; // Layout first: avoid an emission at the previous pooled position.
             if (version != _handVisualVersion || IsStowed || !isActiveAndEnabled ||
-                !GameManager.HasInstance || !GameManager.Instance.IsPlaying) yield break;
+                !IsPresentingHand()) yield break;
             if (_arrivalPixels == null) _arrivalPixels = GetComponent<UIPixelBurstEmitter>();
             if (_arrivalPixels == null) _arrivalPixels = gameObject.AddComponent<UIPixelBurstEmitter>();
             _arrivalPixels.enabled = true;
@@ -156,6 +158,26 @@ namespace ContextStage
                 }
                 yield return new WaitForSeconds(0.06f);
             }
+        }
+
+        // 공연 중이거나, 공연 전이라도 시작형 증강 연출이 손패를 바꾸는 중이면 카드 연출을 보여준다.
+        static bool IsPresentingHand() =>
+            PerformanceIntroDirector.IsHolding ||
+            (GameManager.HasInstance && GameManager.Instance.IsPlaying);
+
+        /// <summary>시작 연출이 카드를 사용 없이 뺄 때, 사용 연출과 같은 디졸브로 사라지게 한다.</summary>
+        void OnHandCardDiscarded(HandCardDiscarded e)
+        {
+            if (e.HandIndex >= 0 && e.HandIndex < _knownHand.Count)
+            {
+                _knownHand.RemoveAt(e.HandIndex);
+                _consumedSinceRefresh = true;
+            }
+            if (e.HandIndex < 0 || e.HandIndex >= _activeViews.Count) return;
+
+            var view = _activeViews[e.HandIndex];
+            _activeViews.RemoveAt(e.HandIndex); // Refresh 가 곧바로 회수하지 않도록 목록에서 제외
+            if (view != null) PlayDissolve(view, HypeJudgement.Miss, CardAugmentVisual.None);
         }
 
         void OnVisualStateChanged(GameStateChanged e)

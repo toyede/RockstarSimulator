@@ -47,11 +47,10 @@ namespace ContextStage
 
             if (config != null && presenter != null)
             {
-                _revealAllPreferences =
-                    AugmentRuntime.Current.RevealAudiencePreferences;
-                presenter.SetAllPreferencesRevealed(
-                    _revealAllPreferences,
-                    config);
+                // 취향 간파는 시작 연출이 문구와 함께 켠다.
+                SetAllPreferencesRevealed(
+                    AugmentRuntime.Current.RevealAudiencePreferences &&
+                    !PerformanceIntroDirector.DefersPreferenceReveal);
                 return;
             }
 
@@ -59,6 +58,14 @@ namespace ContextStage
                 "[AudiencePreferenceHover] Config and AudienceRosterPresenter are required.",
                 this);
             enabled = false;
+        }
+
+        /// <summary>모든 관객의 취향 테두리를 항상 보이게 하거나 끈다.</summary>
+        public void SetAllPreferencesRevealed(bool revealed)
+        {
+            _revealAllPreferences = revealed;
+            if (presenter != null)
+                presenter.SetAllPreferencesRevealed(revealed, config);
         }
 
         void OnDisable()

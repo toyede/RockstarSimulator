@@ -38,6 +38,8 @@ namespace ContextStage
         [SerializeField] Color lostColor = new Color32(0xEA, 0x4F, 0x36, 0xFF);
         [SerializeField] Color specialColor = new Color32(0x30, 0xE1, 0xB9, 0xFF);
         [SerializeField] Color feverColor = new Color32(0xF9, 0xC2, 0x2B, 0xFF);
+        [SerializeField, Tooltip("콤보가 한 번에 2 이상 오를 때의 +N 색")]
+        Color multiComboGainColor = new Color32(0xEA, 0x4F, 0x36, 0xFF);
         [SerializeField, Min(0f)] float cardPresentationDelay = 0.085f;
         [SerializeField, Min(0.1f)] float recentGainDuration = 1.05f;
         [SerializeField, Min(0.01f)] float punchInDuration = 0.1f;
@@ -150,7 +152,12 @@ namespace ContextStage
                 RefreshCompact();
                 if (e.CurrentCombo > e.PreviousCombo && numberFeedback != null &&
                     GameManager.HasInstance && GameManager.Instance.IsPlaying)
-                    numberFeedback.Play(e.CurrentCombo - e.PreviousCombo);
+                {
+                    int gain = e.CurrentCombo - e.PreviousCombo;
+                    // 무모한 템포처럼 한 번에 2 이상 오르면 다른 색으로 강조한다.
+                    if (gain > 1) numberFeedback.Play(gain, multiComboGainColor);
+                    else numberFeedback.Play(gain);
+                }
                 return;
             }
             if (_showingFever) return;

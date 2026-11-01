@@ -64,6 +64,8 @@ namespace ContextStage
 
         void Start()
         {
+            // 시작형 증강 연출이 있으면 연출이 끝난 뒤 PerformanceIntroDirector 가 시작한다.
+            if (PerformanceIntroDirector.IsHolding) return;
             if (GameManager.HasInstance &&
                 GameManager.Instance.State == GameState.Ready)
             {
@@ -117,10 +119,37 @@ namespace ContextStage
         {
             if (config == null) return 0;
 
+            int delta = PerformanceIntroDirector.DefersHandSize
+                ? 0
+                : AugmentRuntime.Current.MinimumHandSizeDelta;
             return Mathf.Clamp(
-                config.MinimumHandSize + AugmentRuntime.Current.MinimumHandSizeDelta,
+                config.MinimumHandSize + delta,
                 1,
                 MaximumBaseHandSize);
+        }
+
+        /// <summary>
+        /// [시작 연출 전용] 기본 손패로 시작한 뒤 증강의 손패 증감을 적용한다.
+        /// 늘어나면 덱에서 뽑고, 줄어들면 마지막 카드를 사용 없이 뺀다.
+        /// </summary>
+        public void ApplyAugmentHandSize()
+        {
+            _minimumHandSize = ResolveMinimumHandSize();
+            int missing = _minimumHandSize - _hand.Count;
+            if (missing > 0)
+            {
+                AddCards(missing);
+                return;
+            }
+
+            if (missing == 0) return;
+            for (int i = 0; i < -missing && _hand.Count > 0; i++)
+            {
+                int index = _hand.Count - 1;
+                EventBus.Raise(new HandCardDiscarded(index));
+                _hand.RemoveAt(index);
+            }
+            RaiseHandChanged();
         }
 
         /// <summary>손패를 지정한 카드로 강제 교체한다. 덱은 건드리지 않는다. (튜토리얼 등 고정 손패용)</summary>

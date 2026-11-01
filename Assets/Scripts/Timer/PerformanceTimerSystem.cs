@@ -113,6 +113,9 @@ namespace ContextStage
             var gm = GameManager.Instance;
             if (gm == null) return;
 
+            // 완벽주의 보상이 걸려 있으면 무대를 유지한 채 마무리 연출을 보여 준 뒤 그쪽이 공연을 끝낸다.
+            if (PerfectClearFinishDirector.TryBegin()) return;
+
             // GameManager.GameOver()는 여기서 하이스코어를 먼저 제출한다.
             // 따라서 제한시간을 끝까지 버틴 퍼펙트 클리어 보상은 그 전에 적용한다.
             if (PerformanceScoreSystem.HasInstance)

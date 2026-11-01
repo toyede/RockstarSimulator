@@ -411,7 +411,7 @@ namespace ContextStage
             _model = new AudienceRosterModel(
                 engagementConfig.CreateRules(),
                 flowConfig.CreateRules(
-                    modifiers.InitialAudienceBonus,
+                    PerformanceIntroDirector.InitialAudienceBonus(modifiers),
                     modifiers.AudienceArrivalIntervalReduction));
             return true;
         }
@@ -428,7 +428,7 @@ namespace ContextStage
             AudienceEngagementRules engagement = preset.CreateEngagementRules(engagementConfig);
             AugmentRuntimeModifiers modifiers = AugmentRuntime.Current;
             AudienceFlowRules flow = preset.CreateFlowRules(
-                modifiers.InitialAudienceBonus,
+                PerformanceIntroDirector.InitialAudienceBonus(modifiers),
                 modifiers.AudienceArrivalIntervalReduction);
 
             if (!engagement.TryValidate(out string engagementError))

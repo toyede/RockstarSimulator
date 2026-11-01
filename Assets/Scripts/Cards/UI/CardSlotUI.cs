@@ -102,6 +102,13 @@ namespace ContextStage
                 artwork.enabled = presentation.Artwork != null;
                 artwork.preserveAspect = true;
             }
+            // 배경도 카드 그림 모양을 쓰게 해, 그림의 둥근 투명 모서리로 사각형 배경이 비치지 않게 한다.
+            // 그림이 없으면 기존처럼 사각형 배경을 그린다.
+            if (background != null)
+            {
+                background.sprite = presentation.Artwork;
+                background.preserveAspect = presentation.Artwork != null;
+            }
             if (titleText != null) titleText.text = presentation.DisplayName;
             if (descriptionText != null) descriptionText.text = presentation.Description;
             bool usesUpgradeFrame = card.Role == CardRole.Utility &&

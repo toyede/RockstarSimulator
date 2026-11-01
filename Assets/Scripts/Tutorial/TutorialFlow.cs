@@ -244,6 +244,10 @@ namespace ContextStage
         /// Stage 1 기본 교육 / Stage 2 특별 관객 교육의 독립적인 완료 기록을 확인한다.
         /// 에디터·개발 빌드는 forceInDebugBuilds 로 항상. 투어 밖(Main 직접 실행)은 예전처럼 매번.
         /// </summary>
+        /// <summary>이 씬의 첫 공연 시작 때 튜토리얼이 자동으로 뜨는지. 시작 연출 순서 판단용.</summary>
+        public bool WillAutoRunOnStart =>
+            autoRunOnFirstPlay && !SuppressForTests && !_hasStartedThisScene && ShouldAutoRunInTour();
+
         bool ShouldAutoRunInTour()
         {
             StageDefinition stage = StageRuntimeDirector.CurrentStage;
@@ -380,7 +384,9 @@ namespace ContextStage
                 // Ready 이벤트에서 덱·관객·콤보 자원·공연 결과 집계를 초기화하고,
                 // Playing 이벤트에서 타이머·호응도·공연 시스템을 새로 시작한다.
                 GameManager.Instance.ResetGame();
-                GameManager.Instance.StartGame();
+                // 미뤄 둔 증강 시작 연출이 있으면 연출이 끝난 뒤 그쪽이 공연을 시작한다.
+                if (!PerformanceIntroDirector.TryRunAfterTutorial())
+                    GameManager.Instance.StartGame();
             }
         }
 
