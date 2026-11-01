@@ -142,6 +142,8 @@ namespace ContextStage
             CloseOwnedModal();
         }
 
+        public bool IsOwnedModalOpen => ownedModal != null && ownedModal.activeSelf;
+
         public void Show(AugmentSelectionScreenModel model)
         {
             if (model == null)
