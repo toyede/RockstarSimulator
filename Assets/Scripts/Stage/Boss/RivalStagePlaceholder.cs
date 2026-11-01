@@ -198,7 +198,15 @@ namespace ContextStage
             float delta = Time.deltaTime;
             float width = source != null ? source.PresentationGatherWidth(_audienceStage) : 1f;
             Vector3 target = new Vector3(fan.Slot.x * width, fan.Slot.y, fan.Slot.z);
-            fan.PresentationSlot = Vector3.MoveTowards(fan.PresentationSlot, target, delta * 6f);
+            if (_audienceStage == AudienceEngagementStage.Calm)
+            {
+                float side = (fan.Seed & 1) == 0 ? -1f : 1f;
+                target.x = side * fanSpreadWidth * Mathf.Lerp(.34f, .47f, ((fan.Seed / 2) % 5) / 4f);
+                // 기존 앞줄은 우리 화면에도 걸치는 자리다. Calm 배회는 카드 위의 객석 바닥을 사용한다.
+                target.y = Mathf.Lerp(fanFrontY, fanBackY, (fan.Seed / 10) % 2 == 0 ? .5f : .85f);
+            }
+            fan.PresentationSlot = Vector3.MoveTowards(fan.PresentationSlot, target,
+                delta * (_audienceStage == AudienceEngagementStage.Calm ? .65f : 6f));
             float speed = source != null ? source.PresentationWalkSpeed : .18f;
             if (_audienceStage == AudienceEngagementStage.Calm && _dropJumpAge < 0f)
             {
@@ -208,7 +216,7 @@ namespace ContextStage
                     float radius = source != null ? source.PresentationWanderRadius : .3f;
                     fan.WanderTarget = new Vector2((NextWanderValue(fan) * 2f - 1f) * radius,
                         (NextWanderValue(fan) * 2f - 1f) * radius * .4f);
-                    fan.WanderWait = .8f + NextWanderValue(fan) * 1.2f;
+                    fan.WanderWait = 1.5f + NextWanderValue(fan) * 2.5f;
                 }
                 fan.Wander = Vector2.MoveTowards(fan.Wander, fan.WanderTarget, speed * delta);
             }
@@ -406,6 +414,10 @@ namespace ContextStage
             renderer.sortingLayerName = sortingLayer;
             renderer.sortingOrder = order;
             fan.Renderer = renderer;
+            AudienceDepthSorting.Register(fan, renderer, (1L << 32) + fan.Seed,
+                () => fan.Walking ? renderer.transform.position.y :
+                    _root.TransformPoint(fan.PresentationSlot + (Vector3)fan.Wander).y,
+                order => { if (renderer != null) renderer.sortingOrder = order; });
 
             var preference = (CrowdPreference)(index % 3);
             AudienceMemberActor source = FanVisualSource();

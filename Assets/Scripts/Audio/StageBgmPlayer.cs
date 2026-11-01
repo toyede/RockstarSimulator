@@ -28,6 +28,13 @@ namespace ContextStage
         [SerializeField, Tooltip("SoundLibrary 에 등록한 BGM ID")]
         string bgmId = "big_rock";
 
+        [SerializeField, Tooltip("현재 StageDefinition의 곡과 튜토리얼 곡을 사용한다. 타이틀은 끈다")]
+        bool useStageMusic;
+        TutorialFlow _tutorial;
+        string _lastPlayedId;
+        StageDefinition _musicStage;
+        bool _playerLeads;
+
         [SerializeField, Tooltip("재생을 시작하는 시점")]
         StartTrigger startOn = StartTrigger.SceneStart;
 
@@ -40,25 +47,34 @@ namespace ContextStage
         [SerializeField, Tooltip("Stop() 호출 시 페이드아웃 시간(초). 게임오버에서는 즉시 정지한다")]
         float fadeOutDuration = 1.5f;
 
-        public string BgmId => bgmId;
+        public string BgmId => ResolveBgmId();
 
         void Start()
         {
             if (startOn == StartTrigger.SceneStart) Play();
         }
 
-        void OnEnable() => EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
+        void OnEnable()
+        {
+            EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
+            EventBus.Subscribe<StageRuntimeApplied>(OnStageApplied);
+            EventBus.Subscribe<TutorialPlaybackChanged>(OnTutorialPlaybackChanged);
+            EventBus.Subscribe<BossFanBalanceChanged>(OnBossBalanceChanged);
+        }
         void OnDisable()
         {
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
-            if (stopOnGameOver && AudioManager.HasInstance && Bgm.Current == bgmId)
+            EventBus.Unsubscribe<StageRuntimeApplied>(OnStageApplied);
+            EventBus.Unsubscribe<TutorialPlaybackChanged>(OnTutorialPlaybackChanged);
+            EventBus.Unsubscribe<BossFanBalanceChanged>(OnBossBalanceChanged);
+            if (stopOnGameOver && AudioManager.HasInstance && !string.IsNullOrEmpty(_lastPlayedId) && Bgm.Current == _lastPlayedId)
                 Bgm.StopPerformance();
         }
 
         void OnGameStateChanged(GameStateChanged e)
         {
             if ((startOn == StartTrigger.PerformanceStart ||
-                 (startOn == StartTrigger.SceneStart && stopOnGameOver && Bgm.Current != bgmId)) &&
+                 (startOn == StartTrigger.SceneStart && stopOnGameOver && Bgm.Current != BgmId)) &&
                 e.Previous == GameState.Ready && e.Current == GameState.Playing)
                 Play();
 
@@ -66,13 +82,70 @@ namespace ContextStage
         }
 
         /// <summary>지정된 BGM 을 재생한다. 이미 같은 곡이 나오는 중이면 킷이 알아서 무시한다.</summary>
-        public void Play() => Sound.Bgm(bgmId, fadeInDuration);
+        public void Play() => PlayTrack(BgmId);
+
+        void PlayTrack(string id)
+        {
+            Sound.Bgm(id, fadeInDuration);
+            _lastPlayedId = id;
+        }
+
+        string ResolveBgmId()
+        {
+            if (!useStageMusic) return bgmId;
+            var stage = StageRuntimeDirector.CurrentStage;
+            SyncMusicStage(stage);
+            if (stage == null || string.IsNullOrWhiteSpace(stage.BgmId)) return bgmId;
+            if (!string.IsNullOrWhiteSpace(stage.TutorialBgmId))
+            {
+                if (_tutorial == null) _tutorial = FindFirstObjectByType<TutorialFlow>();
+                // 자동 교육 시작 전의 짧은 대기에도 공연 곡이 먼저 새어 나오지 않게 한다.
+                if (TutorialFlow.IsRunning || (_tutorial != null && _tutorial.isActiveAndEnabled && _tutorial.WillAutoRunOnStart))
+                    return stage.TutorialBgmId;
+            }
+            return stage.IsBoss && _playerLeads && !string.IsNullOrWhiteSpace(stage.PlayerLeadBgmId)
+                ? stage.PlayerLeadBgmId : stage.BgmId;
+        }
+
+        void SyncMusicStage(StageDefinition stage)
+        {
+            if (_musicStage == stage) return;
+            _musicStage = stage;
+            _playerLeads = false;
+        }
+
+        void OnBossBalanceChanged(BossFanBalanceChanged e)
+        {
+            if (!useStageMusic) return;
+            var stage = StageRuntimeDirector.CurrentStage;
+            SyncMusicStage(stage);
+            if (stage == null || !stage.IsBoss || string.IsNullOrWhiteSpace(stage.PlayerLeadBgmId) || e.Ours == e.Rival) return;
+            bool playerLeads = e.Ours > e.Rival;
+            if (_playerLeads == playerLeads) return;
+            _playerLeads = playerLeads;
+            if (startOn != StartTrigger.Manual && GameManager.HasInstance &&
+                (GameManager.Instance.State == GameState.Playing || GameManager.Instance.State == GameState.Paused)) Play();
+        }
+
+        void OnStageApplied(StageRuntimeApplied e)
+        {
+            if (!useStageMusic || startOn == StartTrigger.Manual) return;
+            if (stopOnGameOver && GameManager.HasInstance && GameManager.Instance.State == GameState.GameOver) return;
+            if (startOn == StartTrigger.SceneStart || (GameManager.HasInstance && GameManager.Instance.IsPlaying)) Play();
+        }
+
+        void OnTutorialPlaybackChanged(TutorialPlaybackChanged e)
+        {
+            if (useStageMusic && startOn != StartTrigger.Manual && GameManager.HasInstance &&
+                (GameManager.Instance.State == GameState.Playing || GameManager.Instance.State == GameState.Paused))
+                Play();
+        }
 
         /// <summary>다른 곡으로 교체 (크로스페이드).</summary>
         public void Play(string id)
         {
             bgmId = id;
-            Play();
+            PlayTrack(id);
         }
 
         public void Stop() => Sound.StopBgm(fadeOutDuration);

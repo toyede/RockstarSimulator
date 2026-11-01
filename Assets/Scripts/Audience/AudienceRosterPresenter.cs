@@ -20,7 +20,7 @@ namespace ContextStage
         [SerializeField, Tooltip("관객 발 기준 높이 보정")] float floorOffsetY = -0.4f;
         [SerializeField, Tooltip("관객 루트 기준 뒷줄 중심의 최대 Y. 점프와 머리가 HUD 위로 벗어나지 않게 한다")]
         float rearRowMaximumY = .65f;
-        [SerializeField, Min(1f)] float layoutHalfWidth = 6.2f;
+        [SerializeField, Min(1f)] float layoutHalfWidth = 8.4f;
         [SerializeField, Min(0.01f)] float frontRowScale = 0.58f;
         [SerializeField, Range(0.5f, 1f)] float rowScaleFalloff = 0.86f;
         [SerializeField] int baseSortingOrder = 5;
@@ -32,8 +32,10 @@ namespace ContextStage
             new Dictionary<AudienceId, AudienceMemberActor>();
         readonly List<AudienceId> _order = new List<AudienceId>(10);
         readonly Dictionary<AudienceId, int> _slots = new Dictionary<AudienceId, int>();
+        readonly HashSet<AudienceMemberActor> _departing = new HashSet<AudienceMemberActor>();
 
         bool _started;
+        bool _tutorialLayout;
         Camera _layoutCamera;
         float _lastAspect, _lastCameraSize;
         bool _deferRelayout;
@@ -151,6 +153,9 @@ namespace ContextStage
 
         void OnEnable()
         {
+            _tutorialLayout = TutorialFlow.IsRunning;
+            EventBus.Subscribe<TutorialPlaybackChanged>(OnTutorialPlaybackChanged);
+            EventBus.Subscribe<GameStateChanged>(OnPresentationState);
             EventBus.Subscribe<AudienceJoined>(OnAudienceJoined);
             EventBus.Subscribe<CardResolved>(OnGestureCardResolved);
             EventBus.Subscribe<BossFanMoved>(OnBossFanArrival);
@@ -182,6 +187,9 @@ namespace ContextStage
 
         void OnDisable()
         {
+            EventBus.Unsubscribe<TutorialPlaybackChanged>(OnTutorialPlaybackChanged);
+            _tutorialLayout = false;
+            EventBus.Unsubscribe<GameStateChanged>(OnPresentationState);
             StopAllCoroutines();
             EventBus.Unsubscribe<AudienceJoined>(OnAudienceJoined);
             EventBus.Unsubscribe<CardResolved>(OnGestureCardResolved);
@@ -217,6 +225,7 @@ namespace ContextStage
 
         void OnAudienceJoined(AudienceJoined e)
         {
+            if (e.Reason == AudienceJoinReason.Initialization) ReleaseDeparting();
             if (!_started || _actors.ContainsKey(e.Audience.Id)) return;
             SpawnActor(e.Audience);
             Relayout();
@@ -307,14 +316,23 @@ namespace ContextStage
             _order.Remove(id);
             _slots.Remove(id);
             if (!_deferRelayout) Relayout();
+            if (e.Reason == AudienceDepartureReason.Reset)
+            {
+                ReleaseDeparting();
+                if (actor != null && !IsTearingDown) PoolManager.Despawn(actor);
+                return;
+            }
             // 이탈 텍스트(PlayDeparture)는 단일 결과 UI 원칙으로 제거됨 — 퇴장 애니메이션(PlayExit)만 남긴다
             AudienceExitStyle exitStyle =
                 e.Reason == AudienceDepartureReason.NearbyConcert
                     ? StageRuntimeDirector.CurrentStage != null && StageRuntimeDirector.CurrentStage.IsBoss
                         ? AudienceExitStyle.RivalStage : AudienceExitStyle.NearbyConcert
-                    : AudienceExitStyle.Default;
+                    : e.Reason == AudienceDepartureReason.EngagementDepleted
+                        ? AudienceExitStyle.LostInterest : AudienceExitStyle.Default;
+            _departing.Add(actor);
             actor.PlayExit(exitStyle, () =>
             {
+                _departing.Remove(actor);
                 if (actor != null && !IsTearingDown)
                     PoolManager.Despawn(actor);
             });
@@ -433,7 +451,7 @@ namespace ContextStage
             int count = _order.Count;
             if (count == 0) return;
 
-            int columns = Mathf.Max(1, maximumColumns);
+            int columns = _tutorialLayout ? Mathf.Min(count, 5) : Mathf.Max(1, maximumColumns);
             int capacity = AudienceRosterSystem.HasInstance ? AudienceRosterSystem.Instance.Capacity : count;
             int maximumRows = Mathf.CeilToInt(Mathf.Max(count, capacity) / (float)columns);
             // 현재 인원이 아닌 정원으로 간격을 정해 입퇴장 시 기존 자리를 유지한다.
@@ -450,7 +468,7 @@ namespace ContextStage
                 AudienceId id = _order[index];
                 if (!_actors.TryGetValue(id, out AudienceMemberActor actor)) continue;
 
-                int slot = _slots[id];
+                int slot = _tutorialLayout ? index : _slots[id];
                 int row = slot / columns;
                 int column = slot % columns;
                 // 뒷줄을 반 칸 비우고, ID 기반 오프셋으로 게임 난수를 소비하지 않는다.
@@ -465,6 +483,15 @@ namespace ContextStage
                 float y = floorOffsetY + row * verticalSpacing + jitterY;
                 float scale = frontRowScale * Mathf.Pow(rowScaleFalloff, row);
                 int sortingOrder = baseSortingOrder + 10 - Mathf.RoundToInt(y * 2f);
+                actor.SetTutorialPlacement(_tutorialLayout);
+                if (_tutorialLayout)
+                {
+                    float lessonSpacing = Mathf.Min(1.7f, spacing);
+                    x = (column - (columns - 1) * .5f) * lessonSpacing;
+                    y = floorOffsetY + row * verticalSpacing;
+                }
+                actor.SetWalkArea(Rect.MinMaxRect(-halfWidth, floorOffsetY - .15f,
+                    halfWidth, rearRowMaximumY + .25f), slot);
                 actor.SetLayout(new Vector3(x, y, 0f), scale, sortingOrder);
             }
         }
@@ -476,8 +503,27 @@ namespace ContextStage
                 (!Mathf.Approximately(_lastAspect, _layoutCamera.aspect) || !Mathf.Approximately(_lastCameraSize, _layoutCamera.orthographicSize))) Relayout();
         }
 
+        void OnTutorialPlaybackChanged(TutorialPlaybackChanged e)
+        {
+            _tutorialLayout = e.IsRunning;
+            Relayout();
+        }
+
+        void OnPresentationState(GameStateChanged e)
+        {
+            if (e.Current == GameState.Ready || e.Current == GameState.GameOver) ReleaseDeparting();
+        }
+
+        void ReleaseDeparting()
+        {
+            foreach (AudienceMemberActor actor in _departing)
+                if (actor != null && !IsTearingDown) PoolManager.Despawn(actor);
+            _departing.Clear();
+        }
+
         void ReleaseAllImmediate()
         {
+            ReleaseDeparting();
             foreach (AudienceMemberActor actor in _actors.Values)
             {
                 if (actor == null) continue;

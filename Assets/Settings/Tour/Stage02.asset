@@ -23,3 +23,5 @@ MonoBehaviour:
   audiencePresetId: audience_basement_regulars
   venueRuleIds:
   - special_audience_requests
+  bgmId: sharp
+  tutorialBgmId: big_rock

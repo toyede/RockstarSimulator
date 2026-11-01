@@ -1,0 +1,442 @@
+fileFormatVersion: 2
+guid: 297d11ca30f77f14d9c8b6adbf382422
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3392799105333198635
+    second: v2_Mosh_middle_0001_0
+  - first:
+      213: -6263775532657001054
+    second: v2_Mosh_middle_0001_1
+  - first:
+      213: -8577012140015638086
+    second: v2_Mosh_middle_0001_2
+  - first:
+      213: -4575742128233719702
+    second: v2_Mosh_middle_0001_3
+  - first:
+      213: 8502316357717046109
+    second: v2_Mosh_middle_0001_4
+  - first:
+      213: 979189129036923137
+    second: v2_Mosh_middle_0001_5
+  - first:
+      213: -3417186184263240583
+    second: v2_Mosh_middle_0001_6
+  - first:
+      213: 5907310356142313133
+    second: v2_Mosh_middle_0001_7
+  - first:
+      213: 324849424932318305
+    second: v2_Mosh_middle_0001_8
+  - first:
+      213: 756634725356100918
+    second: v2_Mosh_middle_0001_9
+  - first:
+      213: -4180643863092912356
+    second: v2_Mosh_middle_0001_10
+  - first:
+      213: 360290986180118098
+    second: v2_Mosh_middle_0001_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_0
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 543
+        width: 215
+        height: 245
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2ff5ab7fc4a51f20800000000000000
+      internalID: 3392799105333198635
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_1
+      rect:
+        serializedVersion: 2
+        x: 403
+        y: 545
+        width: 163
+        height: 240
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ad323707599219a0800000000000000
+      internalID: -6263775532657001054
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_2
+      rect:
+        serializedVersion: 2
+        x: 711
+        y: 546
+        width: 182
+        height: 240
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ab9a720d6e458f880800000000000000
+      internalID: -8577012140015638086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_3
+      rect:
+        serializedVersion: 2
+        x: 1032
+        y: 547
+        width: 178
+        height: 245
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a68d6d617c2bf70c0800000000000000
+      internalID: -4575742128233719702
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_4
+      rect:
+        serializedVersion: 2
+        x: 1337
+        y: 548
+        width: 207
+        height: 244
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d53b7bd1eab4ef570800000000000000
+      internalID: 8502316357717046109
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_5
+      rect:
+        serializedVersion: 2
+        x: 1685
+        y: 543
+        width: 157
+        height: 243
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1018b2c2357c69d00800000000000000
+      internalID: 979189129036923137
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_6
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 63
+        width: 175
+        height: 229
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 974fd9b3547b390d0800000000000000
+      internalID: -3417186184263240583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_7
+      rect:
+        serializedVersion: 2
+        x: 390
+        y: 63
+        width: 183
+        height: 240
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dae49db787bfaf150800000000000000
+      internalID: 5907310356142313133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_8
+      rect:
+        serializedVersion: 2
+        x: 710
+        y: 63
+        width: 181
+        height: 239
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16ca492b4d8128400800000000000000
+      internalID: 324849424932318305
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_9
+      rect:
+        serializedVersion: 2
+        x: 1029
+        y: 63
+        width: 174
+        height: 258
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 63d539d164b108a00800000000000000
+      internalID: 756634725356100918
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_10
+      rect:
+        serializedVersion: 2
+        x: 1359
+        y: 65
+        width: 163
+        height: 238
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1f1ee77e8e5bf5c0800000000000000
+      internalID: -4180643863092912356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_middle_0001_11
+      rect:
+        serializedVersion: 2
+        x: 1668
+        y: 63
+        width: 183
+        height: 235
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2568a073eb2000500800000000000000
+      internalID: 360290986180118098
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      v2_Mosh_middle_0001_0: 3392799105333198635
+      v2_Mosh_middle_0001_1: -6263775532657001054
+      v2_Mosh_middle_0001_10: -4180643863092912356
+      v2_Mosh_middle_0001_11: 360290986180118098
+      v2_Mosh_middle_0001_2: -8577012140015638086
+      v2_Mosh_middle_0001_3: -4575742128233719702
+      v2_Mosh_middle_0001_4: 8502316357717046109
+      v2_Mosh_middle_0001_5: 979189129036923137
+      v2_Mosh_middle_0001_6: -3417186184263240583
+      v2_Mosh_middle_0001_7: 5907310356142313133
+      v2_Mosh_middle_0001_8: 324849424932318305
+      v2_Mosh_middle_0001_9: 756634725356100918
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

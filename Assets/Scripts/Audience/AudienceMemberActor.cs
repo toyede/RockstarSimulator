@@ -208,15 +208,23 @@ namespace ContextStage
         public Vector3 LayoutLocalPosition => _layoutPosition;
         bool _tutorialInspectionPose;
         bool _inspectionHold;
+        bool _tutorialPlacement;
         Vector3 _restLayoutPosition;
         Vector2 _wanderOffset, _wanderTarget;
         float _wanderWait;
         uint _wanderSeed;
+        Rect _walkArea;
+        bool _hasWalkArea;
+        int _floorSlot;
+        bool _hasStableDepthOrder;
+        Vector3 _walkExitStart, _walkExitTarget;
+        float _walkExitDuration;
+        [SerializeField, Min(.1f)] float lostInterestWalkSpeed = .85f;
         [Header("Engagement presentation")]
         [SerializeField, Range(.5f, 1f)] float middleGatherWidth = .85f;
         [SerializeField, Range(.5f, 1f)] float excitedGatherWidth = .75f;
-        [SerializeField, Range(0f, .5f)] float calmWanderRadius = .3f;
-        [SerializeField, Min(.01f)] float calmWalkSpeed = .18f;
+        [SerializeField, Range(0f, 1f)] float calmWanderRadius = .55f;
+        [SerializeField, Min(.01f)] float calmWalkSpeed = .24f;
         [SerializeField, Range(0f, 1f)] float calmSaturation = .4f;
         [SerializeField, Range(0f, 1f)] float middleSaturation = .75f;
         MaterialPropertyBlock _engagementProperties;
@@ -231,11 +239,46 @@ namespace ContextStage
 
         public void SetInspectionHold(bool held) => _inspectionHold = held;
 
+        public void SetTutorialPlacement(bool enabled)
+        {
+            _tutorialPlacement = enabled;
+            if (!_hasLayout) return;
+            RefreshPresentationTarget();
+            if (enabled)
+            {
+                _wanderOffset = _wanderTarget = Vector2.zero;
+                _currentLayoutPosition = _layoutPosition;
+            }
+        }
+
+        public void SetWalkArea(Rect area, int slot = 0)
+        {
+            _floorSlot = Mathf.Max(0, slot);
+            _walkArea = area;
+            _hasWalkArea = area.width > 0f && area.height > 0f;
+            if (_hasLayout) RefreshPresentationTarget();
+        }
+
+        Vector3 OuterRestPosition()
+        {
+            if (!_hasWalkArea) return _restLayoutPosition;
+            int id = _floorSlot;
+            float side = (id & 1) == 0 ? -1f : 1f;
+            int slot = (id / 2) % 10;
+            float half = _walkArea.width * .5f;
+            float x = _walkArea.center.x + side * half * Mathf.Lerp(.58f, .92f, (slot % 5) / 4f);
+            float y = Mathf.Lerp(_walkArea.yMin, _walkArea.yMax, slot < 5 ? .25f : .75f);
+            return new Vector3(x, y, _restLayoutPosition.z);
+        }
+
         void RefreshPresentationTarget()
         {
+            if (_tutorialPlacement) { _layoutPosition = _restLayoutPosition; return; }
             float width = PresentationGatherWidth(_snapshot.Stage);
             _layoutPosition = new Vector3(_restLayoutPosition.x * width,
                 _restLayoutPosition.y, _restLayoutPosition.z);
+            if (_snapshot.Stage == AudienceEngagementStage.Calm)
+                _layoutPosition = OuterRestPosition();
         }
 
         float NextWanderValue()
@@ -258,6 +301,22 @@ namespace ContextStage
         public float LayoutScale => _layoutScale;
         public int SortingOrder =>
             characterRenderer != null ? characterRenderer.sortingOrder : 0;
+        public float GroundSortY
+        {
+            get
+            {
+                if (_exiting && _exitStyle == AudienceExitStyle.LostInterest)
+                    return transform.position.y;
+                Vector3 ground = _currentLayoutPosition + (Vector3)_wanderOffset;
+                return transform.parent != null ? transform.parent.TransformPoint(ground).y : ground.y;
+            }
+        }
+        public void ApplyDepthOrder(int order)
+        {
+            _hasStableDepthOrder = true;
+            characterRenderer.sortingOrder = order;
+            if (preferenceOutline != null) preferenceOutline.RefreshSourceSorting();
+        }
         public Vector2 PreferenceHoverCenter =>
             preferenceHoverCollider != null
                 ? preferenceHoverCollider.bounds.center
@@ -301,6 +360,10 @@ namespace ContextStage
 
         public void OnSpawned()
         {
+            _tutorialPlacement = false;
+            _hasStableDepthOrder = false;
+            _hasWalkArea = false;
+            _walkExitDuration = 0f;
             _inspectionHold = false;
             _wanderOffset = _wanderTarget = Vector2.zero;
             _wanderWait = 0f;
@@ -331,6 +394,8 @@ namespace ContextStage
 
         public void OnDespawned()
         {
+            _tutorialPlacement = false;
+            AudienceDepthSorting.Unregister(this);
             _inspectionHold = false;
             _wanderOffset = _wanderTarget = Vector2.zero;
             _tutorialInspectionPose = false;
@@ -357,6 +422,8 @@ namespace ContextStage
                 throw new ArgumentException("Audience snapshot requires a valid id.", nameof(snapshot));
 
             _boundId = snapshot.Id;
+            AudienceDepthSorting.Register(this, characterRenderer, snapshot.Id.Value,
+                () => GroundSortY, ApplyDepthOrder);
             _inspectionHold = false;
             _wanderSeed = unchecked((uint)snapshot.Id.Value * 2654435761u);
             _wanderOffset = _wanderTarget = Vector2.zero;
@@ -404,7 +471,8 @@ namespace ContextStage
             _restLayoutPosition = localPosition;
             RefreshPresentationTarget();
             _layoutScale = Mathf.Max(0.01f, scale);
-            characterRenderer.sortingOrder = sortingOrder;
+            if (_tutorialPlacement) _currentLayoutPosition = _layoutPosition;
+            if (!_hasStableDepthOrder) characterRenderer.sortingOrder = sortingOrder;
             warningBackgroundRenderer.sortingOrder = sortingOrder + 20;
             warningFillRenderer.sortingOrder = sortingOrder + 21;
             warningBackgroundRenderer.sortingLayerName = "Effects";
@@ -472,6 +540,26 @@ namespace ContextStage
             Action completed)
         {
             if (_exiting) return;
+            if (style == AudienceExitStyle.LostInterest)
+            {
+                _walkExitStart = transform.localPosition;
+                _walkExitTarget = _walkExitStart;
+                Camera camera = Camera.main;
+                float side = _walkExitStart.x >= (_hasWalkArea ? _walkArea.center.x : 0f) ? 1f : -1f;
+                if (camera != null && camera.orthographic)
+                {
+                    var edge = camera.ViewportToWorldPoint(new Vector3(side < 0 ? 0 : 1, .5f,
+                        Mathf.Abs(camera.transform.position.z - transform.position.z)));
+                    edge.x += side * (characterRenderer.bounds.extents.x + .5f);
+                    _walkExitTarget.x = transform.parent != null ? transform.parent.InverseTransformPoint(edge).x : edge.x;
+                }
+                else _walkExitTarget.x += side * 12f;
+                _walkExitDuration = Mathf.Max(.5f, Mathf.Abs(_walkExitTarget.x - _walkExitStart.x) / lostInterestWalkSpeed);
+                _snapshot = new AudienceSnapshot(_snapshot.Id, _snapshot.Preference, 0,
+                    AudienceEngagementStage.Calm, _snapshot.JoinedAt);
+                ApplyVisual(_snapshot.Preference, _snapshot.Stage);
+                SetMotionStage(AudienceEngagementStage.Calm, false);
+            }
             _exiting = true;
             ResetCardMotion();
             _exitStyle = style;
@@ -494,7 +582,8 @@ namespace ContextStage
                 _exitStyle == AudienceExitStyle.NearbyConcert
                     ? Vector2.right * _exitDirection
                     : Vector2.up;
-            reactionVFX.PlayDeparture(worldDirection, duration);
+            if (style != AudienceExitStyle.LostInterest)
+                reactionVFX.PlayDeparture(worldDirection, duration);
         }
 
         public void SetCrisisThreatened(bool threatened)
@@ -560,14 +649,15 @@ namespace ContextStage
             if (_motionBlend < 1f && motionBlendDuration > 0f)
                 _motionBlend = Mathf.Min(1f, _motionBlend + deltaTime / motionBlendDuration);
 
-            float followStep = layoutFollowSpeed * deltaTime;
+            float followStep = (_snapshot.Stage == AudienceEngagementStage.Calm
+                ? Mathf.Min(layoutFollowSpeed, .65f) : layoutFollowSpeed) * deltaTime;
             if (!_exiting && !_inspectionHold && !_tutorialInspectionPose)
             {
                 _currentLayoutPosition = Vector3.MoveTowards(_currentLayoutPosition, _layoutPosition, followStep);
                 _currentLayoutScale = Mathf.MoveTowards(_currentLayoutScale, _layoutScale, followStep);
             }
 
-            if (!_exiting && !_inspectionHold && !_tutorialInspectionPose && _cardMotionRemaining <= 0f)
+            if (!_exiting && !_inspectionHold && !_tutorialInspectionPose && !_tutorialPlacement && _cardMotionRemaining <= 0f)
             {
                 if (_snapshot.Stage == AudienceEngagementStage.Calm)
                 {
@@ -576,7 +666,14 @@ namespace ContextStage
                     {
                         _wanderTarget = new Vector2((NextWanderValue() * 2f - 1f) * calmWanderRadius,
                             (NextWanderValue() * 2f - 1f) * calmWanderRadius * .4f);
-                        _wanderWait = .8f + NextWanderValue() * 1.2f;
+                        if (_hasWalkArea)
+                        {
+                            Vector3 target = _layoutPosition + (Vector3)_wanderTarget;
+                            target.x = Mathf.Clamp(target.x, _walkArea.xMin, _walkArea.xMax);
+                            target.y = Mathf.Clamp(target.y, _walkArea.yMin, _walkArea.yMax);
+                            _wanderTarget = target - _layoutPosition;
+                        }
+                        _wanderWait = 1.5f + NextWanderValue() * 2.5f;
                     }
                     _wanderOffset = Vector2.MoveTowards(_wanderOffset, _wanderTarget, calmWalkSpeed * deltaTime);
                 }
@@ -586,6 +683,20 @@ namespace ContextStage
             if (_exiting)
             {
                 _exitElapsed += deltaTime;
+                if (_exitStyle == AudienceExitStyle.LostInterest)
+                {
+                    _visibility = 1f;
+                    ApplyTransform();
+                    float progress = Mathf.Clamp01(_exitElapsed / _walkExitDuration);
+                    transform.localPosition = Vector3.Lerp(_walkExitStart, _walkExitTarget, progress);
+                    characterRenderer.flipX = _walkExitTarget.x < _walkExitStart.x;
+                    if (progress < 1f) return;
+                    Action done = _exitCompleted;
+                    _exitCompleted = null;
+                    _boundId = default;
+                    done?.Invoke();
+                    return;
+                }
                 float duration = Mathf.Max(
                     0.01f,
                     _exitStyle == AudienceExitStyle.NearbyConcert
@@ -793,6 +904,9 @@ namespace ContextStage
                     Mathf.PI) * loveItJumpHeight
                 : 0f;
 
+            if (_snapshot.Stage == AudienceEngagementStage.Calm && _cardMotionRemaining <= 0f)
+            { bob *= .12f; swayAngle *= .25f; squashAmount = 0f; }
+
             // 입장은 뒤에서 작게 다가오고, 퇴장은 뒤로 물러나며 사라진다. (기획서 §9)
             float exitProgress = _exiting ? 1f - _visibility : 0f;
             float arrivalProgress = Mathf.SmoothStep(0f, 1f, _visibility);
@@ -901,6 +1015,12 @@ namespace ContextStage
                 allowHorizontalFlip &&
                 _variance.Flip < 0f;
             characterRenderer.flipX = flipCharacter;
+            if (_snapshot.Stage == AudienceEngagementStage.Calm && !_exiting && !_tutorialInspectionPose && !_inspectionHold)
+            {
+                float direction = _layoutPosition.x - _currentLayoutPosition.x;
+                if (Mathf.Abs(direction) < .05f) direction = _wanderTarget.x - _wanderOffset.x;
+                if (Mathf.Abs(direction) >= .05f) characterRenderer.flipX = direction < 0f;
+            }
             transform.localScale = new Vector3(
                 scale * (1f + squashAmount * 0.5f),
                 scale * (1f - squashAmount),

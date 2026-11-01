@@ -28,15 +28,15 @@ MonoBehaviour:
       summary: "\uAD00\uC2EC\uC774 \uC2DD\uC740 \uAD00\uAC1D\uC740 \uB5A0\uB0A9\uB2C8\uB2E4.\n\uBCF5\uC7A5\uACFC
         \uBAB0\uC785 \uC0C1\uD0DC\uB97C \uC0B4\uD3B4\n\uC5B4\uC6B8\uB9AC\uB294 \uCE74\uB4DC\uB97C
         \uC0AC\uC6A9\uD558\uC138\uC694."
-      headlineLogo: {fileID: 0}
+      headlineLogo: {fileID: 21300000, guid: c043ff58f8a5e5d499cc6218467e5794, type: 3}
       headlineFont: {fileID: 0}
       height: 960
       headlineArea:
         serializedVersion: 2
-        x: 0.12
-        y: 0.71
-        width: 0.76
-        height: 0.2
+        x: 0.1
+        y: 0.735
+        width: 0.8
+        height: 0.245
       artistArea:
         serializedVersion: 2
         x: 0.15
@@ -61,6 +61,7 @@ MonoBehaviour:
         y: 0.23
         width: 0.52
         height: 0.07
+      entryText: "\uACF5\uC5F0 \uC2DC\uC791"
       headlineSize: 78
       bodySize: 29
       captionSize: 19
@@ -122,16 +123,17 @@ MonoBehaviour:
         height: 0.09
       entryArea:
         serializedVersion: 2
-        x: 0.31
-        y: 0.085
-        width: 0.4
-        height: 0.045
+        x: 0.755
+        y: 0.06
+        width: 0.2
+        height: 0.11
+      entryText: "\uACF5\uC5F0\n\uC2DC\uC791"
       headlineSize: 66
       bodySize: 25
       captionSize: 17
-      entrySize: 28
+      entrySize: 24
       headlineAngle: 2
-      entryAngle: -2
+      entryAngle: -3
       headlineColor: {r: 0.15294118, g: 0.1254902, b: 0.16078432, a: 1}
       inkColor: {r: 0.15294118, g: 0.1254902, b: 0.16078432, a: 1}
       accentColor: {r: 0.6, g: 0.16862746, b: 0.21176471, a: 1}
@@ -192,6 +194,7 @@ MonoBehaviour:
         y: 0.018
         width: 0.48
         height: 0.055
+      entryText: "\uACF5\uC5F0 \uC2DC\uC791"
       headlineSize: 62
       bodySize: 26
       captionSize: 17
@@ -208,7 +211,7 @@ MonoBehaviour:
       \uAD00\uAC1D\uC758 \uD638\uC751\uB3C4\uB97C \uC62C\uB9AC\uAC70\uB098 Special
       \uCE74\uB4DC\uB85C \uBD99\uC7A1\uC73C\uC138\uC694."
   - stageId: stage_04
-    backgroundBase: {fileID: 21300000, guid: 555ec4f602586894bbb291dd9912b8a7, type: 3}
+    backgroundBase: {fileID: 21300000, guid: 958ede3ec2561a04ab2f8cd0c9922c78, type: 3}
     lightOverlays: []
     foregroundLeft: {fileID: 0}
     foregroundRight: {fileID: 0}
@@ -216,7 +219,9 @@ MonoBehaviour:
     mapThumbnail: {fileID: 21300000, guid: 5b63f594709fb95498790ac5a705086d, type: 3}
     stagePoster: {fileID: 21300000, guid: 26b231db4733c404d980a7a78082000a, type: 3}
     posterPresentation:
-      headline: "\uB108\uAD6C\uB9AC \uBC34\uB4DC\nON AIR"
+      headline: 'Raccoon Roll
+
+        ON AIR!'
       artistLine: RACCOON ROLL / LIVE SHOW
       showRuleLabel: 1
       summary: "\uC131\uACFC\uC5D0 \uB530\uB77C \uC704\uAE30\xB7\uC9C0\uC6D0 \uC911\n\uD558\uB098\uAC00
@@ -255,7 +260,8 @@ MonoBehaviour:
         y: 0.067
         width: 0.4
         height: 0.06
-      headlineSize: 64
+      entryText: "\uACF5\uC5F0 \uC2DC\uC791"
+      headlineSize: 56
       bodySize: 27
       captionSize: 17
       entrySize: 30
@@ -318,6 +324,7 @@ MonoBehaviour:
         y: 0.022
         width: 0.48
         height: 0.06
+      entryText: "\uACF5\uC5F0 \uC2DC\uC791"
       headlineSize: 62
       bodySize: 26
       captionSize: 17

@@ -2,12 +2,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.U2D.Sprites;
 using UnityEngine;
 
 namespace ContextStage.EditorTools
 {
     /// <summary>
-    /// Assets/Sprites/Crowd/Animated 밑의 "프레임 파일 하나에 동물 여러 마리(6x2 그리드)" 시트를
+    /// 프레임 파일 하나에 동물 여러 마리(6x2 그리드)가 있는 시트를
     /// 동물별 SpriteAnimationClip 으로 재조립해 AudienceMember 프리팹에 연결한다.
     ///
     /// 프레임 파일은 이미 Sprite Mode = Multiple 로 6x2 슬라이스되어 있어야 하며,
@@ -22,14 +23,14 @@ namespace ContextStage.EditorTools
         static readonly (string folder, CrowdPreference preference, AudienceEngagementStage stage, string clipName)[] Sources =
         {
             ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Calm", CrowdPreference.Singalong, AudienceEngagementStage.Calm, "Singalong_Calm"),
-            ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Middle", CrowdPreference.Singalong, AudienceEngagementStage.Middle, "Singalong_Middle"),
-            ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Hype", CrowdPreference.Singalong, AudienceEngagementStage.Excited, "Singalong_Excited"),
+            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Singalong/Singalong_Middle", CrowdPreference.Singalong, AudienceEngagementStage.Middle, "Singalong_Middle"),
+            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Singalong/Singalong_Hype", CrowdPreference.Singalong, AudienceEngagementStage.Excited, "Singalong_Excited"),
             ("Assets/Sprites/Crowd/Animated/chill/chill_calm", CrowdPreference.Chill, AudienceEngagementStage.Calm, "Chill_Calm"),
-            ("Assets/Sprites/Crowd/Animated/chill/chill_mid", CrowdPreference.Chill, AudienceEngagementStage.Middle, "Chill_Middle"),
-            ("Assets/Sprites/Crowd/Animated/chill/Chill_Hype", CrowdPreference.Chill, AudienceEngagementStage.Excited, "Chill_Excited"),
+            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Chill/chill_mid", CrowdPreference.Chill, AudienceEngagementStage.Middle, "Chill_Middle"),
+            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Chill/Chill_Hype", CrowdPreference.Chill, AudienceEngagementStage.Excited, "Chill_Excited"),
             ("Assets/Sprites/Crowd/Animated/mosh/mosh_calm", CrowdPreference.Mosh, AudienceEngagementStage.Calm, "Mosh_Calm"),
-            ("Assets/Sprites/Crowd/Animated/mosh/Mosh_middle", CrowdPreference.Mosh, AudienceEngagementStage.Middle, "Mosh_Middle"),
-            ("Assets/Sprites/Crowd/Animated/mosh/Mosh_hype", CrowdPreference.Mosh, AudienceEngagementStage.Excited, "Mosh_Excited"),
+            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Mosh/Mosh_middle", CrowdPreference.Mosh, AudienceEngagementStage.Middle, "Mosh_Middle"),
+            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Mosh/Mosh_hype", CrowdPreference.Mosh, AudienceEngagementStage.Excited, "Mosh_Excited"),
         };
 
         [MenuItem("Tools/Audience/Import Animated Species Sheets")]
@@ -52,6 +53,8 @@ namespace ContextStage.EditorTools
                 return;
             }
 
+            NormalizeLatestSheets();
+
             var so = new SerializedObject(actor);
             SerializedProperty listProp = so.FindProperty("animatedVariants");
             if (listProp == null)
@@ -61,12 +64,35 @@ namespace ContextStage.EditorTools
                 return;
             }
 
-            int totalClips = 0;
-
+            // 모든 세트를 먼저 검사해 중간 실패 시 구버전/신버전이 섞이지 않게 한다.
+            var allClips = new List<SpriteAnimationClip[]>();
             foreach (var source in Sources)
             {
                 SpriteAnimationClip[] clips = BuildSpeciesClips(source.folder, source.clipName);
-                if (clips == null) continue;
+                if (clips == null) return;
+                allClips.Add(clips);
+            }
+
+            int totalClips = 0;
+            int sourceIndex = 0;
+
+            foreach (var source in Sources)
+            {
+                SpriteAnimationClip[] clips = allClips[sourceIndex++];
+
+                // 사용자가 조정한 재생 속도/루프 설정은 아트 교체와 별개로 유지한다.
+                int oldIndex = FindGroupIndex(listProp, source.preference, source.stage);
+                if (oldIndex >= 0)
+                {
+                    var oldClips = listProp.GetArrayElementAtIndex(oldIndex).FindPropertyRelative("variants");
+                    for (int i = 0; i < Mathf.Min(clips.Length, oldClips.arraySize); i++)
+                    {
+                        var old = oldClips.GetArrayElementAtIndex(i);
+                        clips[i].fps = old.FindPropertyRelative("fps").floatValue;
+                        clips[i].loop = old.FindPropertyRelative("loop").boolValue;
+                        clips[i].pingPong = old.FindPropertyRelative("pingPong").boolValue;
+                    }
+                }
 
                 WriteGroup(listProp, source.preference, source.stage, clips);
                 totalClips += clips.Length;
@@ -77,10 +103,67 @@ namespace ContextStage.EditorTools
 
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(prefabAsset);
-            AssetDatabase.SaveAssets();
+            // 씬·폰트 등 다른 사용자 dirty 에셋은 저장하지 않는다.
+            PrefabUtility.SavePrefabAsset(prefabAsset);
             Debug.Log(
                 $"[AudienceAnim] 총 {totalClips}개 동물별 애니메이션 세트를 AudienceMember 프리팹에 연결했습니다. " +
                 "fps/loop 은 인스펙터에서 각 클립별로 조정 가능합니다.");
+        }
+
+        // 자동 슬라이스가 분리한 꼬리/외곽 조각을 6x2의 동일 동물 셀로 합친다.
+        // PNG와 텍스처 GUID, 정상 셀의 rect/pivot은 유지한다. 적용 전 전 프레임을 검사한다.
+        static void NormalizeLatestSheets()
+        {
+            var factory = new SpriteDataProviderFactories();
+            factory.Init();
+            var repairs = new List<(TextureImporter importer, ISpriteEditorDataProvider provider, SpriteRect[] sprites)>();
+            foreach (var source in Sources.Where(s => s.folder.Contains("/1016_art/")))
+            foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { source.folder }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+                importer.GetSourceTextureWidthAndHeight(out int width, out int height);
+                var provider = factory.GetSpriteEditorDataProviderFromObject(importer);
+                provider.InitSpriteEditorDataProvider();
+                var previous = provider.GetSpriteRects();
+                var cells = new List<SpriteRect>[12];
+                for (int i = 0; i < cells.Length; i++) cells[i] = new List<SpriteRect>();
+                foreach (var sprite in previous)
+                {
+                    int column = Mathf.Clamp(Mathf.FloorToInt(sprite.rect.center.x * 6f / width), 0, 5);
+                    int row = Mathf.Clamp(Mathf.FloorToInt(sprite.rect.center.y * 2f / height), 0, 1);
+                    cells[(1 - row) * 6 + column].Add(sprite);
+                }
+                if (cells.Any(c => c.Count == 0))
+                    throw new System.InvalidOperationException($"[AudienceAnim] 동물 셀이 비어 있습니다: {path}");
+                bool repair = previous.Length != 12;
+                var normalized = new SpriteRect[12];
+                for (int i = 0; i < 12; i++)
+                {
+                    var parts = cells[i];
+                    var first = parts.OrderByDescending(p => p.rect.width * p.rect.height).First();
+                    float left = parts.Min(p => p.rect.xMin), right = parts.Max(p => p.rect.xMax);
+                    float bottom = parts.Min(p => p.rect.yMin), top = parts.Max(p => p.rect.yMax);
+                    first.rect = Rect.MinMaxRect(left, bottom, right, top);
+                    string name = Path.GetFileNameWithoutExtension(path) + "_" + i;
+                    if (first.name != name) repair = true;
+                    first.name = name;
+                    normalized[i] = first;
+                }
+                if (repair || importer.filterMode != FilterMode.Point || importer.mipmapEnabled)
+                    repairs.Add((importer, provider, normalized));
+            }
+            foreach (var repair in repairs)
+            {
+                repair.provider.SetSpriteRects(repair.sprites);
+                repair.provider.GetDataProvider<ISpriteNameFileIdDataProvider>().SetNameFileIdPairs(
+                    repair.sprites.Select(s => new SpriteNameFileIdPair(s.name, s.spriteID)));
+                repair.provider.Apply();
+                repair.importer.filterMode = FilterMode.Point;
+                repair.importer.mipmapEnabled = false;
+                repair.importer.SaveAndReimport();
+            }
+            Debug.Log($"[AudienceAnim] 1016 시트 {repairs.Count}개 슬라이스/Point 정리 완료.");
         }
 
         /// <summary>폴더 안의 프레임 파일들을 프레임 순서대로 읽어, 동물 인덱스별 프레임 시퀀스로 재조립한다.</summary>
@@ -114,11 +197,10 @@ namespace ContextStage.EditorTools
                     .OrderBy(s => TrailingNumber(s.name))
                     .ToList();
 
-                if (subSprites.Count == 0)
+                if (subSprites.Count != 12 || subSprites.Where((s, i) => TrailingNumber(s.name) != i).Any())
                 {
                     Debug.LogWarning(
-                        $"[AudienceAnim] '{framePath}' 가 슬라이스되어 있지 않습니다 " +
-                        "(Texture Type = Sprite, Sprite Mode = Multiple 로 6x2 슬라이스 필요).");
+                        $"[AudienceAnim] '{framePath}' 에 동물 12종의 0~11 슬라이스가 필요합니다.");
                     return null;
                 }
 

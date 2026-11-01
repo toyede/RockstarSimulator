@@ -1,0 +1,451 @@
+fileFormatVersion: 2
+guid: 615b8f3756adc304cb82dc3adca90e55
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 5321601326992187978
+    second: v2_Mosh_hype_0008_0
+  - first:
+      213: -1362809164780503543
+    second: v2_Mosh_hype_0008_1
+  - first:
+      213: 4421284810706692299
+    second: v2_Mosh_hype_0008_2
+  - first:
+      213: -5924203079606792770
+    second: v2_Mosh_hype_0008_3
+  - first:
+      213: -7040306284761783806
+    second: v2_Mosh_hype_0008_4
+  - first:
+      213: -3524060928371722955
+    second: v2_Mosh_hype_0008_5
+  - first:
+      213: -7706534570288635329
+    second: v2_Mosh_hype_0008_6
+  - first:
+      213: -7728005427582987367
+    second: v2_Mosh_hype_0008_7
+  - first:
+      213: 1425876648465653817
+    second: v2_Mosh_hype_0008_8
+  - first:
+      213: -5504871173877634949
+    second: v2_Mosh_hype_0008_9
+  - first:
+      213: -4317619255840124804
+    second: v2_Mosh_hype_0008_10
+  - first:
+      213: 8352510875339633981
+    second: v2_Mosh_hype_0008_11
+  - first:
+      213: 4218858378997341999
+    second: v2_Mosh_hype_0008_12
+  - first:
+      213: -8322767736885445080
+    second: v2_Mosh_hype_0008_13
+  - first:
+      213: 9022139133327205332
+    second: v2_Mosh_hype_0008_14
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_0
+      rect:
+        serializedVersion: 2
+        x: 57
+        y: 599
+        width: 212
+        height: 259
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90e7c9cf844561de0800000000000000
+      internalID: -1362809164780503543
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_1
+      rect:
+        serializedVersion: 2
+        x: 370
+        y: 599
+        width: 209
+        height: 263
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc8a0014c1f8b5d30800000000000000
+      internalID: 4421284810706692299
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_2
+      rect:
+        serializedVersion: 2
+        x: 693
+        y: 597
+        width: 221
+        height: 246
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ebd03c6dfa009cda0800000000000000
+      internalID: -5924203079606792770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_3
+      rect:
+        serializedVersion: 2
+        x: 1046
+        y: 598
+        width: 160
+        height: 251
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 202e2d23cbecb4e90800000000000000
+      internalID: -7040306284761783806
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_4
+      rect:
+        serializedVersion: 2
+        x: 1332
+        y: 600
+        width: 215
+        height: 261
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 535f195c145081fc0800000000000000
+      internalID: -3524060928371722955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_5
+      rect:
+        serializedVersion: 2
+        x: 1661
+        y: 601
+        width: 200
+        height: 258
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f32ada8a3a3ec0590800000000000000
+      internalID: -7706534570288635329
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_6
+      rect:
+        serializedVersion: 2
+        x: 58
+        y: 128
+        width: 208
+        height: 244
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 930e155d14bb9c310800000000000000
+      internalID: 1425876648465653817
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_7
+      rect:
+        serializedVersion: 2
+        x: 364
+        y: 129
+        width: 233
+        height: 255
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b786cba55d4ca93b0800000000000000
+      internalID: -5504871173877634949
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_8
+      rect:
+        serializedVersion: 2
+        x: 709
+        y: 127
+        width: 193
+        height: 253
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c70534c992cb414c0800000000000000
+      internalID: -4317619255840124804
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_9
+      rect:
+        serializedVersion: 2
+        x: 1051
+        y: 128
+        width: 153
+        height: 251
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2f11ddd7556c8a30800000000000000
+      internalID: 4218858378997341999
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_10
+      rect:
+        serializedVersion: 2
+        x: 1348
+        y: 128
+        width: 189
+        height: 249
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82e7cd6d6d69f7c80800000000000000
+      internalID: -8322767736885445080
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: v2_Mosh_hype_0008_11
+      rect:
+        serializedVersion: 2
+        x: 1645
+        y: 127
+        width: 233
+        height: 262
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d36e1c8db3153d70800000000000000
+      internalID: 9022139133327205332
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: d0d44de9ed32e2143aa791af169d2a67
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      v2_Mosh_hype_0008_0: -1362809164780503543
+      v2_Mosh_hype_0008_1: 4421284810706692299
+      v2_Mosh_hype_0008_10: -8322767736885445080
+      v2_Mosh_hype_0008_11: 9022139133327205332
+      v2_Mosh_hype_0008_2: -5924203079606792770
+      v2_Mosh_hype_0008_3: -7040306284761783806
+      v2_Mosh_hype_0008_4: -3524060928371722955
+      v2_Mosh_hype_0008_5: -7706534570288635329
+      v2_Mosh_hype_0008_6: 1425876648465653817
+      v2_Mosh_hype_0008_7: -5504871173877634949
+      v2_Mosh_hype_0008_8: -4317619255840124804
+      v2_Mosh_hype_0008_9: 4218858378997341999
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

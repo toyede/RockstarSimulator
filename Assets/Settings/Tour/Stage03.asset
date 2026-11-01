@@ -25,3 +25,6 @@ MonoBehaviour:
   - special_audience_requests
   - festival_rain_shower
   - festival_flag_wave
+  bgmId: dogtown
+  tutorialBgmId: 
+  playerLeadBgmId: 

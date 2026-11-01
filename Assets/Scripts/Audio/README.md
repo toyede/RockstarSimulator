@@ -65,7 +65,19 @@ void OnTier(CrowdAmbienceTierChanged e) => Debug.Log($"{e.PreviousIndex} → {e.
 
 ## 4-1. 무대 BGM (`StageBgmPlayer`)
 
-`[CrowdAmbience]` 오브젝트에 함께 붙는다. 씬이 시작되면 `big_rock` 을 1.5초 페이드인으로 재생한다.
+`[CrowdAmbience]` 오브젝트에 함께 붙는다. Main은 `useStageMusic`을 켜서 StageDefinition의 BGM ID를 1.5초 크로스페이드로 재생한다. 타이틀은 이 옵션을 끄고 기존 `breakdown`을 유지한다.
+
+| 스테이지 | 공연 BGM | 튜토리얼 |
+|---|---|---|
+| 1 | `osaka_rain` (Osaka Rain) | `big_rock` |
+| 2 | `sharp` (Sharp) | `big_rock` |
+| 3 | `dogtown` (Dogtown) | 동일 |
+| 4 | `four_more_weeks` (Four More Weeks) | 동일 |
+| 5 | 보스 우세 `360_no_scope` / 우리 우세 `pomade` | 동일 |
+
+튜토리얼 완료·건너뛰기 후 해당 공연 곡으로 바뀐다. 이미 교육을 마쳐 자동 실행되지 않는 경우는 처음부터 공연 곡을 사용한다. 보스전은 실제 `BossFanBalanceChanged`의 관객 수를 비교해 우세가 뒤집힐 때만 1.5초 크로스페이드하며, 동률은 직전 곡을 유지한다. 같은 우세에서 곡을 재시작하지 않는다.
+
+`Tools/Audio/Apply Stage BGM Playlist`는 지정 곡의 라이브러리 등록·스테이지 설정·Main 연결을 수행한다(기존 곡별 볼륨 보존). 우세 곡은 StageDefinition의 `PlayerLeadBgmId`로 바꿀 수 있다.
 
 | 인스펙터 | 기본값 | 설명 |
 |---|---|---|
@@ -77,7 +89,7 @@ void OnTier(CrowdAmbienceTierChanged e) => Debug.Log($"{e.PreviousIndex} → {e.
 Main 씬의 공연 종료 및 투어 맵 진입 시 `Bgm.StopPerformance()`로 남은 공연 소리를 정리한다.
 다음 공연 시작 시 BGM이 다시 재생되며, 타이틀 BGM은 공연 종료 설정을 사용하지 않는다.
 
-**볼륨은 두 층으로 나뉜다.** 곡 자체 밸런스는 SoundLibrary 의 `big_rock` 항목 볼륨(= 0.5),
+**볼륨은 두 층으로 나뉜다.** 곡 자체 밸런스는 SoundLibrary 의 각 곡 항목 볼륨(신규 곡은 기존 `big_rock`의 0.615로 초기 설정),
 플레이어가 옵션에서 만지는 값은 Bgm 채널 볼륨(`AudioVolumeSlider`)이다. 서로 곱해진다.
 
 ```csharp

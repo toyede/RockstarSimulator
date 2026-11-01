@@ -65,6 +65,10 @@ MonoBehaviour:
   maximumColumns: 5
   horizontalSpacing: 1.35
   rowSpacing: 0.55
+  layoutJitter: 0.14
+  floorOffsetY: -0.4
+  rearRowMaximumY: 0.8
+  layoutHalfWidth: 8.4
   frontRowScale: 0.58
   rowScaleFalloff: 0.86
   baseSortingOrder: 5

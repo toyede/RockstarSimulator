@@ -198,3 +198,66 @@ MonoBehaviour:
     loop: 0
     minInterval: 0
     bus: 3
+  - id: osaka_rain
+    clips:
+    - {fileID: 8300000, guid: 04be7adbe33d34e4aa6b0ce0998e9339, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+    bus: 0
+  - id: sharp
+    clips:
+    - {fileID: 8300000, guid: 2ee0050e5fc76924db0c8c88737e93b9, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+    bus: 0
+  - id: so_bueno
+    clips:
+    - {fileID: 8300000, guid: 40a7db2357fc9164093da3eff84bdabf, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+    bus: 0
+  - id: four_more_weeks
+    clips:
+    - {fileID: 8300000, guid: 95146fecdb6ee3d4db36fb2db4cad79d, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+    bus: 0
+  - id: 360_no_scope
+    clips:
+    - {fileID: 8300000, guid: c2a83d928d848fc40bf9d8f9dfbeb89b, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+    bus: 0
+  - id: dogtown
+    clips:
+    - {fileID: 8300000, guid: bed13ccf2387c174d94a99f9a3029632, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+    bus: 0
+  - id: pomade
+    clips:
+    - {fileID: 8300000, guid: ebd95d8188b461d479d1feee29ac949d, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+    bus: 0

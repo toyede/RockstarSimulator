@@ -4,6 +4,12 @@ using UnityEngine;
 
 namespace ContextStage
 {
+    public readonly struct TutorialPlaybackChanged
+    {
+        public TutorialPlaybackChanged(bool isRunning) { IsRunning = isRunning; }
+        public bool IsRunning { get; }
+    }
+
     /// <summary>
     /// 스킵 가능한 인터랙티브 튜토리얼 디렉터. 별도 씬 없이 실제 게임 씬 위에서
     /// 관객 구성·손패 사용을 고정한 70~90초짜리 미니 공연으로 진행한다.
@@ -302,6 +308,7 @@ namespace ContextStage
             _specialLesson = StageRuntimeDirector.CurrentStage != null &&
                              StageRuntimeDirector.CurrentStage.StageId == "stage_02";
             TakeControl();
+            EventBus.Raise(new TutorialPlaybackChanged(true));
             if (_specialLesson) EnterSpecialIntro();
             else EnterIntro();
         }
@@ -367,6 +374,7 @@ namespace ContextStage
             overlay?.SetSpecialLessonLayout(false);
             overlay?.HideAll();
             overlay?.SetSkipVisible(false);
+            EventBus.Raise(new TutorialPlaybackChanged(false));
         }
 
         void EndTutorial(bool markDone, bool restartRun)

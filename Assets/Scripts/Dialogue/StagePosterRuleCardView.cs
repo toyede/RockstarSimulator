@@ -125,6 +125,7 @@ namespace ContextStage
             if (confirm != null)
             {
                 var button = (RectTransform)confirm.transform;
+                if (confirmLabel != null) confirmLabel.text = string.IsNullOrWhiteSpace(presentation.entryText) ? "공연 시작" : presentation.entryText;
                 Place(button, presentation.entryArea);
                 button.localRotation=Quaternion.Euler(0,0,presentation.entryAngle);
                 confirm.transition=Selectable.Transition.None;

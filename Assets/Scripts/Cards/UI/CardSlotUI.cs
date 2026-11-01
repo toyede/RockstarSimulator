@@ -36,6 +36,26 @@ namespace ContextStage
         CardUpgradeFrame _upgradeFrame;
         CardUpgradeVFX _grantedCardVfx;
         CardArrivalFeedback _arrivalFeedback;
+        CardSealVisual _sealVisual;
+        int _handIndex = -1;
+
+        void OnEnable()
+        {
+            KillSwitchPattern.SealPresentationChanged += RefreshSeal;
+            CardInput.UseBlocked += OnUseBlocked;
+        }
+        void RefreshSeal()
+        {
+            bool sealedCard = KillSwitchPattern.IsCardSealed(_boundCard);
+            if (_sealVisual == null && sealedCard && artwork != null)
+                _sealVisual = artwork.gameObject.AddComponent<CardSealVisual>();
+            if (_sealVisual != null) _sealVisual.SetSealed(sealedCard, artwork);
+        }
+        void OnUseBlocked(int index)
+        {
+            if (index == _handIndex && KillSwitchPattern.IsCardSealed(_boundCard) && _sealVisual != null)
+                _sealVisual.Pulse();
+        }
 
         public bool IsBreathingArrival => _arrivalFeedback != null && _arrivalFeedback.IsBreathing;
 
@@ -94,6 +114,7 @@ namespace ContextStage
 
             gameObject.SetActive(true);
             _boundCard = card;
+            _handIndex = handIndex;
             CardUpgradeModifiers upgrade = AugmentRuntime.Current.ResolveCardUpgrade(card.Id);
             CardRuntimePresentation presentation = CardRuntimePresentation.Resolve(card, upgrade);
             if (artwork != null)
@@ -132,6 +153,7 @@ namespace ContextStage
             if (_grantedCardVfx != null)
                 _grantedCardVfx.Bind(artwork, granted, handIndex, grantedTier);
             ApplyFeverVisual();
+            RefreshSeal();
         }
 
         public void PlayUpgradeUseFlash()
@@ -181,6 +203,10 @@ namespace ContextStage
 
         void OnDisable()
         {
+            KillSwitchPattern.SealPresentationChanged -= RefreshSeal;
+            CardInput.UseBlocked -= OnUseBlocked;
+            if (_sealVisual != null) _sealVisual.SetSealed(false, artwork);
+            _handIndex = -1;
             _feverVisual = false;
             _boundCard = null;
             _canShowSpecialIdleVfx = false;

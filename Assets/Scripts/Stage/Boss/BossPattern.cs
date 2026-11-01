@@ -266,6 +266,11 @@ namespace ContextStage
     /// <summary>KILL SWITCH — 성향 하나(강화: 둘)의 카드를 봉인. 남은 카드로 양수 반응을 N번 만든다.</summary>
     public sealed class KillSwitchPattern : BossPattern
     {
+        static KillSwitchPattern _sealOwner;
+        public static event Action SealPresentationChanged;
+        public static bool IsCardSealed(CardDefinition card) => _sealOwner != null && _sealOwner._ownsFilter &&
+            CardInput.UseFilter == (Func<int, bool>)_sealOwner.FilterCard &&
+            card != null && card.Role == CardRole.Normal && _sealOwner.IsBanned(card.TargetPreference);
         readonly List<CrowdPreference> _banned = new List<CrowdPreference>(2);
         int _positives;
         bool _ownsFilter;
@@ -304,6 +309,8 @@ namespace ContextStage
             {
                 CardInput.UseFilter = FilterCard;
                 _ownsFilter = true;
+                _sealOwner = this;
+                SealPresentationChanged?.Invoke();
             }
         }
 
@@ -311,6 +318,7 @@ namespace ContextStage
         {
             if (_ownsFilter && CardInput.UseFilter == (Func<int, bool>)FilterCard) CardInput.UseFilter = null;
             _ownsFilter = false;
+            if (_sealOwner == this) { _sealOwner = null; SealPresentationChanged?.Invoke(); }
         }
 
         public override void OnCardResolved(CardResolved e)

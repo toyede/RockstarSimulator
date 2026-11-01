@@ -58,7 +58,8 @@ namespace ContextStage
     {
         Default,
         NearbyConcert,
-        RivalStage
+        RivalStage,
+        LostInterest
     }
 
     public readonly struct AudienceSnapshot

@@ -42,7 +42,7 @@ MonoBehaviour:
   - speakerId: hedgehog
     emotionIds: []
     frames:
-    - {fileID: 21300000, guid: 38bd92e884c24db40a7bbb8974c72fd7, type: 3}
+    - {fileID: 21300000, guid: 48e73eab941cdbb41866f9da33ff8478, type: 3}
     frameInterval: 0.45
   - speakerId: hedgehog
     emotionIds:
@@ -56,4 +56,9 @@ MonoBehaviour:
     - {fileID: 21300000, guid: d7840cb44949fb540b55bd154ef4c418, type: 3}
     - {fileID: 21300000, guid: e07f10a4a6a93e442900eb6128e5974e, type: 3}
     - {fileID: 21300000, guid: 2d3b70d0abb06564b9bff697854162e5, type: 3}
+    frameInterval: 0.45
+  - speakerId: skunk
+    emotionIds: []
+    frames:
+    - {fileID: 21300000, guid: ee027d7576d14a84599222fd1e10f581, type: 3}
     frameInterval: 0.45

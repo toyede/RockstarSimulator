@@ -27,6 +27,13 @@ namespace ContextStage
         [SerializeField] string audiencePresetId = "";
         [SerializeField] List<string> venueRuleIds = new List<string>();
 
+        [Header("Music (SoundLibrary IDs)")]
+        [SerializeField] string bgmId = "";
+        [SerializeField, Tooltip("비우면 튜토리얼도 기본 무대 곡을 사용한다")]
+        string tutorialBgmId = "";
+        [SerializeField, Tooltip("보스전에서 우리 관객 수가 더 많을 때 사용할 곡. 동률에서는 직전 곡 유지")]
+        string playerLeadBgmId = "";
+
         public string StageId => stageId;
         public string DisplayName => displayName;
         public RunNodeType NodeType => nodeType;
@@ -37,6 +44,9 @@ namespace ContextStage
         public string RewardTableId => rewardTableId;
         public string AudiencePresetId => audiencePresetId;
         public IReadOnlyList<string> VenueRuleIds => venueRuleIds;
+        public string BgmId => bgmId;
+        public string TutorialBgmId => tutorialBgmId;
+        public string PlayerLeadBgmId => playerLeadBgmId;
 
 #if UNITY_EDITOR
         void OnValidate()

@@ -38,6 +38,8 @@ namespace ContextStage
 
         void OnEnable()
         {
+            if (GetComponent<ScoreLossPresentation>() == null)
+                gameObject.AddComponent<ScoreLossPresentation>();
             EventBus.Subscribe<ScoreChanged>(OnScoreChanged);
             EventBus.Subscribe<CardPresentationStarted>(OnCardPresentationStarted);
             EventBus.Subscribe<BossDrainApplied>(OnDrain);

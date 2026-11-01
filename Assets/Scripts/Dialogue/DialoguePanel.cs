@@ -611,6 +611,7 @@ namespace ContextStage
                 if (first != null)
                 {
                     active.sprite = first;
+                    active.preserveAspect = true;
                     active.enabled = true;
                     active.color = Color.white;
                     if (entry != null && entry.frames.Count > 1 && isActiveAndEnabled)

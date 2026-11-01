@@ -24,6 +24,7 @@ namespace ContextStage
         public Rect ruleLabelArea = new Rect(.2f, .26f, .65f, .035f);
         public Rect bodyArea = new Rect(.2f, .13f, .65f, .12f);
         public Rect entryArea = new Rect(.25f, .055f, .5f, .065f);
+        [TextArea(1, 2)] public string entryText = "공연 시작";
 
         [Header("글자 · 잉크")]
         [Range(28f, 100f)] public float headlineSize = 64f;

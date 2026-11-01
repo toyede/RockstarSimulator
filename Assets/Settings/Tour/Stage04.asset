@@ -25,3 +25,5 @@ MonoBehaviour:
   - special_audience_requests
   - arena_big_screen
   - arena_blackout
+  bgmId: four_more_weeks
+  tutorialBgmId: 

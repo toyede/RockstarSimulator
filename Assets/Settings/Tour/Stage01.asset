@@ -23,3 +23,5 @@ MonoBehaviour:
   audiencePresetId: audience_alley_balanced
   venueRuleIds:
   - busking_walk_in
+  bgmId: osaka_rain
+  tutorialBgmId: big_rock

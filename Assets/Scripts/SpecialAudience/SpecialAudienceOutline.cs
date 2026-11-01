@@ -59,7 +59,7 @@ namespace ContextStage
             float outlineThickness,
             AudienceOutlineMode mode = AudienceOutlineMode.HoverOverlay)
         {
-            if (_sourceRenderer != sourceRenderer || mode != AudienceOutlineMode.Occluded)
+            if (_sourceRenderer != sourceRenderer)
                 RestoreSource();
             _sourceRenderer = sourceRenderer;
             _outlineRenderer = GetComponent<SpriteRenderer>();
@@ -141,8 +141,8 @@ namespace ContextStage
             _outlineRenderer.sortingOrder = _sourceRenderer.sortingOrder + 1;
             _outlineRenderer.enabled = _sourceRenderer.enabled;
 
-            if (_mode == AudienceOutlineMode.Occluded)
-                SyncOccludedBody();
+            // 모든 표시 모드에서 본체와 선을 한 단위로 묶어 다른 관객의 끼어들기를 막는다.
+            SyncOccludedBody();
 
             if (sprite == null || _outlineMaterial == null) return;
 
@@ -228,6 +228,15 @@ namespace ContextStage
             _groupedBody.SetPropertyBlock(_bodyProperties);
             // 애니메이션은 원본 Renderer를 계속 갱신하고, 실제 그리기만 대체한다.
             _sourceRenderer.forceRenderingOff = true;
+        }
+
+        public void RefreshSourceSorting()
+        {
+            if (_sourceRenderer == null || _sortingGroup == null || !_sortingGroup.enabled) return;
+            _sortingGroup.sortingLayerID = _sourceRenderer.sortingLayerID;
+            _sortingGroup.sortingOrder = _sourceRenderer.sortingOrder;
+            _groupedBody.sortingOrder = 0;
+            _outlineRenderer.sortingOrder = 1;
         }
 
         void RestoreSource()
