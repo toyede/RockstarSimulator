@@ -66,6 +66,8 @@ namespace ContextStage
         public string ruleTitle;
         public string ruleBody;
         public Sprite ruleIcon;
+        public Sprite stagePoster;
+        public StagePosterPresentation posterPresentation;
 
         [Tooltip("룰 카드 확인 버튼 문구. 비우면 기본값")]
         public string confirmLabel;

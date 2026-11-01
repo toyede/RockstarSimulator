@@ -484,6 +484,7 @@ namespace ContextStage
         void ShowRuleCard()
         {
             _state = State.RuleCard;
+            ResetPortraits();
             if (boxRoot != null) boxRoot.SetActive(false);
             if (skipButton != null) skipButton.gameObject.SetActive(false);
             if (ruleCardRoot == null)
@@ -493,12 +494,15 @@ namespace ContextStage
             }
 
             ruleCardRoot.SetActive(true);
+            var posterView = ruleCardRoot.GetComponent<StagePosterRuleCardView>();
+            if (posterView == null && _context.stagePoster != null)
+                posterView = ruleCardRoot.AddComponent<StagePosterRuleCardView>();
             if (ruleTitleText != null) ruleTitleText.text = _context.ruleTitle ?? string.Empty;
             if (ruleBodyText != null) ruleBodyText.text = _context.ruleBody ?? string.Empty;
             if (ruleIconImage != null)
             {
                 ruleIconImage.sprite = _context.ruleIcon;
-                ruleIconImage.enabled = _context.ruleIcon != null;
+                ruleIconImage.enabled = _context.ruleIcon != null && _context.stagePoster == null;
             }
             if (ruleConfirmLabel != null)
             {
@@ -506,6 +510,9 @@ namespace ContextStage
                     ? defaultConfirmText
                     : _context.confirmLabel;
             }
+            if (posterView != null)
+                posterView.Show(_context.stagePoster, ruleTitleText, ruleBodyText, ruleConfirmButton,
+                    _context.posterPresentation, _context.ruleTitle);
         }
 
         void ConfirmRuleCard()

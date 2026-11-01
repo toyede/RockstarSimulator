@@ -188,6 +188,9 @@ namespace ContextStage
 
         void StartNextPattern()
         {
+            // 팬 쟁탈 쪽도 예고/패턴을 기다린다. 역방향 시작 역시 막아
+            // 먼저 열린 도전이 종료되기 전에 두 판정이 겹치지 않도록 한다.
+            if (StageEventRule.AnyRunning) return;
             BossPattern pattern = PickPattern();
             if (pattern == null)
             {

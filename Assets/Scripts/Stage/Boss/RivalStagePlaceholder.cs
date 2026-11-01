@@ -66,9 +66,14 @@ namespace ContextStage
 
         sealed class Fan
         {
+            public MaterialPropertyBlock Properties;
             public SpriteRenderer Renderer;
             public SpriteAnimationPlayer Player;
             public Vector3 Slot;
+            public Vector3 PresentationSlot;
+            public Vector2 Wander, WanderTarget;
+            public float WanderWait;
+            public uint WanderSeed;
             public float Scale;
             public Color BaseColor;
             public CrowdPreference Preference;
@@ -118,6 +123,7 @@ namespace ContextStage
             EventBus.Subscribe<BossPatternResolved>(OnPatternResolved);
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
             EventBus.Subscribe<BossDropImpact>(OnDropImpact);
+            EventBus.Subscribe<StageRuntimeApplied>(OnStageApplied);
         }
 
         void OnDisable()
@@ -131,6 +137,7 @@ namespace ContextStage
             EventBus.Unsubscribe<BossPatternResolved>(OnPatternResolved);
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
             EventBus.Unsubscribe<BossDropImpact>(OnDropImpact);
+            EventBus.Unsubscribe<StageRuntimeApplied>(OnStageApplied);
             _dropJumpAge = -1f;
             if (_built) ResetVisual();
         }
@@ -179,7 +186,33 @@ namespace ContextStage
             color = Color.Lerp(color, AudienceMemberActor.SilhouetteColor, AudienceMemberActor.SilhouetteBlend);
             color.a = fan.BaseColor.a * fan.Fade;
             fan.Renderer.color = color;
+            var source = FanVisualSource();
+            if (source != null)
+            {
+                if (fan.Properties == null) fan.Properties = new MaterialPropertyBlock();
+                fan.Renderer.GetPropertyBlock(fan.Properties);
+                fan.Properties.SetFloat("_AudienceSaturation", source.PresentationSaturation(_audienceStage));
+                fan.Renderer.SetPropertyBlock(fan.Properties);
+            }
             if (fan.Walking) return;
+            float delta = Time.deltaTime;
+            float width = source != null ? source.PresentationGatherWidth(_audienceStage) : 1f;
+            Vector3 target = new Vector3(fan.Slot.x * width, fan.Slot.y, fan.Slot.z);
+            fan.PresentationSlot = Vector3.MoveTowards(fan.PresentationSlot, target, delta * 6f);
+            float speed = source != null ? source.PresentationWalkSpeed : .18f;
+            if (_audienceStage == AudienceEngagementStage.Calm && _dropJumpAge < 0f)
+            {
+                if (Vector2.Distance(fan.Wander, fan.WanderTarget) < .01f) fan.WanderWait -= delta;
+                if (fan.WanderWait <= 0f)
+                {
+                    float radius = source != null ? source.PresentationWanderRadius : .3f;
+                    fan.WanderTarget = new Vector2((NextWanderValue(fan) * 2f - 1f) * radius,
+                        (NextWanderValue(fan) * 2f - 1f) * radius * .4f);
+                    fan.WanderWait = .8f + NextWanderValue(fan) * 1.2f;
+                }
+                fan.Wander = Vector2.MoveTowards(fan.Wander, fan.WanderTarget, speed * delta);
+            }
+            else if (_dropJumpAge < 0f) fan.Wander = Vector2.MoveTowards(fan.Wander, Vector2.zero, speed * 2f * delta);
             float clock = (Time.time + fan.Seed * 0.173f) * fan.Variance.SpeedMultiplier;
             float bob=0, sway=0, squash=0;
             if (_motionTo != null)
@@ -200,9 +233,15 @@ namespace ContextStage
                 }
             }
             var pose = fan.Renderer.transform;
-            pose.localPosition = fan.Slot + Vector3.up * bob;
+            pose.localPosition = fan.PresentationSlot + (Vector3)fan.Wander + Vector3.up * bob;
             pose.localRotation = Quaternion.Euler(0, 0, sway * fan.Variance.Flip);
             pose.localScale = new Vector3(fan.Scale * (1 + squash * 0.5f), fan.Scale * (1 - squash), 1);
+        }
+
+        static float NextWanderValue(Fan fan)
+        {
+            fan.WanderSeed = unchecked(fan.WanderSeed * 1664525u + 1013904223u);
+            return (fan.WanderSeed & 0xFFFFFF) / 16777216f;
         }
 
         void SetAudienceStage(float hpRatio)
@@ -225,7 +264,9 @@ namespace ContextStage
                 !source.TryGetPresentationVisual(fan.Preference, _audienceStage, fan.Seed,
                     out SpriteAnimationClip clip, out Sprite still, out Color original)) return;
             fan.BaseColor = original;
-            fan.Renderer.sharedMaterial = source.CharacterRenderer.sharedMaterial;
+            var engagementMaterial = Resources.Load<Material>("Audience/EngagementMaterial");
+            fan.Renderer.sharedMaterial = engagementMaterial != null
+                ? engagementMaterial : source.CharacterRenderer.sharedMaterial;
             if (clip != null && clip.IsValid)
             {
                 if (fan.Player == null) fan.Player = new SpriteAnimationPlayer(fan.Renderer);
@@ -307,6 +348,12 @@ namespace ContextStage
             if (e.Current == GameState.Ready) ResetVisual();
         }
 
+        void OnStageApplied(StageRuntimeApplied e)
+        {
+            // 같은 Main에서 디버그로 무대를 바꿀 때 Ready 이후 재발행된 팬이 남지 않게 한다.
+            if (_built && (e.Stage == null || !e.Stage.IsBoss)) ResetVisual();
+        }
+
         // ---------------- 팬 ----------------
 
         /// <summary>이동 연출이 끝난 뒤에도 수가 맞도록 룰 값에 맞춘다 (연출 중인 팬은 다음 동기화에서 정리).</summary>
@@ -348,7 +395,8 @@ namespace ContextStage
         Fan CreateFan(int index)
         {
             Vector3 slot = FanSlotFor(index, out float scale, out int order);
-            var fan = new Fan { Slot = slot, Scale = scale, Seed = index,
+            var fan = new Fan { Slot = slot, PresentationSlot = slot, Scale = scale, Seed = index,
+                WanderSeed = unchecked((uint)(index + fanSeed) * 2654435761u), WanderWait = .8f + index % 5 * .2f,
                 Preference = (CrowdPreference)(index % 3), Variance = CrowdMotionEvaluator.MakeVariance(index + fanSeed, 0.2f) };
 
             var go = new GameObject($"RivalFan_{index}");
@@ -367,7 +415,9 @@ namespace ContextStage
                 go.transform.localScale = Vector3.one * scale;
                 if (index % 2 == 1) renderer.flipX = true;
                 fan.BaseColor = original;
-                renderer.sharedMaterial = source.CharacterRenderer.sharedMaterial;
+                var engagementMaterial = Resources.Load<Material>("Audience/EngagementMaterial");
+                renderer.sharedMaterial = engagementMaterial != null
+                    ? engagementMaterial : source.CharacterRenderer.sharedMaterial;
                 if (clip != null && clip.IsValid)
                 {
                     fan.Player = new SpriteAnimationPlayer(renderer);
@@ -438,6 +488,7 @@ namespace ContextStage
                 yield return null;
             }
             if (fan.Renderer != null) fan.Renderer.transform.position = to;
+            if (!fadeOut && fan.Renderer != null) fan.PresentationSlot = fan.Renderer.transform.localPosition;
             fan.Walking = false;
         }
 

@@ -105,6 +105,7 @@ namespace ContextStage
             {
                 ClearHover();
                 _hoveredActor = target;
+                _hoveredActor.SetInspectionHold(true);
             }
 
             _hoverElapsed += Time.deltaTime;
@@ -164,6 +165,7 @@ namespace ContextStage
 
         void ClearHover()
         {
+            if (_hoveredActor != null) _hoveredActor.SetInspectionHold(false);
             if (_hoveredActor != null && !_revealAllPreferences)
                 _hoveredActor.SetPreferenceReveal(false, default, 0f);
 

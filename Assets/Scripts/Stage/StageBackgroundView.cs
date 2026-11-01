@@ -50,6 +50,7 @@ namespace ContextStage
         /// <summary>지금 켜진 씬 소품 세트 (없으면 null). 소품 애니메이션을 걸 때 여기서 Props 를 얻는다.</summary>
         public StageSet ActiveSet => _activeSet;
         Sprite _originalBaseSprite;
+        bool _originalBaseEnabled = true;
         bool _originalLightEnabled = true;
         bool _cachedOriginal;
         string _appliedStageId;
@@ -96,7 +97,11 @@ namespace ContextStage
             ActivateStageSet(null);
             if (_cachedOriginal)
             {
-                if (baseRenderer != null) baseRenderer.sprite = _originalBaseSprite;
+                if (baseRenderer != null)
+                {
+                    baseRenderer.sprite = _originalBaseSprite;
+                    baseRenderer.enabled = _originalBaseEnabled;
+                }
                 if (defaultLightRenderer != null) defaultLightRenderer.enabled = _originalLightEnabled;
             }
             _appliedStageId = null;
@@ -112,6 +117,12 @@ namespace ContextStage
 
             // 씬에 소품 세트가 있으면 그것을 켜고(위치·크기는 씬에서 조절), 없을 때만 카탈로그로 생성한다
             StageSet set = ActivateStageSet(entry.stageId);
+            // 보스처럼 두 화면을 잇는 배경은 StageSet의 씬 오브젝트로 배치한다.
+            // 다른 스테이지로 돌아오면 공통 Base 렌더러도 반드시 복구한다.
+            bool usesSceneBackground = set != null &&
+                set.SceneBackground != null && set.SceneBackground.sprite != null;
+            if (baseRenderer != null)
+                baseRenderer.enabled = !usesSceneBackground && _originalBaseEnabled;
             if (set != null)
             {
                 if (baseRenderer != null && set.BaseBackgroundOverride != null) baseRenderer.sprite = set.BaseBackgroundOverride;
@@ -221,7 +232,11 @@ namespace ContextStage
         {
             if (_cachedOriginal) return;
             _cachedOriginal = true;
-            if (baseRenderer != null) _originalBaseSprite = baseRenderer.sprite;
+            if (baseRenderer != null)
+            {
+                _originalBaseSprite = baseRenderer.sprite;
+                _originalBaseEnabled = baseRenderer.enabled;
+            }
             if (defaultLightRenderer != null) _originalLightEnabled = defaultLightRenderer.enabled;
         }
 

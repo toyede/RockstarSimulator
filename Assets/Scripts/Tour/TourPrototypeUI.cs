@@ -385,6 +385,8 @@ namespace ContextStage
             {
                 context.backdrop = visual.backgroundBase;
                 context.ruleIcon = visual.ruleIcon;
+                context.stagePoster = visual.stagePoster;
+                context.posterPresentation = visual.posterPresentation;
                 context.ruleTitle = visual.ruleTitle;
                 context.ruleBody = visual.ruleBody;
             }

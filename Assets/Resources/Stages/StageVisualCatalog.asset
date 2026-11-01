@@ -20,6 +20,57 @@ MonoBehaviour:
     foregroundRight: {fileID: 21300000, guid: 8eed11930155c474ba1491eb8ccb18da, type: 3}
     decorativeCrowdVariants: []
     mapThumbnail: {fileID: 21300000, guid: 3ab583694521de24c80e8a28d13ccb40, type: 3}
+    stagePoster: {fileID: 21300000, guid: 9821fc9095ddb47429a84f1b5204e691, type: 3}
+    posterPresentation:
+      headline: "\uACE8\uBAA9\n\uBC84\uC2A4\uD0B9"
+      artistLine: RACCOON ROLL / ALLEY LIVE
+      showRuleLabel: 1
+      summary: "\uAD00\uC2EC\uC774 \uC2DD\uC740 \uAD00\uAC1D\uC740 \uB5A0\uB0A9\uB2C8\uB2E4.\n\uBCF5\uC7A5\uACFC
+        \uBAB0\uC785 \uC0C1\uD0DC\uB97C \uC0B4\uD3B4\n\uC5B4\uC6B8\uB9AC\uB294 \uCE74\uB4DC\uB97C
+        \uC0AC\uC6A9\uD558\uC138\uC694."
+      headlineLogo: {fileID: 0}
+      headlineFont: {fileID: 0}
+      height: 960
+      headlineArea:
+        serializedVersion: 2
+        x: 0.12
+        y: 0.71
+        width: 0.76
+        height: 0.2
+      artistArea:
+        serializedVersion: 2
+        x: 0.15
+        y: 0.67
+        width: 0.7
+        height: 0.035
+      ruleLabelArea:
+        serializedVersion: 2
+        x: 0.15
+        y: 0.61
+        width: 0.7
+        height: 0.035
+      bodyArea:
+        serializedVersion: 2
+        x: 0.15
+        y: 0.37
+        width: 0.7
+        height: 0.21
+      entryArea:
+        serializedVersion: 2
+        x: 0.24
+        y: 0.23
+        width: 0.52
+        height: 0.07
+      headlineSize: 78
+      bodySize: 29
+      captionSize: 19
+      entrySize: 32
+      headlineAngle: -3
+      entryAngle: -2
+      headlineColor: {r: 0.15294118, g: 0.1254902, b: 0.16078432, a: 1}
+      inkColor: {r: 0.15294118, g: 0.1254902, b: 0.16078432, a: 1}
+      accentColor: {r: 0.6, g: 0.16862746, b: 0.21176471, a: 1}
+      bodyAlignment: 257
     ruleIcon: {fileID: 21300000, guid: d82f444518cb0a549bd624df96d9fe8b, type: 3}
     ruleTitle: "\uACE8\uBAA9 \uBC84\uC2A4\uD0B9"
     ruleBody: "\uC9C0\uB098\uAC00\uB358 \uAD00\uAC1D\uC740 \uAD00\uC2EC\uC774 \uC2DD\uC73C\uBA74
@@ -33,6 +84,58 @@ MonoBehaviour:
     foregroundRight: {fileID: 0}
     decorativeCrowdVariants: []
     mapThumbnail: {fileID: 21300000, guid: 8b68ed0826b197349a648fba7fdc6e26, type: 3}
+    stagePoster: {fileID: 21300000, guid: cf586c4e01a047a42822651764316e40, type: 3}
+    posterPresentation:
+      headline: 'BASEMENT
+
+        LIVE!'
+      artistLine: 
+      showRuleLabel: 0
+      summary: "\uD2B9\uBCC4 \uAD00\uAC1D\uC758 \uC694\uCCAD\uC5D0 \uB9DE\uB294\n\uAC19\uC740
+        \uC131\uD5A5\uC758 SPECIAL \uCE74\uB4DC\uB97C\n\uAD00\uAC1D\uC5D0\uAC8C \uB4DC\uB86D\uD558\uC138\uC694."
+      headlineLogo: {fileID: 0}
+      headlineFont: {fileID: 0}
+      height: 960
+      headlineArea:
+        serializedVersion: 2
+        x: 0.17
+        y: 0.79
+        width: 0.68
+        height: 0.16
+      artistArea:
+        serializedVersion: 2
+        x: 0.17
+        y: 0.755
+        width: 0.68
+        height: 0.03
+      ruleLabelArea:
+        serializedVersion: 2
+        x: 0.18
+        y: 0.245
+        width: 0.68
+        height: 0.025
+      bodyArea:
+        serializedVersion: 2
+        x: 0.18
+        y: 0.135
+        width: 0.54
+        height: 0.09
+      entryArea:
+        serializedVersion: 2
+        x: 0.31
+        y: 0.085
+        width: 0.4
+        height: 0.045
+      headlineSize: 66
+      bodySize: 25
+      captionSize: 17
+      entrySize: 28
+      headlineAngle: 2
+      entryAngle: -2
+      headlineColor: {r: 0.15294118, g: 0.1254902, b: 0.16078432, a: 1}
+      inkColor: {r: 0.15294118, g: 0.1254902, b: 0.16078432, a: 1}
+      accentColor: {r: 0.6, g: 0.16862746, b: 0.21176471, a: 1}
+      bodyAlignment: 257
     ruleIcon: {fileID: 0}
     ruleTitle: "\uB2E8\uACE8\uC758 \uC694\uCCAD"
     ruleBody: "\uD2B9\uBCC4 \uAD00\uAC1D\uC740 \uC6D0\uD558\uB294 \uACF5\uC5F0\uC744
@@ -46,6 +149,59 @@ MonoBehaviour:
     foregroundRight: {fileID: 0}
     decorativeCrowdVariants: []
     mapThumbnail: {fileID: 21300000, guid: 31a76b1b8ef91c847940e8577b971297, type: 3}
+    stagePoster: {fileID: 21300000, guid: b4ba5783f3a19864095d8d2eb14b0f33, type: 3}
+    posterPresentation:
+      headline: 'RACCOON
+
+        FESTIVAL'
+      artistLine: SING IT TOGETHER / LIVE
+      showRuleLabel: 0
+      summary: "\uC606 \uBB34\uB300\uAC00 \uAD00\uAC1D\uC744 \uC720\uD639\uD569\uB2C8\uB2E4.\n\uACBD\uACE0\uB41C
+        \uAD00\uAC1D\uC758 \uD638\uC751\uB3C4\uB97C \uC62C\uB9AC\uAC70\uB098\nSPECIAL
+        \uCE74\uB4DC\uB85C \uBD99\uC7A1\uC73C\uC138\uC694."
+      headlineLogo: {fileID: 0}
+      headlineFont: {fileID: 0}
+      height: 960
+      headlineArea:
+        serializedVersion: 2
+        x: 0.4
+        y: 0.79
+        width: 0.54
+        height: 0.16
+      artistArea:
+        serializedVersion: 2
+        x: 0.4
+        y: 0.75
+        width: 0.54
+        height: 0.03
+      ruleLabelArea:
+        serializedVersion: 2
+        x: 0.12
+        y: 0.205
+        width: 0.76
+        height: 0.025
+      bodyArea:
+        serializedVersion: 2
+        x: 0.12
+        y: 0.08
+        width: 0.76
+        height: 0.12
+      entryArea:
+        serializedVersion: 2
+        x: 0.26
+        y: 0.018
+        width: 0.48
+        height: 0.055
+      headlineSize: 62
+      bodySize: 26
+      captionSize: 17
+      entrySize: 30
+      headlineAngle: 0
+      entryAngle: -2
+      headlineColor: {r: 1, g: 0.93333334, b: 0.8, a: 1}
+      inkColor: {r: 0.15294118, g: 0.1254902, b: 0.16078432, a: 1}
+      accentColor: {r: 0.35686275, g: 0.14509805, b: 0.3137255, a: 1}
+      bodyAlignment: 257
     ruleIcon: {fileID: 0}
     ruleTitle: "\uAD00\uAC1D \uC7C1\uD0C8\uC804"
     ruleBody: "\uC606 \uBB34\uB300\uAC00 \uC77C\uBD80 \uAD00\uAC1D\uC744 \uC720\uD639\uD569\uB2C8\uB2E4.\n\uACBD\uACE0\uB41C
@@ -58,18 +214,120 @@ MonoBehaviour:
     foregroundRight: {fileID: 0}
     decorativeCrowdVariants: []
     mapThumbnail: {fileID: 21300000, guid: 5b63f594709fb95498790ac5a705086d, type: 3}
+    stagePoster: {fileID: 21300000, guid: 26b231db4733c404d980a7a78082000a, type: 3}
+    posterPresentation:
+      headline: "\uB108\uAD6C\uB9AC \uBC34\uB4DC\nON AIR"
+      artistLine: RACCOON ROLL / LIVE SHOW
+      showRuleLabel: 1
+      summary: "\uC131\uACFC\uC5D0 \uB530\uB77C \uC704\uAE30\xB7\uC9C0\uC6D0 \uC911\n\uD558\uB098\uAC00
+        \uD55C \uBC88 \uBC1C\uC0DD\uD569\uB2C8\uB2E4.\n\uC608\uACE0\uC5D0 \uB9DE\uB294
+        \uCE74\uB4DC\uB97C \uC4F0\uC138\uC694."
+      headlineLogo: {fileID: 0}
+      headlineFont: {fileID: 0}
+      height: 960
+      headlineArea:
+        serializedVersion: 2
+        x: 0.12
+        y: 0.78
+        width: 0.64
+        height: 0.16
+      artistArea:
+        serializedVersion: 2
+        x: 0.12
+        y: 0.735
+        width: 0.67
+        height: 0.03
+      ruleLabelArea:
+        serializedVersion: 2
+        x: 0.26
+        y: 0.255
+        width: 0.6
+        height: 0.025
+      bodyArea:
+        serializedVersion: 2
+        x: 0.26
+        y: 0.145
+        width: 0.6
+        height: 0.105
+      entryArea:
+        serializedVersion: 2
+        x: 0.28
+        y: 0.067
+        width: 0.4
+        height: 0.06
+      headlineSize: 64
+      bodySize: 27
+      captionSize: 17
+      entrySize: 30
+      headlineAngle: 0
+      entryAngle: -2
+      headlineColor: {r: 1, g: 0.93333334, b: 0.8, a: 1}
+      inkColor: {r: 0.15294118, g: 0.1254902, b: 0.16078432, a: 1}
+      accentColor: {r: 0.6, g: 0.16862746, b: 0.21176471, a: 1}
+      bodyAlignment: 257
     ruleIcon: {fileID: 0}
     ruleTitle: "\uC0DD\uBC29\uC1A1\uC758 \uBCC0\uC218"
     ruleBody: "\uD604\uC7AC \uACF5\uC5F0 \uC131\uACFC\uC5D0 \uB530\uB77C \uC704\uAE30
       \uB610\uB294 \uC9C0\uC6D0\uC774 \uD55C \uBC88 \uBC1C\uC0DD\uD569\uB2C8\uB2E4.\n\uACBD\uACE0\uB97C
       \uD655\uC778\uD558\uACE0 \uCE74\uB4DC \uACC4\uD68D\uC744 \uBC14\uAFB8\uC138\uC694."
   - stageId: stage_05_boss
-    backgroundBase: {fileID: 21300000, guid: b9a9d25b8a80a8e4eabb6392cbee4c7c, type: 3}
+    backgroundBase: {fileID: 21300000, guid: b12dcfafe67d4e041bf4b601b5dcd05e, type: 3}
     lightOverlays: []
     foregroundLeft: {fileID: 0}
     foregroundRight: {fileID: 0}
     decorativeCrowdVariants: []
     mapThumbnail: {fileID: 21300000, guid: ec3bbead60d9e664f95566d3a25837d9, type: 3}
+    stagePoster: {fileID: 21300000, guid: 77d5c3492e18888478ccd5828fe75783, type: 3}
+    posterPresentation:
+      headline: LUX//FAUNA
+      artistLine: RIVAL BATTLE / vs RACCOON ROLL
+      showRuleLabel: 1
+      summary: "\uC608\uACE0\uB41C \uD32C\uC758 \uD638\uC751\uB3C4 60 \uC774\uC0C1\n\uB610\uB294
+        \uB300\uC751 SPECIAL \uCE74\uB4DC \uC131\uACF5!\n\uB77C\uC774\uBC8C \uD32C\uC744
+        \uC6B0\uB9AC \uBB34\uB300\uB85C \uB370\uB824\uC624\uC138\uC694."
+      headlineLogo: {fileID: 21300000, guid: 7fc5a5a9fa3873f4eb9010876cfd363c, type: 3}
+      headlineFont: {fileID: 0}
+      height: 960
+      headlineArea:
+        serializedVersion: 2
+        x: 0.11
+        y: 0.865
+        width: 0.78
+        height: 0.125
+      artistArea:
+        serializedVersion: 2
+        x: 0.15
+        y: 0.83
+        width: 0.7
+        height: 0.03
+      ruleLabelArea:
+        serializedVersion: 2
+        x: 0.12
+        y: 0.225
+        width: 0.76
+        height: 0.03
+      bodyArea:
+        serializedVersion: 2
+        x: 0.12
+        y: 0.09
+        width: 0.76
+        height: 0.125
+      entryArea:
+        serializedVersion: 2
+        x: 0.26
+        y: 0.022
+        width: 0.48
+        height: 0.06
+      headlineSize: 62
+      bodySize: 26
+      captionSize: 17
+      entrySize: 30
+      headlineAngle: 0
+      entryAngle: -2
+      headlineColor: {r: 1, g: 0.93333334, b: 0.8, a: 1}
+      inkColor: {r: 1, g: 0.93333334, b: 0.8, a: 1}
+      accentColor: {r: 0.20392157, g: 0.9098039, b: 0.94509804, a: 1}
+      bodyAlignment: 257
     ruleIcon: {fileID: 0}
     ruleTitle: "\uB77C\uC774\uBC8C \uBC30\uD2C0"
     ruleBody: "LUX//FAUNA\uAC00 \uD2B9\uC815 \uD32C\uCE35\uC744 \uBE7C\uC557\uC73C\uB824

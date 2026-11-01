@@ -207,6 +207,42 @@ namespace ContextStage
         public AudienceReactionVFX ReactionVFX => reactionVFX;
         public Vector3 LayoutLocalPosition => _layoutPosition;
         bool _tutorialInspectionPose;
+        bool _inspectionHold;
+        Vector3 _restLayoutPosition;
+        Vector2 _wanderOffset, _wanderTarget;
+        float _wanderWait;
+        uint _wanderSeed;
+        [Header("Engagement presentation")]
+        [SerializeField, Range(.5f, 1f)] float middleGatherWidth = .85f;
+        [SerializeField, Range(.5f, 1f)] float excitedGatherWidth = .75f;
+        [SerializeField, Range(0f, .5f)] float calmWanderRadius = .3f;
+        [SerializeField, Min(.01f)] float calmWalkSpeed = .18f;
+        [SerializeField, Range(0f, 1f)] float calmSaturation = .4f;
+        [SerializeField, Range(0f, 1f)] float middleSaturation = .75f;
+        MaterialPropertyBlock _engagementProperties;
+        float _saturation = 1f;
+        static readonly int SaturationProperty = Shader.PropertyToID("_AudienceSaturation");
+        public float PresentationSaturation(AudienceEngagementStage stage) =>
+            stage == AudienceEngagementStage.Calm ? calmSaturation : stage == AudienceEngagementStage.Middle ? middleSaturation : 1f;
+        public float PresentationGatherWidth(AudienceEngagementStage stage) =>
+            stage == AudienceEngagementStage.Excited ? excitedGatherWidth : stage == AudienceEngagementStage.Middle ? middleGatherWidth : 1f;
+        public float PresentationWanderRadius => calmWanderRadius;
+        public float PresentationWalkSpeed => calmWalkSpeed;
+
+        public void SetInspectionHold(bool held) => _inspectionHold = held;
+
+        void RefreshPresentationTarget()
+        {
+            float width = PresentationGatherWidth(_snapshot.Stage);
+            _layoutPosition = new Vector3(_restLayoutPosition.x * width,
+                _restLayoutPosition.y, _restLayoutPosition.z);
+        }
+
+        float NextWanderValue()
+        {
+            _wanderSeed = unchecked(_wanderSeed * 1664525u + 1013904223u);
+            return (_wanderSeed & 0xFFFFFF) / 16777216f;
+        }
 
         /// <summary>관객 확인 교육에서만 자세를 안정화한다. 풀 재사용 시 해제된다.</summary>
         public void SetTutorialInspectionPose(bool enabled)
@@ -265,6 +301,9 @@ namespace ContextStage
 
         public void OnSpawned()
         {
+            _inspectionHold = false;
+            _wanderOffset = _wanderTarget = Vector2.zero;
+            _wanderWait = 0f;
             _tutorialInspectionPose = false;
             ResetCardMotion();
             _arrivalDelay = 0f;
@@ -292,6 +331,8 @@ namespace ContextStage
 
         public void OnDespawned()
         {
+            _inspectionHold = false;
+            _wanderOffset = _wanderTarget = Vector2.zero;
             _tutorialInspectionPose = false;
             ResetCardMotion();
             _snapshot = default;
@@ -316,6 +357,10 @@ namespace ContextStage
                 throw new ArgumentException("Audience snapshot requires a valid id.", nameof(snapshot));
 
             _boundId = snapshot.Id;
+            _inspectionHold = false;
+            _wanderSeed = unchecked((uint)snapshot.Id.Value * 2654435761u);
+            _wanderOffset = _wanderTarget = Vector2.zero;
+            _wanderWait = .8f + NextWanderValue();
             _tutorialInspectionPose = false;
             ResetCardMotion();
             _arrivalDelay = (snapshot.Id.Value & 3) * 0.04f;
@@ -329,6 +374,10 @@ namespace ContextStage
             _hasLayout = false;
             _snapshot = snapshot;
             SetPreferenceReveal(false, default, 0f);
+            ResetMotion();
+            var engagementMaterial = Resources.Load<Material>("Audience/EngagementMaterial");
+            if (engagementMaterial != null) characterRenderer.sharedMaterial = engagementMaterial;
+            _saturation = PresentationSaturation(snapshot.Stage);
             ApplyVisual(snapshot.Preference, snapshot.Stage);
             UpdateWarning();
         }
@@ -342,13 +391,18 @@ namespace ContextStage
             _snapshot = snapshot;
             if (preferenceChanged || stageChanged || characterRenderer.sprite == null)
                 ApplyVisual(snapshot.Preference, snapshot.Stage);
-            if (stageChanged) SetMotionStage(snapshot.Stage, instant: false);
+            if (stageChanged)
+            {
+                SetMotionStage(snapshot.Stage, instant: false);
+                RefreshPresentationTarget();
+            }
             UpdateWarning();
         }
 
         public void SetLayout(Vector3 localPosition, float scale, int sortingOrder)
         {
-            _layoutPosition = localPosition;
+            _restLayoutPosition = localPosition;
+            RefreshPresentationTarget();
             _layoutScale = Mathf.Max(0.01f, scale);
             characterRenderer.sortingOrder = sortingOrder;
             warningBackgroundRenderer.sortingOrder = sortingOrder + 20;
@@ -481,8 +535,11 @@ namespace ContextStage
         void Update()
         {
             if (!IsBound) return;
+            if (GameManager.HasInstance &&
+                (GameManager.Instance.State == GameState.Paused || GameManager.Instance.State == GameState.GameOver)) return;
 
             float deltaTime = Time.deltaTime;
+            _saturation = Mathf.MoveTowards(_saturation, PresentationSaturation(_snapshot.Stage), deltaTime * 2f);
             _cardMotionRemaining = Mathf.Max(0f, _cardMotionRemaining - deltaTime);
             if (_cardMotionRemaining > 0f && _cardMotionRemaining <= cardMotionDuration && !_exiting)
             {
@@ -504,10 +561,26 @@ namespace ContextStage
                 _motionBlend = Mathf.Min(1f, _motionBlend + deltaTime / motionBlendDuration);
 
             float followStep = layoutFollowSpeed * deltaTime;
-            if (!_exiting)
+            if (!_exiting && !_inspectionHold && !_tutorialInspectionPose)
             {
                 _currentLayoutPosition = Vector3.MoveTowards(_currentLayoutPosition, _layoutPosition, followStep);
                 _currentLayoutScale = Mathf.MoveTowards(_currentLayoutScale, _layoutScale, followStep);
+            }
+
+            if (!_exiting && !_inspectionHold && !_tutorialInspectionPose && _cardMotionRemaining <= 0f)
+            {
+                if (_snapshot.Stage == AudienceEngagementStage.Calm)
+                {
+                    if (Vector2.Distance(_wanderOffset, _wanderTarget) < .01f) _wanderWait -= deltaTime;
+                    if (_wanderWait <= 0f)
+                    {
+                        _wanderTarget = new Vector2((NextWanderValue() * 2f - 1f) * calmWanderRadius,
+                            (NextWanderValue() * 2f - 1f) * calmWanderRadius * .4f);
+                        _wanderWait = .8f + NextWanderValue() * 1.2f;
+                    }
+                    _wanderOffset = Vector2.MoveTowards(_wanderOffset, _wanderTarget, calmWalkSpeed * deltaTime);
+                }
+                else _wanderOffset = Vector2.MoveTowards(_wanderOffset, Vector2.zero, calmWalkSpeed * 2f * deltaTime);
             }
 
             if (_exiting)
@@ -762,7 +835,7 @@ namespace ContextStage
                 transform.localRotation = Quaternion.Euler(0f, 0f, swayAngle * _variance.Flip);
             }
 
-            if (_tutorialInspectionPose && !_exiting)
+            if ((_tutorialInspectionPose || _inspectionHold) && !_exiting)
             {
                 bob = pulse = reactionJump = squashAmount = 0f;
                 // 입장 페이드와 배치 보간은 유지하되, 클릭할 위치는 움직이지 않는다.
@@ -819,6 +892,7 @@ namespace ContextStage
 
             transform.localPosition =
                 _currentLayoutPosition +
+                new Vector3(_wanderOffset.x, _wanderOffset.y, 0f) +
                 new Vector3(0f, bob + reactionJump, 0f) +
                 motionOffset;
             // 착지 스쿼시: 눌리면 세로로 줄고 가로로 퍼진다 (점프에 무게감을 준다)
@@ -846,6 +920,10 @@ namespace ContextStage
             if (SilhouetteBlend > 0f) color = Color.Lerp(color, SilhouetteColor, Mathf.Clamp01(SilhouetteBlend));
             color.a *= _visibility;
             characterRenderer.color = color;
+            if (_engagementProperties == null) _engagementProperties = new MaterialPropertyBlock();
+            characterRenderer.GetPropertyBlock(_engagementProperties);
+            _engagementProperties.SetFloat(SaturationProperty, _saturation);
+            characterRenderer.SetPropertyBlock(_engagementProperties);
         }
 
         /// <summary>[연출 전용] 0 = 평소, 1 = 완전 실루엣. BlackoutPresentation 이 올리고 끝나면 0 으로 되돌린다.</summary>

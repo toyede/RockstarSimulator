@@ -1,1 +1,0 @@
-return new{paused=UnityEditor.EditorApplication.isPaused,timeScale=UnityEngine.Time.timeScale,state=GameJamKit.GameManager.Instance.State.ToString(),stage=ContextStage.StageRuntimeDirector.CurrentStage.StageId,frame=UnityEngine.Time.frameCount,debug=UnityEngine.Object.FindFirstObjectByType<ContextStage.TourDebugInput>().isActiveAndEnabled};

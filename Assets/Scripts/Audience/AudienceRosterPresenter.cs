@@ -17,6 +17,9 @@ namespace ContextStage
         [SerializeField, Min(0.1f)] float horizontalSpacing = 2.6f;
         [SerializeField, Min(0.1f)] float rowSpacing = 1.0f;
         [SerializeField, Min(0f)] float layoutJitter = .14f;
+        [SerializeField, Tooltip("관객 발 기준 높이 보정")] float floorOffsetY = -0.4f;
+        [SerializeField, Tooltip("관객 루트 기준 뒷줄 중심의 최대 Y. 점프와 머리가 HUD 위로 벗어나지 않게 한다")]
+        float rearRowMaximumY = .65f;
         [SerializeField, Min(1f)] float layoutHalfWidth = 6.2f;
         [SerializeField, Min(0.01f)] float frontRowScale = 0.58f;
         [SerializeField, Range(0.5f, 1f)] float rowScaleFalloff = 0.86f;
@@ -28,6 +31,7 @@ namespace ContextStage
         readonly Dictionary<AudienceId, AudienceMemberActor> _actors =
             new Dictionary<AudienceId, AudienceMemberActor>();
         readonly List<AudienceId> _order = new List<AudienceId>(10);
+        readonly Dictionary<AudienceId, int> _slots = new Dictionary<AudienceId, int>();
 
         bool _started;
         Camera _layoutCamera;
@@ -301,6 +305,7 @@ namespace ContextStage
 
             _actors.Remove(id);
             _order.Remove(id);
+            _slots.Remove(id);
             if (!_deferRelayout) Relayout();
             // 이탈 텍스트(PlayDeparture)는 단일 결과 UI 원칙으로 제거됨 — 퇴장 애니메이션(PlayExit)만 남긴다
             AudienceExitStyle exitStyle =
@@ -401,6 +406,9 @@ namespace ContextStage
             ApplyPersistentPreferenceReveal(actor);
             _actors.Add(audience.Id, actor);
             _order.Add(audience.Id);
+            int slot = 0;
+            while (_slots.ContainsValue(slot)) slot++;
+            _slots.Add(audience.Id, slot);
         }
 
         void ApplyPersistentPreferenceReveal(AudienceMemberActor actor)
@@ -426,7 +434,11 @@ namespace ContextStage
             if (count == 0) return;
 
             int columns = Mathf.Max(1, maximumColumns);
-            int rows = Mathf.CeilToInt(count / (float)columns);
+            int capacity = AudienceRosterSystem.HasInstance ? AudienceRosterSystem.Instance.Capacity : count;
+            int maximumRows = Mathf.CeilToInt(Mathf.Max(count, capacity) / (float)columns);
+            // 현재 인원이 아닌 정원으로 간격을 정해 입퇴장 시 기존 자리를 유지한다.
+            float verticalSpacing = maximumRows <= 1 ? rowSpacing : Mathf.Min(rowSpacing,
+                Mathf.Max(.1f, rearRowMaximumY - floorOffsetY - layoutJitter) / (maximumRows - 1));
             float halfWidth = layoutHalfWidth;
             if (_layoutCamera != null && _layoutCamera.orthographic)
             {
@@ -438,20 +450,21 @@ namespace ContextStage
                 AudienceId id = _order[index];
                 if (!_actors.TryGetValue(id, out AudienceMemberActor actor)) continue;
 
-                int row = index / columns;
-                int rowStart = row * columns;
-                int rowCount = Mathf.Min(columns, count - rowStart);
-                int column = index - rowStart;
+                int slot = _slots[id];
+                int row = slot / columns;
+                int column = slot % columns;
                 // 뒷줄을 반 칸 비우고, ID 기반 오프셋으로 게임 난수를 소비하지 않는다.
                 uint hash = unchecked((uint)id.Value * 2654435761u);
                 float jitterX = ((hash & 255) / 255f * 2f - 1f) * layoutJitter;
                 float jitterY = (((hash >> 8) & 255) / 255f * 2f - 1f) * layoutJitter;
-                float stagger = (row & 1) == 1 ? horizontalSpacing * .5f : 0f;
-                float x = Mathf.Clamp((column - (rowCount - 1) * .5f) * horizontalSpacing + stagger + jitterX,
-                    -halfWidth, halfWidth);
-                float y = row * rowSpacing + jitterY;
+                // 좁은 화면에서는 간격부터 줄여 clamp로 여러 관객이 같은 끝점에 쌓이지 않게 한다.
+                float spacing = Mathf.Min(horizontalSpacing,
+                    Mathf.Max(.1f, (halfWidth - layoutJitter - .4f) * 2f / Mathf.Max(1f, columns - .5f)));
+                float stagger = ((row & 1) == 1 ? .25f : -.25f) * spacing;
+                float x = (column - (columns - 1) * .5f) * spacing + stagger + jitterX;
+                float y = floorOffsetY + row * verticalSpacing + jitterY;
                 float scale = frontRowScale * Mathf.Pow(rowScaleFalloff, row);
-                int sortingOrder = baseSortingOrder + (rows - row);
+                int sortingOrder = baseSortingOrder + 10 - Mathf.RoundToInt(y * 2f);
                 actor.SetLayout(new Vector3(x, y, 0f), scale, sortingOrder);
             }
         }
@@ -474,6 +487,7 @@ namespace ContextStage
             }
             _actors.Clear();
             _order.Clear();
+            _slots.Clear();
         }
 
         bool ValidateDependencies()

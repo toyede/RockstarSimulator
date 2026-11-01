@@ -41,6 +41,8 @@ namespace ContextStage
 
         [Header("아트 (비우면 Square)")]
         [SerializeField] Sprite rivalBackground;
+        [SerializeField, Tooltip("StageSet에 직접 배치한 공통 배경. 연결하면 라이벌 배경을 따로 생성하지 않는다")]
+        SpriteRenderer sharedBackground;
         [SerializeField, Tooltip("한글 라벨 폰트. 비우면 DialogueCatalog 스타일 폰트")] TMP_FontAsset labelFont;
 
         Transform _root;
@@ -101,17 +103,20 @@ namespace ContextStage
             float height = Mathf.Max(1f, top - bottom);
             float centerY = (top + bottom) * 0.5f;
 
-            if (rivalBackground != null)
+            if (sharedBackground == null)
             {
-                CreateRenderer(zoneObject.transform, "Background", rivalBackground, new Vector3(0f, centerY, 0f), Vector3.one, Color.white, backgroundSortingOrder);
-            }
-            else
-            {
-                Sprite square = SquareSprite.Get();
-                CreateRenderer(zoneObject.transform, "Background", square, new Vector3(0f, centerY, 0f), new Vector3(zoneWidth, height, 1f), rivalColor, backgroundSortingOrder);
-                // 바닥 띠: 라이벌 팬이 서는 아래쪽
-                CreateRenderer(zoneObject.transform, "Floor", square, new Vector3(0f, bottom + 1.6f, 0f), new Vector3(zoneWidth, 3.2f, 1f), rivalFloorColor, backgroundSortingOrder);
-                CreateRenderer(zoneObject.transform, "FloorLine", square, new Vector3(0f, bottom + 3.2f, 0f), new Vector3(zoneWidth, 0.06f, 1f), new Color(1f, 1f, 1f, 0.15f), backgroundSortingOrder);
+                if (rivalBackground != null)
+                {
+                    CreateRenderer(zoneObject.transform, "Background", rivalBackground, new Vector3(0f, centerY, 0f), Vector3.one, Color.white, backgroundSortingOrder);
+                }
+                else
+                {
+                    Sprite square = SquareSprite.Get();
+                    CreateRenderer(zoneObject.transform, "Background", square, new Vector3(0f, centerY, 0f), new Vector3(zoneWidth, height, 1f), rivalColor, backgroundSortingOrder);
+                    // 바닥 띠: 라이벌 팬이 서는 아래쪽
+                    CreateRenderer(zoneObject.transform, "Floor", square, new Vector3(0f, bottom + 1.6f, 0f), new Vector3(zoneWidth, 3.2f, 1f), rivalFloorColor, backgroundSortingOrder);
+                    CreateRenderer(zoneObject.transform, "FloorLine", square, new Vector3(0f, bottom + 3.2f, 0f), new Vector3(zoneWidth, 0.06f, 1f), new Color(1f, 1f, 1f, 0.15f), backgroundSortingOrder);
+                }
             }
 
             CreateLabel(zoneObject.transform, "라이벌 무대 (임시)", new Vector3(-zoneWidth * 0.5f + 3.2f, top - 0.7f, 0f));

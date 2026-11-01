@@ -1,1 +1,0 @@
-return new {callback=UnityEditor.SessionState.GetBool("LightingBossCallback",false),samples=UnityEditor.SessionState.GetString("LightingBossHoldEvidence","pending"),inputUnlocked=!ContextStage.CardInput.Locked,dropCleared=UnityEngine.Object.FindFirstObjectByType<ContextStage.StageShowDirector>().DropHoldProgress<0};

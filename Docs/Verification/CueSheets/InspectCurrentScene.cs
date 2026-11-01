@@ -1,1 +1,0 @@
-return new{scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().path,dirty=UnityEngine.SceneManagement.SceneManager.GetActiveScene().isDirty,playing=UnityEditor.EditorApplication.isPlaying};

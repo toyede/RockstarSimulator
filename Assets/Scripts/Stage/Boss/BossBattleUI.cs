@@ -34,11 +34,17 @@ namespace ContextStage
         Image _barBack;
         Image _rivalFill;
         Image _ourFill;
+        Image _fanLossTrail;
+        RectTransform _fanLossClip;
+        TMP_Text _fanTransferText;
+        float _fanFeedbackAge = -1f;
         bool _balanceInitialized;
         bool _hasFans = true;
         float _drainAccent;
         TMP_Text _rivalText;
         TMP_Text _ourText;
+        TMP_Text _rivalCountText;
+        TMP_Text _ourCountText;
         TMP_Text _revengeTag;
         TMP_Text _drainText;
         TMP_Text _drainPopup;
@@ -77,6 +83,7 @@ namespace ContextStage
         void OnEnable()
         {
             EventBus.Subscribe<BossFanBalanceChanged>(OnBalance);
+            EventBus.Subscribe<BossFanMoved>(OnFanMoved);
             EventBus.Subscribe<BossDrainCountdown>(OnDrainCountdown);
             EventBus.Subscribe<BossDrainApplied>(OnDrainApplied);
             EventBus.Subscribe<BossRevengeChanged>(OnRevenge);
@@ -94,6 +101,7 @@ namespace ContextStage
         void OnDisable()
         {
             EventBus.Unsubscribe<BossFanBalanceChanged>(OnBalance);
+            EventBus.Unsubscribe<BossFanMoved>(OnFanMoved);
             EventBus.Unsubscribe<BossDrainCountdown>(OnDrainCountdown);
             EventBus.Unsubscribe<BossDrainApplied>(OnDrainApplied);
             EventBus.Unsubscribe<BossRevengeChanged>(OnRevenge);
@@ -114,6 +122,15 @@ namespace ContextStage
             if (_rivalFill == null) return;
 
             if (_paused) return;
+            if (_fanFeedbackAge >= 0f)
+            {
+                _fanFeedbackAge += Time.deltaTime;
+                _fanLossTrail.color = new Color(1f, 1f, 1f, .35f * Mathf.Clamp01(1f - _fanFeedbackAge / .35f));
+                Color c = _fanTransferText.color;
+                c.a = Mathf.Clamp01(1f - _fanFeedbackAge / .85f);
+                _fanTransferText.color = c;
+                if (_fanFeedbackAge >= .85f) _fanFeedbackAge = -1f;
+            }
             _rivalFill.fillAmount = fillLerpSpeed <= 0f
                 ? _targetRivalRatio
                 : Mathf.MoveTowards(_rivalFill.fillAmount, _targetRivalRatio, fillLerpSpeed * Time.deltaTime);
@@ -148,10 +165,39 @@ namespace ContextStage
                 _balanceInitialized = true;
             }
             if (e.Total <= 0) { _rivalFill.fillAmount = _ourFill.fillAmount = 0f; }
-            _rivalText.text = $"{rivalName}  {e.Rival}";
-            _ourText.text = $"우리  {e.Ours}";
+            _rivalText.text = rivalName;
+            _ourText.text = ourName;
+            _rivalCountText.text = $"{e.Rival}명";
+            _ourCountText.text = $"{e.Ours}명";
             _revenge = e.Revenge;
             _revengeTag.gameObject.SetActive(_revenge);
+        }
+
+        void OnFanMoved(BossFanMoved e)
+        {
+            if (e.Count <= 0) return;
+            EnsureView();
+            _fanFeedbackAge = 0f;
+            _fanLossTrail.sprite = e.ToRival ? _ourFill.sprite : _rivalFill.sprite;
+            _fanLossTrail.fillAmount = 1f;
+            // 실제로 잃은 구간만 잘라 보여준다. 아트 전체를 좁은 구간으로 늘리지 않는다.
+            int total = e.OursNow + e.RivalNow;
+            float currentBoundary = total > 0 ? (float)e.OursNow / total : 0f;
+            float previousBoundary = total > 0
+                ? Mathf.Clamp01((float)(e.OursNow + (e.ToRival ? e.Count : -e.Count)) / total) : 0f;
+            float left = Mathf.Min(currentBoundary, previousBoundary);
+            float right = Mathf.Max(currentBoundary, previousBoundary);
+            _fanLossClip.anchorMin = new Vector2(left, 0f);
+            _fanLossClip.anchorMax = new Vector2(right, 1f);
+            _fanLossClip.offsetMin = _fanLossClip.offsetMax = Vector2.zero;
+            float barWidth = ((RectTransform)_barBack.transform).rect.width;
+            _fanLossTrail.rectTransform.offsetMin = new Vector2(-left * barWidth, 0f);
+            _fanLossTrail.rectTransform.offsetMax = new Vector2((1f - right) * barWidth, 0f);
+            _fanLossTrail.color = new Color(1, 1, 1, .35f);
+            _fanTransferText.text = e.ToRival
+                ? $"우리 팬 −{e.Count} → {rivalName}"
+                : $"{rivalName} 팬 −{e.Count} → 우리 +{e.Count}";
+            _fanTransferText.color = e.ToRival ? warningColor : successColor;
         }
 
         void OnDrainCountdown(BossDrainCountdown e)
@@ -207,6 +253,7 @@ namespace ContextStage
         void OnPatternAnnounced(BossPatternAnnounced e)
         {
             EnsureView();
+            if (!_standing.Active) _standing.Clear();
             _pattern.Clear();
             RefreshMission();
             string title = e.Enhanced ? $"{e.Title}  ▲" : e.Title;
@@ -269,6 +316,7 @@ namespace ContextStage
         {
             if (!HandlesStageEvent(e.EventId)) return;
             EnsureView();
+            if (!_pattern.Active) _pattern.Clear();
             _standing.Id = e.EventId; _standing.Active = true; _standing.ResultRemaining = 0;
             _standing.Title = e.Title; _standing.Body = e.Instruction;
             _standing.Color = warningColor; _standing.Progress = "";
@@ -328,6 +376,9 @@ namespace ContextStage
             _pattern.Clear(); _standing.Clear(); _paused = false;
             if (clearBalance) { _targetRivalRatio = 1f; _revenge = false; _balanceInitialized = false; }
             _drainAccent = 0f;
+            _fanFeedbackAge = -1f;
+            if (_fanLossTrail != null) _fanLossTrail.color = Color.clear;
+            if (_fanTransferText != null) _fanTransferText.text = "";
             if (_patternPanel != null) _patternPanel.gameObject.SetActive(false);
             if (_bigText != null) _bigText.gameObject.SetActive(false);
             if (_drainPopup != null) _drainPopup.gameObject.SetActive(false);
@@ -403,10 +454,23 @@ namespace ContextStage
             _rivalFill.color = fanBarRival != null ? Color.white : rivalColor;
             _rivalFill.raycastTarget = false;
 
-            _rivalText = CreateText(bar, "Rival", resolvedFont, 24f, TextAlignmentOptions.MidlineLeft, Color.white);
+            _fanLossClip = CreateRect(bar, "FanLossClip", Vector2.zero, Vector2.zero, Vector2.zero);
+            _fanLossClip.gameObject.AddComponent<RectMask2D>();
+            _fanLossTrail = CreateFanFill(_fanLossClip, "FanLossTrail", fanBarRival, Color.white, 1);
+            _fanLossTrail.color = Color.clear;
+            _fanTransferText = CreateText(bar, "FanTransfer", resolvedFont, 22f, TextAlignmentOptions.Center, successColor);
+            SetRect(_fanTransferText.rectTransform, new Vector2(.5f, 0f), new Vector2(.5f, 0f),
+                new Vector2(.5f, 1f), new Vector2(0, -34f), new Vector2(750f, 32f));
+            _fanTransferText.text = "";
+
+            _rivalText = CreateText(bar, "Rival", resolvedFont, 22f, TextAlignmentOptions.MidlineLeft, Color.white);
             SetRect(_rivalText.rectTransform, new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(0f, .5f), new Vector2(14f, 0f), new Vector2(250f, 36f));
-            _ourText = CreateText(bar, "Ours", resolvedFont, 24f, TextAlignmentOptions.MidlineRight, Color.white);
-            SetRect(_ourText.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(1f, .5f), new Vector2(-14f, 0f), new Vector2(180f, 36f));
+            _ourText = CreateText(bar, "Ours", resolvedFont, 22f, TextAlignmentOptions.MidlineRight, Color.white);
+            SetRect(_ourText.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(1f, .5f), new Vector2(-14f, 0f), new Vector2(250f, 36f));
+            _rivalCountText = CreateText(bar, "RivalCount", resolvedFont, 20f, TextAlignmentOptions.MidlineLeft, rivalColor);
+            SetRect(_rivalCountText.rectTransform, new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(0f, 1f), new Vector2(14f, -20f), new Vector2(120f, 28f));
+            _ourCountText = CreateText(bar, "OurCount", resolvedFont, 20f, TextAlignmentOptions.MidlineRight, ourColor);
+            SetRect(_ourCountText.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(1f, 1f), new Vector2(-14f, -20f), new Vector2(120f, 28f));
             _revengeTag = CreateText(bar, "Revenge", resolvedFont, 20f, TextAlignmentOptions.Center, revengeColor);
             SetRect(_revengeTag.rectTransform, new Vector2(.5f,1f), new Vector2(.5f,1f), new Vector2(.5f,0f), new Vector2(0f,4f), new Vector2(300f,26f));
             _revengeTag.text = "REVENGE TIME!";

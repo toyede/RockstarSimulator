@@ -31,6 +31,10 @@ namespace ContextStage
         [Header("UI")]
         [Tooltip("맵 노드 썸네일 (512×288)")]
         public Sprite mapThumbnail;
+        [Tooltip("공연 시작 전 설명 화면에 표시할 세로 포스터")]
+        public Sprite stagePoster;
+        [Tooltip("포스터 자체의 제목·설명·입장 도장 배치. 게임 규칙과 독립적인 표시 설정")]
+        public StagePosterPresentation posterPresentation;
 
         [Tooltip("룰 카드 아이콘 (128×128)")]
         public Sprite ruleIcon;

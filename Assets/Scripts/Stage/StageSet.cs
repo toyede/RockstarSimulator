@@ -18,11 +18,14 @@ namespace ContextStage
     {
         [SerializeField, Tooltip("StageDefinition.StageId")] string stageId = "";
         [SerializeField, Tooltip("비우면 카탈로그의 Base 배경을 쓴다")] Sprite baseBackgroundOverride;
+        [SerializeField, Tooltip("씬에서 직접 배치할 배경. 연결하면 공통 Base 배경 대신 이 렌더러를 사용한다. 위치·크기·스프라이트는 씬에서 편집한다")]
+        SpriteRenderer sceneBackground;
         [SerializeField, Tooltip("조명 레이어 (Base 위, Order 1~). 있으면 기존 stage_lights 를 숨긴다")] List<SpriteRenderer> lights = new List<SpriteRenderer>();
         [SerializeField, Tooltip("전경 소품 (Order 46). 코드에서 스쿼시·바운스를 걸 때 이 목록을 쓴다")] List<SpriteRenderer> props = new List<SpriteRenderer>();
 
         public string StageId => stageId;
         public Sprite BaseBackgroundOverride => baseBackgroundOverride;
+        public SpriteRenderer SceneBackground => sceneBackground;
         public IReadOnlyList<SpriteRenderer> Lights => lights;
         public IReadOnlyList<SpriteRenderer> Props => props;
         public bool HasLights => lights != null && lights.Count > 0;
