@@ -11,8 +11,8 @@ preference, engagement, and engagement stage.
 - `AudienceMemberActor`: per-member sprite, stage motion, warning bar, and transitions
 - `AudienceReactionPopup`: pooled per-member card score or engagement-delta feedback
 - `AudienceReactionVFX`: reusable per-member pixel particles, flash, ellipsis, and departure trail
-- `AudienceReactionResolver`: pure preference + engagement-stage card calculation
-- `AudienceEngagementConfig`: engagement range, stage boundaries, decay, reaction multiplier
+- `AudienceReactionResolver`: pure preference + engagement-stage card calculation, plus grid-distance mode
+- `AudienceEngagementConfig`: engagement range, low/high boundary, warning-bar threshold, decay, reaction multiplier
 - `AudienceFlowConfig`: initial/max count, preference weights, deterministic seed
 
 Consumers must treat `AudienceSnapshot` as read-only and identify members by
@@ -44,25 +44,65 @@ Use `Tools/Audience/Validate Active Scene` after installation. The command is
 scene-name agnostic so the same prefab can be verified in `JWY.unity` now and
 installed into `Main.unity` later without copying scene YAML.
 
+## Engagement stages
+
+Engagement has two stages: 하 (`Calm`) and 상 (`Excited`). Values at or below
+`AudienceEngagementConfig.calmUpperBound` are 하; values above it are 상.
+`Middle` stays in the enum only because stage values are serialized by number;
+`ResolveStage` never returns it and `middleUpperBound` is unused.
+
+The warning bar is independent of the stage boundary. It appears while
+engagement is at or below `warningUpperBound`.
+
+하 members move to outer positions and wander. They face their walking direction
+and keep the last walking direction while standing, so they turn only when the
+walking direction changes. `AudienceMemberActor.calmSpritesFaceLeft` states which
+way the source 하 art faces (the 1101 calm sheets face left); the lost-interest
+exit walk uses the same setting.
+
+Crowd animation follows the same two stages. `Tools/Audience/Import Animated
+Species Sheets` builds one 12-animal clip set per preference and stage from the
+folders in `AudienceAnimationImportTool.Sources`. Each frame PNG is a 6x2 sheet
+sliced into `_0`..`_11`, and a member plays clip `audienceId % 12` in every stage
+so it keeps the same animal. Groups that are not in `Sources`, such as `Middle`,
+are removed from `AudienceMember.prefab`. A `Sources` row can limit the clip to
+its first N frames: the 1101 calm sheets use frames 0-5 only, because frame 6
+repeats frame 0 and frames 7-11 are mirrored copies of 1-5. Run
+`Tools/Audience/Rebuild Outline Regions` after changing crowd sprites.
+
 ## Card authoring
 
 Audience reaction values live directly on each card prefab's `CardDefinition`:
 
 - preference values: Chill, Singalong, Mosh
-- engagement-stage values: Calm, Middle, Excited
+- engagement-stage values: Calm (하), Excited (상); Middle is unused
+- reaction mode, and the target engagement for `GridDistance`
 - engagement multiplier
+
+### Grid-distance mode
+
+The six performance cards use `AudienceReactionMode.GridDistance`. Each card has
+one target cell: its `Target Preference` column (Chill, Singalong, Mosh) and its
+`Target Engagement` row (상 or 하). For each member:
+
+`(member preference score + member engagement score) x multiplier[distance]`
+
+`distance` is the column difference plus 1 when the row differs (0..3). The
+multipliers live in `CardDeckConfig.audienceDistanceMultipliers`. In this mode
+the scores are magnitudes and must be zero or positive; the multiplier decides
+the sign. Switching a card back to `PreferenceAndEngagement` restores the plain
+`preference score + stage score` calculation.
 
 Edit these values in Prefab Mode. There is no maximum-value clamp. The
 `Card_Base.prefab` reaction is neutral, so performance-card variants own their
 effective non-zero values. `Tools/Audience/Validate Audience Card Prefab Values`
 checks the data but never writes or replaces authored values.
 
-Performance cards calculate each member independently:
-
-`preference score + current engagement-stage score`
+Performance cards calculate each member independently, using grid distance or
+the plain `preference score + current engagement-stage score`.
 
 The per-member results update engagement and their sum becomes the authoritative
-card score. Both values may be negative. Utility cards explicitly opt out of
+card score. Results may be negative. Utility cards explicitly opt out of
 audience reactions.
 
 Special cards have two independent prefab-authored data sets:

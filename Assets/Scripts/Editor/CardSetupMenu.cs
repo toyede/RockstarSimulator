@@ -384,11 +384,17 @@ namespace ContextStage.EditorTools
             if (card == null || card.AudienceReaction == null || members == null)
                 throw new InvalidOperationException("[Cards] 관객별 예상 점수를 계산할 데이터가 없습니다.");
 
+            IReadOnlyList<float> multipliers =
+                CardSystem.HasInstance && CardSystem.Instance.Config != null
+                    ? CardSystem.Instance.Config.AudienceDistanceMultipliers
+                    : null;
             int total = 0;
             for (int i = 0; i < members.Count; i++)
                 total += AudienceReactionResolver.Resolve(
                     card.AudienceReaction,
-                    members[i]).Value;
+                    members[i],
+                    card.TargetPreference,
+                    multipliers).Value;
             return total;
         }
 

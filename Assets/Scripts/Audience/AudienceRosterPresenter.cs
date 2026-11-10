@@ -420,7 +420,7 @@ namespace ContextStage
             actor.name = $"AudienceMember_{audience.Id.Value:00}_{audience.Preference}";
             actor.Bind(
                 audience,
-                AudienceRosterSystem.Instance.EngagementConfig.CalmUpperBound);
+                AudienceRosterSystem.Instance.EngagementConfig.WarningUpperBound);
             ApplyPersistentPreferenceReveal(actor);
             _actors.Add(audience.Id, actor);
             _order.Add(audience.Id);

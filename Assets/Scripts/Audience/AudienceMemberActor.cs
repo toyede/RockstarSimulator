@@ -179,7 +179,7 @@ namespace ContextStage
         Vector3 _currentLayoutPosition;
         float _currentLayoutScale = 1f;
         bool _hasLayout;
-        float _calmUpperBound = 33f;
+        float _warningUpperBound = 33f;
         float _phase;
 
         // 개체별 편차 + 단계 전환 블렌드 (CrowdMemberView 와 같은 방식)
@@ -227,6 +227,10 @@ namespace ContextStage
         [SerializeField, Min(.01f)] float calmWalkSpeed = .24f;
         [SerializeField, Range(0f, 1f)] float calmSaturation = .4f;
         [SerializeField, Range(0f, 1f)] float middleSaturation = .75f;
+        [SerializeField, Tooltip("하(Calm) 애니메이션 원본이 왼쪽을 보고 있으면 켠다. 걸을 때 걷는 방향을 보도록 좌우 반전 기준을 정한다")]
+        bool calmSpritesFaceLeft = true;
+        bool _hasWalkFacing;
+        bool _walkFacingFlip;
         MaterialPropertyBlock _engagementProperties;
         float _saturation = 1f;
         static readonly int SaturationProperty = Shader.PropertyToID("_AudienceSaturation");
@@ -270,6 +274,10 @@ namespace ContextStage
             float y = Mathf.Lerp(_walkArea.yMin, _walkArea.yMax, slot < 5 ? .25f : .75f);
             return new Vector3(x, y, _restLayoutPosition.z);
         }
+
+        /// <summary>direction 쪽(x 부호)을 보려면 flipX 를 켜야 하는지. 원본 그림의 방향을 기준으로 한다.</summary>
+        bool FlipToFace(float direction) =>
+            calmSpritesFaceLeft ? direction > 0f : direction < 0f;
 
         void RefreshPresentationTarget()
         {
@@ -416,7 +424,7 @@ namespace ContextStage
             SetPreferenceReveal(false, default, 0f);
         }
 
-        public void Bind(AudienceSnapshot snapshot, float calmUpperBound)
+        public void Bind(AudienceSnapshot snapshot, float warningUpperBound)
         {
             if (!snapshot.Id.IsValid)
                 throw new ArgumentException("Audience snapshot requires a valid id.", nameof(snapshot));
@@ -427,13 +435,14 @@ namespace ContextStage
             _inspectionHold = false;
             _wanderSeed = unchecked((uint)snapshot.Id.Value * 2654435761u);
             _wanderOffset = _wanderTarget = Vector2.zero;
+            _hasWalkFacing = false;
             _wanderWait = .8f + NextWanderValue();
             _tutorialInspectionPose = false;
             ResetCardMotion();
             _arrivalDelay = (snapshot.Id.Value & 3) * 0.04f;
             _bossArrival = StageRuntimeDirector.CurrentStage != null && StageRuntimeDirector.CurrentStage.IsBoss;
             _arrivalCuePending = false;
-            _calmUpperBound = Mathf.Max(0.01f, calmUpperBound);
+            _warningUpperBound = Mathf.Max(0.01f, warningUpperBound);
             _visibility = 0f;
             _exiting = false;
             _exitStyle = AudienceExitStyle.Default;
@@ -689,7 +698,7 @@ namespace ContextStage
                     ApplyTransform();
                     float progress = Mathf.Clamp01(_exitElapsed / _walkExitDuration);
                     transform.localPosition = Vector3.Lerp(_walkExitStart, _walkExitTarget, progress);
-                    characterRenderer.flipX = _walkExitTarget.x < _walkExitStart.x;
+                    characterRenderer.flipX = FlipToFace(_walkExitTarget.x - _walkExitStart.x);
                     if (progress < 1f) return;
                     Action done = _exitCompleted;
                     _exitCompleted = null;
@@ -822,14 +831,15 @@ namespace ContextStage
 
         void UpdateWarning()
         {
+            // 하/상 경계와 별개로, 이탈 직전 구간에서만 경고 바를 보인다.
             bool visible =
                 !_exiting &&
-                _snapshot.Stage == AudienceEngagementStage.Calm &&
+                _snapshot.Engagement <= _warningUpperBound &&
                 _snapshot.Engagement > 0f;
             warningRoot.SetActive(visible);
             if (!visible) return;
 
-            float ratio = Mathf.Clamp01(_snapshot.Engagement / _calmUpperBound);
+            float ratio = Mathf.Clamp01(_snapshot.Engagement / _warningUpperBound);
             Vector3 scale = warningFill.localScale;
             scale.x = ratio;
             warningFill.localScale = scale;
@@ -1015,11 +1025,21 @@ namespace ContextStage
                 allowHorizontalFlip &&
                 _variance.Flip < 0f;
             characterRenderer.flipX = flipCharacter;
-            if (_snapshot.Stage == AudienceEngagementStage.Calm && !_exiting && !_tutorialInspectionPose && !_inspectionHold)
+            if (_snapshot.Stage != AudienceEngagementStage.Calm || _exiting)
             {
+                _hasWalkFacing = false;
+            }
+            else if (!_tutorialInspectionPose && !_inspectionHold)
+            {
+                // 걷는 방향을 보고, 멈춰도 마지막으로 걷던 방향을 유지한다 (도착할 때마다 뒤집히지 않게).
                 float direction = _layoutPosition.x - _currentLayoutPosition.x;
                 if (Mathf.Abs(direction) < .05f) direction = _wanderTarget.x - _wanderOffset.x;
-                if (Mathf.Abs(direction) >= .05f) characterRenderer.flipX = direction < 0f;
+                if (Mathf.Abs(direction) >= .05f)
+                {
+                    _walkFacingFlip = FlipToFace(direction);
+                    _hasWalkFacing = true;
+                }
+                if (_hasWalkFacing) characterRenderer.flipX = _walkFacingFlip;
             }
             transform.localScale = new Vector3(
                 scale * (1f + squashAmount * 0.5f),

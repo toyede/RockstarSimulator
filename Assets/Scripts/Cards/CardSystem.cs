@@ -407,7 +407,11 @@ namespace ContextStage
             for (int i = 0; i < members.Count; i++)
             {
                 AudienceReactionResult reaction =
-                    AudienceReactionResolver.Resolve(profile, members[i]);
+                    AudienceReactionResolver.Resolve(
+                        profile,
+                        members[i],
+                        card.TargetPreference,
+                        config != null ? config.AudienceDistanceMultipliers : null);
                 int reactionValue = reaction.Value + audienceReactionBonus;
                 _audienceReactions.Add(new AudienceReactionResult(
                     reaction.AudienceId,

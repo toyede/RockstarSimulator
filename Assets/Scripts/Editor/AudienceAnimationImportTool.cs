@@ -19,19 +19,23 @@ namespace ContextStage.EditorTools
         /// <summary>
         /// 폴더 → (성향, 참여도 단계) 매핑표. 아트가 새 조합을 주면 여기에 한 줄만 추가하면 된다.
         /// AudienceMemberActor 쪽 코드는 그대로다 (CrowdSetupMenu.MoodSheets 와 같은 방식).
+        /// 몰입도는 하(Calm)/상(Excited) 2단계만 쓴다. 표에 없는 조합(Middle)은 프리팹에서 연결을 끊는다.
+        /// frameCount 는 앞에서부터 쓸 프레임 수 (0 이면 폴더의 모든 프레임).
         /// </summary>
-        static readonly (string folder, CrowdPreference preference, AudienceEngagementStage stage, string clipName)[] Sources =
+        static readonly (string folder, CrowdPreference preference, AudienceEngagementStage stage, string clipName, int frameCount)[] Sources =
         {
-            ("Assets/Sprites/Crowd/Animated/Singalong/Singalong_Calm", CrowdPreference.Singalong, AudienceEngagementStage.Calm, "Singalong_Calm"),
-            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Singalong/Singalong_Middle", CrowdPreference.Singalong, AudienceEngagementStage.Middle, "Singalong_Middle"),
-            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Singalong/Singalong_Hype", CrowdPreference.Singalong, AudienceEngagementStage.Excited, "Singalong_Excited"),
-            ("Assets/Sprites/Crowd/Animated/chill/chill_calm", CrowdPreference.Chill, AudienceEngagementStage.Calm, "Chill_Calm"),
-            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Chill/chill_mid", CrowdPreference.Chill, AudienceEngagementStage.Middle, "Chill_Middle"),
-            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Chill/Chill_Hype", CrowdPreference.Chill, AudienceEngagementStage.Excited, "Chill_Excited"),
-            ("Assets/Sprites/Crowd/Animated/mosh/mosh_calm", CrowdPreference.Mosh, AudienceEngagementStage.Calm, "Mosh_Calm"),
-            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Mosh/Mosh_middle", CrowdPreference.Mosh, AudienceEngagementStage.Middle, "Mosh_Middle"),
-            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Mosh/Mosh_hype", CrowdPreference.Mosh, AudienceEngagementStage.Excited, "Mosh_Excited"),
+            // 1101 calm_v2 는 0~5번이 한 사이클이고 6번은 0번과 같으며, 7~11번은 1~5번의 좌우 반전 복사본이다.
+            // 제자리에서 좌우가 뒤집혀 보이지 않도록 0~5번만 반복한다.
+            ("Assets/Sprites/1101_art/singalong_calm_v2", CrowdPreference.Singalong, AudienceEngagementStage.Calm, "Singalong_Calm", 6),
+            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Singalong/Singalong_Hype", CrowdPreference.Singalong, AudienceEngagementStage.Excited, "Singalong_Excited", 0),
+            ("Assets/Sprites/1101_art/chill_calm_v2", CrowdPreference.Chill, AudienceEngagementStage.Calm, "Chill_Calm", 6),
+            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Chill/Chill_Hype", CrowdPreference.Chill, AudienceEngagementStage.Excited, "Chill_Excited", 0),
+            ("Assets/Sprites/1101_art/mosh_calm_v2", CrowdPreference.Mosh, AudienceEngagementStage.Calm, "Mosh_Calm", 6),
+            ("Assets/Sprites/1016_art/1016_art/crowd_animated/Mosh/Mosh_hype", CrowdPreference.Mosh, AudienceEngagementStage.Excited, "Mosh_Excited", 0),
         };
+
+        // 6x2 시트 정리(조각 병합·Point 필터) 대상 폴더
+        static readonly string[] NormalizedArtRoots = { "/1016_art/", "/1101_art/" };
 
         [MenuItem("Tools/Audience/Import Animated Species Sheets")]
         public static void ImportAll()
@@ -68,7 +72,7 @@ namespace ContextStage.EditorTools
             var allClips = new List<SpriteAnimationClip[]>();
             foreach (var source in Sources)
             {
-                SpriteAnimationClip[] clips = BuildSpeciesClips(source.folder, source.clipName);
+                SpriteAnimationClip[] clips = BuildSpeciesClips(source.folder, source.clipName, source.frameCount);
                 if (clips == null) return;
                 allClips.Add(clips);
             }
@@ -101,6 +105,10 @@ namespace ContextStage.EditorTools
                     $"동물 {clips.Length}종 연결.");
             }
 
+            int removedGroups = RemoveGroupsNotInSources(listProp);
+            if (removedGroups > 0)
+                Debug.Log($"[AudienceAnim] 표에 없는 단계 그룹 {removedGroups}개의 연결을 끊었습니다.");
+
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(prefabAsset);
             // 씬·폰트 등 다른 사용자 dirty 에셋은 저장하지 않는다.
@@ -117,7 +125,7 @@ namespace ContextStage.EditorTools
             var factory = new SpriteDataProviderFactories();
             factory.Init();
             var repairs = new List<(TextureImporter importer, ISpriteEditorDataProvider provider, SpriteRect[] sprites)>();
-            foreach (var source in Sources.Where(s => s.folder.Contains("/1016_art/")))
+            foreach (var source in Sources.Where(s => NormalizedArtRoots.Any(root => s.folder.Contains(root))))
             foreach (string guid in AssetDatabase.FindAssets("t:Texture2D", new[] { source.folder }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
@@ -163,11 +171,11 @@ namespace ContextStage.EditorTools
                 repair.importer.mipmapEnabled = false;
                 repair.importer.SaveAndReimport();
             }
-            Debug.Log($"[AudienceAnim] 1016 시트 {repairs.Count}개 슬라이스/Point 정리 완료.");
+            Debug.Log($"[AudienceAnim] 최신 시트 {repairs.Count}개 슬라이스/Point 정리 완료.");
         }
 
         /// <summary>폴더 안의 프레임 파일들을 프레임 순서대로 읽어, 동물 인덱스별 프레임 시퀀스로 재조립한다.</summary>
-        static SpriteAnimationClip[] BuildSpeciesClips(string folderPath, string clipNamePrefix)
+        static SpriteAnimationClip[] BuildSpeciesClips(string folderPath, string clipNamePrefix, int frameCount)
         {
             if (!AssetDatabase.IsValidFolder(folderPath))
             {
@@ -185,6 +193,17 @@ namespace ContextStage.EditorTools
             {
                 Debug.LogWarning($"[AudienceAnim] '{folderPath}' 에 프레임 이미지가 없습니다.");
                 return null;
+            }
+
+            if (frameCount > 0)
+            {
+                if (framePaths.Count < frameCount)
+                {
+                    Debug.LogWarning(
+                        $"[AudienceAnim] '{folderPath}' 에 프레임이 {framePaths.Count}장뿐입니다. {frameCount}장이 필요합니다.");
+                    return null;
+                }
+                framePaths = framePaths.Take(frameCount).ToList();
             }
 
             // 동물 인덱스 -> 프레임 순서대로 모은 스프라이트 목록
@@ -243,6 +262,23 @@ namespace ContextStage.EditorTools
             element.FindPropertyRelative("preference").enumValueIndex = (int)preference;
             element.FindPropertyRelative("stage").enumValueIndex = (int)stage;
             WriteClips(element.FindPropertyRelative("variants"), clips);
+        }
+
+        /// <summary>Sources 표에 없는 (성향, 단계) 그룹을 목록에서 지운다. 스프라이트 파일은 건드리지 않는다.</summary>
+        static int RemoveGroupsNotInSources(SerializedProperty listProp)
+        {
+            int removed = 0;
+            for (int i = listProp.arraySize - 1; i >= 0; i--)
+            {
+                SerializedProperty element = listProp.GetArrayElementAtIndex(i);
+                var preference = (CrowdPreference)element.FindPropertyRelative("preference").enumValueIndex;
+                var stage = (AudienceEngagementStage)element.FindPropertyRelative("stage").enumValueIndex;
+                if (Sources.Any(s => s.preference == preference && s.stage == stage)) continue;
+
+                listProp.DeleteArrayElementAtIndex(i);
+                removed++;
+            }
+            return removed;
         }
 
         static int FindGroupIndex(

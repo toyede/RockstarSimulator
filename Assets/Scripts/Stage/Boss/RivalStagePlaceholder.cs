@@ -56,8 +56,8 @@ namespace ContextStage
         [SerializeField] Color duoBColor = new Color32(0x30, 0xE1, 0xB9, 0xFF);
         [SerializeField] Color fanColor = new Color32(0xC7, 0xDC, 0xD0, 0xB0);
         [Header("보스 HP 공통 관객 상태 (표시 전용)")]
-        [SerializeField, Range(0, 1)] float calmHpThreshold = 0.33f;
-        [SerializeField, Range(0, 1)] float hypeHpThreshold = 0.66f;
+        [SerializeField, Range(0, 1), Tooltip("라이벌 팬 비율이 이 값 이하면 하(Calm), 초과면 상(Excited) 애니메이션")]
+        float excitedHpThreshold = 0.5f;
         [Header("드랍 관객 반응 (표시 전용)")]
         [SerializeField, Min(0f)] float dropJumpHeight = 0.5f;
         [SerializeField, Min(0.1f)] float dropJumpDuration = 2.4f;
@@ -254,8 +254,10 @@ namespace ContextStage
 
         void SetAudienceStage(float hpRatio)
         {
-            AudienceEngagementStage stage = hpRatio > hypeHpThreshold ? AudienceEngagementStage.Excited
-                : hpRatio > calmHpThreshold ? AudienceEngagementStage.Middle : AudienceEngagementStage.Calm;
+            // 관객과 같이 하/상 2단계만 쓴다 (Middle 애니메이션은 연결이 끊겼다).
+            AudienceEngagementStage stage = hpRatio > excitedHpThreshold
+                ? AudienceEngagementStage.Excited
+                : AudienceEngagementStage.Calm;
             var source = FanVisualSource();
             if (stage == _audienceStage && _motionTo != null) return;
             _audienceStage = stage;

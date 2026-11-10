@@ -15,7 +15,8 @@ MonoBehaviour:
   maxEngagement: 100
   initialEngagementMin: 30
   initialEngagementMax: 50
-  calmUpperBound: 33
+  calmUpperBound: 50
   middleUpperBound: 66
+  warningUpperBound: 33
   naturalDecayPerSecond: 1
   engagementPerReactionPoint: 1

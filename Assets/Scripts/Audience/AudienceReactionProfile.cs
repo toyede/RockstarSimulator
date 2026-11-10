@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ContextStage
@@ -6,7 +7,9 @@ namespace ContextStage
     public enum AudienceReactionMode
     {
         PreferenceAndEngagement,
-        FixedAllAudience
+        FixedAllAudience,
+        // (성향 점수 + 몰입도 점수) x 표 거리 배율. 프리팹에 번호로 저장되므로 뒤에만 추가한다.
+        GridDistance
     }
 
     [Serializable]
@@ -27,6 +30,10 @@ namespace ContextStage
         [SerializeField] private int calmScore = 1;
         [SerializeField] private int middleScore = 2;
         [SerializeField] private int excitedScore = 3;
+
+        [Header("표 거리 (GridDistance 모드)")]
+        [SerializeField, Tooltip("정답 칸의 몰입도. 정답 열은 카드의 Target Preference. 하=Calm, 상=Excited")]
+        private AudienceEngagementStage targetEngagement = AudienceEngagementStage.Excited;
 
         [Header("몰입도 적용")]
         [SerializeField, Min(0f)] private float engagementMultiplier = 1f;
@@ -64,6 +71,7 @@ namespace ContextStage
         public int CalmScore => calmScore;
         public int MiddleScore => middleScore;
         public int ExcitedScore => excitedScore;
+        public AudienceEngagementStage TargetEngagement => targetEngagement;
         public float EngagementMultiplier => Mathf.Max(0f, engagementMultiplier);
 
         public int ScoreFor(CrowdPreference preference)
@@ -100,6 +108,23 @@ namespace ContextStage
             {
                 error = "Engagement multiplier cannot be negative.";
                 return false;
+            }
+
+            if (reactionMode == AudienceReactionMode.GridDistance)
+            {
+                // 부호는 거리 배율이 정한다. 점수는 크기만 담으므로 음수를 막는다.
+                if (chillScore < 0 || singalongScore < 0 || moshScore < 0 ||
+                    calmScore < 0 || excitedScore < 0)
+                {
+                    error = "GridDistance scores must be zero or positive.";
+                    return false;
+                }
+
+                if (targetEngagement == AudienceEngagementStage.Middle)
+                {
+                    error = "GridDistance target engagement must be Calm or Excited.";
+                    return false;
+                }
             }
 
             error = string.Empty;
@@ -151,10 +176,64 @@ namespace ContextStage
                     audience.Id,
                     profile.FixedReactionValue);
 
+            if (profile.ReactionMode == AudienceReactionMode.GridDistance)
+                throw new InvalidOperationException(
+                    "GridDistance needs the card's target preference and distance multipliers.");
+
             return new AudienceReactionResult(
                 audience.Id,
                 profile.ScoreFor(audience.Preference),
                 profile.ScoreFor(audience.Stage));
+        }
+
+        /// <summary>
+        /// 카드 문맥(정답 열, 거리 배율표)이 필요한 계산. GridDistance 가 아니면 기본 계산과 같다.
+        /// 반응 = (관객 성향 점수 + 관객 몰입도 점수) x 배율[정답 칸과의 거리].
+        /// </summary>
+        public static AudienceReactionResult Resolve(
+            AudienceReactionProfile profile,
+            AudienceSnapshot audience,
+            CrowdPreference targetPreference,
+            IReadOnlyList<float> distanceMultipliers)
+        {
+            if (profile == null)
+                throw new ArgumentNullException(nameof(profile));
+
+            if (!profile.AppliesToAudience ||
+                profile.ReactionMode != AudienceReactionMode.GridDistance)
+                return Resolve(profile, audience);
+
+            if (distanceMultipliers == null || distanceMultipliers.Count == 0)
+                throw new ArgumentException(
+                    "Distance multipliers are required for GridDistance.",
+                    nameof(distanceMultipliers));
+
+            int distance = GridDistance(
+                targetPreference,
+                profile.TargetEngagement,
+                audience.Preference,
+                audience.Stage);
+            float multiplier =
+                distanceMultipliers[Mathf.Min(distance, distanceMultipliers.Count - 1)];
+            int magnitude =
+                profile.ScoreFor(audience.Preference) + profile.ScoreFor(audience.Stage);
+            return new AudienceReactionResult(
+                audience.Id,
+                Mathf.RoundToInt(magnitude * multiplier));
+        }
+
+        /// <summary>
+        /// 성향 열(Chill-Singalong-Mosh)과 몰입도 행(상/하)으로 만든 표에서의 칸 거리 (0~3).
+        /// </summary>
+        public static int GridDistance(
+            CrowdPreference cardPreference,
+            AudienceEngagementStage cardEngagement,
+            CrowdPreference audiencePreference,
+            AudienceEngagementStage audienceStage)
+        {
+            int column = Mathf.Abs((int)cardPreference - (int)audiencePreference);
+            int row = audienceStage == cardEngagement ? 0 : 1;
+            return column + row;
         }
     }
 }

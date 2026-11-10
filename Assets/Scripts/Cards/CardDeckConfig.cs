@@ -27,7 +27,12 @@ namespace ContextStage
         [SerializeField, Range(1, 4)] int minimumHandSize = 3;
         [SerializeField, Min(4)] private int maximumHandSize = 10;
 
+        [Header("관객 반응 표 거리 배율 (GridDistance 카드)")]
+        [SerializeField, Tooltip("정답 칸에서 0칸, 1칸, 2칸, 3칸 떨어졌을 때 (성향 점수 + 몰입도 점수)에 곱하는 값")]
+        float[] audienceDistanceMultipliers = { 1f, 0.5f, -0.25f, -1f };
+
         public IReadOnlyList<CardPoolEntry> CardPool => cardPool;
+        public IReadOnlyList<float> AudienceDistanceMultipliers => audienceDistanceMultipliers;
         public int GeneratedDeckSize => Mathf.Max(1, generatedDeckSize);
         public int PreparedDeckCount => Mathf.Clamp(preparedDeckCount, 2, 4);
         public int MinimumHandSize => Mathf.Clamp(minimumHandSize, 1, 4);

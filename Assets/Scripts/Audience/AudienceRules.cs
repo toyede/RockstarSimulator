@@ -47,11 +47,10 @@ namespace ContextStage
                 return false;
             }
 
-            if (CalmUpperBound <= 0f ||
-                MiddleUpperBound <= CalmUpperBound ||
-                MiddleUpperBound >= MaxEngagement)
+            // 몰입도는 하(Calm)/상(Excited) 2단계다. MiddleUpperBound 는 더 이상 판정에 쓰지 않는다.
+            if (CalmUpperBound <= 0f || CalmUpperBound >= MaxEngagement)
             {
-                error = "Stage boundaries must satisfy 0 < calm < middle < max.";
+                error = "Stage boundary must satisfy 0 < low/high boundary < max.";
                 return false;
             }
 
@@ -74,12 +73,11 @@ namespace ContextStage
         public float Clamp(float engagement) =>
             Mathf.Clamp(engagement, 0f, MaxEngagement);
 
+        /// <summary>경계 이하는 하(Calm), 초과는 상(Excited). Middle 은 반환하지 않는다.</summary>
         public AudienceEngagementStage ResolveStage(float engagement)
         {
-            float clamped = Clamp(engagement);
-            if (clamped <= CalmUpperBound) return AudienceEngagementStage.Calm;
-            return clamped <= MiddleUpperBound
-                ? AudienceEngagementStage.Middle
+            return Clamp(engagement) <= CalmUpperBound
+                ? AudienceEngagementStage.Calm
                 : AudienceEngagementStage.Excited;
         }
 

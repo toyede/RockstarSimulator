@@ -13,8 +13,12 @@ namespace ContextStage
         [SerializeField, Min(0f)] float initialEngagementMax = 50f;
 
         [Header("Display Stages")]
-        [SerializeField, Min(0.01f)] float calmUpperBound = 33f;
-        [SerializeField, Min(0.01f)] float middleUpperBound = 66f;
+        [SerializeField, Min(0.01f), Tooltip("하/상 경계. 이 값 이하면 하(Calm), 초과면 상(Excited)")]
+        float calmUpperBound = 50f;
+        [SerializeField, Min(0.01f), Tooltip("미사용 — 몰입도는 하/상 2단계만 쓴다")]
+        float middleUpperBound = 66f;
+        [SerializeField, Min(0.01f), Tooltip("이 값 이하로 떨어지면 관객 머리 위에 이탈 경고 바를 표시한다")]
+        float warningUpperBound = 33f;
 
         [Header("Balance")]
         [SerializeField, Min(0f)] float naturalDecayPerSecond = 1f;
@@ -25,6 +29,7 @@ namespace ContextStage
         public float InitialEngagementMax => initialEngagementMax;
         public float CalmUpperBound => calmUpperBound;
         public float MiddleUpperBound => middleUpperBound;
+        public float WarningUpperBound => warningUpperBound;
         public float NaturalDecayPerSecond => naturalDecayPerSecond;
         public float EngagementPerReactionPoint => engagementPerReactionPoint;
 
@@ -58,6 +63,7 @@ namespace ContextStage
                 middleUpperBound,
                 calmUpperBound + 0.01f,
                 maxEngagement - 0.01f);
+            warningUpperBound = Mathf.Clamp(warningUpperBound, 0.01f, maxEngagement);
             naturalDecayPerSecond = Mathf.Max(0f, naturalDecayPerSecond);
             engagementPerReactionPoint = Mathf.Max(0f, engagementPerReactionPoint);
         }

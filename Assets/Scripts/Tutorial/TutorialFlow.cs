@@ -82,7 +82,7 @@ namespace ContextStage
 
         [Header("관객 몰입도 프리셋 (0~100)")]
         [SerializeField, Tooltip("지루(Calm) 상태로 만들 값")] float calmEngagement = 16f;
-        [SerializeField, Tooltip("관심(Middle) 상태로 만들 값")] float middleEngagement = 52f;
+        [SerializeField, Tooltip("튜토리얼 기본 관객 값. 하(Calm)이면서 경고 바 기준보다 높게 둔다")] float middleEngagement = 40f;
         [SerializeField, Tooltip("흥분(Excited) 상태로 만들 값")] float excitedEngagement = 88f;
 
         [Header("최종 미니 공연")]
