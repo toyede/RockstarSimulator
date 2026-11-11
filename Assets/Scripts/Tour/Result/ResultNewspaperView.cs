@@ -53,7 +53,7 @@ namespace ContextStage
         [SerializeField] TMP_Text statCombo;
         [SerializeField] TMP_Text statFever;
         [SerializeField] TMP_Text statAudience;
-        [SerializeField] TMP_Text articleTitle;
+        [SerializeField, Tooltip("기존 지면의 2줄 기사 제목. 한 줄 기사 레이아웃에서는 숨긴다.")] TMP_Text articleTitle;
         [SerializeField] TMP_Text articleBody;
         [SerializeField] Button primaryButton;
         [SerializeField] TMP_Text primaryLabel;
@@ -81,7 +81,11 @@ namespace ContextStage
         Coroutine _bandRoutine;
         Action _onPrimary;
         bool _complete;
+        float _stampRestScale = 1f;
         Vector2[] _scoreBasePositions;
+        readonly Vector2[] _recordBasePositions = new Vector2[4];
+        readonly Vector2[] _recordBaseSizes = new Vector2[4];
+        bool _recordLayoutCached;
 
         public bool IsShowing => root != null && root.activeSelf;
         public bool IsAnimating => _routine != null;
@@ -197,6 +201,7 @@ namespace ContextStage
                 }
             }
 
+            _stampRestScale = d.success && !d.isBoss ? 1.5f : 1f;
             Set(stampText, d.stampText);
             if (stampText != null) stampText.color = d.stampColor;
             if (stampFrame != null)
@@ -213,22 +218,53 @@ namespace ContextStage
             Set(ratioText, $"목표 달성률 {d.achievedPercent}%");
             ShiftScoreBlock(d.showRank && d.rankIcon != null ? 0f : -scoreShiftWithoutRank);
 
+            ApplyRecordLayout(d.skin);
             Set(statCombo, d.statCombo);
             Set(statFever, d.statFever);
             Set(statAudience, d.statAudience);
-            Set(articleTitle, d.articleTitle);
+            if (articleTitle != null) articleTitle.gameObject.SetActive(false);
             Set(articleBody, d.articleBody);
-            // Keep the authored box, but start short articles at its top edge:
-            // middle alignment made a single line overlap the newspaper's bottom rule.
-            if (articleBody != null) articleBody.verticalAlignment = VerticalAlignmentOptions.Top;
             Set(primaryLabel, d.buttonLabel);
             FitTypography();
+        }
+
+        void ApplyRecordLayout(ResultNewspaperCatalog.Skin skin)
+        {
+            TMP_Text[] fields = { statCombo, statFever, statAudience, articleBody };
+            bool hasLayout = skin != null && skin.statLeftEdges != Vector3.zero;
+            for (int i = 0; i < fields.Length; i++)
+            {
+                TMP_Text field = fields[i];
+                if (field == null) continue;
+                RectTransform rect = field.rectTransform;
+                if (!_recordLayoutCached)
+                {
+                    _recordBasePositions[i] = rect.anchoredPosition;
+                    _recordBaseSizes[i] = rect.sizeDelta;
+                }
+                field.alignment = TextAlignmentOptions.MidlineLeft;
+                field.textWrappingMode = TextWrappingModes.NoWrap;
+                field.overflowMode = TextOverflowModes.Ellipsis;
+                if (!hasLayout)
+                {
+                    rect.sizeDelta = _recordBaseSizes[i];
+                    rect.anchoredPosition = _recordBasePositions[i];
+                    continue;
+                }
+                bool footer = i == 3;
+                Vector2 size = footer ? new Vector2(850f, 34f) : new Vector2(194f, 72f);
+                float left = footer ? skin.footerStart.x : skin.statLeftEdges[i];
+                float centerY = footer ? skin.footerStart.y : skin.statCenterY;
+                rect.sizeDelta = size;
+                rect.anchoredPosition = new Vector2(left + size.x * rect.pivot.x, centerY + size.y * (rect.pivot.y - .5f));
+            }
+            _recordLayoutCached = true;
         }
 
         void FitTypography()
         {
             TMP_Text[] labels = { mastheadInfo, headline, subtitle, caption, stampText, scoreText, targetText,
-                ratioText, statCombo, statFever, statAudience, articleTitle, articleBody, primaryLabel };
+                ratioText, statCombo, statFever, statAudience, articleBody, primaryLabel };
             foreach (TMP_Text label in labels)
             {
                 if (label == null) continue;
@@ -275,7 +311,8 @@ namespace ContextStage
                 paper.anchoredPosition = new Vector2(0f, paperStartOffsetY);
                 paper.localRotation = Quaternion.Euler(0f, 0f, paperStartTilt);
             }
-            if (stamp != null) stamp.localScale = Vector3.one * stampPunchScale;
+            float stampStartScale = Mathf.Max(stampPunchScale, _stampRestScale);
+            if (stamp != null) stamp.localScale = Vector3.one * stampStartScale;
 
             float t = 0f;
             bool headlineShown = false, stampShown = false, recordsShown = false;
@@ -308,7 +345,7 @@ namespace ContextStage
                 if (stampShown && stamp != null)
                 {
                     float s = stampPunchDuration <= 0f ? 1f : Mathf.Clamp01((t - stampStarted) / stampPunchDuration);
-                    stamp.localScale = Vector3.one * Mathf.Lerp(stampPunchScale, 1f, s * s);
+                    stamp.localScale = Vector3.one * Mathf.Lerp(stampStartScale, _stampRestScale, s * s);
                     stamp.localRotation = Quaternion.Euler(0f, 0f, stampTilt);
                 }
                 if (!recordsShown && t >= recordsAt)
@@ -375,7 +412,7 @@ namespace ContextStage
             SetGroup(recordsGroup, 1f);
             if (stamp != null)
             {
-                stamp.localScale = Vector3.one;
+                stamp.localScale = Vector3.one * _stampRestScale;
                 stamp.localRotation = Quaternion.Euler(0f, 0f, stampTilt);
             }
             if (skipCatcher != null) skipCatcher.gameObject.SetActive(false);

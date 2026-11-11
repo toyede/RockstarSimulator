@@ -489,10 +489,13 @@ namespace ContextStage
             };
 
             context.useBackdropImage = true; // 허브에는 뒤에 보여줄 화면이 없으므로 블러 대신 배경 그림
-            if (entry != null && entry.illustration != null)
+            // 합류 전 결말에는 3인 밴드를 그린 배드 엔딩 일러스트를 보여주지 않는다.
+            if (entry != null && entry.illustration != null &&
+                _verdict.sequenceId != TourEndingSelector.BadBeforeJoinId)
             {
                 context.backdrop = entry.illustration;
                 context.brightBackdrop = true; // 일러스트가 주인공
+                context.hidePortraits = true;
             }
             else
             {

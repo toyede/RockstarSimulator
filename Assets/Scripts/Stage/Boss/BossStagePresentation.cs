@@ -468,8 +468,9 @@ namespace ContextStage
             var buttonObject = new GameObject("PeekButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             _peekRect = buttonObject.GetComponent<RectTransform>();
             _peekRect.SetParent(canvasObject.transform, false);
+            const float cameraArtWidth = 292f;
             _peekRect.sizeDelta = peekButtonSprite != null
-                ? new Vector2(240f, 240f * peekButtonSprite.rect.height / peekButtonSprite.rect.width)
+                ? new Vector2(cameraArtWidth, cameraArtWidth * peekButtonSprite.rect.height / peekButtonSprite.rect.width)
                 : new Vector2(240f, 56f);
             var image = buttonObject.GetComponent<Image>();
             image.sprite = peekButtonSprite;

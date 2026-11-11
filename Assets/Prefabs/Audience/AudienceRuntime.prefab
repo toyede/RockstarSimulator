@@ -65,12 +65,12 @@ MonoBehaviour:
   maximumColumns: 5
   horizontalSpacing: 1.35
   rowSpacing: 0.55
-  layoutJitter: 0.14
-  floorOffsetY: -0.4
-  rearRowMaximumY: 0.8
+  layoutJitter: 0.26
+  floorOffsetY: -1.02
+  rearRowMaximumY: 0.18
   layoutHalfWidth: 8.4
-  frontRowScale: 0.58
-  rowScaleFalloff: 0.86
+  frontRowScale: 0.7
+  rowScaleFalloff: 0.8
   baseSortingOrder: 5
   cardReactionPresentationDelay: 0.05
 --- !u!114 &6613373462250735996

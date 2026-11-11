@@ -596,7 +596,9 @@ namespace ContextStage
             motionRoot.localPosition = _feet + new Vector3(0f, height + travelHeight, 0f);
             visualRoot.localRotation = Quaternion.Euler(0f, 0f, sway);
 
-            _currentScale = Mathf.Lerp(_currentScale, _targetScale, Time.deltaTime * scaleLerpSpeed);
+            float groundScale = audiencePresenter != null
+                ? audiencePresenter.GetDepthScaleAtY(_feet.y) * scaleMultiplier : _targetScale;
+            _currentScale = Mathf.Lerp(_currentScale, groundScale, Time.deltaTime * scaleLerpSpeed);
             squash = Mathf.Clamp(squash + travelSquash, -0.12f, 0.32f);
             visualRoot.localScale = new Vector3(
                 _facing * _currentScale * (1f + squash * 0.5f) * _hoverScaleMultiplier,

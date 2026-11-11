@@ -24,20 +24,20 @@ MonoBehaviour:
     - excited
     - relieved
     frames:
-    - {fileID: 21300000, guid: bf12fd2b0d6b69943ba64c0d4fd3a7f6, type: 3}
+    - {fileID: 21300000, guid: fe0fe6832aa6436408c0c45bb34b21ec, type: 3}
     frameInterval: 0.45
   - speakerId: raccoon
     emotionIds:
     - angry
     frames:
-    - {fileID: 21300000, guid: 43f0ad3b5f70bda4f879a3ea54b62b8d, type: 3}
+    - {fileID: 21300000, guid: b823c4d24c317624d8b7626c20bc930a, type: 3}
     frameInterval: 0.45
   - speakerId: raccoon
     emotionIds:
     - crying
     - sad
     frames:
-    - {fileID: 21300000, guid: 1265846ca8760df4da5866feeb7ae403, type: 3}
+    - {fileID: 21300000, guid: 40428520478ab7848b92eab604a9a742, type: 3}
     frameInterval: 0.45
   - speakerId: hedgehog
     emotionIds: []

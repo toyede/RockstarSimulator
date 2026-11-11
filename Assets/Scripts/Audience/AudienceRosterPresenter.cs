@@ -446,6 +446,16 @@ namespace ContextStage
                 AudienceOutlineMode.Occluded);
         }
 
+        /// <summary>밴드와 가까운 화면 아래쪽을 전경으로 보고, 발의 Y에 따라 크기를 정한다.</summary>
+        public float GetDepthScaleAtY(float localGroundY)
+        {
+            if (_tutorialLayout) return frontRowScale;
+            float nearY = floorOffsetY - .15f;
+            float depth = Mathf.Clamp(localGroundY - nearY, 0f,
+                Mathf.Max(0f, rearRowMaximumY + .25f - nearY));
+            return frontRowScale * Mathf.Pow(rowScaleFalloff, depth / Mathf.Max(.1f, rowSpacing));
+        }
+
         void Relayout()
         {
             int count = _order.Count;
@@ -482,17 +492,18 @@ namespace ContextStage
                 float x = (column - (columns - 1) * .5f) * spacing + stagger + jitterX;
                 float y = floorOffsetY + row * verticalSpacing + jitterY;
                 float scale = frontRowScale * Mathf.Pow(rowScaleFalloff, row);
-                int sortingOrder = baseSortingOrder + 10 - Mathf.RoundToInt(y * 2f);
                 actor.SetTutorialPlacement(_tutorialLayout);
                 if (_tutorialLayout)
                 {
                     float lessonSpacing = Mathf.Min(1.7f, spacing);
                     x = (column - (columns - 1) * .5f) * lessonSpacing;
-                    y = floorOffsetY + row * verticalSpacing;
+                    // 정중앙 한 명만 남아도 앞쪽 너구리의 왕관에 가리지 않게 한다.
+                    y = floorOffsetY + row * verticalSpacing + .4f;
                 }
+                int sortingOrder = baseSortingOrder + 10 - Mathf.RoundToInt(y * 2f);
                 actor.SetWalkArea(Rect.MinMaxRect(-halfWidth, floorOffsetY - .15f,
                     halfWidth, rearRowMaximumY + .25f), slot);
-                actor.SetLayout(new Vector3(x, y, 0f), scale, sortingOrder);
+                actor.SetLayout(new Vector3(x, y, 0f), scale, sortingOrder, this);
             }
         }
 

@@ -10,7 +10,7 @@ namespace ContextStage
     ///
     /// - 위쪽 가운데 단상 + LUX//FAUNA 듀오(duoFrames 프레임 교대, 없으면 Square 두 개)
     /// - 그 아래로 라이벌 팬이 흩어져 서 있다. 관객 프리팹(AudienceMember)과 같은 성향별 대기 애니메이션을 쓰되
-    ///   어둡게 틴트한다. 뒷줄일수록 작고, 가장 뒷줄은 우리 화면 위쪽 가장자리에 걸쳐 "보스 팀 관객이 어둡고 작게" 보인다
+    ///   어둡게 틴트한다. 밴드에 가까운 앞쪽 관객은 뒤쪽 관객보다 크게 보인다.
     /// - 팬 수는 룰(BossFanBalanceChanged)과 동기화. 이동(BossFanMoved)은 우리 → 라이벌이면 아래(우리 무대)에서 걸어 올라오고,
     ///   라이벌 → 우리면 아래로 걸어 내려간다
     /// - 패턴 예고 중 듀오 점멸, REVENGE 진입 시 LED 진홍
@@ -35,8 +35,8 @@ namespace ContextStage
         [SerializeField, Tooltip("뒷줄(단상 바로 앞) y. 앞줄부터 이 높이까지 3줄 간격으로 채우고, 그 뒤 줄은 여기에 모인다")] float fanBackY = 1.0f;
         [SerializeField, Min(1), Tooltip("한 줄 인원. 5면 시작 팬 14명이 3줄로 퍼진다")] int fansPerRow = 5;
         [SerializeField, Tooltip("가로 퍼짐 폭")] float fanSpreadWidth = 13f;
-        [SerializeField, Tooltip("가장 뒷줄(단상 앞) 크기 — 관객 프리팹 기준 배율")] float fanScaleBack = 0.55f;
-        [SerializeField, Tooltip("가장 앞줄(우리 화면에 걸치는 줄) 크기")] float fanScaleFront = 0.4f;
+        [SerializeField, Tooltip("원근 크기 범위의 한쪽 끝. 큰 값이 우리 밴드 쪽에 적용된다.")] float fanScaleBack = 0.55f;
+        [SerializeField, Tooltip("원근 크기 범위의 다른 쪽 끝. 작은 값이 라이벌 단상 쪽에 적용된다.")] float fanScaleFront = 0.4f;
         [SerializeField, Range(0f, 1f), Tooltip("가로·세로 흐트러짐")] float fanJitter = 0.45f;
         [SerializeField] int fanSeed = 1207;
         [SerializeField, Tooltip("보스 팀 관객은 어둡게")] Color fanTint = new Color32(0x4E, 0x46, 0x5C, 0xFF);
@@ -92,6 +92,7 @@ namespace ContextStage
         SpriteRenderer _duoSprite;
         float _duoFrameTimer;
         int _duoFrame;
+        bool _duoDropPlaying;
         readonly List<Fan> _fans = new List<Fan>();
         readonly List<Fan> _outgoing = new List<Fan>();
         AudienceEngagementStage _audienceStage;
@@ -160,8 +161,14 @@ namespace ContextStage
                 if (_duoFrameTimer >= duoFrameInterval)
                 {
                     _duoFrameTimer = 0f;
-                    _duoFrame = (_duoFrame + 1) % duoFrames.Length;
-                    if (duoFrames[_duoFrame] != null) _duoSprite.sprite = duoFrames[_duoFrame];
+                    int last = duoFrames.Length - 1;
+                    if (_duoDropPlaying && _duoFrame < last)
+                        ShowDuoFrame(_duoFrame + 1);
+                    else
+                    {
+                        _duoDropPlaying = false;
+                        ShowDuoFrame(_duoFrame == last ? 0 : last);
+                    }
                 }
             }
 
@@ -225,7 +232,7 @@ namespace ContextStage
             float bob=0, sway=0, squash=0;
             if (_motionTo != null)
                 CrowdMotionEvaluator.EvaluateBlended(_motionFrom, _motionTo, _motionBlend, clock,
-                    out bob, out sway, out squash);
+                    out bob, out sway, out squash, fan.Seed + fanSeed);
             if (_dropJumpAge >= 0f)
             {
                 float age = _dropJumpAge - (fan.Seed & 3) * 0.035f;
@@ -241,8 +248,23 @@ namespace ContextStage
                 }
             }
             var pose = fan.Renderer.transform;
-            pose.localPosition = fan.PresentationSlot + (Vector3)fan.Wander + Vector3.up * bob;
+            Vector3 ground = fan.PresentationSlot + (Vector3)fan.Wander;
+            pose.localPosition = ground + Vector3.up * bob;
             pose.localRotation = Quaternion.Euler(0, 0, sway * fan.Variance.Flip);
+            ApplyFanScale(fan, ground.y, squash);
+        }
+
+        float FanScaleAtY(float localGroundY)
+        {
+            float depth = Mathf.InverseLerp(fanFrontY, fanBackY, localGroundY);
+            return Mathf.Lerp(Mathf.Max(fanScaleFront, fanScaleBack),
+                Mathf.Min(fanScaleFront, fanScaleBack), depth);
+        }
+
+        void ApplyFanScale(Fan fan, float localGroundY, float squash = 0f)
+        {
+            fan.Scale = FanScaleAtY(localGroundY);
+            var pose = fan.Renderer.transform;
             pose.localScale = new Vector3(fan.Scale * (1 + squash * 0.5f), fan.Scale * (1 - squash), 1);
         }
 
@@ -335,7 +357,18 @@ namespace ContextStage
 
         void OnDropImpact(BossDropImpact e)
         {
-            if (_root != null && _root.gameObject.activeInHierarchy) _dropJumpAge = 0f;
+            if (_root == null || !_root.gameObject.activeInHierarchy) return;
+            _dropJumpAge = 0f;
+            if (_duoSprite == null || duoFrames.Length <= 1) return;
+            _duoDropPlaying = true;
+            _duoFrameTimer = 0f;
+            ShowDuoFrame(0);
+        }
+
+        void ShowDuoFrame(int index)
+        {
+            _duoFrame = index;
+            if (duoFrames[index] != null) _duoSprite.sprite = duoFrames[index];
         }
 
         void OnPatternResolved(BossPatternResolved e)
@@ -392,12 +425,13 @@ namespace ContextStage
 
             var random = new System.Random(fanSeed + index * 7919);
             float jx = ((float)random.NextDouble() - 0.5f) * fanJitter * (fanSpreadWidth / rowCount);
-            float jy = ((float)random.NextDouble() - 0.5f) * fanJitter * 0.6f;
-            float stagger = (row % 2 == 1) ? (fanSpreadWidth / rowCount) * 0.5f : 0f;
+            float jy = ((float)random.NextDouble() - 0.5f) * fanJitter * 2.4f;
+            float stagger = ((row & 1) == 1 ? .23f : -.10f) * (fanSpreadWidth / rowCount);
 
             float x = (col - (rowCount - 1) * 0.5f) * (fanSpreadWidth / rowCount) + stagger + jx;
-            float y = Mathf.Lerp(fanFrontY, fanBackY, rowT) + jy;
-            scale = Mathf.Lerp(fanScaleFront, fanScaleBack, rowT);
+            float rearDrop = row == 0 ? 0f : row == 1 ? .45f : .65f;
+            float y = Mathf.Lerp(fanFrontY, fanBackY, rowT) - rearDrop + jy;
+            scale = FanScaleAtY(y);
             order = fanSortingOrder + Mathf.Clamp(2 - row, 0, 2); // 앞줄(아래)이 뒷줄을 가린다, 관객(5) 아래로만
             return new Vector3(x, y, 0f);
         }
@@ -497,7 +531,9 @@ namespace ContextStage
                 elapsed += Time.deltaTime;
                 float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
                 float bob = Mathf.Abs(Mathf.Sin(t * Mathf.PI * 4f)) * 0.12f;
-                fan.Renderer.transform.position = Vector3.Lerp(from, to, t) + new Vector3(0f, bob, 0f);
+                Vector3 ground = Vector3.Lerp(from, to, t);
+                fan.Renderer.transform.position = ground + Vector3.up * bob;
+                ApplyFanScale(fan, _root.InverseTransformPoint(ground).y);
                 fan.Fade = fadeOut ? 1f - t * 0.6f : 1f;
                 yield return null;
             }
@@ -531,6 +567,9 @@ namespace ContextStage
         void ResetVisual()
         {
             _dropJumpAge = -1f;
+            _duoDropPlaying = false;
+            _duoFrameTimer = 0f;
+            if (_duoSprite != null) ShowDuoFrame(duoFrames.Length - 1);
             if (_arrivalVfx != null) _arrivalVfx.Clear();
             StopAllCoroutines();
             _blinkRoutine = null;
@@ -589,7 +628,7 @@ namespace ContextStage
                 _duoSprite.sprite = first;
                 _duoA = _duoSprite;
                 _duoB = _duoSprite;
-                _duoFrame = 0;
+                ShowDuoFrame(duoFrames.Length - 1);
                 _duoFrameTimer = 0f;
                 // LED 는 듀오 뒤, 머리 높이
                 _led = CreateSquareRenderer("LED", new Vector2(platformCenter.x, platformTop + duoHeight * 0.75f), new Vector2(3.2f, 0.5f), ledColor, sortingOrder + 1);

@@ -15,7 +15,7 @@ MonoBehaviour:
   entries:
   - kind: 0
     title: "\uACF5\uC5F0 \uC911\uB2E8"
-    illustration: {fileID: 0}
+    illustration: {fileID: 21300000, guid: 0a17b9a0610c1e94b964a0a1a5cf7e77, type: 3}
     summary: "\uC7A5\uBE44\uB97C \uBE7C\uB2EC\uB77C\uB294 \uB9D0\uC744 \uB4E4\uC5C8\uB2E4.
       \uCD1D\uC810 {0}."
   - kind: 1
@@ -25,18 +25,18 @@ MonoBehaviour:
       \uAD11\uACE0\uAC00 \uB5B4\uB2E4. \uCD1D\uC810 {0}."
   - kind: 2
     title: "\uD06C\uB77C\uC6B0\uB4DC\uC11C\uD551"
-    illustration: {fileID: 0}
+    illustration: {fileID: 21300000, guid: 4aa652fbfc1bab143864a5093098330d, type: 3}
     summary: "\uC9C0\uD558 \uD074\uB7FD\uC758 \uD32C\uB4E4\uC740 \uBB3C\uB7EC\uC11C\uC9C0
       \uC54A\uC558\uB2E4. \uCD1D\uC810 {0}, \uAC00\uC7A5 \uB728\uAC70\uC6B4 \uAD00\uAC1D
       {1}."
   - kind: 3
     title: "\uB5BC\uCC3D"
-    illustration: {fileID: 0}
+    illustration: {fileID: 21300000, guid: 8bbf1daf6524e6844a89a0874c2ccd89, type: 3}
     summary: "\uBC16\uC5D0\uC11C\uB294 \uC544\uC9C1\uB3C4 \uD6C4\uB834\uC774 \uB4E4\uB9B0\uB2E4.
       \uCD1D\uC810 {0}, \uAC00\uC7A5 \uB728\uAC70\uC6B4 \uAD00\uAC1D {1}."
   - kind: 4
     title: "\uCCAB \uC2F1\uAE00"
-    illustration: {fileID: 0}
+    illustration: {fileID: 21300000, guid: bd82e6e62c76cbc42876eb01b891dc35, type: 3}
     summary: "\uC9C1\uC811 \uB179\uC74C\uD55C \uACE1\uC774 \uCD94\uCC9C \uBAA9\uB85D\uC5D0
       \uC62C\uB790\uB2E4. \uCD1D\uC810 {0}, \uAC00\uC7A5 \uB728\uAC70\uC6B4 \uAD00\uAC1D
       {1}."

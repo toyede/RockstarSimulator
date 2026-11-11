@@ -358,7 +358,7 @@ namespace ContextStage
             if (nameText != null) nameText.text = hasName ? line.speakerName : string.Empty;
 
             // 이름 없는 상황 지문에 직전 화자의 초상화가 남아 있으면 그 인물의 대사처럼 보인다.
-            if (!hasName && line.portrait == null) ResetPortraits();
+            if (_context.hidePortraits || (!hasName && line.portrait == null)) ResetPortraits();
             else ApplyPortraits(line);
 
             if (!string.IsNullOrEmpty(line.sfxId)) Sound.Play(line.sfxId);

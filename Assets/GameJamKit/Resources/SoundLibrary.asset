@@ -261,3 +261,12 @@ MonoBehaviour:
     loop: 1
     minInterval: 0.02
     bus: 0
+  - id: summer_nights
+    clips:
+    - {fileID: 8300000, guid: 1077d3a58e0ebce4380d0db79fc0eb9b, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+    bus: 0

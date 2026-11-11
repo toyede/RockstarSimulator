@@ -21,7 +21,8 @@ namespace ContextStage
         readonly List<Entry> _entries = new List<Entry>(40);
         readonly List<Entry> _pending = new List<Entry>(8);
         [SerializeField, Min(0f)] float crossingMargin = .04f;
-        const int FirstOrder = 5;
+        // 장식 관객(2–4)과 무대 바닥(5) 위에서 실제 관객을 정렬한다.
+        const int FirstOrder = 6;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatic() => _instance = null;

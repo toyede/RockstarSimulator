@@ -178,6 +178,7 @@ namespace ContextStage
         // 향해 서서히 따라가며, 관객 수 변화로 인한 순간이동을 막는다.
         Vector3 _currentLayoutPosition;
         float _currentLayoutScale = 1f;
+        AudienceRosterPresenter _depthLayout;
         bool _hasLayout;
         float _warningUpperBound = 33f;
         float _phase;
@@ -219,7 +220,7 @@ namespace ContextStage
         bool _hasStableDepthOrder;
         Vector3 _walkExitStart, _walkExitTarget;
         float _walkExitDuration;
-        [SerializeField, Min(.1f)] float lostInterestWalkSpeed = .85f;
+        [SerializeField, Min(.1f)] float lostInterestWalkSpeed = 2.1f;
         [Header("Engagement presentation")]
         [SerializeField, Range(.5f, 1f)] float middleGatherWidth = .85f;
         [SerializeField, Range(.5f, 1f)] float excitedGatherWidth = .75f;
@@ -306,7 +307,8 @@ namespace ContextStage
             }
             ApplyTransform();
         }
-        public float LayoutScale => _layoutScale;
+        public float LayoutScale => _depthLayout != null
+            ? _depthLayout.GetDepthScaleAtY(_layoutPosition.y) : _layoutScale;
         public int SortingOrder =>
             characterRenderer != null ? characterRenderer.sortingOrder : 0;
         public float GroundSortY
@@ -369,6 +371,7 @@ namespace ContextStage
         public void OnSpawned()
         {
             _tutorialPlacement = false;
+            _depthLayout = null;
             _hasStableDepthOrder = false;
             _hasWalkArea = false;
             _walkExitDuration = 0f;
@@ -475,8 +478,9 @@ namespace ContextStage
             UpdateWarning();
         }
 
-        public void SetLayout(Vector3 localPosition, float scale, int sortingOrder)
+        public void SetLayout(Vector3 localPosition, float scale, int sortingOrder, AudienceRosterPresenter depthLayout)
         {
+            _depthLayout = depthLayout;
             _restLayoutPosition = localPosition;
             RefreshPresentationTarget();
             _layoutScale = Mathf.Max(0.01f, scale);
@@ -892,8 +896,7 @@ namespace ContextStage
             // 개체별 위상·속도 편차를 곱해 같은 공식을 써도 군무처럼 보이지 않게 한다.
             float time = (Time.time + _phase) * _variance.SpeedMultiplier;
 
-            // 배경 군중(CrowdMemberView)·특별 관객과 완전히 같은 공식을 쓴다.
-            // bob + sway + 점프(사인 아치) + 착지 스쿼시. 단계 전환은 부드럽게 섞인다.
+            // 반동과 착지는 유지하되, 공연 중에는 관객마다 뛰는 박자를 다르게 준다.
             CrowdMotionEvaluator.EvaluateBlended(
                 _motionFrom,
                 _motionTo,
@@ -901,7 +904,8 @@ namespace ContextStage
                 time,
                 out float bob,
                 out float swayAngle,
-                out float squashAmount);
+                out float squashAmount,
+                _tutorialPlacement ? (int?)null : _boundId.Value);
 
             float pulse = reactionPulseDuration > 0f
                 ? Mathf.Sin(
@@ -1014,13 +1018,13 @@ namespace ContextStage
             transform.localRotation *= Quaternion.Euler(0, 0, gestureRotation);
             squashAmount = Mathf.Clamp(squashAmount + gestureSquash, 0, 0.08f);
 
-            transform.localPosition =
-                _currentLayoutPosition +
-                new Vector3(_wanderOffset.x, _wanderOffset.y, 0f) +
-                new Vector3(0f, bob + reactionJump, 0f) +
-                motionOffset;
+            Vector3 ground = _currentLayoutPosition + (Vector3)_wanderOffset;
+            transform.localPosition = ground + Vector3.up * (bob + reactionJump) + motionOffset;
             // 착지 스쿼시: 눌리면 세로로 줄고 가로로 퍼진다 (점프에 무게감을 준다)
-            float scale = _currentLayoutScale * sizeRatio * (1f + pulse);
+            float depthScale = _depthLayout != null
+                ? _depthLayout.GetDepthScaleAtY(ground.y) : _currentLayoutScale;
+            float visualScaleMultiplier = sizeRatio * (1f + pulse);
+            float scale = depthScale * visualScaleMultiplier;
             bool flipCharacter =
                 allowHorizontalFlip &&
                 _variance.Flip < 0f;
@@ -1045,9 +1049,9 @@ namespace ContextStage
                 scale * (1f + squashAmount * 0.5f),
                 scale * (1f - squashAmount),
                 1f);
-            // Hold the sprite's feet in place when rotating/squashing a center-pivot sprite.
+            // 크기·기울기가 바뀌어도 중앙 피벗 스프라이트의 발 위치는 기존 배치 기준에 고정한다.
             float bottom = characterRenderer.sprite != null ? characterRenderer.sprite.bounds.min.y : 0;
-            Vector3 oldFoot = new Vector3(0, bottom * scale, 0);
+            Vector3 oldFoot = new Vector3(0, bottom * _currentLayoutScale * visualScaleMultiplier, 0);
             Vector3 newFoot = transform.localRotation * new Vector3(0, bottom * transform.localScale.y, 0);
             transform.localPosition += oldFoot - newFoot;
             warningRoot.transform.rotation = Quaternion.identity;

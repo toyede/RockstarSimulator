@@ -104,7 +104,7 @@ static class TutorialPosterMusicVerification
         Check(Actors().Any(a => Mathf.Abs(a.transform.localPosition.x) > 3f), "ordinary Calm resumes outer-map wandering after tutorial");
         Stage("Stage02"); tutorial.StartTutorial(); yield return new WaitForSeconds(1f);
         Check(TutorialFlow.IsRunning && Actors().All(a => Field<bool>(a, "_tutorialPlacement")), "Stage2 special lesson also fixes normal audience centrally");
-        Check(Bgm.Current == "big_rock", "Stage2 tutorial keeps Big Rock");
+        Check(Bgm.Current == "so_bueno", "Stage2 tutorial uses So Bueno");
         tutorial.SkipTutorial();
         Stage("Stage03"); yield return new WaitForSeconds(1.8f);
         Check(Bgm.Current == "dogtown" && Active().clip.name == "Dogtown - National Sweetheart" && Active().isPlaying, "Stage3 actual Dogtown AudioSource plays");

@@ -296,16 +296,16 @@ MonoBehaviour:
       height: 960
       headlineArea:
         serializedVersion: 2
-        x: 0.11
-        y: 0.865
-        width: 0.78
-        height: 0.125
+        x: 0.017
+        y: 0.77528006
+        width: 0.536544
+        height: 0.19872
       artistArea:
         serializedVersion: 2
-        x: 0.15
-        y: 0.83
-        width: 0.7
-        height: 0.03
+        x: 0.575
+        y: 0.947
+        width: 0.412
+        height: 0.037
       ruleLabelArea:
         serializedVersion: 2
         x: 0.12

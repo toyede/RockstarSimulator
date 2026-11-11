@@ -1987,13 +1987,14 @@ MonoBehaviour:
   allowHorizontalFlip: 1
   cardMotionDuration: 0.9
   moshSpreadDistance: 1
-  lostInterestWalkSpeed: 0.85
+  lostInterestWalkSpeed: 3
   middleGatherWidth: 0.85
   excitedGatherWidth: 0.75
   calmWanderRadius: 0.55
   calmWalkSpeed: 0.24
   calmSaturation: 0.4
   middleSaturation: 0.75
+  calmSpritesFaceLeft: 1
 --- !u!114 &4750493014263167139
 MonoBehaviour:
   m_ObjectHideFlags: 0

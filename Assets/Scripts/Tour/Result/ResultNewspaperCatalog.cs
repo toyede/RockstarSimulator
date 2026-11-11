@@ -24,6 +24,12 @@ namespace ContextStage
             public Vector2 headlineOffset;
             [Tooltip("기록 칸(콤보·피버·관객, 기사) 묶음을 옮기는 양 (지면 로컬 px)")]
             public Vector2 recordsOffset;
+            [Tooltip("기록 각 칸의 왼쪽 시작점 X (기록 묶음 로컬 px). 0 벡터면 씬 배치를 사용")]
+            public Vector3 statLeftEdges;
+            [Tooltip("기록 줄의 중앙 Y (기록 묶음 로컬 px)")]
+            public float statCenterY;
+            [Tooltip("하단 한 줄 기사 위치 (왼쪽 X, 중앙 Y; 기록 묶음 로컬 px)")]
+            public Vector2 footerStart;
         }
 
         [Serializable]
@@ -119,15 +125,15 @@ namespace ContextStage
 
         [Header("기믹 기사 — 스테이지별 한 칸 ({0},{1} = 값)")]
         [SerializeField] string articleBuskingTitle = "거리의 발길이 멈췄다";
-        [SerializeField] string articleBuskingBody = "지나가던 관객 {0}명이 공연 중 합류";
+        [SerializeField] string articleBuskingBody = "새 관객 {0}명 합류";
         [SerializeField] string articleSpecialTitle = "까다로운 손님도 고개 끄덕였다";
-        [SerializeField] string articleSpecialBody = "특별 관객 요청 {0} / {1}회 성공";
+        [SerializeField] string articleSpecialBody = "특별 관객 요청 {0}/{1}회 성공";
         [SerializeField] string articleCrisisTitle = "옆 공연의 유혹에도 자리를 지킨 팬들";
-        [SerializeField] string articleCrisisBody = "위기 대상 {1}명 중 {0}명 방어";
+        [SerializeField] string articleCrisisBody = "위기 관객 {0}/{1}명 방어";
         [SerializeField] string articleBossTitle = "라이벌과의 정면 승부";
-        [SerializeField] string articleBossBody = "패턴 {0} / {1}회 성공 · 상대 팬 영입 {2}명 · 빼앗긴 팬 {3}명";
+        [SerializeField] string articleBossBody = "패턴 {0}/{1}회 성공 · 팬 +{2}/-{3}";
         [SerializeField] string articleDefaultTitle = "공연 후기";
-        [SerializeField] string articleDefaultBody = "공연 중 최다 관객 {0}명";
+        [SerializeField] string articleDefaultBody = "공연 중 최대 관객 {0}명";
 
         [Header("가장 호응한 관객 ({0} = 성향, {1} = 점수). 기사 끝에 붙는다")]
         [SerializeField] string articleTopAudience = "가장 뜨거웠던 관객은 {0} ({1}점)";

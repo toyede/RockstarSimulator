@@ -24,4 +24,5 @@ MonoBehaviour:
   venueRuleIds:
   - special_audience_requests
   bgmId: sharp
-  tutorialBgmId: big_rock
+  tutorialBgmId: so_bueno
+  playerLeadBgmId: 

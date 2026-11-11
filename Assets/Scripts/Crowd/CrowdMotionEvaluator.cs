@@ -60,7 +60,8 @@ namespace ContextStage
             float t,
             out float height,
             out float sway,
-            out float squash)
+            out float squash,
+            int? jumpSeed = null)
         {
             height = 0f;
             sway = 0f;
@@ -68,7 +69,8 @@ namespace ContextStage
             if (profile == null) return;
 
             // --- 점프: jumpHeight 가 0보다 큰 상태에서만 발생 ---
-            if (profile.jumpHeight > 0.001f && profile.jumpsPerSecond > 0.001f)
+            if (profile.jumpHeight > 0.001f && profile.jumpsPerSecond > 0.001f &&
+                (!jumpSeed.HasValue || HasJumpForCycle(jumpSeed.Value, Mathf.FloorToInt(t * profile.jumpsPerSecond))))
             {
                 float air = Mathf.Clamp(profile.airTimeRatio, 0.1f, 1f);
                 float cycle = Mathf.Repeat(t * profile.jumpsPerSecond, 1f);
@@ -94,6 +96,27 @@ namespace ContextStage
             sway = Mathf.Sin(t * Mathf.PI * profile.swaySpeed) * profile.swayAngle;
         }
 
+        // ID로 리듬을 고정하고 묶음마다 시작 박자·연속 횟수를 바꾼다.
+        // 시간만으로 평가하므로 상태 블렌드나 재배치가 리듬을 초기화하지 않는다.
+        internal static bool HasJumpForCycle(int seed, int cycleIndex)
+        {
+            uint rhythm = (uint)seed % 3u;
+            if (rhythm == 0) return true;
+
+            int period = rhythm == 1 ? 8 : 5;
+            int block = Mathf.FloorToInt(cycleIndex / (float)period);
+            int beat = cycleIndex - block * period;
+            uint hash = unchecked((uint)seed * 0x9e3779b9u + (uint)block * 0x85ebca6bu);
+            hash = unchecked((hash ^ (hash >> 16)) * 0x7feb352du);
+            hash ^= hash >> 15;
+
+            if (rhythm == 2) return beat == (int)(hash % 3u);
+
+            int start = (int)(hash & 1u);
+            int count = 2 + (int)((hash >> 4) % 3u);
+            return beat >= start && beat < start + count;
+        }
+
         /// <summary>
         /// 두 프로필을 blend(0~1) 로 섞어 평가한다. 상태가 바뀔 때 값이 툭 튀지 않게 한다.
         /// blend 가 1 이면 to 만 쓴다.
@@ -105,21 +128,22 @@ namespace ContextStage
             float t,
             out float height,
             out float sway,
-            out float squash)
+            out float squash,
+            int? jumpSeed = null)
         {
             if (from == null || blend >= 1f)
             {
-                Evaluate(to, t, out height, out sway, out squash);
+                Evaluate(to, t, out height, out sway, out squash, jumpSeed);
                 return;
             }
             if (to == null)
             {
-                Evaluate(from, t, out height, out sway, out squash);
+                Evaluate(from, t, out height, out sway, out squash, jumpSeed);
                 return;
             }
 
-            Evaluate(from, t, out float h0, out float s0, out float q0);
-            Evaluate(to, t, out float h1, out float s1, out float q1);
+            Evaluate(from, t, out float h0, out float s0, out float q0, jumpSeed);
+            Evaluate(to, t, out float h1, out float s1, out float q1, jumpSeed);
 
             float k = Mathf.Clamp01(blend);
             height = Mathf.Lerp(h0, h1, k);

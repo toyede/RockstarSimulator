@@ -57,30 +57,45 @@ MonoBehaviour:
     accent: {r: 0.40392157, g: 0.4, b: 0.2, a: 1}
     headlineOffset: {x: 0, y: 0}
     recordsOffset: {x: 0, y: 0}
+    statLeftEdges: {x: -590, y: -147, z: 310}
+    statCenterY: -249
+    footerStart: {x: -640, y: -342}
   - stageId: stage_02
     paper: {fileID: 21300000, guid: 80e3780338b441841aeb5bad679587d4, type: 3}
     paperName: "\uB3D9\uBB3C\uC911\uC559"
     accent: {r: 0.7019608, g: 0.21960784, b: 0.19215687, a: 1}
     headlineOffset: {x: 0, y: 0}
     recordsOffset: {x: 0, y: 0}
+    statLeftEdges: {x: -648, y: -194, z: 256}
+    statCenterY: -249
+    footerStart: {x: -648, y: -341}
   - stageId: stage_03
     paper: {fileID: 21300000, guid: 648a774e4fc70d24690b0ab18b852c46, type: 3}
     paperName: Rolling Hairballs
     accent: {r: 0.78431374, g: 0.1254902, b: 0.18039216, a: 1}
     headlineOffset: {x: 0, y: -20}
     recordsOffset: {x: 0, y: -12}
+    statLeftEdges: {x: -682, y: -207, z: 276}
+    statCenterY: -265
+    footerStart: {x: -682, y: -342}
   - stageId: stage_04
     paper: {fileID: 21300000, guid: 94b839c9c0f6bb243895d9af65c4e2fa, type: 3}
     paperName: Pitchfur
     accent: {r: 0.5568628, g: 0.26666668, b: 0.6784314, a: 1}
     headlineOffset: {x: 0, y: -38}
     recordsOffset: {x: 0, y: 0}
+    statLeftEdges: {x: -618, y: -187, z: 247}
+    statCenterY: -256
+    footerStart: {x: -618, y: -351}
   - stageId: stage_05_boss
     paper: {fileID: 21300000, guid: c3296cb275fb0aa40b50b155cabbc17a, type: 3}
     paperName: The Animal Times
     accent: {r: 0.8392157, g: 0.6039216, b: 0.11764706, a: 1}
     headlineOffset: {x: 0, y: -20}
     recordsOffset: {x: 0, y: 0}
+    statLeftEdges: {x: -657, y: -199, z: 253}
+    statCenterY: -267
+    footerStart: {x: -657, y: -360}
   rankIcons:
   - label: S
     icon: {fileID: 21300000, guid: 10b8c1d6204dcf241a78829fa80854f5, type: 3}
@@ -158,19 +173,17 @@ MonoBehaviour:
   buttonEnding: "\uD22C\uC5B4\uC758 \uACB0\uB9D0 \uBCF4\uAE30 >"
   buttonFailed: "\uD22C\uC5B4 \uACB0\uACFC \uD655\uC778 >"
   articleBuskingTitle: "\uAC70\uB9AC\uC758 \uBC1C\uAE38\uC774 \uBA48\uCDC4\uB2E4"
-  articleBuskingBody: "\uC9C0\uB098\uAC00\uB358 \uAD00\uAC1D {0}\uBA85\uC774 \uACF5\uC5F0
-    \uC911 \uD569\uB958"
+  articleBuskingBody: "\uC0C8 \uAD00\uAC1D {0}\uBA85 \uD569\uB958"
   articleSpecialTitle: "\uAE4C\uB2E4\uB85C\uC6B4 \uC190\uB2D8\uB3C4 \uACE0\uAC1C
     \uB044\uB355\uC600\uB2E4"
-  articleSpecialBody: "\uD2B9\uBCC4 \uAD00\uAC1D \uC694\uCCAD {0} / {1}\uD68C \uC131\uACF5"
+  articleSpecialBody: "\uD2B9\uBCC4 \uAD00\uAC1D \uC694\uCCAD {0}/{1}\uD68C \uC131\uACF5"
   articleCrisisTitle: "\uB3CC\uBC1C\uC0C1\uD669 \uC18D\uC5D0\uC11C\uB3C4 \uC9C0\uCF1C\uB0B8
     \uAC1D\uC11D"
-  articleCrisisBody: "\uC704\uAE30 \uB300\uC0C1 {1}\uBA85 \uC911 {0}\uBA85 \uBC29\uC5B4"
+  articleCrisisBody: "\uC704\uAE30 \uAD00\uAC1D {0}/{1}\uBA85 \uBC29\uC5B4"
   articleBossTitle: "\uB77C\uC774\uBC8C\uACFC\uC758 \uC815\uBA74 \uC2B9\uBD80"
-  articleBossBody: "\uD328\uD134 {0} / {1}\uD68C \uC131\uACF5 \xB7 \uC0C1\uB300 \uD32C
-    \uC601\uC785 {2}\uBA85 \xB7 \uBE7C\uC557\uAE34 \uD32C {3}\uBA85"
+  articleBossBody: "\uD328\uD134 {0}/{1}\uD68C \uC131\uACF5 \xB7 \uD32C +{2}/-{3}"
   articleDefaultTitle: "\uACF5\uC5F0 \uD6C4\uAE30"
-  articleDefaultBody: "\uACF5\uC5F0 \uC911 \uCD5C\uB2E4 \uAD00\uAC1D {0}\uBA85"
+  articleDefaultBody: "\uACF5\uC5F0 \uC911 \uCD5C\uB300 \uAD00\uAC1D {0}\uBA85"
   articleTopAudience: "\uAC00\uC7A5 \uB728\uAC70\uC6E0\uB358 \uAD00\uAC1D\uC740 {0}
     ({1}\uC810)"
   preferenceChill: CHILL

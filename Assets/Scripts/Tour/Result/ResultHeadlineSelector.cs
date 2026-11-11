@@ -42,7 +42,6 @@ namespace ContextStage
         public string statFever;
         public string statAudience;
 
-        public string articleTitle;
         public string articleBody;
         public string outcomeLine;      // 보스전만
 
@@ -148,42 +147,32 @@ namespace ContextStage
                 ? Stat("남은 관객 / 정원", $"{report.audienceRemaining} / {report.audienceCapacity}")
                 : Stat("남은 관객", report.audienceRemaining.ToString());
 
-            // ---------------- 기믹 기사 (스테이지에 맞는 것 하나) ----------------
+            // ---------------- 하단 기사: 해당 공연의 대표 기록만 한 줄 ----------------
             if (isBoss && report.HasBoss)
             {
-                p.articleTitle = catalog.ArticleBossTitle;
                 p.articleBody = string.Format(catalog.ArticleBossBody,
                     report.bossPatternsSucceeded, report.bossPatternsResolved, report.bossFansRecruited, report.bossFansLost);
-                if (report.bossDrainTotal > 0) p.articleBody += $" · 라이벌 응원에 깎인 점수 {report.bossDrainTotal:N0}";
+                if (report.bossDrainTotal > 0) p.articleBody += $" · 점수 -{report.bossDrainTotal:N0}";
             }
             else if (report.HasCrisis)
             {
-                p.articleTitle = catalog.ArticleCrisisTitle;
                 p.articleBody = string.Format(catalog.ArticleCrisisBody, report.crisisRetained, report.crisisThreatened);
+            }
+            else if (report.HasStageEvents)
+            {
+                p.articleBody = $"돌발 미션 {report.stageEventsSucceeded}/{report.stageEventsTotal}회 성공";
             }
             else if (report.HasSpecialAudience)
             {
-                p.articleTitle = catalog.ArticleSpecialTitle;
                 p.articleBody = string.Format(catalog.ArticleSpecialBody, report.specialSuccess, report.specialEnded);
             }
             else if (report.walkIns > 0)
             {
-                p.articleTitle = catalog.ArticleBuskingTitle;
                 p.articleBody = string.Format(catalog.ArticleBuskingBody, report.walkIns);
             }
             else
             {
-                p.articleTitle = catalog.ArticleDefaultTitle;
                 p.articleBody = string.Format(catalog.ArticleDefaultBody, report.audiencePeak);
-            }
-            if (report.HasStageEvents)
-                p.articleBody += $" · 기믹 이벤트 {report.stageEventsSucceeded} / {report.stageEventsTotal}회 성공";
-
-            // 가장 많이 점수를 준 관객 성향 (엔딩 판정과 같은 집계)
-            if (report.TryGetTopPreference(out CrowdPreference top, out int topScore) &&
-                !string.IsNullOrEmpty(catalog.ArticleTopAudience))
-            {
-                p.articleBody += " · " + string.Format(catalog.ArticleTopAudience, catalog.PreferenceLabel(top), topScore.ToString("N0"));
             }
 
             // ---------------- 버튼 ----------------
@@ -198,7 +187,7 @@ namespace ContextStage
         }
 
         /// <summary>통계 칸 한 줄: 작은 라벨 위, 큰 값 아래. 폰트를 줄이지 않고 두 줄로 칸에 맞춘다.</summary>
-        static string Stat(string label, string value) => $"<size=22>{label}</size>\n<size=34>{value}</size>";
+        static string Stat(string label, string value) => $"<size=22>{label}</size>\n<size=30>{value}</size>";
 
         /// <summary>대표 기록 하나만 고른다. 우선순위: 콤보 → 피버 → 특별 관객 → 위기 방어 → (기본) 달성률.</summary>
         static string PickRecordSubtitle(PerformanceReport r, int percent, ResultNewspaperCatalog c, bool allowDefault = true)

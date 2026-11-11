@@ -24,4 +24,5 @@ MonoBehaviour:
   venueRuleIds:
   - busking_walk_in
   bgmId: osaka_rain
-  tutorialBgmId: big_rock
+  tutorialBgmId: so_bueno
+  playerLeadBgmId: 

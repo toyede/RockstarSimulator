@@ -58,6 +58,7 @@ namespace ContextStage
 
         [Tooltip("배경을 어둡게 하지 않고 그대로 보여준다 (엔딩 일러스트처럼 배경이 주인공일 때)")]
         public bool brightBackdrop;
+        public bool hidePortraits;
 
         [Tooltip("이전 화면 블러 대신 backdrop 스프라이트를 그린다 (엔딩처럼 뒤에 보여줄 화면이 없을 때)")]
         public bool useBackdropImage;
