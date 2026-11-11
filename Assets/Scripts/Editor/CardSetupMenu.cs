@@ -518,7 +518,7 @@ namespace ContextStage.EditorTools
                     "관객의 첫 반응을 이끌어낸다.",
                     CardRole.Special, HeatStage.Chill, UtilityCardEffect.None,
                     FromHex("#16A9B3"),
-                    SpecialCardTargetEffectType.RandomAudienceArrival),
+                    SpecialCardTargetEffectType.ReviveLowEngagement),
                 new CardSeed(
                     "Card_03_HandsUp", "hands_up", "손 머리 위로!",
                     "함께 따라 할 동작으로 무대를 묶는다.",
@@ -529,7 +529,7 @@ namespace ContextStage.EditorTools
                     "관객에게 노래를 맡겨 열기를 이어간다.",
                     CardRole.Special, HeatStage.Singalong, UtilityCardEffect.None,
                     FromHex("#8C5CFF"),
-                    SpecialCardTargetEffectType.BoostAllEngagement),
+                    SpecialCardTargetEffectType.Chorus),
                 new CardSeed(
                     "Card_05_GuitarSolo", "guitar_solo", "기타 솔로",
                     "달아오른 무대에 강렬한 솔로를 터뜨린다.",
@@ -540,7 +540,7 @@ namespace ContextStage.EditorTools
                     "폭발 직전의 관객을 모쉬핏으로 끌어낸다.",
                     CardRole.Special, HeatStage.Mosh, UtilityCardEffect.None,
                     FromHex("#B51230"),
-                    SpecialCardTargetEffectType.RecruitPreferenceAndWeakenOthers),
+                    SpecialCardTargetEffectType.HeatBurst),
                 new CardSeed(
                     "Card_07_Draw", "draw_two", "드로우",
                     "덱에서 카드 2장을 획득한다.",
@@ -685,15 +685,15 @@ namespace ContextStage.EditorTools
 
             ValidateSpecialTargetEffect(
                 response,
-                SpecialCardTargetEffectType.RandomAudienceArrival,
+                SpecialCardTargetEffectType.ReviveLowEngagement,
                 errors);
             ValidateSpecialTargetEffect(
                 passMic,
-                SpecialCardTargetEffectType.BoostAllEngagement,
+                SpecialCardTargetEffectType.Chorus,
                 errors);
             ValidateSpecialTargetEffect(
                 moshPit,
-                SpecialCardTargetEffectType.RecruitPreferenceAndWeakenOthers,
+                SpecialCardTargetEffectType.HeatBurst,
                 errors);
 
             if (draw.UtilityEffect != UtilityCardEffect.Draw || draw.DrawCount != 2)

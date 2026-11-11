@@ -262,7 +262,8 @@ namespace ContextStage
                                 targetEffect,
                                 audienceRoster,
                                 _audienceIds,
-                                out _,
+                                card.TargetPreference,
+                                out SpecialCardTargetEffectResult targetResult,
                                 out string executionError))
                         {
                             Debug.LogError(
@@ -273,7 +274,8 @@ namespace ContextStage
                         }
 
                         isSpecialHit = true;
-                        specialBonusScore = targetEffect.TargetScoreBonus;
+                        // 고정 보너스 + 효과가 계산한 점수. 콤보 배율은 아래에서 함께 곱한다 (피버 중엔 피버 점수로 대체).
+                        specialBonusScore = targetEffect.TargetScoreBonus + targetResult.Score;
                     }
                 }
 

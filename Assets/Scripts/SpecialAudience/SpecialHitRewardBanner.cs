@@ -13,12 +13,12 @@ namespace ContextStage
     /// <example>
     /// <code>
     /// ★ SPECIAL HIT ★
-    /// +320  ·  관객 +3  ·  COMBO x1.5
+    /// +260 (COMBO x2)  ·  관객 +2      // 피버 중이면 +100 (FEVER)
     /// </code>
     /// </example>
     ///
     /// <b>카드 시스템을 수정하지 않는다.</b> 저격 효과의 실행 결과는 CardSystem 안에서
-    /// 버려지지만(<c>out _</c>), 실제로 일어난 일은 전부 이벤트로 흘러나온다:
+    /// 점수에만 쓰이지만, 실제로 일어난 일은 전부 이벤트로 흘러나온다:
     ///
     /// | 이벤트 | 뽑는 값 |
     /// |---|---|
@@ -68,8 +68,26 @@ namespace ContextStage
             "보상 배너라 기본적으로는 표시하지 않는다 — 보여주려면 문구를 채운다")]
         string calmedFormat = "";
 
-        [SerializeField, Tooltip("{0} = 콤보 배율. 배율이 1 이하면 표시하지 않는다")]
-        string comboFormat = "COMBO x{0:0.0}";
+        [SerializeField, Tooltip("{0} = 콤보 배율. 점수 바로 뒤에 붙는다. 배율이 1 이하이거나 피버 점수면 붙지 않는다")]
+        string comboFormat = " (COMBO x{0:0.##})";
+
+        [SerializeField, Tooltip("피버 중 저격이라 점수가 피버 점수로 바뀌었을 때 점수 바로 뒤에 붙는다")]
+        string feverFormat = " (FEVER)";
+
+        [SerializeField, Tooltip("새로 들어온 관객 문구를 저격 성향 색으로 칠한다. 표에 없는 성향은 상세 색 그대로")]
+        List<RequestColor> joinedColors = new List<RequestColor>
+        {
+            new RequestColor { stage = HeatStage.Chill, color = new Color(0.19f, 0.87f, 0.92f, 1f) },
+            new RequestColor { stage = HeatStage.Singalong, color = new Color(0.72f, 0.55f, 1f, 1f) },
+            new RequestColor { stage = HeatStage.Mosh, color = new Color(1f, 0.36f, 0.32f, 1f) },
+        };
+
+        [System.Serializable]
+        public struct RequestColor
+        {
+            public HeatStage stage;
+            public Color color;
+        }
 
         [SerializeField, Tooltip("상세 항목 사이에 넣는 구분자")]
         string separator = "  ·  ";
@@ -107,6 +125,8 @@ namespace ContextStage
         int _pendingJoinedCount;
         int _pendingBoostedCount;
         int _pendingCalmedCount;
+        bool _pendingHasRequest;
+        HeatStage _pendingRequest;
         float _pendingHoldDuration;
         float _pendingCapturedAt = float.NegativeInfinity;
 
@@ -173,6 +193,8 @@ namespace ContextStage
         {
             TouchPending();
             _pendingHoldDuration = Mathf.Max(0f, e.HoldDuration);
+            _pendingRequest = e.RequestType;
+            _pendingHasRequest = true;
         }
 
         /// <summary>수집 창이 지났으면 이전 저격의 잔여값을 버린다.</summary>
@@ -187,6 +209,7 @@ namespace ContextStage
             _pendingJoinedCount = 0;
             _pendingBoostedCount = 0;
             _pendingCalmedCount = 0;
+            _pendingHasRequest = false;
             _pendingHoldDuration = 0f;
             _pendingCapturedAt = float.NegativeInfinity;
         }
@@ -201,31 +224,44 @@ namespace ContextStage
             int joined = fresh ? _pendingJoinedCount : 0;
             int boosted = fresh ? _pendingBoostedCount : 0;
             int calmed = fresh ? _pendingCalmedCount : 0;
+            bool hasRequest = fresh && _pendingHasRequest;
+            HeatStage request = _pendingRequest;
             float hold = fresh && _pendingHoldDuration > 0f ? _pendingHoldDuration : holdDuration;
             ClearPending();
 
-            Play(BuildDetail(e, joined, boosted, calmed),
+            Play(BuildDetail(e, joined, boosted, calmed, hasRequest, request),
                  useSpecialHitHoldDuration ? hold : holdDuration);
         }
 
-        string BuildDetail(CardResolved e, int joinedCount, int boostedCount, int calmedCount)
+        string BuildDetail(CardResolved e, int joinedCount, int boostedCount, int calmedCount,
+            bool hasRequest, HeatStage request)
         {
             _segments.Clear();
 
             if (e.GainedScore != 0 && !string.IsNullOrEmpty(scoreFormat))
-                _segments.Add(string.Format(scoreFormat, e.GainedScore));
+            {
+                // 점수 바로 뒤에 "왜 이 점수인지"를 붙인다: 피버 점수면 FEVER, 아니면 곱해진 콤보 배율.
+                string score = string.Format(scoreFormat, e.GainedScore);
+                if (e.FeverBonusScore > 0)
+                    score += feverFormat;
+                else if (e.ComboMultiplier > 1f && !string.IsNullOrEmpty(comboFormat))
+                    score += string.Format(comboFormat, e.ComboMultiplier);
+                _segments.Add(score);
+            }
 
             if (joinedCount > 0 && !string.IsNullOrEmpty(joinedFormat))
-                _segments.Add(string.Format(joinedFormat, joinedCount));
+            {
+                string joined = string.Format(joinedFormat, joinedCount);
+                if (hasRequest && TryGetJoinedColor(request, out Color color))
+                    joined = $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{joined}</color>";
+                _segments.Add(joined);
+            }
 
             if (boostedCount > 0 && !string.IsNullOrEmpty(boostedFormat))
                 _segments.Add(string.Format(boostedFormat, boostedCount));
 
             if (calmedCount > 0 && !string.IsNullOrEmpty(calmedFormat))
                 _segments.Add(string.Format(calmedFormat, calmedCount));
-
-            if (e.ComboMultiplier > 1f && !string.IsNullOrEmpty(comboFormat))
-                _segments.Add(string.Format(comboFormat, e.ComboMultiplier));
 
             _builder.Clear();
             for (int i = 0; i < _segments.Count; i++)
@@ -235,6 +271,22 @@ namespace ContextStage
             }
 
             return _builder.ToString();
+        }
+
+        bool TryGetJoinedColor(HeatStage request, out Color color)
+        {
+            if (joinedColors != null)
+            {
+                for (int i = 0; i < joinedColors.Count; i++)
+                {
+                    if (joinedColors[i].stage != request) continue;
+                    color = joinedColors[i].color;
+                    return true;
+                }
+            }
+
+            color = default;
+            return false;
         }
 
         void Play(string detail, float hold)

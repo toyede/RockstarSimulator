@@ -72,6 +72,26 @@ if (matchesTargetedRequest &&
 - 틀리면 **요청은 그대로 유지되고 남은 시간도 계속 감소**
 - 어느 쪽이든 매니저가 점수·열기를 직접 건드리지 않는 건 그대로다
 
+## 5. 성향별 저격 효과
+
+저격하면 표 거리 대신 성향마다 한 줄 규칙으로 계산한다. 하/상 경계는
+`AudienceEngagementConfig.calmUpperBound`(현재 50)를 쓴다. 수치는 모두 카드 프리팹의
+`SpecialCardTargetEffect`에서 조정한다.
+
+| 카드 | 효과 종류 | 점수 | 몰입도 |
+|---|---|---|---|
+| 호응 유도 (Chill) | `ReviveLowEngagement` | 하 관객마다 (경계 − 몰입도) × 2 | 하 관객마다 + (경계 − 몰입도) × 0.6 |
+| 모쉬핏 열어! (Mosh) | `HeatBurst` | 상 관객마다 (몰입도 − 경계) × 2 | 변화 없음 |
+| 마이크 넘기기 (Singalong) | `Chorus` | 센 인원 × 단계별 점수 (1~5명 8 / 6~9명 12 / 10명 이상 16, 최대 12명) | 전원 +10 |
+
+- 점수와 몰입도는 저격하는 순간 무대에 있던 관객으로 계산하고, 그 뒤 카드와 같은 성향
+  관객이 1~2명 입장한다(정원이 차면 들어올 수 있는 만큼만, 몰입도는 일반 입장과 같은 시작 범위).
+- 효과 점수는 `CardSystem`에서 카드 점수(고정 보너스 + 효과 점수)로 더해지고 콤보 배율이 곱해진다.
+  피버 중에는 기존 규칙대로 피버 점수(관객 수 × 10)로 바뀌며 효과 자체는 그대로 적용된다.
+- 기존 효과 종류(`RandomAudienceArrival` 등)는 되돌리기용으로 남겨 두었다.
+- 배너(`SpecialHitRewardBanner`)는 `+점수 (COMBO x배율)` 또는 피버 중 `+점수 (FEVER)`를 쓰고,
+  들어온 관객 문구를 저격 성향 색으로 칠한다.
+
 Special 역할 카드는 3단계 모두 있다: `Card_02_Response`(Chill) / `Card_04_PassMic`(Singalong) / `Card_06_MoshPit`(Mosh).
 
 ## 4-1. 무대 위 특별 관객 (`SpecialAudienceCrowdActor`)

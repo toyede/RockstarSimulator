@@ -10785,9 +10785,17 @@ MonoBehaviour:
   headline: "\u2605 SPECIAL HIT \u2605"
   scoreFormat: +{0}
   joinedFormat: "\uAD00\uAC1D +{0}"
-  boostedFormat: "\uAD00\uAC1D {0}\uBA85 \uC5F4\uAD11"
+  boostedFormat: 
   calmedFormat: 
-  comboFormat: COMBO x{0:0.0}
+  comboFormat: ' (COMBO x{0:0.##})'
+  feverFormat: ' (FEVER)'
+  joinedColors:
+  - stage: 0
+    color: {r: 0.19, g: 0.87, b: 0.92, a: 1}
+  - stage: 1
+    color: {r: 0.72, g: 0.55, b: 1, a: 1}
+  - stage: 2
+    color: {r: 1, g: 0.36, b: 0.32, a: 1}
   separator: "  \xB7  "
   headlineColor: {r: 1, g: 0.85, b: 0.3, a: 1}
   detailColor: {r: 0.95, g: 0.98, b: 1, a: 1}
