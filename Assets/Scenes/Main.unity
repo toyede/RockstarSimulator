@@ -1385,6 +1385,7 @@ MonoBehaviour:
   scoreLabel: {fileID: 3233340}
   fixedDigitCount: 4
   labelShiftPerDigit: 26
+  maxShiftedDigits: 1
 --- !u!114 &177170777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27575,7 +27576,7 @@ MonoBehaviour:
   peekLabel: "\uB77C\uC774\uBC8C \uBB34\uB300  [Tab]"
   returnLabel: "\uC6B0\uB9AC \uBB34\uB300  [Tab]"
   peekButtonY: 40
-  peekButtonPosition: {x: -8, y: 158}
+  peekButtonPosition: {x: 12, y: 158}
   peekWithTabKey: 1
   dropImpactAtHoldFraction: 0.55
 --- !u!114 &1242502042

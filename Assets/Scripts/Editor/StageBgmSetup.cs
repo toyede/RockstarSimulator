@@ -10,10 +10,11 @@ namespace ContextStage.EditorTools
     public static class StageBgmSetup
     {
         static readonly string[] Stages = { "Stage01", "Stage02", "Stage03", "Stage04", "Stage05Boss" };
-        static readonly string[] Ids = { "osaka_rain", "sharp", "dogtown", "summer_nights", "360_no_scope", "pomade" };
+        const string TutorialId = "chipper";
+        static readonly string[] Ids = { "osaka_rain", "sharp", "dogtown", "come_get_with_us", "360_no_scope", "pomade", TutorialId };
         static readonly string[] Clips = {
             "Osaka Rain - ALBIS", "Sharp - Jeremy Korpas", "Dogtown - National Sweetheart",
-            "Summer Nights - The 126ers", "360 No Scope - The Soundlings", "Pomade - Silent Partner"
+            "Come Get With Us - TrackTribe", "360 No Scope - The Soundlings", "Pomade - Silent Partner", "Chipper"
         };
 
         [MenuItem("Tools/Audio/Apply Stage BGM Playlist")]
@@ -28,8 +29,7 @@ namespace ContextStage.EditorTools
             var library = AssetDatabase.LoadAssetAtPath<SoundLibrary>("Assets/GameJamKit/Resources/SoundLibrary.asset");
             var stages = Stages.Select(name => AssetDatabase.LoadAssetAtPath<StageDefinition>("Assets/Settings/Tour/" + name + ".asset")).ToArray();
             var clips = Clips.Select(name => AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/BGM/" + name + ".mp3")).ToArray();
-            if (library == null || !library.Sounds.Any(s => s.id == "so_bueno" && s.clips != null && s.clips.Length > 0)
-                || stages.Any(s => s == null) || clips.Any(c => c == null))
+            if (library == null || stages.Any(s => s == null) || clips.Any(c => c == null))
                 throw new InvalidOperationException("Playlist asset missing; nothing changed.");
             float volume = library.Sounds.First(s => s.id == "big_rock").volume;
             var serialized = new SerializedObject(library);
@@ -57,7 +57,7 @@ namespace ContextStage.EditorTools
             {
                 var stage = new SerializedObject(stages[i]);
                 stage.FindProperty("bgmId").stringValue = Ids[i];
-                stage.FindProperty("tutorialBgmId").stringValue = i < 2 ? "so_bueno" : "";
+                stage.FindProperty("tutorialBgmId").stringValue = i < 2 ? TutorialId : "";
                 stage.FindProperty("playerLeadBgmId").stringValue = i == 4 ? "pomade" : "";
                 stage.ApplyModifiedPropertiesWithoutUndo();
                 AssetDatabase.SaveAssetIfDirty(stages[i]);
@@ -68,7 +68,7 @@ namespace ContextStage.EditorTools
             component.FindProperty("useStageMusic").boolValue = true;
             if (component.ApplyModifiedPropertiesWithoutUndo())
             { EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene); }
-            Debug.Log("[StageBgm] Stage 1/2 tutorial: So Bueno; Stage 4: Summer Nights. Boss and title unchanged.");
+            Debug.Log("[StageBgm] Stage 1/2 tutorial: Chipper; Stage 4: Come Get With Us. Boss and title unchanged.");
         }
     }
 }

@@ -270,3 +270,41 @@ MonoBehaviour:
     loop: 1
     minInterval: 0.02
     bus: 0
+  - id: chipper
+    clips:
+    - {fileID: 8300000, guid: 6eee82fcaa6b91e48bf521afa51c15ab, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+    bus: 0
+  - id: come_get_with_us
+    clips:
+    - {fileID: 8300000, guid: 7d9d991d4dbb40a4c9c514c44da1fc8d, type: 3}
+    volume: 0.615
+    pitchMin: 1
+    pitchMax: 1
+    loop: 1
+    minInterval: 0.02
+    bus: 0
+  - id: guitar_solo_acoustic
+    clips:
+    - {fileID: 8300000, guid: 1f31d0da16c216048bee8e96178f8a8e, type: 3}
+    - {fileID: 8300000, guid: fc5621db4cf36da498ec70859ad98938, type: 3}
+    volume: 0.75
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+    bus: 1
+  - id: guitar_stroke_acoustic
+    clips:
+    - {fileID: 8300000, guid: db64843bf8359ed42ba01b57f15a59f6, type: 3}
+    - {fileID: 8300000, guid: 9c3be93cfb6a5a646aefc86a7ca135cc, type: 3}
+    volume: 0.95
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+    bus: 1

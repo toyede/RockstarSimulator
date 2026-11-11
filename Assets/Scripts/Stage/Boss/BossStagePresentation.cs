@@ -35,7 +35,7 @@ namespace ContextStage
         [SerializeField] string peekLabel = "라이벌 무대 보기  [Tab]";
         [SerializeField] string returnLabel = "우리 무대로  [Tab]";
         [SerializeField, Tooltip("화면 세로 위치(px, 1080 기준, 가운데 0). 오른쪽 가장자리에 붙는다")] float peekButtonY = 40f;
-        [SerializeField, Tooltip("우하단 기준 버튼 위치. 손패와 독립된 자리")] Vector2 peekButtonPosition = new Vector2(-24f, 158f);
+        [SerializeField, Tooltip("우하단 기준 버튼 위치. 양수 X는 카메라 암 끝을 화면 밖으로 보낸다.")] Vector2 peekButtonPosition = new Vector2(12f, 158f);
         [SerializeField, Tooltip("키로도 전환한다 (화면 기획: 지정키를 누르면 위로 스크롤)")] bool peekWithTabKey = true;
         [SerializeField, Range(0.1f, 0.85f), Tooltip("라이벌 무대 체류 중 드랍이 터지는 시점. 모든 미션 예고에 적용")]
         float dropImpactAtHoldFraction = 0.55f;
@@ -468,7 +468,7 @@ namespace ContextStage
             var buttonObject = new GameObject("PeekButton", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
             _peekRect = buttonObject.GetComponent<RectTransform>();
             _peekRect.SetParent(canvasObject.transform, false);
-            const float cameraArtWidth = 292f;
+            const float cameraArtWidth = 330f;
             _peekRect.sizeDelta = peekButtonSprite != null
                 ? new Vector2(cameraArtWidth, cameraArtWidth * peekButtonSprite.rect.height / peekButtonSprite.rect.width)
                 : new Vector2(240f, 56f);

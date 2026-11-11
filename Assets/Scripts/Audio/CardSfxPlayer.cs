@@ -60,13 +60,24 @@ namespace ContextStage
 
         string ResolveCardSfx(string cardId)
         {
+            string id = defaultSfxId;
             for (int i = 0; i < cardOverrides.Count; i++)
             {
                 var o = cardOverrides[i];
                 if (o != null && !string.IsNullOrEmpty(o.cardId) && o.cardId == cardId)
-                    return o.sfxId;
+                {
+                    id = o.sfxId;
+                    break;
+                }
             }
-            return defaultSfxId;
+
+            // 골목 버스킹에서만 기타 음색을 바꾼다. 다른 카드 전용 효과음은 그대로 둔다.
+            if (StageRuntimeDirector.CurrentStage?.StageId == "stage_01")
+            {
+                if (id == "guitar_solo") return "guitar_solo_acoustic";
+                if (id == "guitar_stroke") return "guitar_stroke_acoustic";
+            }
+            return id;
         }
 
         string ResolveJudgementSfx(HypeJudgement judgement)
