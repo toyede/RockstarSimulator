@@ -1152,6 +1152,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.StageBgmPlayer
   bgmId: breakdown
+  useStageMusic: 0
   startOn: 0
   fadeInDuration: 2
   stopOnGameOver: 0
