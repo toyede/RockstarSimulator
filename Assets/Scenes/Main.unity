@@ -1382,6 +1382,9 @@ MonoBehaviour:
   perfectClearCountUpDuration: 1
   perfectClearMessageFormat: "\xD7{0}"
   perfectClearMessageColor: {r: 0.9764706, g: 0.7607843, b: 0.16862746, a: 1}
+  scoreLabel: {fileID: 3233340}
+  fixedDigitCount: 4
+  labelShiftPerDigit: 26
 --- !u!114 &177170777
 MonoBehaviour:
   m_ObjectHideFlags: 0

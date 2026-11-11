@@ -25,7 +25,17 @@ namespace ContextStage
         [SerializeField, Min(0.1f)] private float perfectClearCountUpDuration = 1f;
         [SerializeField, Tooltip("{0} = 배율")] private string perfectClearMessageFormat = "×{0}";
         [SerializeField] private Color perfectClearMessageColor = new Color32(0xF9, 0xC2, 0x2B, 0xFF);
+        [Header("자릿수에 따른 SCORE 라벨 이동")]
+        [SerializeField, Tooltip("점수 자릿수가 늘면 왼쪽으로 옮길 SCORE 라벨")] private RectTransform scoreLabel;
+        [SerializeField, Min(1), Tooltip("이 자릿수까지는 라벨 위치를 고정한다")] private int fixedDigitCount = 4;
+        [SerializeField, Min(0f), Tooltip("고정 자릿수를 넘는 한 자리마다 라벨을 왼쪽으로 옮길 거리(px). DungGeunMo 52pt 숫자 한 칸 = 26")]
+        private float labelShiftPerDigit = 26f;
+        [SerializeField, Min(0), Tooltip("라벨을 최대 몇 칸까지 옮길지. 점수 텍스트의 Best Fit 이 5자리부터 숫자를 칸 폭에 맞춰 줄이므로 1칸이면 충분하다")]
+        private int maxShiftedDigits = 1;
 
+        Vector2 _labelBasePosition;
+        bool _hasLabelBase;
+        int _appliedLabelShiftDigits = -1;
         float _lastCardPresentationAt = float.NegativeInfinity;
         Coroutine _scoreRoutine;
         Text _drainText;
@@ -47,6 +57,11 @@ namespace ContextStage
             EventBus.Subscribe<PerfectClearScoreApplied>(OnPerfectClearScoreApplied);
             _active = this;
             if (scoreText != null) _normalColor = scoreText.color;
+            if (scoreLabel != null && !_hasLabelBase)
+            {
+                _labelBasePosition = scoreLabel.anchoredPosition;
+                _hasLabelBase = true;
+            }
 
             // 씬 로드 직후 이벤트가 오기 전에도 현재 점수와 동기화
             if (GameManager.HasInstance) Refresh(GameManager.Instance.Score);
@@ -180,6 +195,29 @@ namespace ContextStage
             scoreText.text = showTargetScore && target > 0
                 ? $"{prefix}{score} / {target}"
                 : prefix + score;
+            UpdateLabelOffset(score);
+        }
+
+        /// <summary>
+        /// 점수는 오른쪽 정렬이라 자릿수가 늘면 왼쪽으로 자란다.
+        /// 고정 자릿수를 넘은 만큼(최대 maxShiftedDigits 칸) SCORE 라벨을 왼쪽으로 밀어 숫자와 겹치지 않게 한다.
+        /// </summary>
+        void UpdateLabelOffset(int score)
+        {
+            if (scoreLabel == null || !_hasLabelBase) return;
+            int extra = Mathf.Clamp(CharacterCount(score) - fixedDigitCount, 0, maxShiftedDigits);
+            if (extra == _appliedLabelShiftDigits) return;
+            _appliedLabelShiftDigits = extra;
+            scoreLabel.anchoredPosition = _labelBasePosition + Vector2.left * (extra * labelShiftPerDigit);
+        }
+
+        // 표시되는 숫자 글자 수 (음수면 '-' 포함). 문자열을 만들지 않고 센다.
+        static int CharacterCount(int value)
+        {
+            long v = value < 0 ? -(long)value : value;
+            int count = value < 0 ? 2 : 1;
+            while (v >= 10) { v /= 10; count++; }
+            return count;
         }
     }
 }
