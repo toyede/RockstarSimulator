@@ -28,7 +28,7 @@ namespace ContextStage
         // A local-only opt-in does not grant consent to upload those samples in a later build.
         static string Consent => RemoteConfigured ? "playtest_metrics_remote_consent_v1" : "playtest_metrics_local_consent_v1";
         static string QueueKey => RemoteConfigured ? "playtest_metrics_remote_queue_v1" : "playtest_metrics_local_queue_v1";
-        public static bool Enabled => Save.GetBool(Consent, false);
+        public static bool Enabled => Save.GetBool(Consent, true);
         public static bool RemoteConfigured => _remoteConfigured ??=
             Resources.Load<TextAsset>("Playtest/EnableRemoteMetrics") != null;
         static bool Recording => Enabled && !Application.isEditor && !Debug.isDebugBuild;

@@ -544,6 +544,7 @@ Tools/GameJamKit/Export .unitypackage
 - 2026-09-30 (Codex): UI 클릭·호버·텍스트의 재생 클립을 앞 무음을 제거한 `_Trimmed.wav`로 교체했다(원본 MP3 보존). 호버/텍스트의 SoundLibrary 볼륨을 각각 0.30→0.60, 0.18→0.36으로 변경했다. 파형 정규화 없이 소스 크기를 유지하며, 클릭 볼륨과 믹서 설정은 유지한다.
 
 - 2026-09-30 (Codex): `Resources/SoundLibrary.asset`에 `ui_click`, `ui_hover`, `ui_text`를 UI 버스로 등록했다. 기존 `ui_click_wooden` ID는 직렬화된 버튼 연결을 보존하기 위해 새 클릭음의 호환 항목으로 유지한다. UI 연결 코드는 게임 전용 `Assets/Scripts/Audio/UIInteractionSfx.cs`에서 관리한다.
+- 2026-11-12 (Codex): 1스테이지 어쿠스틱 스트로크 3·4를 기존 풀에 추가했다. 솔로 3·4는 기존 솔로 1·2와 볼륨을 별도로 조절할 수 있도록 `guitar_solo_acoustic_alt` 풀에 등록했다.
 - 2026-09-30 (Codex): `Audio/AudioRouting.cs`를 클래스명과 일치하는 `Audio/AudioRoutingConfig.cs`로 이동(GUID 유지)하고, `Resources/AudioRoutingConfig.asset`의 누락된 스크립트 참조를 복구했다. 믹서 그룹 구성은 유지한다.
 
 

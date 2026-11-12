@@ -292,7 +292,7 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: 1f31d0da16c216048bee8e96178f8a8e, type: 3}
     - {fileID: 8300000, guid: fc5621db4cf36da498ec70859ad98938, type: 3}
-    volume: 0.75
+    volume: 1
     pitchMin: 1
     pitchMax: 1
     loop: 0
@@ -302,7 +302,19 @@ MonoBehaviour:
     clips:
     - {fileID: 8300000, guid: db64843bf8359ed42ba01b57f15a59f6, type: 3}
     - {fileID: 8300000, guid: 9c3be93cfb6a5a646aefc86a7ca135cc, type: 3}
+    - {fileID: 8300000, guid: 13649e6bfa816eb4598f29a639d4b905, type: 3}
+    - {fileID: 8300000, guid: 6504070ba7c0c23489ead30296cd45ad, type: 3}
     volume: 0.95
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+    bus: 1
+  - id: guitar_solo_acoustic_alt
+    clips:
+    - {fileID: 8300000, guid: 39fc7660d4f24d94ba682405f214667c, type: 3}
+    - {fileID: 8300000, guid: 38c9a90166f2948469e21dd4563a4653, type: 3}
+    volume: 0.75
     pitchMin: 1
     pitchMax: 1
     loop: 0
