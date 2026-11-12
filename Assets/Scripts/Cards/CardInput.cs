@@ -41,8 +41,9 @@ namespace ContextStage
         {
             if (!CanUseCard(handIndex)) return false;
 
-            // 튜토리얼이 지정한 카드가 아니면 소모 없이 되돌린다 (평소에는 UseFilter 가 null)
-            if ((UseFilter != null && !UseFilter(handIndex)) ||
+            // 봉인 또는 튜토리얼에 걸린 카드는 소모 없이 되돌린다.
+            if (KillSwitchPattern.IsCardSealed(CardSystem.Instance.GetCard(handIndex)) ||
+                (UseFilter != null && !UseFilter(handIndex)) ||
                 (RequestFilter != null && !RequestFilter(handIndex, specialRequest)))
             {
                 UseBlocked?.Invoke(handIndex);

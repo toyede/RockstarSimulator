@@ -29,6 +29,11 @@ namespace ContextStage
                 CardDefinition previewCard = tierData.GrantedCard != null
                     ? tierData.GrantedCard
                     : upgrade?.TargetCard;
+                string description = tierData.GrantedCard != null
+                    ? tierData.GrantedCard.Description
+                    : upgrade != null && !string.IsNullOrWhiteSpace(upgrade.DescriptionOverride)
+                        ? upgrade.DescriptionOverride
+                        : tierData.Description;
                 models.Add(new AugmentOwnedItemViewModel
                 {
                     tier = owned.tier,
@@ -37,13 +42,8 @@ namespace ContextStage
                         : upgrade?.Artwork != null
                             ? upgrade.Artwork
                             : previewCard?.Artwork,
-                    displayName = definition.DisplayName,
-                    description = tierData.GrantedCard != null
-                        ? tierData.GrantedCard.Description
-                        : upgrade != null &&
-                          !string.IsNullOrWhiteSpace(upgrade.DescriptionOverride)
-                            ? upgrade.DescriptionOverride
-                            : tierData.Description
+                    displayName = AugmentEnglish.Name(definition),
+                    description = AugmentEnglish.Description(definition, tierData, description, previewCard != null)
                 });
             }
 

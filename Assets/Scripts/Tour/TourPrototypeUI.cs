@@ -47,9 +47,9 @@ namespace ContextStage
         bool _endingPlaying;
         string _endingShownFor = string.Empty;
         TourEndingVerdict _verdict;
-        InputField _nameInput;
-        Button _recordButton;
-        bool _nameRecorded;
+        TourEndingSummaryView _endingSummary;
+        TourEndingSummaryView.RankingStatus _rankingStatus;
+        bool _resetEndingName;
 
         bool UsingSceneMap => _mapView != null;
 
@@ -84,6 +84,7 @@ namespace ContextStage
             if (_mapOwnedButton != null) _mapOwnedButton.gameObject.SetActive(false);
             if (_mapScreen != null) _mapScreen.Hide();
             if (_mapView != null) _mapView.Hide();
+            if (_endingSummary != null) _endingSummary.Hide();
         }
 
         void OnDestroy()
@@ -95,6 +96,7 @@ namespace ContextStage
             }
             if (_mapScreen != null)
                 _mapScreen.OwnedAugmentsRequested -= ShowOwnedAugments;
+            if (_endingSummary != null) Destroy(_endingSummary.gameObject);
             _augmentCoordinator?.Dispose();
             if (_mapView != null)
             {
@@ -197,6 +199,7 @@ namespace ContextStage
 
             if (_manager == null || _manager.CurrentRun == null)
             {
+                if (_endingSummary != null) _endingSummary.Hide();
                 _mapScreen?.Hide();
                 _mapView?.Hide();
                 if (_background != null) _background.enabled = true;
@@ -208,6 +211,11 @@ namespace ContextStage
             }
 
             TourRunState run = _manager.CurrentRun;
+            if (run.phase == RunPhase.Map || run.phase == RunPhase.Travel || run.phase == RunPhase.Dialogue)
+                TourPerformanceWarmupAsset.Begin();
+
+            if (_endingSummary != null && run.phase != RunPhase.Completed && run.phase != RunPhase.Failed)
+                _endingSummary.Hide();
 
             // Performance는 중간 화면이 아니라 Main 로딩 상태다. 맵은 페이드 아래에
             // 유지하고 임시 패널을 숨겨, 비동기 씬 전환 중 준비 화면이 번쩍이지 않게 한다.
@@ -378,7 +386,7 @@ namespace ContextStage
             var context = new DialoguePresentationContext
             {
                 venueName = stage.DisplayName,
-                confirmLabel = "공연 시작",
+                confirmLabel = GameLanguage.Pick("공연 시작", "Start Show"),
             };
 
             if (StageVisualCatalog.TryResolve(stage.StageId, out StageVisualEntry visual))
@@ -389,6 +397,12 @@ namespace ContextStage
                 context.posterPresentation = visual.posterPresentation;
                 context.ruleTitle = visual.ruleTitle;
                 context.ruleBody = visual.ruleBody;
+                if (GameLanguage.English)
+                {
+                    var (title, body) = StoryEnglish.StageGuide(stage.StageId, visual.stagePoster != null);
+                    context.ruleTitle = title ?? context.ruleTitle;
+                    context.ruleBody = body ?? context.ruleBody;
+                }
             }
 
             if (!Dialogue.TryPlay(stage.PreDialogueId, context, OnStageDialogueFinished)) return false;
@@ -462,7 +476,9 @@ namespace ContextStage
             {
                 _endingShownFor = key;
                 _verdict = TourEndingSelector.Resolve(run);
-                _nameRecorded = false;
+                _rankingStatus = TourEndingSummaryView.RankingStatus.Ready;
+                _resetEndingName = true;
+                if (_endingSummary != null) _endingSummary.Hide();
                 Debug.Log($"[TourEnding] {_verdict.kind} ({_verdict.sequenceId}) · 총점 {_verdict.totalScore:N0} · 랭크 {_verdict.ranks} · 성향 점수 C/S/M {_verdict.scoreByPreference[0]}/{_verdict.scoreByPreference[1]}/{_verdict.scoreByPreference[2]}");
                 if (TryPlayEndingDialogue(run))
                 {
@@ -484,43 +500,47 @@ namespace ContextStage
 
             var context = new DialoguePresentationContext
             {
-                venueName = entry != null && !string.IsNullOrEmpty(entry.title) ? entry.title : _verdict.kind.ToString(),
-                confirmLabel = catalog != null ? catalog.DialogueConfirmLabel : "결말 보기",
+                venueName = StoryEnglish.EndingTitle(_verdict.kind,
+                    entry != null && !string.IsNullOrEmpty(entry.title) ? entry.title : _verdict.kind.ToString()),
+                confirmLabel = GameLanguage.Pick(catalog != null ? catalog.DialogueConfirmLabel : "결말 보기", "View Ending"),
             };
 
             context.useBackdropImage = true; // 허브에는 뒤에 보여줄 화면이 없으므로 블러 대신 배경 그림
-            // 합류 전 결말에는 3인 밴드를 그린 배드 엔딩 일러스트를 보여주지 않는다.
-            if (entry != null && entry.illustration != null &&
-                _verdict.sequenceId != TourEndingSelector.BadBeforeJoinId)
+            context.backdrop = ResolveEndingArt(run, entry, out bool isEndingIllustration);
+            if (isEndingIllustration)
             {
-                context.backdrop = entry.illustration;
                 context.brightBackdrop = true; // 일러스트가 주인공
                 context.hidePortraits = true;
             }
-            else
-            {
-                // 일러스트가 없으면 마지막 공연 배경을 어둡게
-                StageResult last = run.LatestStageResult;
-                if (last != null && StageVisualCatalog.TryResolve(last.stageId, out StageVisualEntry visual) && visual != null)
-                    context.backdrop = visual.backgroundBase;
-            }
 
             return Dialogue.TryPlay(_verdict.sequenceId, context, OnEndingDialogueFinished);
+        }
+
+        Sprite ResolveEndingArt(TourRunState run, TourEndingCatalog.Entry entry, out bool isEndingIllustration)
+        {
+            // 합류 전 실패에서는 3인 밴드를 그린 배드 엔딩 대신 마지막 공연장을 보여준다.
+            isEndingIllustration = entry != null && entry.illustration != null &&
+                                   _verdict?.sequenceId != TourEndingSelector.BadBeforeJoinId;
+            if (isEndingIllustration) return entry.illustration;
+            StageResult last = run.LatestStageResult;
+            return last != null && StageVisualCatalog.TryResolve(last.stageId, out StageVisualEntry visual) &&
+                visual != null ? visual.backgroundBase : null;
         }
 
         void OnEndingDialogueFinished()
         {
             _endingPlaying = false;
             TourRunState run = _manager == null ? null : _manager.CurrentRun;
-            if (run == null) return;
+            if (run == null || (run.phase != RunPhase.Completed && run.phase != RunPhase.Failed)) return;
             ShowEndingSummary(run);
         }
 
         void ShowEndingSummary(TourRunState run)
         {
-            if (_mainPanel != null) _mainPanel.gameObject.SetActive(true);
+            _mainPanel.gameObject.SetActive(false);
             if (_background != null) _background.enabled = true;
-            ClearButtons();
+            if (_endingSummary == null)
+                _endingSummary = TourEndingSummaryView.Create(_mainPanel.parent, RecordEndingScore, ReturnToTitle);
 
             TourEndingCatalog catalog = TourEndingCatalog.LoadDefault();
             TourEndingCatalog.Entry entry = catalog != null && _verdict != null ? catalog.Find(_verdict.kind) : null;
@@ -528,88 +548,49 @@ namespace ContextStage
 
             string title = entry != null && !string.IsNullOrEmpty(entry.title)
                 ? entry.title
-                : (_verdict != null && _verdict.failed ? "TOUR FAILED" : "TOUR COMPLETE");
-            SetHeader(title, run.phase.ToString());
+                : (run.phase == RunPhase.Failed ? "공연 중단" : "투어 완료");
 
             string topLabel = _verdict != null
-                ? (newspaper != null ? newspaper.PreferenceLabel(_verdict.topPreference) : _verdict.topPreference.ToString())
+                ? (newspaper != null && !GameLanguage.English
+                    ? newspaper.PreferenceLabel(_verdict.topPreference) : _verdict.topPreference.ToString())
                 : "-";
-            string summary = entry != null && !string.IsNullOrEmpty(entry.summary)
-                ? string.Format(entry.summary, run.totalScore.ToString("N0"), topLabel)
-                : "";
-            string totalLabel = catalog != null ? catalog.TotalScoreLabel : "TOTAL SCORE";
-            string ranksLabel = catalog != null ? catalog.RanksLabel : "RANKS";
-            string topAudienceLabel = catalog != null ? catalog.TopAudienceLabel : "TOP AUDIENCE";
-            string ranks = _verdict != null && !string.IsNullOrEmpty(_verdict.ranks) ? _verdict.ranks : "-";
-            int topScore = _verdict != null ? _verdict.topPreferenceScore : 0;
-
-            _bodyText.text =
-                (string.IsNullOrEmpty(summary) ? "" : summary + "\n") +
-                $"{totalLabel}  {run.totalScore:N0}    {ranksLabel}  {ranks}\n" +
-                $"{topAudienceLabel}  {topLabel} ({topScore:N0})";
-
-            // 이름 기록 (로컬 순위 + 원격 순위). 한 번만.
-            string entryLabel = catalog != null ? catalog.NameEntryLabel : "이름을 남기고 순위에 기록하세요";
-            string recordLabel = catalog != null ? (_nameRecorded ? catalog.NameEntryDone : catalog.NameEntryButton) : (_nameRecorded ? "기록됨" : "기록하기");
-            _nameInput = CreateNameInput(_buttonRoot, entryLabel);
-            _nameInput.interactable = !_nameRecorded;
-            _recordButton = AddButton(recordLabel, RecordEndingScore);
-            _recordButton.interactable = !_nameRecorded;
-
-            AddButton(catalog != null ? catalog.ReturnButton : "RETURN TO TITLE", ReturnToTitle, danger: _verdict != null && _verdict.failed);
+            string summary = entry?.summary ?? "";
+            if (_verdict != null)
+            {
+                title = StoryEnglish.EndingTitle(_verdict.kind, title);
+                summary = StoryEnglish.EndingSummary(_verdict.kind, summary);
+            }
+            summary = string.Format(summary, run.totalScore.ToString("N0"), topLabel);
+            Sprite art = ResolveEndingArt(run, entry, out bool isEndingIllustration);
+            _endingSummary.Show(_verdict, title, summary, topLabel, run.totalScore,
+                art, isEndingIllustration, _resetEndingName, _rankingStatus);
+            _resetEndingName = false;
         }
 
         void RecordEndingScore()
         {
-            if (_nameRecorded || _manager == null || _manager.CurrentRun == null) return;
-            string name = RemoteLeaderboardClient.NormalizePlayerName(_nameInput != null ? _nameInput.text : string.Empty);
-            int score = Mathf.Max(0, _manager.CurrentRun.totalScore);
+            TourRunState run = _manager == null ? null : _manager.CurrentRun;
+            if (_rankingStatus != TourEndingSummaryView.RankingStatus.Ready || run == null ||
+                (run.phase != RunPhase.Completed && run.phase != RunPhase.Failed) || _endingSummary == null) return;
+            string name = RemoteLeaderboardClient.NormalizePlayerName(_endingSummary.PlayerName);
+            int score = Mathf.Max(0, run.totalScore);
 
             LeaderboardStore.Add(name, score); // 네트워크 응답과 무관하게 로컬 기록부터
-            _nameRecorded = true;
-            if (_nameInput != null) _nameInput.interactable = false;
-            if (_recordButton != null)
+            SetEndingRankingStatus(TourEndingSummaryView.RankingStatus.Uploading);
+            string runKey = _endingShownFor;
+            StartCoroutine(RemoteLeaderboardClient.SubmitScore(name, score, succeeded =>
             {
-                _recordButton.interactable = false;
-                Text label = _recordButton.GetComponentInChildren<Text>();
-                TourEndingCatalog catalog = TourEndingCatalog.LoadDefault();
-                if (label != null) label.text = catalog != null ? catalog.NameEntryDone : "기록됨";
-            }
-            StartCoroutine(RemoteLeaderboardClient.SubmitScore(name, score, _ => { }));
+                if (_endingShownFor != runKey) return;
+                SetEndingRankingStatus(succeeded
+                    ? TourEndingSummaryView.RankingStatus.Uploaded
+                    : TourEndingSummaryView.RankingStatus.LocalOnly);
+            }));
         }
 
-        /// <summary>결말 화면의 이름 입력칸. 버튼 목록(VerticalLayoutGroup)에 한 줄로 들어간다.</summary>
-        static InputField CreateNameInput(Transform parent, string placeholder)
+        void SetEndingRankingStatus(TourEndingSummaryView.RankingStatus status)
         {
-            var root = new GameObject("NameInput", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(InputField), typeof(LayoutElement));
-            RectTransform rect = root.GetComponent<RectTransform>();
-            rect.SetParent(parent, false);
-            rect.sizeDelta = new Vector2(820f, 62f);
-            root.GetComponent<Image>().color = new Color32(0x1B, 0x16, 0x20, 0xFF);
-            LayoutElement layout = root.GetComponent<LayoutElement>();
-            layout.preferredHeight = 62f;
-            layout.minHeight = 54f;
-
-            Text text = TourPrototypeUIFactory.CreateText(rect, "Text", 26, TextAnchor.MiddleLeft, Color.white);
-            text.supportRichText = false;
-            text.rectTransform.anchorMin = Vector2.zero;
-            text.rectTransform.anchorMax = Vector2.one;
-            text.rectTransform.offsetMin = new Vector2(18f, 4f);
-            text.rectTransform.offsetMax = new Vector2(-18f, -4f);
-
-            Text hint = TourPrototypeUIFactory.CreateText(rect, "Placeholder", 24, TextAnchor.MiddleLeft, new Color(1f, 1f, 1f, 0.35f));
-            hint.text = placeholder;
-            hint.rectTransform.anchorMin = Vector2.zero;
-            hint.rectTransform.anchorMax = Vector2.one;
-            hint.rectTransform.offsetMin = new Vector2(18f, 4f);
-            hint.rectTransform.offsetMax = new Vector2(-18f, -4f);
-
-            InputField input = root.GetComponent<InputField>();
-            input.textComponent = text;
-            input.placeholder = hint;
-            input.characterLimit = 16;
-            input.lineType = InputField.LineType.SingleLine;
-            return input;
+            _rankingStatus = status;
+            if (_endingSummary != null) _endingSummary.SetRankingStatus(status);
         }
 
         void StartSelectedPerformance()
@@ -633,6 +614,7 @@ namespace ContextStage
 
         void ReturnToTitle()
         {
+            if (_rankingStatus == TourEndingSummaryView.RankingStatus.Uploading) return;
             TitleReturn.Go();
         }
 

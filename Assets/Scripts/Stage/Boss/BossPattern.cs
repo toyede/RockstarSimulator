@@ -268,12 +268,10 @@ namespace ContextStage
     {
         static KillSwitchPattern _sealOwner;
         public static event Action SealPresentationChanged;
-        public static bool IsCardSealed(CardDefinition card) => _sealOwner != null && _sealOwner._ownsFilter &&
-            CardInput.UseFilter == (Func<int, bool>)_sealOwner.FilterCard &&
+        public static bool IsCardSealed(CardDefinition card) => _sealOwner != null &&
             card != null && card.Role == CardRole.Normal && _sealOwner.IsBanned(card.TargetPreference);
         readonly List<CrowdPreference> _banned = new List<CrowdPreference>(2);
         int _positives;
-        bool _ownsFilter;
         int Required => Enhanced ? Config.KillSwitchPositivesEnhanced : Config.KillSwitchPositives;
 
         public override string Id => "kill_switch";
@@ -282,14 +280,16 @@ namespace ContextStage
         {
             get
             {
+                if (_sealOwner != this)
+                    return $"일부 성향의 일반 카드 봉인 — 나머지 카드로 좋은 반응 {Required}번!";
                 var labels = new List<string>(_banned.Count);
                 for (int i = 0; i < _banned.Count; i++) labels.Add(PreferenceLabel(_banned[i]));
-                return $"{string.Join(" · ", labels)} 카드 봉인 — 나머지 카드로 좋은 반응 {Required}번!";
+                return $"{string.Join(" · ", labels)} 일반 카드 봉인 — 나머지 카드로 좋은 반응 {Required}번!";
             }
         }
         public override string ProgressText => $"{_positives} / {Required}";
 
-        public override bool CanStart() => CardInput.UseFilter == null; // 튜토리얼 등 다른 주인이 있으면 건너뛴다
+        public override bool CanStart() => _sealOwner == null && CardInput.UseFilter == null;
 
         public override void Begin()
         {
@@ -305,19 +305,13 @@ namespace ContextStage
                 _banned.Add(pick);
             }
 
-            if (CardInput.UseFilter == null)
-            {
-                CardInput.UseFilter = FilterCard;
-                _ownsFilter = true;
-                _sealOwner = this;
-                SealPresentationChanged?.Invoke();
-            }
+            // 튜토리얼/다른 연출의 입력 훅과 독립적으로 표시와 실제 카드 봉인을 유지한다.
+            _sealOwner = this;
+            SealPresentationChanged?.Invoke();
         }
 
         public override void End(bool success)
         {
-            if (_ownsFilter && CardInput.UseFilter == (Func<int, bool>)FilterCard) CardInput.UseFilter = null;
-            _ownsFilter = false;
             if (_sealOwner == this) { _sealOwner = null; SealPresentationChanged?.Invoke(); }
         }
 
@@ -329,14 +323,6 @@ namespace ContextStage
         }
 
         public bool IsBanned(CrowdPreference preference) => _banned.Contains(preference);
-
-        bool FilterCard(int handIndex)
-        {
-            if (!CardSystem.HasInstance) return true;
-            CardDefinition card = CardSystem.Instance.GetCard(handIndex);
-            if (card == null || card.Role != CardRole.Normal) return true; // Special·유틸리티는 봉인하지 않는다
-            return !_banned.Contains(card.TargetPreference);
-        }
     }
 
     /// <summary>DROP — 드롭 전에 피버에 진입한다. 이미 피버면 즉시 성공. 콤보는 건드리지 않는다.</summary>

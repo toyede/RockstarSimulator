@@ -53,11 +53,11 @@ namespace ContextStage
             int version = ++_refreshVersion;
             if (!RemoteLeaderboardClient.IsConfigured)
             {
-                RenderRecords(LeaderboardStore.GetAll(), "로컬 랭킹 TOP 10");
+                RenderRecords(LeaderboardStore.GetAll(), GameLanguage.Pick("로컬 랭킹 TOP 10", "LOCAL TOP 10"));
                 return;
             }
 
-            leaderboardText.text = "전체 랭킹 TOP 10\n\n랭킹을 불러오는 중...";
+            leaderboardText.text = GameLanguage.Pick("전체 랭킹 TOP 10\n\n랭킹을 불러오는 중...", "GLOBAL TOP 10\n\nLoading rankings...");
             if (_refreshRoutine != null)
                 StopCoroutine(_refreshRoutine);
             _refreshRoutine = StartCoroutine(RefreshRemote(version));
@@ -81,13 +81,13 @@ namespace ContextStage
 
             if (succeeded && records != null)
             {
-                RenderRecords(records, "전체 랭킹 TOP 10");
+                RenderRecords(records, GameLanguage.Pick("전체 랭킹 TOP 10", "GLOBAL TOP 10"));
                 yield break;
             }
 
             RenderRecords(
                 LeaderboardStore.GetAll(),
-                "서버 연결 실패 · 로컬 랭킹 TOP 10");
+                GameLanguage.Pick("서버 연결 실패 · 로컬 랭킹 TOP 10", "OFFLINE · LOCAL TOP 10"));
         }
 
         void RenderRecords(IReadOnlyList<ScoreRecord> records, string heading)
@@ -95,14 +95,14 @@ namespace ContextStage
             var builder = new StringBuilder(320);
             builder.AppendLine(heading);
             builder.AppendLine();
-            builder.AppendLine("순위        이름                 점수");
+            builder.AppendLine(GameLanguage.Pick("순위        이름                 점수", "Rank        Name                Score"));
             builder.AppendLine("────────────────────────");
 
             int count = records == null ? 0 : Mathf.Min(DisplayCount, records.Count);
             if (count == 0)
             {
                 builder.AppendLine();
-                builder.Append("아직 등록된 기록이 없습니다.");
+                builder.Append(GameLanguage.Pick("아직 등록된 기록이 없습니다.", "No scores yet."));
             }
             else
             {
@@ -113,7 +113,7 @@ namespace ContextStage
                         record?.playerName);
                     int score = record == null ? 0 : record.score;
                     builder.AppendFormat(
-                        "{0,2}위     {1,-12}     {2,9:N0}",
+                        GameLanguage.Pick("{0,2}위     {1,-12}     {2,9:N0}", "{0,2}.     {1,-12}     {2,9:N0}"),
                         i + 1,
                         playerName,
                         score);

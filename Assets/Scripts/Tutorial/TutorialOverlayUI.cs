@@ -53,6 +53,7 @@ namespace ContextStage
         SpriteRenderer _dim;          // 월드 딤 (런타임 생성)
         SpriteRenderer _glow;         // 스포트라이트 발밑 글로우 (런타임 생성)
         Transform _spotTarget;
+        bool _outfitFocus;
         float _dimTarget;             // 0 = 밝음, dimAlpha = 어두움
         float _dimCurrent;
         Button _fullScreenContinueButton;
@@ -147,7 +148,7 @@ namespace ContextStage
                     _cueSheetLabel.font = mainText != null ? mainText.font : GuideFont;
                     _cueSheetLabel.fontSize = 22; _cueSheetLabel.alignment = TextAnchor.MiddleCenter;
                     _cueSheetLabel.color = new Color32(0xFF, 0xD6, 0x66, 0xFF); _cueSheetLabel.raycastTarget = false;
-                    _cueSheetLabel.text = "공연 가이드 · CUE SHEET";
+                    _cueSheetLabel.text = GameLanguage.Pick("공연 가이드 · CUE SHEET", "PERFORMANCE GUIDE · CUE SHEET");
                     var r = _cueSheetLabel.rectTransform;
                     r.anchorMin = new Vector2(.14f, .75f); r.anchorMax = new Vector2(.94f, .86f);
                     r.offsetMin = r.offsetMax = Vector2.zero;
@@ -247,8 +248,8 @@ namespace ContextStage
                 if (show)
                 {
                     Vector3 p = _spotTarget.position;
-                    _glow.transform.position = new Vector3(p.x, p.y - 0.35f, p.z);
-                    float pulse = 1f + Mathf.Sin(Time.unscaledTime * glowPulseSpeed) * 0.12f;
+                    _glow.transform.position = new Vector3(p.x, p.y - (_outfitFocus ? 0.80f : 0.35f), p.z);
+                    float pulse = 1f + Mathf.Sin(Time.unscaledTime * glowPulseSpeed) * (_outfitFocus ? 0.04f : 0.12f);
                     _glow.transform.localScale = Vector3.one * 2.2f * pulse;
                 }
             }
@@ -290,25 +291,37 @@ namespace ContextStage
             if (string.IsNullOrEmpty(text)) return string.Empty;
             if (text.IndexOf('<') >= 0) return text;
             string[] words = { "CHILL", "Chill", "SINGALONG", "Singalong", "MOSH", "Mosh", "FEVER", "Fever",
-                "피버", "특별 관객", "총 반응", "2초", "10초", "1,000점", "카드를", "콤보" };
+                "피버", "특별 관객", "총 반응", "2초", "10초", "카드를", "콤보" };
             string[] colors = { "087B86", "087B86", "6632A6", "6632A6", "B72835", "B72835", "986000", "986000",
-                "986000", "A52B6C", "176EB2", "176EB2", "176EB2", "176EB2", "176EB2", "986000" };
+                "986000", "A52B6C", "176EB2", "176EB2", "176EB2", "176EB2", "986000" };
             for (int i = 0; i < words.Length; i++)
                 text = text.Replace(words[i], $"<color=#{colors[i]}>{words[i]}</color>");
-            return text;
+            return System.Text.RegularExpressions.Regex.Replace(text, @"\d[\d,]*점", "<color=#176EB2>$&</color>");
         }
 
-        public void SetDim(bool on) => _dimTarget = on ? dimAlpha : 0f;
+        public void SetDim(bool on, bool outfitFocus = false) =>
+            _dimTarget = on ? (outfitFocus ? Mathf.Min(dimAlpha, 0.12f) : dimAlpha) : 0f;
 
-        /// <summary>대상 관객을 딤 위로 끌어올린다. null 이면 해제.</summary>
-        public void Spotlight(AudienceMemberActor actor)
+        /// <summary>대상 관객을 강조한다. 옷차림 단계에서는 복장 위로 색을 덮지 않는 옅은 발밑 빛을 쓴다.</summary>
+        public void Spotlight(AudienceMemberActor actor, bool outfitFocus = false)
         {
             RestoreBoosted();
             _spotTarget = null;
+            _outfitFocus = outfitFocus;
             if (actor == null) return;
 
             _spotTarget = actor.transform;
-            if (_glow != null) _glow.color = GlowColorFor(actor.Snapshot.Preference);
+            if (_glow != null)
+            {
+                Color color = GlowColorFor(actor.Snapshot.Preference);
+                if (outfitFocus)
+                {
+                    color = Color.Lerp(color, new Color32(0xFF, 0xF2, 0xDD, 0xFF), 0.80f);
+                    color.a = 0.24f;
+                }
+                _glow.color = color;
+            }
+            if (outfitFocus) return; // 기존 관객 깊이 정렬은 보존한다.
             foreach (var sr in actor.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 _boosted.Add((sr, sr.sortingOrder));

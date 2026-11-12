@@ -43,10 +43,11 @@ namespace ContextStage
             foreach (var card in run.deck.addedCards)
             {
                 if (card == null || string.IsNullOrEmpty(card.instanceId) || !_seen.Add(card.instanceId)) continue;
-                if (notify && run.phase == RunPhase.Travel && !string.IsNullOrEmpty(card.sourceAugmentId)) Show(card.cardId);
+                if (notify && run.phase == RunPhase.Travel && !string.IsNullOrEmpty(card.sourceAugmentId))
+                    Show(card.cardId, card.sourceAugmentId);
             }
         }
-        void Show(string cardId)
+        void Show(string cardId, string sourceAugmentId)
         {
             var catalog = CardCatalog.LoadDefault();
             if (catalog == null || !catalog.TryGetCard(cardId, out var card)) return;
@@ -72,7 +73,8 @@ namespace ContextStage
                 _label.resizeTextForBestFit = true; _label.resizeTextMinSize = 18; _label.resizeTextMaxSize = 25;
             }
             if (_font != null) _label.font = _font;
-            _label.text = card.DisplayName + "\n덱에 추가됨";
+            _label.text = AugmentEnglish.CardName(sourceAugmentId, card.DisplayName)
+                + GameLanguage.Pick("\n덱에 추가됨", "\nAdded to deck");
             _art.sprite = card.Artwork;
             _remaining = 1.1f; _group.alpha = 1; _canvas.gameObject.SetActive(true);
             var pixels = _canvas.GetComponent<UIPixelBurstEmitter>();

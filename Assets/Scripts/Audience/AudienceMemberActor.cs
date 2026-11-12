@@ -656,7 +656,7 @@ namespace ContextStage
                 else if (_motionCardId == "hands_up" && _gestureCue == 0)
                 { reactionVFX.PlaySingalongGesture(); _gestureCue = 1; }
             }
-            if (!_tutorialInspectionPose || _exiting) _animationPlayer.Tick(deltaTime);
+            Vector3 previousGround = _currentLayoutPosition + (Vector3)_wanderOffset;
 
             // 단계 전환 블렌드 진행 (프로필 값이 툭 튀지 않게)
             if (_motionBlend < 1f && motionBlendDuration > 0f)
@@ -693,6 +693,7 @@ namespace ContextStage
                 else _wanderOffset = Vector2.MoveTowards(_wanderOffset, Vector2.zero, calmWalkSpeed * 2f * deltaTime);
             }
 
+            UpdateWalkFrame(deltaTime, previousGround);
             if (_exiting)
             {
                 _exitElapsed += deltaTime;
@@ -739,6 +740,25 @@ namespace ContextStage
             _reactionPulseRemaining = Mathf.Max(0f, _reactionPulseRemaining - deltaTime);
             _reactionJumpRemaining = Mathf.Max(0f, _reactionJumpRemaining - deltaTime);
             ApplyTransform();
+        }
+
+        void UpdateWalkFrame(float deltaTime, Vector3 previousGround)
+        {
+            if (!_exiting && _snapshot.Stage == AudienceEngagementStage.Calm)
+            {
+                bool inspecting = _inspectionHold || _tutorialInspectionPose;
+                Vector3 ground = _currentLayoutPosition + (Vector3)_wanderOffset;
+                bool entering = _visibility < .999f && enterDistance > 0f;
+                if (inspecting || (!entering && (ground - previousGround).sqrMagnitude < .00000001f))
+                {
+                    // 제자리에선 걷지 않는다. 숨쉬듯 흔들리는 기존 Transform 움직임은 유지한다.
+                    var clip = _animationPlayer.CurrentClip;
+                    if (clip != null && clip.IsValid && characterRenderer.sprite != clip.frames[0])
+                        _animationPlayer.Play(clip, restart: true);
+                    return;
+                }
+            }
+            if (!_tutorialInspectionPose || _exiting) _animationPlayer.Tick(deltaTime);
         }
 
         void ApplyVisual(

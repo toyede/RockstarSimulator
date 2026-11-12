@@ -618,7 +618,6 @@ namespace ContextStage
                 globalIntensity = Mathf.Max(globalIntensity, _showAmbientFloor);
                 baseIntensity *= 0.65f;
             }
-
             // --- 정전 보간 (0 = 평소, 1 = 정전) ---
             _blackoutBlend = Mathf.MoveTowards(_blackoutBlend, _blackout ? 1f : 0f, Time.deltaTime / blackoutFadeDuration);
             float dark = _blackoutBlend;
@@ -694,9 +693,14 @@ namespace ContextStage
                 light == leftStageLight ? _leftPixelSpotlight :
                 light == rightStageLight ? _rightPixelSpotlight :
                 null;
-            pixelSpotlight?.SetVisualLight(
-                color,
-                usePixelSpotlightShader && !_showHintMode ? finalIntensity * pixelSpotlightIntensity : 0f);
+            if (pixelSpotlight != null)
+            {
+                float beam = TutorialFlow.IsOutfitFocusActive ? StageLightingRig.OutfitBeamOpacity : 1f;
+                Color beamColor = TutorialFlow.IsOutfitFocusActive
+                    ? Color.Lerp(color, Color.white, StageLightingRig.OutfitBeamWhiteMix) : color;
+                pixelSpotlight.SetVisualLight(beamColor,
+                    usePixelSpotlightShader && !_showHintMode ? finalIntensity * pixelSpotlightIntensity * beam : 0f);
+            }
         }
 
         /// <summary>플래시 곡선. 0 → 1(치솟음) → 1(유지) → 0(복귀).</summary>

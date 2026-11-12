@@ -1,0 +1,232 @@
+# English story text. One line per DialogueLine, in asset order.
+[intro_stage_01]
+An alley at rush hour. Raccoon and Hedgehog set up in front of a little amp.
+What time did we say we'd start?
+Seven.
+Do we still have a minute?
+It's past seven.
+Oh! Hi, everyone. We're...
+Mic.
+What about it?
+It's off.
+As he turns on the mic, music blasts from the billboard across the street.\n“LUX//FAUNA — LIVE AT THE STADIUM”
+...Let's wait till that ends.
+You said that last time. It's on a loop.
+Okay. Give me a second.
+Raccoon adjusts his guitar strap and nods.
+One, two. One, two, three, four!
+[intro_stage_02]
+The opening slot at a basement venue.\nIn the corner, Skunk is packing up his bass and gear.
+Nothing's coming out of the guitar amp. Is the input loose?
+It was working a minute ago.
+Raccoon pulls the input cable with the volume still up.\nPOP! The amp cracks loudly and kicks up dust.
+Did you just pull the cable with the volume up?
+There wasn't any sound.
+So you just pulled it?
+...Yeah.
+Turn the amp down first. I'll plug it in.
+Is it broken?
+Hang on.
+Skunk checks the amp. Raccoon edges closer to Hedgehog.
+Does it look expensive?
+Don't ask me.
+I reseated the jack. Give a string a pluck.
+Skunk checks the connection and plucks his bass. A low note rings out cleanly.
+...Thank goodness.
+That's my line. It's my amp.
+You two playing tonight?
+Yes.
+When?
+In ten minutes.
+Where's your bass player?
+We haven't found one yet.
+Let's run the first eight bars. I'll fill in on bass.
+They start playing, and Skunk lays down the bass.\nRaccoon glances back. Skunk nods him toward the front.
+Could you play the actual show with us, too?
+Right now?
+It's now or no bass player.
+Skunk checks his watch, but he doesn't put down the bass.
+Write down the set list and where the choruses come in. I'll play bass tonight.
+[intro_stage_03]
+The festival holding area. Raccoon finds old gig footage on his phone.
+You were in this band too?
+Where'd you find that?
+I searched for you. How many bands were you in?
+Stop scrolling.
+What's this one called? I can't find the track.
+We never put it out.
+Why not? It's good.
+We had a hit before. They wanted to put out something like that first.
+What about this one?
+They wanted my bass solo after verse two gone. Another chorus instead.
+Did it ever happen?
+No. Same story with the other songs I brought in.
+Is that why you left?
+At least listen to the eight bars before cutting them. They wanted them gone before rehearsal.
+Raccoon pauses the video. Skunk looks away from the phone.
+Just check when we're on.
+“HEADLINER: LUX//FAUNA” appears above the main stage.\nThe announcement sends the crowd that way.
+Looks like they're starting now too.
+Same slot as us. Everybody's going over there.
+Skunk points to the people still standing in front of the small stage.
+They're waiting for us. Let's go.
+[intro_stage_04]
+The TV station greenroom. A preview plays on the monitor.\n“Who will face LUX//FAUNA in the final?”
+The feed cuts to the three in the greenroom. Raccoon straightens up in a hurry.
+Are we on air?
+Isn't that just a holding shot?
+The red light's on.
+How long has that been on?
+I just picked my teeth.
+Did you send the stream link?
+Yeah. In the group chat.
+Already?
+You told me to.
+...I did, didn't I.
+Skunk checks his cable again and plucks a short note.
+Can you hear my bass?
+Yep.
+Skunk plucks the same note again.
+I can hear it. I heard it the first time, too.
+You've done TV before, right?
+Recorded.
+Live?
+...First time.
+If we get through tonight, we're really going there.
+Let's get through tonight first. My hands are sweating.
+Hedgehog sets spare sticks beside him. A crew member calls the band.
+Phones down. We're on.
+[intro_stage_05_boss]
+The stadium final. At the stage entrance, the band meets electronic duo LUX//FAUNA.
+We caught the broadcast. Nice chorus.
+Oh, thanks.
+That eight-bar bass solo before the chorus? Try cutting it to four.
+Get to the hook sooner and the crowd will respond faster.
+Skunk's hands pause on his bass.
+We're playing it the way we rehearsed tonight.
+Really? If the crowd cools before our first drop, we cut the buildup first.
+We wrote that chorus around the bass solo. We want to play them together.
+Then we'll hear it out there.
+LUX//FAUNA follow the crew up to their stage.
+What'd they say?
+Cut the bass solo before the chorus from eight bars to four.
+Now?
+We're not cutting it. Play it the way we practiced.
+The first electronic note sounds from the opposite stage. The stadium erupts.
+They get cheers just for making a sound.
+Does your guitar make a sound?
+Raccoon plucks a string. Nothing.
+...Hold on.
+He turns the guitar volume up. This time it rings out.
+Good. Now we make a sound too.
+Can you hear us over here?
+A few people by the stage raise their hands and shout.
+We're good, right?
+Yeah.
+Ready?
+Let's go.
+One, two. One, two, three, four!
+[ending_common]
+After the show, the three pack up backstage.
+Someone got that on video, right?
+Yep. Starting where your guitar went silent.
+Cut that bit.
+Watch it outside. The next band's waiting.
+I'll carry your amp.
+Leave the cables alone.
+[ending_all_s]
+Outside the stadium, the big screen shows an ad for RACCOON ROLL's next tour.
+Wait. That's us.
+We saw it earlier.
+Get a picture before it changes.
+Then take this.
+As they trade gear, the screen switches to another ad.
+Aw.
+It'll come around again.
+You can go on ahead.
+I want a picture too.
+Skunk puts his gear down. A moment later, their ad comes back around.
+Get in here. Put it on a timer.
+Where do I prop the phone?
+Against my case.
+The shutter goes off. Raccoon is the only one facing away, still looking up at the screen.
+...Let's take another one.
+[ending_bad]
+The set was cut short. They were told to clear the stage. Gear cases are piled outside.
+They want the whole kit out now, too.
+The stool's still in there. I'll get it.
+Did you film tonight?
+I left it recording.
+Don't post it.
+Okay.
+I'll move this later. You go ahead.
+How are you going to lift that alone?
+A little at a time, I guess...
+Come on. Grab the other end.
+The two take opposite ends of the drum case and lift.
+Skunk holds the door open for them.
+Easy. There's a step.
+...I'll move your amp too.
+I've got mine. Get your guitar first.
+Skunk holds the door until both of them are through.
+[ending_bad_before_join]
+The set was cut short. They were told to clear the stage. Gear cases are piled outside.
+They want the whole kit out now, too.
+The stool's still in there. I'll get it.
+Did you film tonight?
+I left it recording.
+Don't post it.
+Okay.
+I'll move this later. You go ahead.
+How are you going to lift that alone?
+A little at a time, I guess...
+Come on. Grab the other end.
+The two take opposite ends of the drum case and lift.
+[ending_chill]
+The three recorded and released a new single themselves.\nIn their little studio, they check the comments on the track and live video.
+Our song made it onto a recommendation list.
+Where?
+Here. That's the picture they're using.
+The one where my eyes are closed?
+...It looks fine as a thumbnail.
+Not from where I'm sitting.
+Hey, someone's asking you something.
+What?
+How you recorded the bass. At 1:42.
+Skunk listens to the passage, then points to the amp in the corner.
+That amp.
+The one you nearly blew up.
+It didn't blow up.
+Want me to post a picture?
+Yeah. Get the back too.
+Raccoon takes pictures of the amp. Skunk types out the recording setup in a reply.
+You're writing all of that?
+They asked.
+[ending_mosh]
+The tour is over, and the band is back at the basement club.\nThe last song ends, but the fans at the stage won't move.
+You'll catch me, right?
+Hands go up. Raccoon leans out over the edge of the stage.
+Hey. Guitar.
+Oh.
+Raccoon sets the guitar down and dives into the upturned hands.
+Oh, it worked.
+Skunk laughs and steps to the front. Raccoon drifts farther and farther into the crowd.
+Wait! Where am I going?
+All the way to the back!
+The stage! Take me back to the stage!
+Raccoon floats over the crowd. One fan holds his fallen crown aloft.
+[ending_singalong]
+After the outdoor show. The fans outside are still singing the chorus.
+Should I post this clip?
+Go back a little.
+The crowd's singing bursts out of the phone.
+You can hardly hear me.
+Look at the back. Even they're singing.
+Skunk comes over and peers at the screen with them.
+Should I find another angle?
+Why? This one's good.
+Here. Post it from when you lower the mic.
+They're still singing.
+You made them do it twice more.
+...I did, didn't I.
+Raccoon posts the clip. Through the open door, the chorus starts up again.

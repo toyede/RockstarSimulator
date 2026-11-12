@@ -431,8 +431,8 @@ namespace ContextStage
             if (hintText != null)
             {
                 hintText.text = system.HandCount > 0
-                    ? "카드를 위로 드래그해 사용"
-                    : "카드를 준비하는 중";
+                    ? GameLanguage.Pick("카드를 위로 드래그해 사용", "Drag a card up to play it")
+                    : GameLanguage.Pick("카드를 준비하는 중", "Preparing cards...");
             }
 
             if (parent is RectTransform parentRect)

@@ -115,6 +115,16 @@ namespace ContextStage
         [SerializeField, Tooltip("주변 관객 대비 크기 배율. 1보다 크면 눈에 잘 띈다")]
         float scaleMultiplier = 1.15f;
 
+        [SerializeField, Range(.5f, 1.25f)] float chillSize = .78f;
+        [SerializeField, Range(.5f, 1.25f)] float singalongSize = .75f;
+        [SerializeField, Range(.5f, 1.25f)] float moshSize = .88f;
+        float RequestScaleMultiplier => scaleMultiplier * (_activeStage switch
+        {
+            HeatStage.Chill => chillSize,
+            HeatStage.Singalong => singalongSize,
+            _ => moshSize
+        });
+
         [SerializeField, Tooltip("줄이 바뀔 때 크기가 따라붙는 속도")]
         float scaleLerpSpeed = 6f;
 
@@ -147,24 +157,28 @@ namespace ContextStage
             {
                 stage = HeatStage.Chill,
                 effectSize = new Vector2(9f, 9f),
-                strengthMultiplier = 1f,
-                cameraShake = false,
+                strengthMultiplier = 1.12f,
+                cameraShake = true,
+                shakeStrength = 0.46f,
+                shakeDuration = 0.18f,
             },
             new SpecialHitScreenEffect
             {
                 stage = HeatStage.Singalong,
                 effectSize = new Vector2(9f, 9f),
-                strengthMultiplier = 1f,
+                strengthMultiplier = 1.08f,
                 cameraShake = true,
-                shakeStrength = 0.35f,
-                shakeDuration = 0.35f,
+                shakeStrength = 0.55f,
+                shakeDuration = 0.20f,
             },
             new SpecialHitScreenEffect
             {
                 stage = HeatStage.Mosh,
                 effectSize = new Vector2(10f, 10f),
-                strengthMultiplier = 1f,
-                cameraShake = false,
+                strengthMultiplier = 1.14f,
+                cameraShake = true,
+                shakeStrength = 0.64f,
+                shakeDuration = 0.24f,
                 useBuiltinDistortionFallback = true,
             },
         };
@@ -352,7 +366,7 @@ namespace ContextStage
                 personalityVFX != null &&
                 stage == _activeStage)
             {
-                personalityVFX.PlayAccent(strong: true);
+                personalityVFX.PlayHitFinisher(stage, CharacterRenderer);
             }
         }
 
@@ -481,7 +495,7 @@ namespace ContextStage
                 picked.LayoutLocalPosition +
                 new Vector3(lateralOffset * side, 0f, 0f);
 
-            _targetScale = picked.LayoutScale * scaleMultiplier;
+            _targetScale = picked.LayoutScale * RequestScaleMultiplier;
             _renderer.sortingOrder = picked.SortingOrder + sortingOrderBonus;
             if (personalityVFX != null)
             {
@@ -597,7 +611,7 @@ namespace ContextStage
             visualRoot.localRotation = Quaternion.Euler(0f, 0f, sway);
 
             float groundScale = audiencePresenter != null
-                ? audiencePresenter.GetDepthScaleAtY(_feet.y) * scaleMultiplier : _targetScale;
+                ? audiencePresenter.GetDepthScaleAtY(_feet.y) * RequestScaleMultiplier : _targetScale;
             _currentScale = Mathf.Lerp(_currentScale, groundScale, Time.deltaTime * scaleLerpSpeed);
             squash = Mathf.Clamp(squash + travelSquash, -0.12f, 0.32f);
             visualRoot.localScale = new Vector3(

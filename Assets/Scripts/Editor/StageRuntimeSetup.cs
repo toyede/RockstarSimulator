@@ -81,7 +81,7 @@ namespace ContextStage.EditorTools
                 ruleIds = new[] { RuleSpecial, RuleRain, RuleFlag },
                 spriteFolder = "ST03_Festival", spritePrefix = "ST03",
                 ruleTitle = "축제의 변수",
-                ruleBody = "옆 무대의 유혹, 소나기, 깃발 웨이브가 찾아옵니다.\n경고를 읽고 CHILL 카드로 우산을, 콤보로 웨이브를 만드세요.",
+                ruleBody = "옆 무대의 유혹, 소나기, 깃발 웨이브가 찾아옵니다.\n소나기가 오면 관객에게 맞는 카드로 기존 관객을 지키세요.",
             },
             new StageSpec
             {
@@ -89,7 +89,7 @@ namespace ContextStage.EditorTools
                 ruleIds = new[] { RuleSpecial, RuleScreen, RuleBlackout },
                 spriteFolder = "ST04_Arena", spritePrefix = "ST04",
                 ruleTitle = "생방송 사고",
-                ruleBody = "카메라 큐시트 순서대로 카드를 내고, 정전 중에는 관객을 기억해 Miss 없이 버티세요.\n정전 보너스 없이는 목표 점수에 닿기 어렵습니다.",
+                ruleBody = "카메라 큐시트 순서대로 카드를 내세요.\n정전에서는 드로우·리롤을 제외한 공연 카드만 판정합니다.",
             },
             new StageSpec
             {

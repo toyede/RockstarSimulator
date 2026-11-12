@@ -260,7 +260,7 @@ namespace ContextStage
 
             Text label = CreateText(rect, "Label", _art.Font, 24, TextAnchor.MiddleLeft, Color.white);
             SetTopLeft(label.rectTransform, new Vector2(82f, 0f), new Vector2(308f, 78f));
-            label.text = "보유 증강 확인하기";
+            label.text = GameLanguage.Pick("보유 증강 확인하기", "Owned Augments");
         }
 
         IEnumerator PlayTravel(TourRunState run)

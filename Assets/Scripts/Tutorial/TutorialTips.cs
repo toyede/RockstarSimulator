@@ -73,28 +73,32 @@ namespace ContextStage
 
         void OnComboChanged(ComboChanged e)
         {
-            if (e.CurrentCombo >= 2) ShowOnce("tip_combo", comboTip);
+            if (e.CurrentCombo >= 2) ShowOnce("tip_combo", comboTip,
+                "A positive total response keeps your COMBO going. Higher combos multiply your score.");
         }
 
-        void OnSpecialSpawned(SpecialAudienceSpawned e) => ShowOnce("tip_special", specialAudienceTip);
+        void OnSpecialSpawned(SpecialAudienceSpawned e) => ShowOnce("tip_special", specialAudienceTip,
+            "A special fan appeared! Drop the matching SPECIAL card directly on them.");
 
-        void OnCrisisWarning(AudienceCrisisWarningStarted e) => ShowOnce("tip_crisis", crisisTip);
+        void OnCrisisWarning(AudienceCrisisWarningStarted e) => ShowOnce("tip_crisis", crisisTip,
+            "Fans are about to leave! Get a strong response before the warning ends to keep more of them.");
 
         void OnCardResolved(CardResolved e)
         {
-            if (e.Role == CardRole.Utility) ShowOnce("tip_utility", utilityTip);
+            if (e.Role == CardRole.Utility) ShowOnce("tip_utility", utilityTip,
+                "DRAW adds cards. REROLL replaces your hand. Use them when you're stuck.");
         }
 
         // ---------------- 표시 ----------------
 
-        void ShowOnce(string flagKey, string message)
+        void ShowOnce(string flagKey, string message, string english)
         {
             if (TutorialFlow.IsRunning) return;          // 튜토리얼 중에는 겹치지 않는다
             if (tipText == null || string.IsNullOrEmpty(message)) return;
             if (Save.GetBool(flagKey, false)) return;    // 이미 봤다
 
             Save.SetBool(flagKey, true);
-            tipText.text = message;
+            tipText.text = GameLanguage.Pick(message, english);
             SetAlpha(1f);
             _visibleUntil = Time.unscaledTime + holdDuration;
             _hiddenAt = _visibleUntil + fadeDuration;

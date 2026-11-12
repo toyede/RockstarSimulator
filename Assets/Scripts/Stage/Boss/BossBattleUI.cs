@@ -50,7 +50,6 @@ namespace ContextStage
         TMP_Text _drainPopup;
         RectTransform _patternPanel;
         TMP_Text _patternTitle;
-        TMP_Text _patternBody;
         TMP_Text _patternProgress;
         TMP_Text _patternTimer;
         TMP_Text _bigText;
@@ -354,9 +353,10 @@ namespace ContextStage
             MissionDisplay other = primary == _pattern ? _standing : _pattern;
             _patternPanel.sizeDelta = new Vector2(patternPanelSize.x, other.Visible ? Mathf.Max(480f, patternPanelSize.y) :
                 Mathf.Max(384f, patternPanelSize.y));
-            _patternTitle.text = primary.Title; _patternTitle.color = primary.Color;
-            _patternBody.text = primary.Body;
-            _patternProgress.text = primary.Progress;
+            _missionView.SetTitle(primary.Title);
+            _patternTitle.color = primary.Color;
+            _missionView.SetBody(primary.Body);
+            _missionView.SetProgress(primary.Progress);
             _patternProgress.color = primary.Achieved ? new Color32(0x65, 0xE6, 0xA0, 0xFF) : new Color32(0x76, 0xD6, 0xFF, 0xFF);
             _patternTimer.text = primary.Timer;
             string secondary = other.Visible ? other.Active
@@ -490,7 +490,7 @@ namespace ContextStage
             MissionCueSheetLayout.Apply(_patternPanel, patternPanelPosition, patternPanelSize);
             _missionView = MissionCueSheetView.Create(_patternPanel, resolvedFont);
             _patternTitle = _missionView.Title; _patternTimer = _missionView.Timer;
-            _patternBody = _missionView.Body; _patternProgress = _missionView.Progress;
+            _patternProgress = _missionView.Progress;
             _patternPanel.gameObject.SetActive(false);
 
             // 큰 자막 (예고 · REVENGE)

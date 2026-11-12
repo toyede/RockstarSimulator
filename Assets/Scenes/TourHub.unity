@@ -1631,8 +1631,6 @@ MonoBehaviour:
   ruleConfirmLabel: {fileID: 1504555480}
   skipText: "\uAC74\uB108\uB6F0\uAE30 >>"
   defaultConfirmText: "\uACF5\uC5F0 \uC2DC\uC791"
-  arrowFollowsText: 1
-  arrowTextGap: {x: 22, y: 4}
 --- !u!225 &679622060
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -2244,7 +2242,7 @@ MonoBehaviour:
   mapArt:
     font: {fileID: 12800000, guid: 9907906d092ce9948ba06b3f3ac3808b, type: 3}
     background: {fileID: -8158862986424793979, guid: 2eafda9308da4924c8b059ed5b221c85, type: 3}
-    ownedAugmentIcon: {fileID: 21300000, guid: 31aba8a2469f6464aa6a1f838476f269, type: 3}
+    ownedAugmentIcon: {fileID: 6089962347412922470, guid: e47cb41ed4130e349b878b433b9f1b35, type: 3}
     pinNormal: {fileID: -336101196349715825, guid: 85d6b5f658964c647a0ee494e969f657, type: 3}
     pinHover: {fileID: -4264924764372062400, guid: 7191222bcc5baad4bab06275e606cb67, type: 3}
     mapDot: {fileID: 565629590121465018, guid: d85b0071190f3eb469b1583e9be6fa02, type: 3}

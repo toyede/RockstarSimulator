@@ -16,7 +16,7 @@ MonoBehaviour:
   - speakerId: raccoon
     emotionIds: []
     frames:
-    - {fileID: 21300000, guid: 6afce5a0fffea944998d6e66899dcbbf, type: 3}
+    - {fileID: 21300000, guid: 8c854ea9135be3947b7f9742aaa41ac0, type: 3}
     frameInterval: 0.45
   - speakerId: raccoon
     emotionIds:

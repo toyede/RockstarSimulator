@@ -28,7 +28,7 @@ namespace ContextStage
         bool _showing, _wasDragging, _inside;
         readonly Vector3[] _corners = new Vector3[4];
 
-        public void Show(TutorialOverlayUI overlay)
+        public void Show(TutorialOverlayUI overlay, HeatStage requestType)
         {
             Hide();
             if (_root == null) Build(overlay);
@@ -36,10 +36,11 @@ namespace ContextStage
             _showing = true;
             _clock = 0f;
             _wasDragging = false;
-            _hint.text = "여기로 전달";
+            _inside = false;
+            _hint.text = GameLanguage.Pick("여기로 전달", "Drag here");
             _press.rectTransform.localScale = Vector3.one;
             _root.gameObject.SetActive(true);
-            _binding = StartCoroutine(BindCard());
+            _binding = StartCoroutine(BindCard(requestType));
         }
 
         public void Hide()
@@ -68,14 +69,14 @@ namespace ContextStage
             _inspectionSeconds = Mathf.Max(.5f, seconds);
             _clock = 0f;
             _showing = true;
-            _hint.text = $"여기서 {_inspectionSeconds:0.#}초 확인";
+            _hint.text = GameLanguage.Pick($"여기서 {_inspectionSeconds:0.#}초 확인", $"Hold here for {_inspectionSeconds:0.#}s");
             _root.gameObject.SetActive(true);
         }
         void OnDestroy() { if (_root != null) Destroy(_root.gameObject); }
 
-        IEnumerator BindCard()
+        IEnumerator BindCard(HeatStage requestType)
         {
-            // SetHandがUIへ反映されるのを待つ。シーン検索は開始時の最大3回だけ。
+            // 손패 UI가 갱신될 때까지 기다린다. 씬 검색은 시작 시 최대 3회만 한다.
             for (int attempt = 0; attempt < 3; attempt++)
             {
                 yield return null;
@@ -83,7 +84,7 @@ namespace ContextStage
                 {
                     if (handler.HandIndex < 0 || handler.Card == null ||
                         handler.Card.Role != CardRole.Special ||
-                        handler.Card.TargetPreference != CrowdPreference.Singalong) continue;
+                        handler.Card.TargetStage != requestType) continue;
                     _source = handler;
                     _ghost.sprite = handler.Card.Artwork;
                     _ghost.preserveAspect = true;
@@ -133,7 +134,6 @@ namespace ContextStage
             _hint.raycastTarget = false;
             _hint.rectTransform.sizeDelta = new Vector2(230f, 36f);
             _hint.rectTransform.anchoredPosition = new Vector2(0f, 65f);
-            _hint.text = "여기로 전달";
         }
 
         static Image MakeImage(string name, Transform parent, Vector2 size, Color color)
@@ -173,7 +173,9 @@ namespace ContextStage
             var dragging = CardDragHandler.Current;
             bool isDragging = dragging != null;
             bool inside = isDragging && target.ContainsScreenCircle(dragging.PointerScreenPosition, dragging.DropRadiusPixels);
-            if (_inside != inside) _hint.text = inside ? "여기서 놓으세요!" : "여기로 전달";
+            if (_inside != inside)
+                _hint.text = inside ? GameLanguage.Pick("여기서 놓으세요!", "Drop here!")
+                    : GameLanguage.Pick("여기로 전달", "Drag here");
             _inside = inside;
             if (isDragging)
             {

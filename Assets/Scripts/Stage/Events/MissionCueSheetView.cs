@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,6 +15,10 @@ namespace ContextStage
         public TMP_Text Progress { get; private set; }
         public TMP_Text Timer { get; private set; }
         public TMP_Text Secondary { get; private set; }
+        static readonly Regex PreferenceWords = new Regex(
+            @"<[^>]+>|(?<![A-Za-z])(?:CHILL|SINGALONG|MOSH)(?![A-Za-z])",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        string _titleSource, _bodySource, _progressSource, _secondarySource;
         readonly Image[] _bits = new Image[12];
         Coroutine _entrance;
         Vector2 _home;
@@ -22,6 +27,28 @@ namespace ContextStage
 
         public void PlayEntrance() => Animate(false, true);
         public void PlayResult(bool success) => Animate(true, success);
+
+        public void SetTitle(string text) => SetMissionText(Title, text, ref _titleSource);
+        public void SetBody(string text) => SetMissionText(Body, text, ref _bodySource);
+        public void SetProgress(string text) => SetMissionText(Progress, text, ref _progressSource);
+
+        static void SetMissionText(TMP_Text label, string text, ref string source)
+        {
+            text ??= string.Empty;
+            if (source == text) return;
+            source = text;
+            label.text = PreferenceWords.Replace(text, match =>
+            {
+                string color = char.ToUpperInvariant(match.Value[0]) switch
+                {
+                    'C' => "#56DCE5",
+                    'S' => "#C9A0FF",
+                    'M' => "#FF7882",
+                    _ => null // 기존 태그는 그대로 둔다.
+                };
+                return color == null ? match.Value : $"<color={color}>{match.Value}</color>";
+            });
+        }
 
         void Animate(bool result, bool success)
         {
@@ -115,7 +142,7 @@ namespace ContextStage
 
         public void SetSecondary(string text)
         {
-            Secondary.text = text ?? string.Empty;
+            SetMissionText(Secondary, text, ref _secondarySource);
             Secondary.gameObject.SetActive(!string.IsNullOrEmpty(text));
             // 부가 정보는 종이 아래쪽의 독립 영역에서 표시한다.
             bool visible = !string.IsNullOrEmpty(text);
@@ -145,6 +172,7 @@ namespace ContextStage
             label.textWrappingMode = TextWrappingModes.Normal;
             label.overflowMode = TextOverflowModes.Overflow;
             label.color = color;
+            label.richText = true;
             label.outlineWidth = 0;
             label.raycastTarget = false;
             return label;

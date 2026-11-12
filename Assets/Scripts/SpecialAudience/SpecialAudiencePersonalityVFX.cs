@@ -7,7 +7,7 @@ namespace ContextStage
     /// Chill=땀, Singalong=음표, Mosh=붉은 분노 주름을 한 인스턴스에서 재사용한다.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class SpecialAudiencePersonalityVFX : MonoBehaviour
+    public sealed partial class SpecialAudiencePersonalityVFX : MonoBehaviour
     {
         static readonly Color SweatLight = Hex(0xC7F5FF);
         static readonly Color SweatBlue = Hex(0x30A7E1);
@@ -60,6 +60,7 @@ namespace ContextStage
         void Update()
         {
             if (!_active) return;
+            TickHitFinisher();
 
             if (_angerRemaining > 0f)
             {
@@ -93,6 +94,7 @@ namespace ContextStage
         public void Hide()
         {
             _active = false;
+            HideHitFinisher();
             _angerRemaining = 0f;
             if (_particles != null)
             {

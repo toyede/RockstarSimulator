@@ -27,7 +27,6 @@ namespace ContextStage
         TMP_Text _title;
         TMP_Text _body;
         TMP_Text _timer;
-        TMP_Text _progress;
         MissionCueSheetView _view;
         string _eventId;
         Coroutine _hideRoutine;
@@ -67,11 +66,11 @@ namespace ContextStage
             _eventId = e.EventId;
             _active = true;
             _panel.gameObject.SetActive(true);
-            _title.text = e.Title;
+            _view.SetTitle(e.Title);
             _title.color = titleColor;
-            _body.text = e.Instruction;
+            _view.SetBody(e.Instruction);
             _timer.text = $"{e.Duration:0.0}s";
-            _progress.text = "";
+            _view.SetProgress("");
             _view.SetSecondary("");
             _view.PlayEntrance();
         }
@@ -80,7 +79,7 @@ namespace ContextStage
         {
             if (BossBattleUI.HandlesStageEvent(e.EventId) || !_active || _eventId != e.EventId || _timer == null) return;
             _timer.text = $"{e.Remaining:0.0}s";
-            _progress.text = e.ProgressText;
+            _view.SetProgress(e.ProgressText);
             _view.SetSecondary("");
         }
 
@@ -89,11 +88,11 @@ namespace ContextStage
             if (BossBattleUI.HandlesStageEvent(e.EventId) || !_active || _eventId != e.EventId) return;
             _active = false;
             _panel.gameObject.SetActive(true);
-            _title.text = e.Success ? $"{e.Title}  성공!" : $"{e.Title}  실패";
+            _view.SetTitle(e.Success ? $"{e.Title}  성공!" : $"{e.Title}  실패");
             _title.color = e.Success ? successColor : failColor;
-            _body.text = e.ResultText;
+            _view.SetBody(e.ResultText);
             _timer.text = "";
-            _progress.text = "";
+            _view.SetProgress("");
             _view.SetSecondary("");
             StopHide();
             _view.PlayResult(e.Success);
@@ -156,7 +155,7 @@ namespace ContextStage
             MissionCueSheetLayout.Apply(_panel, panelPosition, panelSize);
             _background = panelObject.GetComponent<Image>();
             var view = _view = MissionCueSheetView.Create(_panel, resolvedFont);
-            _title = view.Title; _body = view.Body; _timer = view.Timer; _progress = view.Progress;
+            _title = view.Title; _body = view.Body; _timer = view.Timer;
             view.SetSecondary("");
             _title.fontSize = _title.fontSizeMax = 30f;
             _body.fontSize = _body.fontSizeMax = 24f;

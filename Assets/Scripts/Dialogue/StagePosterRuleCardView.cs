@@ -96,7 +96,9 @@ namespace ContextStage
             rect.offsetMin = rect.offsetMax = Vector2.zero;
             if (title != null)
             {
-                if (!string.IsNullOrWhiteSpace(presentation.headline)) title.text=presentation.headline;
+                if (!string.IsNullOrWhiteSpace(presentation.headline))
+                    title.text = GameLanguage.English && presentation.headline == "골목\n버스킹"
+                        ? "ALLEY\nBUSKING" : presentation.headline;
                 if (presentation.headlineFont != null) title.font=presentation.headlineFont;
                 PlaceText(title, presentation.headlineArea, presentation.headlineColor, presentation.headlineSize);
                 title.fontStyle=FontStyles.Bold;
@@ -109,7 +111,8 @@ namespace ContextStage
             Place(_logo.rectTransform,presentation.headlineArea);
             if (body != null)
             {
-                if (!string.IsNullOrWhiteSpace(presentation.summary)) body.text=presentation.summary;
+                if (!GameLanguage.English && !string.IsNullOrWhiteSpace(presentation.summary))
+                    body.text=presentation.summary;
                 PlaceText(body, presentation.bodyArea, presentation.inkColor, presentation.bodySize);
                 body.alignment=presentation.bodyAlignment;
             }
@@ -118,14 +121,18 @@ namespace ContextStage
             _artist.gameObject.SetActive(!string.IsNullOrWhiteSpace(_artist.text));
             PlaceText(_artist,presentation.artistArea,presentation.headlineColor,presentation.captionSize);
             if (_ruleLabel == null) _ruleLabel=CreateText("PosterRuleLabel",body != null ? body : title);
-            _ruleLabel.text=string.IsNullOrWhiteSpace(ruleTitle) ? "공연 가이드" : $"공연 가이드 / {ruleTitle}";
+            string guide = GameLanguage.Pick("공연 가이드", "SHOW GUIDE");
+            _ruleLabel.text = string.IsNullOrWhiteSpace(ruleTitle) ? guide : $"{guide} / {ruleTitle}";
             _ruleLabel.gameObject.SetActive(presentation.showRuleLabel);
             PlaceText(_ruleLabel,presentation.ruleLabelArea,presentation.accentColor,presentation.captionSize);
             _ruleLabel.alignment=TextAlignmentOptions.MidlineLeft;
             if (confirm != null)
             {
                 var button = (RectTransform)confirm.transform;
-                if (confirmLabel != null) confirmLabel.text = string.IsNullOrWhiteSpace(presentation.entryText) ? "공연 시작" : presentation.entryText;
+                if (confirmLabel != null)
+                    confirmLabel.text = GameLanguage.Pick(
+                        string.IsNullOrWhiteSpace(presentation.entryText) ? "공연 시작" : presentation.entryText,
+                        presentation.entryText?.Contains("\n") == true ? "START\nSHOW" : "START SHOW");
                 Place(button, presentation.entryArea);
                 button.localRotation=Quaternion.Euler(0,0,presentation.entryAngle);
                 confirm.transition=Selectable.Transition.None;

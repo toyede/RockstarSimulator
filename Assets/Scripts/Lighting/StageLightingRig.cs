@@ -60,9 +60,12 @@ namespace ContextStage
             if(studioCenter!=null)studioCenter.SetVisual(Color.black,0);
             foreach(var f in fixtures)if(f!=null)f.color=Color.white;
         }
+        internal const float OutfitBeamOpacity = .45f;
+        internal const float OutfitBeamWhiteMix = .64f;
+
         public void Render(float time, float energy, bool fever, bool announce, string pattern,
             bool revenge, bool blackout, bool ended, bool reduceFlashes, float pulse, float fanCue, bool toRival, string venueEvent=null, Color? hintColor=null,
-            float washPulse=0, float showAge=-1, float dropHold=-1, float dropAge=-1, float dropRecover=-1)
+            float washPulse=0, float showAge=-1, float dropHold=-1, float dropAge=-1, float dropRecover=-1, bool softenBeams=false)
         {
             if(profile==null || !gameObject.activeInHierarchy)return;
             Capture();
@@ -95,7 +98,9 @@ namespace ContextStage
                 float studio=1;
                 if(profile.venue==4 && showAge>=0)
                     studio=Mathf.SmoothStep(0.2f,1,Mathf.Clamp01((showAge-(i==0?1:3)*profile.studioStepSeconds)/profile.studioStepSeconds));
-                beam.SetVisual(i%2==0?a:b,strength*(dropPreview?Mathf.Lerp(0.35f,0.5f,charge):announce?0.75f:1)*synchronized*studio*(1+pulse*0.35f+opening*0.2f));
+                Color beamColor = i % 2 == 0 ? a : b;
+                if (softenBeams) beamColor = Color.Lerp(beamColor, Color.white, OutfitBeamWhiteMix);
+                beam.SetVisual(beamColor,strength*(softenBeams?OutfitBeamOpacity:1f)*(dropPreview?Mathf.Lerp(0.35f,0.5f,charge):announce?0.75f:1)*synchronized*studio*(1+pulse*0.35f+opening*0.2f));
             }
             for(int i=0;i<lasers.Length;i++)
             {

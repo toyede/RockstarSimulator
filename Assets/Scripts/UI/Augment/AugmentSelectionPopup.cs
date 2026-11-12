@@ -125,6 +125,7 @@ namespace ContextStage
 
             Button button = Instantiate(ownedListButton, host, false);
             button.name = "MapOwnedAugmentListButton";
+            LocalizeOwnedListButton(button);
             button.onClick = new Button.ButtonClickedEvent();
             button.gameObject.SetActive(false);
             UIInteractionSfx.Ensure(button);
@@ -144,8 +145,16 @@ namespace ContextStage
 
         public bool IsOwnedModalOpen => ownedModal != null && ownedModal.activeSelf;
 
+        static void LocalizeOwnedListButton(Button button)
+        {
+            Text label = button != null ? button.GetComponentInChildren<Text>(true) : null;
+            if (label != null && (label.text == "보유 증강 확인하기" || label.text == "Owned Augments"))
+                label.text = GameLanguage.Pick("보유 증강 확인하기", "Owned Augments");
+        }
+
         public void Show(AugmentSelectionScreenModel model)
         {
+            LocalizeOwnedListButton(ownedListButton);
             if (model == null)
             {
                 Debug.LogError("[AugmentSelectionPopup] 표시할 ScreenModel이 없습니다.", this);
@@ -439,7 +448,15 @@ namespace ContextStage
 
             if (visibleCount == 0) EnsureOwnedEmptyText();
             if (_ownedEmptyText != null)
+            {
+                _ownedEmptyText.text = GameLanguage.Pick("아직 보유한 증강이 없습니다.", "No augments yet.");
                 _ownedEmptyText.gameObject.SetActive(visibleCount == 0);
+            }
+            if (ownedModal != null)
+            {
+                Text heading = ownedModal.transform.Find("Title")?.GetComponent<Text>();
+                if (heading != null) heading.text = GameLanguage.Pick("보유 증강", "Owned Augments");
+            }
         }
 
         void EnsureOwnedEmptyText()
@@ -450,7 +467,6 @@ namespace ContextStage
             // 기존 목록의 글꼴과 색을 재사용한다.
             _ownedEmptyText = Instantiate(ownedNames[0], ownedModal.transform, false);
             _ownedEmptyText.name = "OwnedAugmentEmptyText";
-            _ownedEmptyText.text = "아직 보유한 증강이 없습니다.";
             _ownedEmptyText.alignment = TextAnchor.MiddleCenter;
             _ownedEmptyText.raycastTarget = false;
             RectTransform rect = _ownedEmptyText.rectTransform;
@@ -464,6 +480,7 @@ namespace ContextStage
         void OpenOwnedModal()
         {
             if (_busy || ownedModal == null) return;
+            LocalizeOwnedListButton(ownedListButton);
             if (ownedModalBlocker != null)
             {
                 ownedModalBlocker.SetActive(true);

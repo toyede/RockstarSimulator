@@ -207,7 +207,7 @@ namespace ContextStage
                 float cue=_pulseZone<0 || _pulseZone==(r.Profile.rival?1:0)?_pulse:0;
                 float endEnergy=_ended && _finalClear.HasValue?(r.Profile.rival==!_finalClear.Value?1.8f:0.35f):1;
                 r.Render(_time,_energy*endEnergy,_fever,_leadIn || _announce>0,_pattern,_revenge,dark,_ended,reduceFlashes,cue,_fanCue,_toRival,_venueEvent,hintController!=null?hintController.HintColor:(Color?)null,
-                    wash,_showAge,_dropHold,_dropAge,_dropRecover);
+                    wash,_showAge,_dropHold,_dropAge,_dropRecover, softenBeams: TutorialFlow.IsOutfitFocusActive && !r.Profile.rival);
             }
         }
 #if UNITY_EDITOR

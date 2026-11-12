@@ -10,7 +10,6 @@ namespace ContextStage
         const string EventId = "festival_rain_shower";
         ParticleSystem _back, _front, _splashes;
         RainShowerRule _rule;
-        AudienceRosterPresenter _presenter;
         float _alpha, _emission, _splashEmission;
         bool _raining;
         Vector3 _center;
@@ -20,10 +19,8 @@ namespace ContextStage
         void OnEnable()
         {
             _rule = GetComponent<RainShowerRule>();
-            _presenter = FindFirstObjectByType<AudienceRosterPresenter>();
             EventBus.Subscribe<StageEventStarted>(OnStart);
             EventBus.Subscribe<StageEventResolved>(OnEnd);
-            EventBus.Subscribe<RainAudienceProtected>(OnProtected);
             EventBus.Subscribe<GameStateChanged>(OnState);
             EventBus.Subscribe<StageRuntimeApplied>(OnStage);
         }
@@ -31,7 +28,6 @@ namespace ContextStage
         {
             EventBus.Unsubscribe<StageEventStarted>(OnStart);
             EventBus.Unsubscribe<StageEventResolved>(OnEnd);
-            EventBus.Unsubscribe<RainAudienceProtected>(OnProtected);
             EventBus.Unsubscribe<GameStateChanged>(OnState);
             EventBus.Unsubscribe<StageRuntimeApplied>(OnStage);
             Clear();
@@ -60,7 +56,6 @@ namespace ContextStage
                 }, 1);
         }
         void OnEnd(StageEventResolved e) { if (e.EventId == EventId) _raining = false; }
-        void OnProtected(RainAudienceProtected e) { if (_raining) _presenter?.PlayRainProtection(); }
         void OnStage(StageRuntimeApplied e) => Clear();
         void OnState(GameStateChanged e)
         {

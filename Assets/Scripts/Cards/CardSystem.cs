@@ -184,11 +184,12 @@ namespace ContextStage
                 return false;
             }
             if (index < 0 || index >= _hand.Count) return false;
+            var card = _hand[index];
+            if (card == null || KillSwitchPattern.IsCardSealed(card)) return false;
 
             _selecting = true;
             try
             {
-                var card = _hand[index];
                 int handCountBeforeUse = _hand.Count;
                 CardUpgradeModifiers cardUpgrade =
                     AugmentRuntime.Current.ResolveCardUpgrade(card.Id);
@@ -229,6 +230,7 @@ namespace ContextStage
                     FeverSystem.HasInstance &&
                     FeverSystem.Instance.IsActive;
 
+                bool requestWasActive = SpecialAudience.HasActiveRequest;
                 bool matchesTargetedRequest =
                     card.Role == CardRole.Special &&
                     specialRequest.IsActive &&
@@ -353,6 +355,8 @@ namespace ContextStage
                     Multiplier = combo.Multiplier
                 });
 
+                PlaytestMetrics.RecordCard(card.TargetPreference, card.Role, requestWasActive,
+                    specialRequest.IsActive, isSpecialHit, finalScore);
                 EventBus.Raise(new CardResolved
                 {
                     CardId = card.Id,

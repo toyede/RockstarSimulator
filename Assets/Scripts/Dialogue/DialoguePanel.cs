@@ -355,7 +355,7 @@ namespace ContextStage
 
             bool hasName = !string.IsNullOrWhiteSpace(line.speakerName);
             if (nameTag != null) nameTag.gameObject.SetActive(hasName);
-            if (nameText != null) nameText.text = hasName ? line.speakerName : string.Empty;
+            if (nameText != null) nameText.text = hasName ? StoryEnglish.Speaker(line) : string.Empty;
 
             // 이름 없는 상황 지문에 직전 화자의 초상화가 남아 있으면 그 인물의 대사처럼 보인다.
             if (_context.hidePortraits || (!hasName && line.portrait == null)) ResetPortraits();
@@ -366,7 +366,7 @@ namespace ContextStage
 
             if (arrowImage != null) arrowImage.enabled = false;
 
-            string text = line.text ?? string.Empty;
+            string text = StoryEnglish.Line(_sequence, index);
             bool typewriter = style == null || style.UseHangulTypewriter;
             if (bodyText == null || !typewriter || !isActiveAndEnabled)
             {
@@ -408,7 +408,7 @@ namespace ContextStage
         {
             StopTyping();
             if (bodyText != null && _sequence != null && _lineIndex >= 0 && _lineIndex < LineCount)
-                bodyText.text = _sequence.Lines[_lineIndex].text ?? string.Empty;
+                bodyText.text = StoryEnglish.Line(_sequence, _lineIndex);
             OnLineComplete();
         }
 
@@ -507,7 +507,7 @@ namespace ContextStage
             if (ruleConfirmLabel != null)
             {
                 ruleConfirmLabel.text = string.IsNullOrWhiteSpace(_context.confirmLabel)
-                    ? defaultConfirmText
+                    ? GameLanguage.Pick(defaultConfirmText, "Start Show")
                     : _context.confirmLabel;
             }
             if (posterView != null)
@@ -720,7 +720,8 @@ namespace ContextStage
                 skipKeyIcon.enabled = style.SkipKeySprite != null;
             }
             if (skipLabel != null)
-                skipLabel.text = string.IsNullOrEmpty(style.SkipLabelText) ? skipText : style.SkipLabelText;
+                skipLabel.text = GameLanguage.Pick(
+                    string.IsNullOrEmpty(style.SkipLabelText) ? skipText : style.SkipLabelText, "Skip >>");
         }
 
         /// <summary>

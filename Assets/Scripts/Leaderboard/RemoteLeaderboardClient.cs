@@ -139,6 +139,22 @@ namespace ContextStage
             request.SetRequestHeader("Accept", "application/json");
         }
 
+        // Separate write-only playtest RPC on the same host. The rankings table is never used for metrics.
+        internal static UnityWebRequest CreatePlaytestRequest(string json)
+        {
+            var request = new UnityWebRequest(
+                ScoresEndpoint.Substring(0, ScoresEndpoint.LastIndexOf('/') + 1) + "rpc/record_playtest_sample",
+                UnityWebRequest.kHttpVerbPOST)
+            {
+                uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json)),
+                downloadHandler = new DownloadHandlerBuffer(),
+                timeout = RequestTimeoutSeconds
+            };
+            ConfigureRequest(request);
+            request.SetRequestHeader("Content-Type", "application/json");
+            return request;
+        }
+
         [Serializable]
         sealed class RemoteScoreSubmission
         {

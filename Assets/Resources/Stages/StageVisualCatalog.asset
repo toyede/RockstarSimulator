@@ -158,9 +158,9 @@ MonoBehaviour:
         FESTIVAL'
       artistLine: SING IT TOGETHER / LIVE
       showRuleLabel: 0
-      summary: "\uC606 \uBB34\uB300\uAC00 \uAD00\uAC1D\uC744 \uC720\uD639\uD569\uB2C8\uB2E4.\n\uACBD\uACE0\uB41C
-        \uAD00\uAC1D\uC758 \uD638\uC751\uB3C4\uB97C \uC62C\uB9AC\uAC70\uB098\nSPECIAL
-        \uCE74\uB4DC\uB85C \uBD99\uC7A1\uC73C\uC138\uC694."
+      summary: "\uC606 \uBB34\uB300\uB85C \uAC00\uB824\uB294 \uAD00\uAC1D\uC740\n\uC54C\uB9DE\uC740
+        \uCE74\uB4DC\uB85C \uBD99\uC7A1\uC73C\uC138\uC694.\n\uC18C\uB098\uAE30\uC5D0\uB294
+        \uAE30\uC874 \uAD00\uAC1D\uC744 \uC9C0\uD0A4\uC138\uC694."
       headlineLogo: {fileID: 0}
       headlineFont: {fileID: 0}
       height: 960
@@ -207,9 +207,10 @@ MonoBehaviour:
       bodyAlignment: 257
     ruleIcon: {fileID: 0}
     ruleTitle: "\uAD00\uAC1D \uC7C1\uD0C8\uC804"
-    ruleBody: "\uC606 \uBB34\uB300\uAC00 \uC77C\uBD80 \uAD00\uAC1D\uC744 \uC720\uD639\uD569\uB2C8\uB2E4.\n\uACBD\uACE0\uB41C
-      \uAD00\uAC1D\uC758 \uD638\uC751\uB3C4\uB97C \uC62C\uB9AC\uAC70\uB098 Special
-      \uCE74\uB4DC\uB85C \uBD99\uC7A1\uC73C\uC138\uC694."
+    ruleBody: "\uC606 \uBB34\uB300\uC758 \uC720\uD639, \uC18C\uB098\uAE30, \uAE43\uBC1C
+      \uC6E8\uC774\uBE0C\uAC00 \uCC3E\uC544\uC635\uB2C8\uB2E4.\n\uC18C\uB098\uAE30\uAC00
+      \uC624\uBA74 \uAD00\uAC1D\uC5D0\uAC8C \uB9DE\uB294 \uCE74\uB4DC\uB85C \uAE30\uC874
+      \uAD00\uAC1D\uC744 \uC9C0\uD0A4\uC138\uC694."
   - stageId: stage_04
     backgroundBase: {fileID: 21300000, guid: 958ede3ec2561a04ab2f8cd0c9922c78, type: 3}
     lightOverlays: []

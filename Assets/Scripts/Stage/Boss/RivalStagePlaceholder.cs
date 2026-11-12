@@ -172,21 +172,17 @@ namespace ContextStage
                 }
             }
 
-            // 팬 대기 애니메이션
-            for (int i = 0; i < _fans.Count; i++)
-                _fans[i].Player?.Tick(Time.deltaTime);
-            for (int i = 0; i < _outgoing.Count; i++)
-                _outgoing[i].Player?.Tick(Time.deltaTime);
             _motionBlend = Mathf.Min(1, _motionBlend + Time.deltaTime / 0.25f);
         }
 
         void LateUpdate()
         {
-            for (int i = 0; i < _fans.Count; i++) ApplyFan(_fans[i]);
-            for (int i = 0; i < _outgoing.Count; i++) ApplyFan(_outgoing[i]);
+            bool animate = _root != null && _root.gameObject.activeInHierarchy;
+            for (int i = 0; i < _fans.Count; i++) ApplyFan(_fans[i], animate);
+            for (int i = 0; i < _outgoing.Count; i++) ApplyFan(_outgoing[i], animate);
         }
 
-        void ApplyFan(Fan fan)
+        void ApplyFan(Fan fan, bool animate = false)
         {
             if (fan.Renderer == null) return;
             Color color = Color.Lerp(fan.BaseColor, Color.black, 1f - BossCameraDirector.RivalViewBlend);
@@ -201,8 +197,13 @@ namespace ContextStage
                 fan.Properties.SetFloat("_AudienceSaturation", source.PresentationSaturation(_audienceStage));
                 fan.Renderer.SetPropertyBlock(fan.Properties);
             }
-            if (fan.Walking) return;
             float delta = Time.deltaTime;
+            if (fan.Walking)
+            {
+                if (animate) fan.Player?.Tick(delta);
+                return;
+            }
+            Vector3 previousGround = fan.PresentationSlot + (Vector3)fan.Wander;
             float width = source != null ? source.PresentationGatherWidth(_audienceStage) : 1f;
             Vector3 target = new Vector3(fan.Slot.x * width, fan.Slot.y, fan.Slot.z);
             if (_audienceStage == AudienceEngagementStage.Calm)
@@ -249,6 +250,17 @@ namespace ContextStage
             }
             var pose = fan.Renderer.transform;
             Vector3 ground = fan.PresentationSlot + (Vector3)fan.Wander;
+            if (animate && fan.Player != null)
+            {
+                if (_audienceStage != AudienceEngagementStage.Calm || (ground - previousGround).sqrMagnitude >= .00000001f)
+                    fan.Player.Tick(delta);
+                else
+                {
+                    var clip = fan.Player.CurrentClip;
+                    if (clip != null && clip.IsValid && fan.Renderer.sprite != clip.frames[0])
+                        fan.Player.Play(clip, restart: true);
+                }
+            }
             pose.localPosition = ground + Vector3.up * bob;
             pose.localRotation = Quaternion.Euler(0, 0, sway * fan.Variance.Flip);
             ApplyFanScale(fan, ground.y, squash);

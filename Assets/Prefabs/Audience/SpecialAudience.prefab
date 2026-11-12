@@ -297,6 +297,9 @@ MonoBehaviour:
   lateralOffset: 0.45
   sortingOrderBonus: 1
   scaleMultiplier: 1.15
+  chillSize: 0.78
+  singalongSize: 0.75
+  moshSize: 0.88
   scaleLerpSpeed: 6
   motion:
     bobHeight: 0.07
@@ -324,30 +327,30 @@ MonoBehaviour:
   - stage: 0
     profile: {fileID: 0}
     effectSize: {x: 9, y: 9}
-    strengthMultiplier: 1
-    durationOverride: 0
-    useBuiltinDistortionFallback: 0
-    cameraShake: 0
-    shakeStrength: 0
-    shakeDuration: 0
-  - stage: 1
-    profile: {fileID: 0}
-    effectSize: {x: 9, y: 9}
-    strengthMultiplier: 1
+    strengthMultiplier: 1.12
     durationOverride: 0
     useBuiltinDistortionFallback: 0
     cameraShake: 1
-    shakeStrength: 0.35
-    shakeDuration: 0.35
+    shakeStrength: 0.46
+    shakeDuration: 0.18
+  - stage: 1
+    profile: {fileID: 0}
+    effectSize: {x: 9, y: 9}
+    strengthMultiplier: 1.08
+    durationOverride: 0
+    useBuiltinDistortionFallback: 0
+    cameraShake: 1
+    shakeStrength: 0.55
+    shakeDuration: 0.2
   - stage: 2
     profile: {fileID: 0}
     effectSize: {x: 10, y: 10}
-    strengthMultiplier: 1
+    strengthMultiplier: 1.14
     durationOverride: 0
     useBuiltinDistortionFallback: 1
-    cameraShake: 0
-    shakeStrength: 0
-    shakeDuration: 0
+    cameraShake: 1
+    shakeStrength: 0.64
+    shakeDuration: 0.24
 --- !u!1 &6623914429014283280
 GameObject:
   m_ObjectHideFlags: 0

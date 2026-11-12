@@ -92,6 +92,12 @@ namespace ContextStage
             if (StageVisualCatalog.TryResolve(result.stageId, out StageVisualEntry visual) && visual != null)
                 p.photoBackground = visual.backgroundBase;
 
+            if (GameLanguage.English)
+            {
+                FillEnglish(p, result, report, stage, stageNumber, catalog);
+                return p;
+            }
+
             if (catalog == null)
             {
                 p.headline = success ? "공연 성공" : "공연 실패";
@@ -184,6 +190,49 @@ namespace ContextStage
             }
 
             return p;
+        }
+
+        static void FillEnglish(ResultPresentation p, StageResult result, PerformanceReport r, StageDefinition stage,
+            int stageNumber, ResultNewspaperCatalog c)
+        {
+            p.mastheadInfo = stage != null ? $"{stage.DisplayName}\nSTAGE {stageNumber}" : $"STAGE {stageNumber}";
+            p.stampText = p.isBoss ? (p.success ? "RIVAL BEATEN" : "RIVAL WINS") : (p.success ? "SHOW CLEARED" : "SHOW FAILED");
+            p.stampColor = p.success
+                ? (p.skin != null ? p.skin.accent : new Color32(0xB3, 0x38, 0x31, 0xFF))
+                : (c != null ? c.StampFailColor : Color.black);
+            p.bandFrames = c == null ? null : p.success ? c.BandClearFrames : c.BandFailFrames;
+            p.headline = !p.success ? "The show falls short" : result.stageId switch
+            {
+                "stage_01" => "The alley stops to listen",
+                "stage_02" => "The basement shakes",
+                "stage_03" => "The festival finds its groove",
+                "stage_04" => "Raccoon Roll steals the show",
+                "stage_05_boss" => "Raccoon Roll wins the crowd",
+                _ => "The band wins them over",
+            };
+            p.caption = p.success ? "Raccoon Roll leaves the stage to cheers." : "The band plays through to the end.";
+            p.subtitle = c != null && r.maxCombo >= c.ComboSubtitleMin
+                ? $"Best combo: {r.maxCombo}"
+                : c != null && r.feverCount >= c.FeverSubtitleMin
+                    ? $"Fever triggered {r.feverCount} time(s)"
+                    : $"Score goal: {p.achievedPercent}%";
+            p.statCombo = Stat("Best combo", r.maxCombo.ToString());
+            p.statFever = Stat("Fever", r.feverCount.ToString());
+            p.statAudience = r.audienceCapacity > 0
+                ? Stat("Fans / Capacity", $"{r.audienceRemaining} / {r.audienceCapacity}")
+                : Stat("Fans remaining", r.audienceRemaining.ToString());
+            p.articleBody = p.isBoss && r.HasBoss ? $"Rival patterns: {r.bossPatternsSucceeded}/{r.bossPatternsResolved} · Fans won: {r.bossFansRecruited} · Lost: {r.bossFansLost}"
+                : r.HasCrisis ? $"Fans retained: {r.crisisRetained}/{r.crisisThreatened}"
+                : r.HasStageEvents ? $"Missions cleared: {r.stageEventsSucceeded}/{r.stageEventsTotal}"
+                : r.HasSpecialAudience ? $"Requests answered: {r.specialSuccess}/{r.specialEnded}"
+                : r.walkIns > 0 ? $"New fans joined: {r.walkIns}"
+                : $"Peak crowd: {r.audiencePeak}";
+            p.buttonLabel = p.nextAction switch
+            {
+                ResultNextAction.Ending => "See Ending  >",
+                ResultNextAction.Failed => "View Tour Record  >",
+                _ => "Choose Augment  >",
+            };
         }
 
         /// <summary>통계 칸 한 줄: 작은 라벨 위, 큰 값 아래. 폰트를 줄이지 않고 두 줄로 칸에 맞춘다.</summary>

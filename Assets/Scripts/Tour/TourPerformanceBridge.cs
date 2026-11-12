@@ -41,6 +41,7 @@ namespace ContextStage
         {
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
             EventBus.Unsubscribe<ComboChanged>(OnComboChanged);
+            PlaytestMetrics.EndStage("abandoned");
         }
 
         void ApplyStageSettings()
@@ -72,6 +73,7 @@ namespace ContextStage
         {
             if (e.Current == GameState.Ready)
             {
+                PlaytestMetrics.EndStage("abandoned");
                 _maxCombo = 0;
                 _submitted = false;
                 ApplyStageSettings();
@@ -108,6 +110,7 @@ namespace ContextStage
             if (!manager.ReceiveStageResult(result)) return;
 
             _submitted = true;
+            PlaytestMetrics.EndStage(cleared ? "cleared" : "failed", result.stageId);
             if (newspaper != null) ShowNewspaper(result, stage, node);
             else ShowResultOverlay(result);
         }

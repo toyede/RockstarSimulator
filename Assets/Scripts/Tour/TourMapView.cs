@@ -281,7 +281,7 @@ namespace ContextStage
             label.fontSize = 22f;
             label.alignment = TextAlignmentOptions.Center;
             label.color = Color.white;
-            label.text = "< 타이틀로";
+            label.text = GameLanguage.Pick("< 타이틀로", "< Back to Title");
             label.raycastTarget = false;
         }
 

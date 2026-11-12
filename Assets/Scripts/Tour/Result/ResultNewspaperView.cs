@@ -82,7 +82,10 @@ namespace ContextStage
         Action _onPrimary;
         bool _complete;
         float _stampRestScale = 1f;
+        CanvasGroup _stampInkGroup;
+        ResultRankInk _rankInk;
         Vector2[] _scoreBasePositions;
+        const float RankInkDuration = .46f;
         readonly Vector2[] _recordBasePositions = new Vector2[4];
         readonly Vector2[] _recordBaseSizes = new Vector2[4];
         bool _recordLayoutCached;
@@ -92,6 +95,21 @@ namespace ContextStage
 
         void Awake()
         {
+            if (stamp != null)
+            {
+                _stampInkGroup = stamp.GetComponent<CanvasGroup>();
+                if (_stampInkGroup == null) _stampInkGroup = stamp.gameObject.AddComponent<CanvasGroup>();
+                _stampInkGroup.blocksRaycasts = false;
+                _stampInkGroup.interactable = false;
+                stamp.SetAsLastSibling();
+                stamp.anchoredPosition += Vector2.up * 27f;
+            }
+            if (rankImage != null)
+            {
+                rankImage.rectTransform.sizeDelta *= .78f;
+                rankImage.rectTransform.anchoredPosition += Vector2.up * 24f;
+                _rankInk = rankImage.gameObject.AddComponent<ResultRankInk>();
+            }
             UIInteractionSfx.Ensure(skipCatcher, hover: false);
             UIInteractionSfx.Ensure(primaryButton);
             if (skipCatcher != null) skipCatcher.onClick.AddListener(CompleteImmediately);
@@ -201,22 +219,27 @@ namespace ContextStage
                 }
             }
 
-            _stampRestScale = d.success && !d.isBoss ? 1.5f : 1f;
+            _stampRestScale = d.isBoss ? 1.12f : 1.28f;
             Set(stampText, d.stampText);
-            if (stampText != null) stampText.color = d.stampColor;
+            float neutral = d.stampColor.grayscale;
+            Color ink = Color.Lerp(d.stampColor, new Color(neutral, neutral, neutral, d.stampColor.a), .32f);
+            ink.a *= .60f;
+            if (stampText != null) stampText.color = ink;
             if (stampFrame != null)
                 for (int i = 0; i < stampFrame.Length; i++)
-                    if (stampFrame[i] != null) stampFrame[i].color = d.stampColor;
+                    if (stampFrame[i] != null) stampFrame[i].color = ink;
 
+            bool hasRank = d.showRank && d.rankIcon != null;
             if (rankImage != null)
             {
                 rankImage.sprite = d.rankIcon;
-                rankImage.gameObject.SetActive(d.showRank && d.rankIcon != null);
+                rankImage.gameObject.SetActive(hasRank);
+                if (hasRank) _rankInk?.Begin(d.rankLabel);
             }
-            Set(scoreText, $"{d.score:N0}점");
-            Set(targetText, $"/ 목표 {d.targetScore:N0}점");
-            Set(ratioText, $"목표 달성률 {d.achievedPercent}%");
-            ShiftScoreBlock(d.showRank && d.rankIcon != null ? 0f : -scoreShiftWithoutRank);
+            Set(scoreText, GameLanguage.Pick($"{d.score:N0}점", $"{d.score:N0} pts"));
+            Set(targetText, GameLanguage.Pick($"/ 목표 {d.targetScore:N0}점", $"/ Goal: {d.targetScore:N0} pts"));
+            Set(ratioText, GameLanguage.Pick($"목표 달성률 {d.achievedPercent}%", $"Goal reached: {d.achievedPercent}%"));
+            ShiftScoreBlock(rankImage != null && hasRank);
 
             ApplyRecordLayout(d.skin);
             Set(statCombo, d.statCombo);
@@ -282,17 +305,27 @@ namespace ContextStage
         }
 
         /// <summary>등급 아이콘이 없을 때 점수 블록이 빈자리를 남기지 않도록 옮긴다. 씬의 원래 위치는 첫 호출 때 기억한다.</summary>
-        void ShiftScoreBlock(float offsetX)
+        void ShiftScoreBlock(bool hasRank)
         {
             TMP_Text[] block = { scoreText, targetText, ratioText };
             if (_scoreBasePositions == null)
             {
                 _scoreBasePositions = new Vector2[block.Length];
                 for (int i = 0; i < block.Length; i++)
-                    _scoreBasePositions[i] = block[i] != null ? block[i].rectTransform.anchoredPosition : Vector2.zero;
+                {
+                    if (block[i] == null) continue;
+                    _scoreBasePositions[i] = block[i].rectTransform.anchoredPosition;
+                    block[i].fontSizeMax *= i == 0 ? .82f : .90f;
+                    block[i].fontSizeMin = Mathf.Min(block[i].fontSizeMin, block[i].fontSizeMax);
+                }
             }
             for (int i = 0; i < block.Length; i++)
-                if (block[i] != null) block[i].rectTransform.anchoredPosition = _scoreBasePositions[i] + new Vector2(offsetX, 0f);
+            {
+                if (block[i] == null) continue;
+                block[i].rectTransform.anchoredPosition = _scoreBasePositions[i] +
+                    new Vector2(hasRank ? 0f : -scoreShiftWithoutRank, 29f);
+                block[i].alignment = hasRank ? TextAlignmentOptions.MidlineLeft : TextAlignmentOptions.Midline;
+            }
         }
 
         // ---------------- 연출 ----------------
@@ -302,6 +335,7 @@ namespace ContextStage
             SetGroup(headlineGroup, 0f);
             SetGroup(photoGroup, 0f);
             SetGroup(verdictGroup, 0f);
+            SetGroup(_stampInkGroup, 0f);
             SetGroup(recordsGroup, 0f);
             if (backdrop != null) backdrop.alpha = 0f;
             if (primaryButton != null) primaryButton.interactable = false;
@@ -334,14 +368,17 @@ namespace ContextStage
                     headlineShown = true;
                     StartCoroutine(FadeGroup(headlineGroup, 1f, fadeDuration));
                     StartCoroutine(FadeGroup(photoGroup, 1f, fadeDuration));
+                    StartCoroutine(FadeGroup(verdictGroup, 1f, fadeDuration));
                 }
                 if (!stampShown && t >= stampAt)
                 {
                     stampShown = true;
                     stampStarted = t;
-                    SetGroup(verdictGroup, 1f);
+                    SetGroup(_stampInkGroup, 1f);
                     if (!string.IsNullOrEmpty(stampSoundId)) Sound.Play(stampSoundId);
                 }
+                if (headlineShown && _rankInk != null && rankImage.gameObject.activeSelf)
+                    _rankInk.SetProgress((t - headlineAt) / RankInkDuration);
                 if (stampShown && stamp != null)
                 {
                     float s = stampPunchDuration <= 0f ? 1f : Mathf.Clamp01((t - stampStarted) / stampPunchDuration);
@@ -356,7 +393,8 @@ namespace ContextStage
 
                 bool done = headlineShown && stampShown && recordsShown &&
                             t >= recordsAt + fadeDuration && t >= paperFlyDuration &&
-                            t >= stampAt + stampPunchDuration;
+                            t >= stampAt + stampPunchDuration &&
+                            t >= headlineAt + RankInkDuration;
                 if (done) break;
                 yield return null;
             }
@@ -400,6 +438,7 @@ namespace ContextStage
         void ApplyFinalState()
         {
             _complete = true;
+            _rankInk?.SetProgress(1f);
             if (backdrop != null) backdrop.alpha = backdropAlpha;
             if (paper != null)
             {
@@ -409,6 +448,7 @@ namespace ContextStage
             SetGroup(headlineGroup, 1f);
             SetGroup(photoGroup, 1f);
             SetGroup(verdictGroup, 1f);
+            SetGroup(_stampInkGroup, 1f);
             SetGroup(recordsGroup, 1f);
             if (stamp != null)
             {

@@ -260,7 +260,6 @@ namespace ContextStage
         AugmentChoiceViewModel CreateViewModel(int slotIndex)
         {
             AugmentOffer offer = _currentOffers[slotIndex];
-            CardUpgradeData upgrade = offer.TierData.CardUpgrade;
             return new AugmentChoiceViewModel
             {
                 slotIndex = slotIndex,
@@ -268,18 +267,20 @@ namespace ContextStage
                 icon = offer.Definition.Icon,
                 tierLabel = offer.TierData.Tier.ToString(),
                 tierColor = ResolveTierColor(offer.TierData.Tier),
-                displayName = offer.Definition.DisplayName,
-                description = offer.TierData.Description,
-                grantedCard = CreateCardPreview(offer.TierData.GrantedCard, upgrade),
+                displayName = AugmentEnglish.Name(offer.Definition),
+                description = AugmentEnglish.Description(offer.Definition, offer.TierData, offer.TierData.Description),
+                grantedCard = CreateCardPreview(offer.Definition, offer.TierData),
                 rerollsRemaining = _rerollsRemaining[slotIndex],
                 canSelect = true
             };
         }
 
         static AugmentCardPreviewViewModel CreateCardPreview(
-            CardDefinition grantedCard,
-            CardUpgradeData upgrade)
+            AugmentDefinition definition,
+            AugmentTierData tier)
         {
+            CardDefinition grantedCard = tier.GrantedCard;
+            CardUpgradeData upgrade = tier.CardUpgrade;
             CardDefinition card = grantedCard != null
                 ? grantedCard
                 : upgrade?.TargetCard;
@@ -290,14 +291,14 @@ namespace ContextStage
                 artwork = upgrade?.Artwork != null ? upgrade.Artwork : card.Artwork,
                 upgradeFrame = upgrade?.TargetCard == null ? null :
                     card.GetComponent<CardSlotUI>()?.UpgradeFrameSprite,
-                displayName = upgrade != null &&
+                displayName = AugmentEnglish.CardName(definition.AugmentId, upgrade != null &&
                               !string.IsNullOrWhiteSpace(upgrade.DisplayNameOverride)
                     ? upgrade.DisplayNameOverride
-                    : card.DisplayName,
-                description = upgrade != null &&
+                    : card.DisplayName),
+                description = AugmentEnglish.Description(definition, tier, upgrade != null &&
                               !string.IsNullOrWhiteSpace(upgrade.DescriptionOverride)
                     ? upgrade.DescriptionOverride
-                    : card.Description
+                    : card.Description, card: true)
             };
         }
 
