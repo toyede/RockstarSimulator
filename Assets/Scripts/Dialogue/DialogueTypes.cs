@@ -73,6 +73,9 @@ namespace ContextStage
         [Tooltip("룰 카드 확인 버튼 문구. 비우면 기본값")]
         public string confirmLabel;
 
+        [Tooltip("룰 카드 확인 버튼 전용 효과음 ID. 비우면 재생하지 않는다")]
+        public string confirmSoundId;
+
         public bool HasRuleCard => !string.IsNullOrWhiteSpace(ruleTitle);
     }
 }

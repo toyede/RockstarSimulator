@@ -518,6 +518,7 @@ namespace ContextStage
         void ConfirmRuleCard()
         {
             if (_state != State.RuleCard) return;
+            if (!string.IsNullOrEmpty(_context.confirmSoundId)) Sound.Play(_context.confirmSoundId);
             Finish();
         }
 

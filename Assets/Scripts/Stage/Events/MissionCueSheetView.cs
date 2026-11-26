@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Text.RegularExpressions;
+using GameJamKit;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +10,8 @@ namespace ContextStage
     /// <summary>판정 로직 없이 슬레이트 아트와 텍스트 영역만 구성한다.</summary>
     public sealed class MissionCueSheetView : MonoBehaviour
     {
+        internal const string StageMissionIntroSoundId = "mic_feedback";
+
         public static readonly Color Ink = new Color32(0xF1, 0xF3, 0xEF, 0xFF);
         public TMP_Text Title { get; private set; }
         public TMP_Text Body { get; private set; }
@@ -27,6 +30,12 @@ namespace ContextStage
 
         public void PlayEntrance() => Animate(false, true);
         public void PlayResult(bool success) => Animate(true, success);
+
+        public void PlayStageMissionResult(bool success)
+        {
+            PlayResult(success);
+            if (success && isActiveAndEnabled) Sound.Play("mission_complete");
+        }
 
         public void SetTitle(string text) => SetMissionText(Title, text, ref _titleSource);
         public void SetBody(string text) => SetMissionText(Body, text, ref _bodySource);

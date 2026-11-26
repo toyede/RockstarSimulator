@@ -39,6 +39,8 @@ namespace ContextStage
         [SerializeField, Tooltip("키로도 전환한다 (화면 기획: 지정키를 누르면 위로 스크롤)")] bool peekWithTabKey = true;
         [SerializeField, Range(0.1f, 0.85f), Tooltip("라이벌 무대 체류 중 드랍이 터지는 시점. 모든 미션 예고에 적용")]
         float dropImpactAtHoldFraction = 0.55f;
+        [SerializeField, Range(110f, 150f), Tooltip("드랍 효과음 큐의 BPM. 4분음표 네 박을 재생한다")]
+        float dropKickBpm = 128f;
 
         BossArenaLayout _arena;
         BossCameraDirector _camera;
@@ -54,6 +56,7 @@ namespace ContextStage
         Func<bool> _canPeek;
 
         Coroutine _sequence;
+        Coroutine _dropAudioRoutine;
         bool _began;
         bool _locked;
         bool _timerPausedByUs;
@@ -175,12 +178,12 @@ namespace ContextStage
                     holdElapsed >= hold * dropImpactAtHoldFraction)
                 {
                     dropEmitted = true;
-                    EventBus.Raise(new BossDropImpact());
+                    PlayDropImpact();
                 }
                 yield return null;
             }
             if (kind == BossCinematicKind.PatternAnnounce && !dropEmitted)
-                EventBus.Raise(new BossDropImpact());
+                PlayDropImpact();
             EventBus.Raise(new BossLightingHoldProgress(1,false));
             yield return _camera.PanRoutine(BossZone.OurStage, config.CinematicPanBackDuration);
 
@@ -192,6 +195,36 @@ namespace ContextStage
             _sequence = null;
             EventBus.Raise(new BossCinematicEnded(kind));
             onComplete?.Invoke();
+        }
+
+        void PlayDropImpact()
+        {
+            EventBus.Raise(new BossDropImpact());
+            if (!_began || !isActiveAndEnabled) return;
+            StopDropAudio();
+            _dropAudioRoutine = StartCoroutine(PlayDropAudio());
+        }
+
+        IEnumerator PlayDropAudio()
+        {
+            // scaled clock: Pause에서는 남은 박자도 멈춘다. 매 박은 드랍 시점 기준으로 계산한다.
+            double startedAt = Time.timeAsDouble;
+            double beatSeconds = 60d / Mathf.Max(1f, dropKickBpm);
+            Sound.Play("boss_specialdrop", 0.5f);
+            for (int beat = 0; beat < 4; beat++)
+            {
+                double beatAt = startedAt + beat * beatSeconds;
+                while (Time.timeAsDouble < beatAt || Time.timeScale <= 0f) yield return null;
+                Sound.Play(beat % 2 == 0 ? "boss_drumkick" : "boss_drumkick2");
+            }
+            _dropAudioRoutine = null;
+        }
+
+        void StopDropAudio()
+        {
+            if (_dropAudioRoutine == null) return;
+            StopCoroutine(_dropAudioRoutine);
+            _dropAudioRoutine = null;
         }
 
         // ---------------- 엿보기 ----------------
@@ -327,6 +360,7 @@ namespace ContextStage
 
         void StopSequence()
         {
+            StopDropAudio();
             if (_sequence == null) return;
             StopCoroutine(_sequence);
             _sequence = null;
@@ -336,6 +370,7 @@ namespace ContextStage
         void RestoreImmediate()
         {
             EventBus.Raise(new BossLightingHoldProgress(0,false));
+            StopDropAudio();
             StopAllCoroutines();
             _sequence = null;
             _peeking = false;

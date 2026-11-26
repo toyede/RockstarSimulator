@@ -545,6 +545,7 @@ Tools/GameJamKit/Export .unitypackage
 
 - 2026-09-30 (Codex): `Resources/SoundLibrary.asset`에 `ui_click`, `ui_hover`, `ui_text`를 UI 버스로 등록했다. 기존 `ui_click_wooden` ID는 직렬화된 버튼 연결을 보존하기 위해 새 클릭음의 호환 항목으로 유지한다. UI 연결 코드는 게임 전용 `Assets/Scripts/Audio/UIInteractionSfx.cs`에서 관리한다.
 - 2026-11-12 (Codex): 1스테이지 어쿠스틱 스트로크 3·4를 기존 풀에 추가했다. 솔로 3·4는 기존 솔로 1·2와 볼륨을 별도로 조절할 수 있도록 `guitar_solo_acoustic_alt` 풀에 등록했다.
+- 2026-11-26 (Codex): `SoundLibrary.asset`에 카드 전용 슬랩베이스, 미션 등장·성공, 포스터 시작, 정전 및 보스 드랍용 사운드를 등록했다. 기존 카드·대사 공용 기타와 BGM 믹서는 유지했다.
 - 2026-09-30 (Codex): `Audio/AudioRouting.cs`를 클래스명과 일치하는 `Audio/AudioRoutingConfig.cs`로 이동(GUID 유지)하고, `Resources/AudioRoutingConfig.asset`의 누락된 스크립트 참조를 복구했다. 믹서 그룹 구성은 유지한다.
 
 

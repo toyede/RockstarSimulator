@@ -320,3 +320,78 @@ MonoBehaviour:
     loop: 0
     minInterval: 0.02
     bus: 1
+  - id: mic_feedback
+    clips:
+    - {fileID: 8300000, guid: 0b4c6be83e87c9749ae453491f1688c1, type: 3}
+    - {fileID: 8300000, guid: 7c6032817f4035e4ea508317a33bbc53, type: 3}
+    - {fileID: 8300000, guid: 976fcf0bafe95614390a6742b54496c0, type: 3}
+    volume: 0.44
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+    bus: 2
+  - id: mission_complete
+    clips:
+    - {fileID: 8300000, guid: 47cd443eda2534c42b00346513da0f63, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+    bus: 2
+  - id: electric_zap
+    clips:
+    - {fileID: 8300000, guid: fbc3ce89b9fa3fd40af61bf83495bba9, type: 3}
+    volume: 0.67
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+    bus: 2
+  - id: amp_connection
+    clips:
+    - {fileID: 8300000, guid: 6410d4e2871fd8841b3c5c0c3cc05c11, type: 3}
+    volume: 0.75
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+    bus: 3
+  - id: boss_drumkick
+    clips:
+    - {fileID: 8300000, guid: eb3c707d1ab02b046a4633fc4abd0a79, type: 3}
+    volume: 0.55
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+    bus: 2
+  - id: boss_drumkick2
+    clips:
+    - {fileID: 8300000, guid: 3f2fc09a81e57134a81584d958ae26c1, type: 3}
+    volume: 0.39
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+    bus: 2
+  - id: boss_specialdrop
+    clips:
+    - {fileID: 8300000, guid: 1cf6d50b2ffc0844c8d782d43a51f0ff, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+    bus: 2
+  - id: card_slapbass
+    clips:
+    - {fileID: 8300000, guid: b126494ae92ebf446a212b5fd27d6ff6, type: 3}
+    - {fileID: 8300000, guid: ee2d9ab930273fe4ba249e3fae7766b5, type: 3}
+    volume: 0.65
+    pitchMin: 1
+    pitchMax: 1
+    loop: 0
+    minInterval: 0.02
+    bus: 1

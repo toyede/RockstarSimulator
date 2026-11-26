@@ -321,6 +321,7 @@ namespace ContextStage
             _standing.Color = warningColor; _standing.Progress = "";
             _standing.Timer = $"{e.Duration:0.0}s";
             RefreshMission();
+            Sound.Play(MissionCueSheetView.StageMissionIntroSoundId);
         }
 
         void OnStandingProgress(StageEventProgress e)
@@ -340,7 +341,7 @@ namespace ContextStage
             _standing.Color = e.Success ? successColor : warningColor;
             _standing.Progress = _standing.Timer = "";
             RefreshMission();
-            _missionView.PlayResult(e.Success);
+            _missionView.PlayStageMissionResult(e.Success);
         }
 
         void RefreshMission()

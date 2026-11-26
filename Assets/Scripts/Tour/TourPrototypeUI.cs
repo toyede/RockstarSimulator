@@ -394,6 +394,7 @@ namespace ContextStage
                 context.backdrop = visual.backgroundBase;
                 context.ruleIcon = visual.ruleIcon;
                 context.stagePoster = visual.stagePoster;
+                if (context.stagePoster != null) context.confirmSoundId = "amp_connection";
                 context.posterPresentation = visual.posterPresentation;
                 context.ruleTitle = visual.ruleTitle;
                 context.ruleBody = visual.ruleBody;

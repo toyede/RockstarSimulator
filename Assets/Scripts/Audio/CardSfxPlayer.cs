@@ -79,6 +79,9 @@ namespace ContextStage
                     return Random.Range(0, 2) == 0 ? "guitar_solo_acoustic" : "guitar_solo_acoustic_alt";
                 if (id == "guitar_stroke") return "guitar_stroke_acoustic";
             }
+
+            // 일반 카드에서만 베이스를 섞는다. 대사 연출에도 쓰는 guitar_stroke 자체는 유지한다.
+            if (id == "guitar_stroke" && Random.Range(0, 3) == 0) return "card_slapbass";
             return id;
         }
 

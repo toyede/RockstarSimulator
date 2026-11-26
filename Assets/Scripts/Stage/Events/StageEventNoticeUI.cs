@@ -13,6 +13,9 @@ namespace ContextStage
     [DisallowMultipleComponent]
     public sealed class StageEventNoticeUI : MonoBehaviour
     {
+        const string BlackoutEventId = "arena_blackout";
+        const float BlackoutIntroDelay = 0.75f;
+
         [SerializeField, Tooltip("한글 폰트. 비우면 DialogueCatalog 스타일 폰트")] TMP_FontAsset font;
         [SerializeField] Color titleColor = new Color32(0xF9, 0xC2, 0x2B, 0xFF);
         [SerializeField] Color successColor = new Color32(0x30, 0xE1, 0xB9, 0xFF);
@@ -30,6 +33,7 @@ namespace ContextStage
         MissionCueSheetView _view;
         string _eventId;
         Coroutine _hideRoutine;
+        Coroutine _introSoundRoutine;
         bool _active;
 
         void OnEnable()
@@ -63,6 +67,7 @@ namespace ContextStage
             if (BossBattleUI.HandlesStageEvent(e.EventId)) return;
             EnsureView();
             StopHide();
+            StopIntroSound();
             _eventId = e.EventId;
             _active = true;
             _panel.gameObject.SetActive(true);
@@ -73,6 +78,12 @@ namespace ContextStage
             _view.SetProgress("");
             _view.SetSecondary("");
             _view.PlayEntrance();
+
+            // 방송 사고 소리와 미션 알림이 같은 순간에 겹치지 않게 한다.
+            if (e.EventId == BlackoutEventId)
+                _introSoundRoutine = StartCoroutine(PlayBlackoutIntro());
+            else
+                Sound.Play(MissionCueSheetView.StageMissionIntroSoundId);
         }
 
         void OnProgress(StageEventProgress e)
@@ -95,7 +106,8 @@ namespace ContextStage
             _view.SetProgress("");
             _view.SetSecondary("");
             StopHide();
-            _view.PlayResult(e.Success);
+            StopIntroSound();
+            _view.PlayStageMissionResult(e.Success);
             _hideRoutine = StartCoroutine(HideAfter(resultHoldDuration));
         }
 
@@ -113,6 +125,20 @@ namespace ContextStage
             Hide();
         }
 
+        IEnumerator PlayBlackoutIntro()
+        {
+            yield return new WaitForSeconds(BlackoutIntroDelay);
+            _introSoundRoutine = null;
+            if (_active) Sound.Play(MissionCueSheetView.StageMissionIntroSoundId);
+        }
+
+        void StopIntroSound()
+        {
+            if (_introSoundRoutine == null) return;
+            StopCoroutine(_introSoundRoutine);
+            _introSoundRoutine = null;
+        }
+
         void StopHide()
         {
             if (_hideRoutine == null) return;
@@ -123,6 +149,7 @@ namespace ContextStage
         void Hide()
         {
             StopHide();
+            StopIntroSound();
             _active = false;
             _eventId = null;
             if (_panel != null) _panel.gameObject.SetActive(false);

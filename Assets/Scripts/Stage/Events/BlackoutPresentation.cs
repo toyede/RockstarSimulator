@@ -20,6 +20,8 @@ namespace ContextStage
     [DisallowMultipleComponent]
     public sealed class BlackoutPresentation : MonoBehaviour
     {
+        const string DefaultPowerDownSoundId = "electric_zap";
+
         [Header("실루엣")]
         [SerializeField] Color silhouetteColor = new Color(0.02f, 0.02f, 0.04f, 1f);
         [SerializeField, Min(0.01f)] float fadeDuration = 0.25f;
@@ -30,7 +32,7 @@ namespace ContextStage
 
         [Header("소리")]
         [SerializeField] bool pauseBgm = true;
-        [SerializeField, Tooltip("정전 진입 효과음 ID (비우면 없음)")] string powerDownSoundId = "";
+        [SerializeField, Tooltip("정전 진입 효과음 ID (비우면 electric_zap)")] string powerDownSoundId = "";
         [SerializeField, Tooltip("복구 효과음 ID (비우면 없음)")] string restoreSoundId = "crowd_high";
 
         [Header("오버레이")]
@@ -87,7 +89,7 @@ namespace ContextStage
                 AudioManager.Instance.PauseBgm();
                 _bgmPaused = true;
             }
-            if (!string.IsNullOrEmpty(powerDownSoundId)) Sound.Play(powerDownSoundId);
+            Sound.Play(string.IsNullOrEmpty(powerDownSoundId) ? DefaultPowerDownSoundId : powerDownSoundId);
 
             EnsureOverlay();
             _overlay.gameObject.SetActive(true);
