@@ -185,7 +185,7 @@ namespace ContextStage
             }
             if (index < 0 || index >= _hand.Count) return false;
             var card = _hand[index];
-            if (card == null || KillSwitchPattern.IsCardSealed(card)) return false;
+            if (card == null || CardUseRestriction.IsBlocked(card)) return false;
 
             _selecting = true;
             try
@@ -314,6 +314,7 @@ namespace ContextStage
                     cardUpgrade.AudienceReactionBonus));
 
                 _hand.RemoveAt(index);
+                if (card.IsEncoreFever) ApplyEncoreCost(card);
                 int rawScore = gainedScore + specialBonusScore;
                 ComboResolution combo = ComboSystem.HasInstance
                     ? ComboSystem.Instance.ResolveCard(
@@ -452,6 +453,18 @@ namespace ContextStage
             return true;
         }
 
+        /// <summary>
+        /// 앙코르: 콤보를 비용만큼 줄이고, 이 카드의 CardResolved 직후 피버가 시작되도록 예약한다.
+        /// 콤보 감소(ComboChanged)가 카드 결과보다 먼저 발행되어 HUD가 줄어든 콤보를 결과로 표시한다.
+        /// </summary>
+        void ApplyEncoreCost(CardDefinition card)
+        {
+            if (!ComboSystem.HasInstance || !ComboSystem.Instance.ConsumeCombo(card.EncoreComboCost))
+                Debug.LogWarning($"[CardSystem] Encore '{card.Id}' could not consume its combo cost.", card);
+            if (!FeverSystem.HasInstance || !FeverSystem.Instance.ReserveEncoreFever(card.EncoreFeverDuration))
+                Debug.LogWarning($"[CardSystem] Encore '{card.Id}' could not reserve its fever.", card);
+        }
+
         static HypeJudgement ResolveFeedback(
             int totalReaction,
             int positiveReactionCount,
@@ -494,9 +507,16 @@ namespace ContextStage
                     DrawCards(card.DrawCount + extraCardsAfterUse);
                     break;
                 case UtilityCardEffect.Reroll:
-                    _hand.Clear();
-                    DrawCards(handCountBeforeUse + extraCardsAfterUse);
+                {
+                    // 앙코르는 손패 칸으로 세지 않으므로 리롤로 버리지 않고 남긴다.
+                    int kept = 0;
+                    for (int i = 0; i < _hand.Count; i++)
+                        if (_hand[i] != null && _hand[i].IsEncoreFever)
+                            _hand[kept++] = _hand[i];
+                    _hand.RemoveRange(kept, _hand.Count - kept);
+                    DrawCards(handCountBeforeUse - kept + extraCardsAfterUse);
                     break;
+                }
                 case UtilityCardEffect.ExtendPerformanceTime:
                     PerformanceTimer.ExtendDuration(
                         card.PerformanceTimeBonusSeconds);
@@ -510,8 +530,19 @@ namespace ContextStage
 
         int RefillToMinimumHand()
         {
-            int missing = Mathf.Max(0, MinimumHandSize - _hand.Count);
-            return DrawCards(missing);
+            // 앙코르는 손패 칸으로 세지 않는다. 앙코르가 더 뽑히면 그만큼 계속 보충한다.
+            int drawn = 0;
+            while (CountHandSlotCards() < MinimumHandSize && DrawOne())
+                drawn++;
+            return drawn;
+        }
+
+        int CountHandSlotCards()
+        {
+            int count = 0;
+            for (int i = 0; i < _hand.Count; i++)
+                if (_hand[i] == null || !_hand[i].IsEncoreFever) count++;
+            return count;
         }
 
         int DrawCards(int count)

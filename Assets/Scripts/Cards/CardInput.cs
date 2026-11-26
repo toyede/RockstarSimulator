@@ -41,8 +41,8 @@ namespace ContextStage
         {
             if (!CanUseCard(handIndex)) return false;
 
-            // 봉인 또는 튜토리얼에 걸린 카드는 소모 없이 되돌린다.
-            if (KillSwitchPattern.IsCardSealed(CardSystem.Instance.GetCard(handIndex)) ||
+            // 봉인·앙코르 조건 미달 또는 튜토리얼에 걸린 카드는 소모 없이 되돌린다.
+            if (CardUseRestriction.IsBlocked(CardSystem.Instance.GetCard(handIndex)) ||
                 (UseFilter != null && !UseFilter(handIndex)) ||
                 (RequestFilter != null && !RequestFilter(handIndex, specialRequest)))
             {

@@ -48,13 +48,13 @@ MonoBehaviour:
   displayName: "\uC559\uCF54\uB974"
   icon: {fileID: 21300000, guid: de1d9ba60df1acf43b32ed1f61b8adc2, type: 3}
   effectType: 5
-  tierOwnershipPolicy: 0
+  tierOwnershipPolicy: 1
   tiers:
   - tier: 0
     enabled: 1
     value: 0
-    description: "\uC0AC\uC6A9\uD558\uBA74 \uD604\uC7AC \uACF5\uC5F0 \uC2DC\uAC04\uC774
-      5\uCD08 \uC5F0\uC7A5\uB41C\uB2E4."
+    description: "\uC559\uCF54\uB974 \uCE74\uB4DC\uB97C \uC5BB\uB294\uB2E4. \uCF64\uBCF4
+      5\uB97C \uC18C\uBAA8\uD574 3\uCD08 \uB3D9\uC548 \uD53C\uBC84\uB97C \uC2DC\uC791\uD55C\uB2E4."
     grantedCard: {fileID: 7840930225512351688, guid: 8070402508e11ac459fc4f2a23f9a67e, type: 3}
     additionalEffects: []
     cardUpgrade:
@@ -68,8 +68,8 @@ MonoBehaviour:
   - tier: 1
     enabled: 1
     value: 0
-    description: "\uC0AC\uC6A9\uD558\uBA74 \uD604\uC7AC \uACF5\uC5F0 \uC2DC\uAC04\uC774
-      7\uCD08 \uC5F0\uC7A5\uB41C\uB2E4."
+    description: "\uC559\uCF54\uB974 \uCE74\uB4DC\uB97C \uC5BB\uB294\uB2E4. \uCF64\uBCF4
+      4\uB97C \uC18C\uBAA8\uD574 4\uCD08 \uB3D9\uC548 \uD53C\uBC84\uB97C \uC2DC\uC791\uD55C\uB2E4."
     grantedCard: {fileID: 6863122937097072033, guid: b0a18a93c61e60241b3562abdf84b7e2, type: 3}
     additionalEffects: []
     cardUpgrade:
@@ -83,8 +83,8 @@ MonoBehaviour:
   - tier: 2
     enabled: 1
     value: 0
-    description: "\uC0AC\uC6A9\uD558\uBA74 \uD604\uC7AC \uACF5\uC5F0 \uC2DC\uAC04\uC774
-      10\uCD08 \uC5F0\uC7A5\uB41C\uB2E4."
+    description: "\uC559\uCF54\uB974 \uCE74\uB4DC\uB97C \uC5BB\uB294\uB2E4. \uCF64\uBCF4
+      3\uB97C \uC18C\uBAA8\uD574 5\uCD08 \uB3D9\uC548 \uD53C\uBC84\uB97C \uC2DC\uC791\uD55C\uB2E4."
     grantedCard: {fileID: 936027775136551679, guid: 063dfb87bdc6fc04ebccb7c1f79a1087, type: 3}
     additionalEffects: []
     cardUpgrade:

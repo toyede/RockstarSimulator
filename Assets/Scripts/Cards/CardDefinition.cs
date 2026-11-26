@@ -63,7 +63,9 @@ namespace ContextStage
         None,
         Draw,
         Reroll,
-        ExtendPerformanceTime
+        ExtendPerformanceTime,
+        // 프리팹에 숫자로 저장되므로 새 값은 항상 끝에 추가한다.
+        EncoreFever
     }
 
     /// <summary>
@@ -97,6 +99,12 @@ namespace ContextStage
         [SerializeField, Min(0)] int drawCount = 2;
         [SerializeField, Min(0f)] float performanceTimeBonusSeconds;
 
+        [Header("앙코르 피버")]
+        [SerializeField, Min(1), Tooltip("사용에 필요하고, 사용하면 줄어드는 콤보 수")]
+        int encoreComboCost = 5;
+        [SerializeField, Min(0.1f), Tooltip("앙코르로 시작하는 피버의 기본 시간(초). 피버 시간 증강이 더해진다")]
+        float encoreFeverDuration = 3f;
+
         [Header("외형")]
         [SerializeField] Sprite artwork;
         [SerializeField] Color cardColor = Color.white;
@@ -113,6 +121,10 @@ namespace ContextStage
         public int DrawCount => Mathf.Max(0, drawCount);
         public float PerformanceTimeBonusSeconds =>
             Mathf.Max(0f, performanceTimeBonusSeconds);
+        public bool IsEncoreFever =>
+            role == CardRole.Utility && utilityEffect == UtilityCardEffect.EncoreFever;
+        public int EncoreComboCost => Mathf.Max(1, encoreComboCost);
+        public float EncoreFeverDuration => Mathf.Max(0.1f, encoreFeverDuration);
         public Sprite Artwork => artwork;
         public Color CardColor => cardColor;
 

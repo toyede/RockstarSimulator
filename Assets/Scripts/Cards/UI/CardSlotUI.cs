@@ -1,3 +1,4 @@
+using GameJamKit;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -43,17 +44,23 @@ namespace ContextStage
         {
             KillSwitchPattern.SealPresentationChanged += RefreshSeal;
             CardInput.UseBlocked += OnUseBlocked;
+            // 앙코르 사용 가능 여부는 콤보·피버에 따라 바뀌므로 X 표시를 함께 갱신한다.
+            EventBus.Subscribe<ComboChanged>(OnComboChanged);
+            EventBus.Subscribe<FeverStateChanged>(OnFeverStateChanged);
         }
+        void OnComboChanged(ComboChanged _) => RefreshSeal();
+        void OnFeverStateChanged(FeverStateChanged _) => RefreshSeal();
         void RefreshSeal()
         {
-            bool sealedCard = KillSwitchPattern.IsCardSealed(_boundCard);
+            // KILL SWITCH 봉인과 앙코르 조건 미달을 같은 X 표시로 보여준다.
+            bool sealedCard = _boundCard != null && CardUseRestriction.IsBlocked(_boundCard);
             if (_sealVisual == null && sealedCard && artwork != null)
                 _sealVisual = artwork.gameObject.AddComponent<CardSealVisual>();
             if (_sealVisual != null) _sealVisual.SetSealed(sealedCard, artwork);
         }
         void OnUseBlocked(int index)
         {
-            if (index == _handIndex && KillSwitchPattern.IsCardSealed(_boundCard) && _sealVisual != null)
+            if (index == _handIndex && CardUseRestriction.IsBlocked(_boundCard) && _sealVisual != null)
                 _sealVisual.Pulse();
         }
 
@@ -205,6 +212,8 @@ namespace ContextStage
         {
             KillSwitchPattern.SealPresentationChanged -= RefreshSeal;
             CardInput.UseBlocked -= OnUseBlocked;
+            EventBus.Unsubscribe<ComboChanged>(OnComboChanged);
+            EventBus.Unsubscribe<FeverStateChanged>(OnFeverStateChanged);
             if (_sealVisual != null) _sealVisual.SetSealed(false, artwork);
             _handIndex = -1;
             _feverVisual = false;
@@ -271,6 +280,7 @@ namespace ContextStage
                     case UtilityCardEffect.Reroll:
                         return "UTILITY · REROLL";
                     case UtilityCardEffect.ExtendPerformanceTime:
+                    case UtilityCardEffect.EncoreFever:
                         return "UTILITY · ENCORE";
                     default:
                         return "UTILITY";

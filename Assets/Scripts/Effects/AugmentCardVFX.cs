@@ -28,7 +28,8 @@ namespace ContextStage
         public static CardAugmentVisual Resolve(CardDefinition card, CardUpgradeModifiers upgrade)
         {
             if (card == null) return CardAugmentVisual.None;
-            if (card.UtilityEffect == UtilityCardEffect.ExtendPerformanceTime)
+            if (card.UtilityEffect == UtilityCardEffect.ExtendPerformanceTime ||
+                card.UtilityEffect == UtilityCardEffect.EncoreFever)
                 return CardAugmentVisual.Encore;
             if (IsStageControl(card.Id)) return CardAugmentVisual.StageControl;
             if (upgrade.ExtraCardsAfterUse <= 0) return CardAugmentVisual.None;

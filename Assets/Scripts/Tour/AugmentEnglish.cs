@@ -30,7 +30,8 @@ namespace ContextStage
             var upgrade = tier.CardUpgrade;
             int reaction = upgrade?.AudienceReactionBonus ?? 0;
             int stageReaction = tier.GrantedCard?.AudienceReaction?.FixedReactionValue ?? 0;
-            float encoreSeconds = tier.GrantedCard?.PerformanceTimeBonusSeconds ?? 0f;
+            int encoreCost = tier.GrantedCard != null ? tier.GrantedCard.EncoreComboCost : 0;
+            float encoreFever = tier.GrantedCard != null ? tier.GrantedCard.EncoreFeverDuration : 0f;
             int drawCount = (upgrade?.TargetCard?.DrawCount ?? 0) + (upgrade?.ExtraCardsAfterUse ?? 0);
             return definition.AugmentId switch
             {
@@ -45,7 +46,9 @@ namespace ContextStage
                 "high_risk_perfect_clear" => "Double your final score if your combo never breaks before time runs out.",
                 "high_risk_short_set" => "Play for half the time and earn triple the score.",
                 "initial_audience" => tier.Value == 1 ? "Start each show with one extra ordinary fan." : $"Start each show with {tier.Value:0} extra ordinary fans.",
-                "performance_duration" => card ? $"Add {encoreSeconds:0.#}s to the show." : $"Gain an Encore card that adds {encoreSeconds:0.#}s when played.",
+                "performance_duration" => card
+                    ? $"Needs combo {encoreCost}+. Spend {encoreCost} combo to start a {encoreFever:0.#}s Fever."
+                    : $"Gain an Encore card: spend {encoreCost} combo to start a {encoreFever:0.#}s Fever. Only one tier per run.",
                 "preference_insight" => "Always show ordinary fans' preference outlines.",
                 "reroll_audience_boost" => card ? $"Redraw your hand. Give every fan +{reaction} reaction." : $"Reroll now gives every fan +{reaction} reaction.",
                 "reroll_plus" => card ? "Redraw your hand and draw one extra card." : "Reroll now gives you one extra card.",

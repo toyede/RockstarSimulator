@@ -110,6 +110,23 @@ namespace ContextStage
                 succeeded);
         }
 
+        /// <summary>
+        /// 앙코르처럼 콤보를 비용으로 쓰는 효과용. 지정한 수만큼 콤보를 줄인다.
+        /// 실패로 끊긴 것이 아니므로 WasLost=false 로 발행한다 (완벽주의·보스 미션 판정에 영향 없음).
+        /// </summary>
+        public bool ConsumeCombo(int amount)
+        {
+            if (amount <= 0 || _currentCombo < amount) return false;
+            int previous = _currentCombo;
+            _currentCombo -= amount;
+            EventBus.Raise(new ComboChanged(
+                previous,
+                _currentCombo,
+                CurrentMultiplier,
+                false));
+            return true;
+        }
+
         public void ResetCombo()
         {
             int previous = _currentCombo;

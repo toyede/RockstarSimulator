@@ -14,6 +14,7 @@ namespace ContextStage
         float _remaining;
         float _activeDuration;
         int _triggerCombo;
+        float _pendingDurationOverride = -1f; // 앙코르 피버 예약 시간. 음수면 config 기본값
 
         protected override bool Persistent => false;
 
@@ -61,7 +62,25 @@ namespace ContextStage
         public int CalculateCardBonus(int audienceCount)
         {
             if (!_isActive || config == null) return 0;
-            return Mathf.Max(0, audienceCount) * config.FeverScorePerAudience;
+            // 피버 중에는 콤보가 멈춰 있으므로 시작 시점의 콤보 배율이 끝까지 유지된다.
+            float comboMultiplier = ComboSystem.HasInstance
+                ? ComboSystem.Instance.CurrentMultiplier
+                : 1f;
+            return Mathf.RoundToInt(
+                Mathf.Max(0, audienceCount) * config.FeverScorePerAudience * comboMultiplier);
+        }
+
+        /// <summary>
+        /// 앙코르 카드용. 현재 카드 결과(CardResolved)가 발행된 직후 지정한 시간만큼 피버를 시작한다.
+        /// 자동 발동 게이트와 무관하며, 이미 활성 중이거나 예약돼 있으면 false.
+        /// </summary>
+        public bool ReserveEncoreFever(float duration)
+        {
+            if (_isActive || _startAfterCurrentCard || config == null || duration <= 0f) return false;
+            _startAfterCurrentCard = true;
+            _triggerCombo = ComboSystem.HasInstance ? ComboSystem.Instance.CurrentCombo : 0;
+            _pendingDurationOverride = duration;
+            return true;
         }
 
         /// <summary>[튜토리얼 전용] 실제 콤보 조건과 무관하게 피버타임을 즉시 시작한다. 이미 활성 중이면 무시.</summary>
@@ -79,7 +98,10 @@ namespace ContextStage
         {
             _automaticTriggerEnabled = enabled;
             if (!enabled)
+            {
                 _startAfterCurrentCard = false;
+                _pendingDurationOverride = -1f;
+            }
         }
 
         /// <summary>활성/예약된 피버를 즉시 정리한다. 자동 발동 설정은 유지한다.</summary>
@@ -126,7 +148,11 @@ namespace ContextStage
         {
             if (config == null) return;
 
-            float duration = config.FeverDuration + AugmentRuntime.Current.FeverDurationBonus;
+            float baseDuration = _pendingDurationOverride > 0f
+                ? _pendingDurationOverride
+                : config.FeverDuration;
+            _pendingDurationOverride = -1f;
+            float duration = baseDuration + AugmentRuntime.Current.FeverDurationBonus;
             _isActive = true;
             _remaining = duration;
             _activeDuration = duration;
@@ -158,6 +184,7 @@ namespace ContextStage
             _remaining = 0f;
             _activeDuration = 0f;
             _triggerCombo = 0;
+            _pendingDurationOverride = -1f;
 
             if (wasActive)
                 EventBus.Raise(new FeverStateChanged(false, 0, 0f));
