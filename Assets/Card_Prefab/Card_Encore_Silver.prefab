@@ -30,12 +30,21 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7086148565589252510, guid: 6e7f2d9eeb597c344a4cf68b36eb9714, type: 3}
       propertyPath: description
-      value: "\uC0AC\uC6A9\uD558\uBA74 \uD604\uC7AC \uACF5\uC5F0 \uC2DC\uAC04\uC774
-        7\uCD08 \uC5F0\uC7A5\uB41C\uB2E4."
+      value: "\uCF64\uBCF4 4\uB97C \uC18C\uBAA8\uD574 4\uCD08 \uB3D9\uC548 \uD53C\uBC84\uB97C
+        \uC2DC\uC791\uD55C\uB2E4. \uCF64\uBCF4 4 \uC774\uC0C1\uC77C \uB54C \uC4F8
+        \uC218 \uC788\uB2E4."
       objectReference: {fileID: 0}
     - target: {fileID: 7086148565589252510, guid: 6e7f2d9eeb597c344a4cf68b36eb9714, type: 3}
       propertyPath: displayName
       value: "\uC559\uCF54\uB974"
+      objectReference: {fileID: 0}
+    - target: {fileID: 7086148565589252510, guid: 6e7f2d9eeb597c344a4cf68b36eb9714, type: 3}
+      propertyPath: encoreComboCost
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7086148565589252510, guid: 6e7f2d9eeb597c344a4cf68b36eb9714, type: 3}
+      propertyPath: encoreFeverDuration
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 7086148565589252510, guid: 6e7f2d9eeb597c344a4cf68b36eb9714, type: 3}
       propertyPath: performanceTimeBonusSeconds

@@ -34,6 +34,8 @@ namespace ContextStage
         [Header("표 거리 (GridDistance 모드)")]
         [SerializeField, Tooltip("정답 칸의 몰입도. 정답 열은 카드의 Target Preference. 하=Calm, 상=Excited")]
         private AudienceEngagementStage targetEngagement = AudienceEngagementStage.Excited;
+        [SerializeField, Tooltip("켜면 이 카드의 관객별 음수 반응을 0으로 만든다 (감점·몰입도 하락 없음)")]
+        private bool preventNegativeReaction;
 
         [Header("몰입도 적용")]
         [SerializeField, Min(0f)] private float engagementMultiplier = 1f;
@@ -72,6 +74,7 @@ namespace ContextStage
         public int MiddleScore => middleScore;
         public int ExcitedScore => excitedScore;
         public AudienceEngagementStage TargetEngagement => targetEngagement;
+        public bool PreventNegativeReaction => preventNegativeReaction;
         public float EngagementMultiplier => Mathf.Max(0f, engagementMultiplier);
 
         public int ScoreFor(CrowdPreference preference)
@@ -180,10 +183,13 @@ namespace ContextStage
                 throw new InvalidOperationException(
                     "GridDistance needs the card's target preference and distance multipliers.");
 
-            return new AudienceReactionResult(
+            var result = new AudienceReactionResult(
                 audience.Id,
                 profile.ScoreFor(audience.Preference),
                 profile.ScoreFor(audience.Stage));
+            return profile.PreventNegativeReaction && result.Value < 0
+                ? new AudienceReactionResult(audience.Id, 0)
+                : result;
         }
 
         /// <summary>
@@ -217,9 +223,9 @@ namespace ContextStage
                 distanceMultipliers[Mathf.Min(distance, distanceMultipliers.Count - 1)];
             int magnitude =
                 profile.ScoreFor(audience.Preference) + profile.ScoreFor(audience.Stage);
-            return new AudienceReactionResult(
-                audience.Id,
-                Mathf.RoundToInt(magnitude * multiplier));
+            int value = Mathf.RoundToInt(magnitude * multiplier);
+            if (profile.PreventNegativeReaction && value < 0) value = 0;
+            return new AudienceReactionResult(audience.Id, value);
         }
 
         /// <summary>

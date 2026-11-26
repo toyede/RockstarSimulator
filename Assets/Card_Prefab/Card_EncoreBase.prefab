@@ -115,7 +115,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 290005002162241660, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: utilityEffect
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8602934466595160544, guid: 776d413a9e64c40418be76d9522164c5, type: 3}
       propertyPath: m_Name

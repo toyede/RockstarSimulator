@@ -12,9 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ccc1ad4a286d204dae7314fe30b0057, type: 3}
   m_Name: ComboFeverConfig
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.ComboFeverConfig
+  multiplierSteps:
+  - minCombo: 2
+    multiplier: 1.35
+  - minCombo: 4
+    multiplier: 2
+  - minCombo: 6
+    multiplier: 3
+  - minCombo: 8
+    multiplier: 4
+  - minCombo: 10
+    multiplier: 5
   twoComboMultiplier: 1.35
   fourComboMultiplier: 2
   sixComboMultiplier: 3
   feverComboInterval: 5
   feverDuration: 3
   feverScorePerAudience: 10
+  feverEngagementGainPerAudience: 2

@@ -34,8 +34,15 @@ namespace ContextStage
         Vector3 _baseScale, _startScale;
         float _pulseAge = -1f;
         bool _loss, _initialized;
+        bool _anchorRight;
+
+        public float PeakScale => peakScale;
+        public float LossShakeWidth => lossShakeWidth;
 
         void Awake() => Initialize();
+
+        /// <summary>숫자 반동을 오른쪽 끝 기준으로 바꾼다 (오른쪽 끝을 고정하고 왼쪽 위로 커진다).</summary>
+        public void AnchorPulseToRight() => _anchorRight = true;
 
         void Initialize()
         {
@@ -46,15 +53,20 @@ namespace ContextStage
             _initialized = true;
         }
 
+        public Color GainColor => gainColor;
+
         public void Play(int delta) => Play(delta, gainColor);
 
         /// <summary>증가 표시 색만 바꿔 재생한다. 감소는 항상 lossColor 를 쓴다.</summary>
-        public void Play(int delta, Color positiveColor)
+        public void Play(int delta, Color positiveColor) => Play(delta, positiveColor, 1f);
+
+        /// <summary>증감 표시 글자를 sizeScale 배로 키워 재생한다. 1 미만은 템플릿 크기로 고정한다.</summary>
+        public void Play(int delta, Color positiveColor, float sizeScale)
         {
             if (delta == 0 || !isActiveAndEnabled) return;
             if (!BeginPulse(delta < 0)) return;
             ShowPopup(delta > 0 ? $"+{delta}" : delta.ToString(),
-                delta < 0 ? lossColor : positiveColor, false);
+                delta < 0 ? lossColor : positiveColor, false, sizeScale);
         }
 
         public void PlayMessage(string message, Color color)
@@ -68,35 +80,54 @@ namespace ContextStage
             Initialize();
             if (!_initialized) return false;
             var rect = valueText.rectTransform;
-            _startOffset = rect.anchoredPosition - _basePosition;
+            // 진행 중이던 반동의 오른쪽 기준 보정은 빼고 순수 오프셋만 이어받는다.
+            _startOffset = rect.anchoredPosition - _basePosition - RightAnchorShift(rect.localScale.x);
             _startScale = rect.localScale;
             _pulseAge = 0f;
             _loss = loss;
             return true;
         }
 
-        void ShowPopup(string message, Color color, bool compact)
+        // 오른쪽 끝을 고정하기 위해 배율만큼 왼쪽으로 옮길 거리.
+        Vector2 RightAnchorShift(float scaleX)
+        {
+            if (!_anchorRight) return Vector2.zero;
+            var rect = valueText.rectTransform;
+            return Vector2.left * (rect.rect.width * (1f - rect.pivot.x) * (scaleX - _baseScale.x));
+        }
+
+        void ShowPopup(string message, Color color, bool compact, float sizeScale = 1f)
         {
             if (popupTemplate == null) return;
 
-            // 연속 변화는 이전 표시를 지우지 않고 위로 밀어 구분한다.
+            int baseSize = popupTemplate.fontSize;
+            bool scaled = !compact && sizeScale > 1f;
+            int fontSize = compact ? Mathf.Max(12, Mathf.RoundToInt(baseSize * 0.65f))
+                : scaled ? Mathf.RoundToInt(baseSize * sizeScale)
+                : baseSize;
+
+            // 연속 변화는 이전 표시를 지우지 않고 새 표시 높이만큼 위로 밀어 구분한다.
+            float stackOffset = Mathf.Max(baseSize, fontSize) * 1.1f;
             for (int i = 0; i < _popups.Count; i++)
             {
                 var previous = _popups[i];
-                previous.Origin.y += popupTemplate.fontSize * 1.1f;
+                previous.Origin.y += stackOffset;
                 _popups[i] = previous;
             }
             var popup = PoolManager.Spawn(popupTemplate, Vector3.zero, Quaternion.identity,
                 popupTemplate.transform.parent);
             popup.gameObject.SetActive(true);
-            popup.rectTransform.anchoredPosition = popupTemplate.rectTransform.anchoredPosition;
+            // 커진 글자는 아래쪽 숫자를 가리지 않도록 늘어난 높이의 절반만큼 올린다.
+            float lift = scaled ? (fontSize - baseSize) * 0.5f : 0f;
+            popup.rectTransform.anchoredPosition = popupTemplate.rectTransform.anchoredPosition + Vector2.up * lift;
             popup.rectTransform.localRotation = Quaternion.identity;
             popup.transform.SetAsLastSibling();
             popup.text = message;
             popup.color = color;
-            popup.fontSize = compact ? Mathf.Max(12, Mathf.RoundToInt(popupTemplate.fontSize * 0.65f))
-                : popupTemplate.fontSize;
-            popup.horizontalOverflow = compact ? HorizontalWrapMode.Overflow : popupTemplate.horizontalOverflow;
+            popup.fontSize = fontSize;
+            // 템플릿 칸 폭을 넘는 큰 숫자가 줄바꿈되지 않게 한다.
+            popup.horizontalOverflow = compact || scaled
+                ? HorizontalWrapMode.Overflow : popupTemplate.horizontalOverflow;
             _popups.Add(new Popup { Text = popup, Origin = popup.rectTransform.anchoredPosition,
                 Color = popup.color });
         }
@@ -125,6 +156,7 @@ namespace ContextStage
                     rect.localScale = _baseScale * (1f + (peakScale - 1f) * spring);
                     rect.anchoredPosition = _basePosition + peakOffset * spring;
                 }
+                rect.anchoredPosition += RightAnchorShift(rect.localScale.x);
                 if (_loss)
                     rect.anchoredPosition += Vector2.right *
                         (Mathf.Sin(t * Mathf.PI * 8f) * lossShakeWidth * Mathf.Sin(t * Mathf.PI));

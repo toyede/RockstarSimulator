@@ -36,6 +36,7 @@ namespace ContextStage
         [SerializeField] Image grantedCardIconImage;
         [SerializeField] Image grantedCardArtworkImage;
         CardUpgradeFrame _upgradeFrame;
+        AugmentTierShineVFX _tierShine;
         [SerializeField] Text grantedCardAugmentNameText;
         [SerializeField] Text grantedCardEffectText;
         [SerializeField] CanvasGroup choiceCanvasGroup;
@@ -237,6 +238,7 @@ namespace ContextStage
                     : flipImage.sprite;
                 flipImage.enabled = flipImage.sprite != null;
             }
+            RefreshTierShine();
             SetDetailsVisible(true);
 
             SetText(tierText, string.IsNullOrWhiteSpace(model.tierLabel) ? "AUGMENT" : model.tierLabel.ToUpperInvariant());
@@ -297,7 +299,23 @@ namespace ContextStage
             _modelAllowsSelection = false;
             _rerollsRemaining = 0;
             _isGrantCard = false;
+            if (_tierShine != null) _tierShine.Hide();
             gameObject.SetActive(false);
+        }
+
+        /// <summary>현재 등급 앞면 위에 골드·실버 연출을 맞춘다. 후보가 없으면 끈다.</summary>
+        void RefreshTierShine()
+        {
+            if (flipImage == null) return;
+            if (_slotIndex < 0)
+            {
+                if (_tierShine != null) _tierShine.Hide();
+                return;
+            }
+            // 비활성화 중(OnDisable → ResetPresentation)에는 오브젝트를 새로 만들지 않는다.
+            if (_tierShine == null && isActiveAndEnabled)
+                _tierShine = AugmentTierShineVFX.Ensure(flipImage);
+            if (_tierShine != null) _tierShine.Show(_tier, _slotIndex);
         }
 
         public void ResetPresentation()
@@ -331,6 +349,7 @@ namespace ContextStage
                     : cardBackground == null ? null : cardBackground.sprite;
                 flipImage.enabled = flipImage.sprite != null;
             }
+            RefreshTierShine();
         }
 
         public bool PlayReroll(
@@ -399,6 +418,8 @@ namespace ContextStage
             cardHoverMotion?.ResetState();
             rerollHoverMotion?.ResetState();
             SetDetailsVisible(false);
+            // 뒤집히는 프레임 위에 빛이 남지 않게 끄고, 새 등급 공개 후 Bind에서 다시 켠다.
+            if (_tierShine != null) _tierShine.Hide();
 
             Sprite[] frames =
             {
