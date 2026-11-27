@@ -1382,6 +1382,13 @@ MonoBehaviour:
   perfectClearCountUpDuration: 1
   perfectClearMessageFormat: "\xD7{0}"
   perfectClearMessageColor: {r: 0.9764706, g: 0.7607843, b: 0.16862746, a: 1}
+  scalePopupByAmount: 1
+  baseSizeAmount: 200
+  maxSizeAmount: 2000
+  maxPopupScale: 2
+  fixedPopupAmount: 400
+  pulseFromRightEdge: 1
+  labelPulseGap: 4
   scoreLabel: {fileID: 3233340}
   fixedDigitCount: 4
   labelShiftPerDigit: 26
@@ -2373,8 +2380,8 @@ Transform:
   m_GameObject: {fileID: 266755676}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.07, y: -0.82, z: 0}
-  m_LocalScale: {x: 0.74, y: 0.74, z: 1}
+  m_LocalPosition: {x: 0.07, y: -0.82000005, z: 0}
+  m_LocalScale: {x: 0.38173702, y: 0.38173702, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1714534857}
@@ -2394,6 +2401,7 @@ MonoBehaviour:
   idleClip: Idle
   strokeClip: Stroke
   soloClip: GuitarSolo
+  flusteredClip: Flustered
   normalRoleClip: Stroke
   specialRoleClip: GuitarSolo
   utilityRoleClip: 
@@ -2429,57 +2437,70 @@ MonoBehaviour:
   clips:
   - clipName: Idle
     frames:
-    - {fileID: 21300000, guid: e4c2c44259428ab4da23b19f4eee8a50, type: 3}
-    - {fileID: 21300000, guid: 0f8d816211661d3448905bcefd71dd0e, type: 3}
-    - {fileID: 21300000, guid: e1f46b12bf7890144a57ff43cbc6eaea, type: 3}
+    - {fileID: -2805234604273033201, guid: c71d37aecf4ccaf45b51ce72d8495f93, type: 3}
+    - {fileID: -7529078872717909326, guid: 14436207d28812d42815464a2271bf58, type: 3}
+    - {fileID: 1512781828681276252, guid: b5ef65357544b3b418c514d09c622073, type: 3}
     fps: 12
     loop: 1
     pingPong: 0
   - clipName: Stroke
     frames:
-    - {fileID: 21300000, guid: 12e99184a44c6464a84de40a87445837, type: 3}
-    - {fileID: 21300000, guid: 3e1dad77f09ed4f4d9914652652ba1f3, type: 3}
-    - {fileID: 21300000, guid: 9558a7d421969d949be992c7fc12da75, type: 3}
-    - {fileID: 21300000, guid: f23645e7d1cffeb4a9f02682fa084840, type: 3}
-    - {fileID: 21300000, guid: e97947898782ae9409b37fe7dfbc69d2, type: 3}
-    - {fileID: 21300000, guid: 003977bcdf8173049abc809d21a377c1, type: 3}
-    - {fileID: 21300000, guid: 82a7d5b8945b7fc45b21ae89aec8c3b5, type: 3}
-    - {fileID: 21300000, guid: ca076e34741cde4498625bed585f3d5e, type: 3}
-    - {fileID: 21300000, guid: 21e2c29e213f4c447ba93493cc8e636f, type: 3}
-    - {fileID: 21300000, guid: 281a50d061914d347855d5b6be486c13, type: 3}
-    - {fileID: 21300000, guid: 87e76a6853b5618438e4d11d98e1188f, type: 3}
-    - {fileID: 21300000, guid: 6d149048e2facb1449be75bd131cb067, type: 3}
-    - {fileID: 21300000, guid: 2cab79e0bef3ed944b382a76de303828, type: 3}
-    - {fileID: 21300000, guid: 081163dd7eaebe246bf1e6b850372f75, type: 3}
+    - {fileID: -2805234604273033201, guid: f4ccc15697806b84db00f5f53d6f3abb, type: 3}
+    - {fileID: -7529078872717909326, guid: b086f3b007f5ac749b9b93e1861a85a7, type: 3}
+    - {fileID: 1512781828681276252, guid: c9b5017c6eaabae468f10073ac26e1e5, type: 3}
+    - {fileID: 1059916578584669122, guid: 6b139292ff45e2641bc43f610c428b56, type: 3}
+    - {fileID: 3980907222536924809, guid: 2359f4a73d09fd745bb37f7654bcbaa9, type: 3}
+    - {fileID: 1664739432631170223, guid: 6e0d29438b051ab4db9bcdf12a7a0f17, type: 3}
+    - {fileID: 6067231881100221694, guid: f7be003b463f805459ce1e0f5185301c, type: 3}
+    - {fileID: -512782310966240815, guid: a3f74fa5c9d7a004182a98b23772defc, type: 3}
+    - {fileID: 6557729995197343450, guid: 18c5b564867f97e43b27986f580c26a0, type: 3}
+    - {fileID: 1160318439878456042, guid: 916d876fd63dbe145a79d3b27751bdde, type: 3}
+    - {fileID: 6105082955520011043, guid: 57ca38c4d439bd148b05a566731057c2, type: 3}
+    - {fileID: -9018936992212579852, guid: 33fed669b8cba3d46b9b3ec17743b864, type: 3}
+    - {fileID: -1222007514664007388, guid: acad7668af4ccb2429f1d7516ef813d4, type: 3}
+    - {fileID: 4452314688604805408, guid: 780405d5282dbf54ea417945d74f7aab, type: 3}
     fps: 12
     loop: 0
     pingPong: 0
   - clipName: GuitarSolo
     frames:
-    - {fileID: 21300000, guid: 243d1230fedc2ab469023ebb150345d3, type: 3}
-    - {fileID: 21300000, guid: 994124e56cacfce4ba1913ee5a9d697b, type: 3}
-    - {fileID: 21300000, guid: a256cbe136f06464fa84b5fff92f6a42, type: 3}
-    - {fileID: 21300000, guid: 5602bd2cb38d9184c826839cbfa8f1b6, type: 3}
-    - {fileID: 21300000, guid: 5634e6d925796404d9e5d4a04eb39976, type: 3}
-    - {fileID: 21300000, guid: 2e2a9c12c6fd2d54b92a20014ea757ff, type: 3}
-    - {fileID: 21300000, guid: 29a1e88d6dfc1a14d884961382fb7e6a, type: 3}
-    - {fileID: 21300000, guid: bb0894f9582086f4294dadc303b6db18, type: 3}
-    - {fileID: 21300000, guid: e74f7fcaf044634438b237e0ef8f988c, type: 3}
-    - {fileID: 21300000, guid: d28b17cdd6a26824a9a8318bc61c8a69, type: 3}
-    - {fileID: 21300000, guid: 2ea6f8294de01b14aab0624412ca100b, type: 3}
-    - {fileID: 21300000, guid: 0b136419458be1a429739850e9bed1b8, type: 3}
-    - {fileID: 21300000, guid: 19b72a06ed4c60048aab8cbf1d93887a, type: 3}
-    - {fileID: 21300000, guid: a025ff6c559ad0c47b401a060d03249b, type: 3}
-    - {fileID: 21300000, guid: 9fa1a0056d01db643b0b7b46fad04fbc, type: 3}
-    - {fileID: 21300000, guid: 47d789c9b0247e146a201fad56b77aad, type: 3}
-    - {fileID: 21300000, guid: c0092b3f94691624eb98d0fb0cb7f3ab, type: 3}
-    - {fileID: 21300000, guid: 5841b7383e83bda41a51c6ae9aca7e62, type: 3}
-    - {fileID: 21300000, guid: bdb9f4f0579c9194ca9d903db2cafe3e, type: 3}
-    - {fileID: 21300000, guid: 61afae080b8f0664482ac959183274be, type: 3}
-    - {fileID: 21300000, guid: e8b6c41bbba8e4c4dbae6ac50c707092, type: 3}
-    - {fileID: 21300000, guid: 6ee494715d1153849a530bb2b064c118, type: 3}
-    - {fileID: 21300000, guid: eed0a836622791648a7c313e68a97031, type: 3}
-    - {fileID: 21300000, guid: d03c389a0ca6e8b46950d4203a43078e, type: 3}
+    - {fileID: -2805234604273033201, guid: 34a6b117548923742b9b27984d725052, type: 3}
+    - {fileID: -7529078872717909326, guid: a8cb1b4fdb58e1947ade35eb2e0686a8, type: 3}
+    - {fileID: 1512781828681276252, guid: e24b7436488ef16438651e60da2dc816, type: 3}
+    - {fileID: 1059916578584669122, guid: 3a8a22758eb824348af074a5612dfbba, type: 3}
+    - {fileID: 3980907222536924809, guid: e1bd49114d3a56f44bfacf77a1d5a718, type: 3}
+    - {fileID: 1664739432631170223, guid: f5f2fc035cf5f1d42a04f2057031cfe3, type: 3}
+    - {fileID: 6067231881100221694, guid: d4dd6420593f1fd43a6cdd0ae441cb2b, type: 3}
+    - {fileID: -512782310966240815, guid: d6080d39a6fb15440a5fe7ffbf5b98cd, type: 3}
+    - {fileID: 6557729995197343450, guid: 684bbb29a40dbcb44942b28da0e17b22, type: 3}
+    - {fileID: 1160318439878456042, guid: e610485fb348a34499f4626cff2765fb, type: 3}
+    - {fileID: 6105082955520011043, guid: ebabd37390a4fda4cb09c88da0bc01d0, type: 3}
+    - {fileID: -9018936992212579852, guid: 4b5526d65b8437a4484181da9e670f76, type: 3}
+    - {fileID: -7012533903475061194, guid: 059f30a9e79ec1d45af4f175be728663, type: 3}
+    - {fileID: 4452314688604805408, guid: 13b2822714dd9c74a8bce8f2b08f2bd9, type: 3}
+    - {fileID: 7873252557418311525, guid: a2252986bba80d445a1841d229a9e9b3, type: 3}
+    - {fileID: -3352622278729077328, guid: 975c657f881f6fc48bfe1e635531f71c, type: 3}
+    - {fileID: -3696350049333727936, guid: 0532f1cc1006e5548986bbbb0af41bfd, type: 3}
+    - {fileID: -7527280295842552943, guid: 89e9af30a97f4ec48af1101d43e9325c, type: 3}
+    - {fileID: -6279734978732484736, guid: 6b31be25984e2834c8598c767a8e9916, type: 3}
+    - {fileID: -4301644716133464234, guid: 0a99a22d5a519054f867a69284ab21f7, type: 3}
+    - {fileID: 4050026034075784226, guid: 816eb2894a30f0844a231084e26e21f7, type: 3}
+    - {fileID: 4362432727035762258, guid: cbadb85fd7050844cbb00622613954b1, type: 3}
+    - {fileID: -4772288055272755237, guid: 0c566babd7a2c214fb30c0ca296687e9, type: 3}
+    - {fileID: -4181032203297508792, guid: b61463ae4a1819444926a3e83609994c, type: 3}
+    fps: 12
+    loop: 0
+    pingPong: 0
+  - clipName: Flustered
+    frames:
+    - {fileID: -6792624457168322850, guid: df665969f47eea64c953f70159c7be22, type: 3}
+    - {fileID: -6685905069567839169, guid: 9e8734f7abe547345886e189fbbb3a20, type: 3}
+    - {fileID: 7283804912305104686, guid: 37e02ec110d0827428e4e946b2653265, type: 3}
+    - {fileID: 2735967560468900252, guid: 011ef697a67acf048a10ccc1d3fb6876, type: 3}
+    - {fileID: -8627065551796778646, guid: 2eae29ee1abd89b4fbacb2c5e32b81e6, type: 3}
+    - {fileID: -7341787371385534252, guid: 6aa77d1ea9d575c499d0a75e2afa7646, type: 3}
+    - {fileID: 4403049513381861678, guid: 3fcde67099b2fb445b96947137179516, type: 3}
+    - {fileID: 3274606713540054689, guid: 9c1f083d39c193049bd97e63bc0f9cfe, type: 3}
     fps: 12
     loop: 0
     pingPong: 0
@@ -2538,7 +2559,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 50
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: e4c2c44259428ab4da23b19f4eee8a50, type: 3}
+  m_Sprite: {fileID: -2805234604273033201, guid: c71d37aecf4ccaf45b51ce72d8495f93, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -27630,6 +27651,7 @@ MonoBehaviour:
   peekButtonPosition: {x: 12, y: 158}
   peekWithTabKey: 1
   dropImpactAtHoldFraction: 0.55
+  dropKickBpm: 128
 --- !u!114 &1242502042
 MonoBehaviour:
   m_ObjectHideFlags: 0

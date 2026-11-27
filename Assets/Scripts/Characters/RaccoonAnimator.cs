@@ -11,7 +11,7 @@ namespace ContextStage
     /// 재생 자체는 공용 SpriteSheetAnimator 가 담당하고(프레임·fps·loop 는 그쪽 인스펙터),
     /// 이 컴포넌트는 "어떤 카드에 어떤 클립을 틀지"만 결정한다.
     ///
-    /// 카드 시스템을 전혀 건드리지 않는다 — CardResolved 이벤트만 구독한다.
+    /// 카드 시스템을 전혀 건드리지 않는다 — 카드 판정·콤보 이벤트를 읽어 연출만 담당한다.
     /// (CardSelected 가 아니라 CardResolved 를 쓰는 이유: Role 과 CardId 를 둘 다 갖고 있다.
     ///  두 이벤트는 같은 프레임에 발행되므로 타이밍 차이는 없다)
     ///
@@ -57,6 +57,9 @@ namespace ContextStage
         [SerializeField, Tooltip("기타 솔로·스페셜 카드. loop = false 로 둘 것")]
         string soloClip = "GuitarSolo";
 
+        [SerializeField, Tooltip("음수 판정 또는 콤보가 끊겼을 때. loop = false 로 둘 것")]
+        string flusteredClip = "Flustered";
+
         [Header("Role 별 기본 클립 (비우면 Idle 유지)")]
         [SerializeField, Tooltip("Normal 역할 카드")] string normalRoleClip = "Stroke";
         [SerializeField, Tooltip("Special 역할 카드")] string specialRoleClip = "GuitarSolo";
@@ -82,6 +85,7 @@ namespace ContextStage
         string _pendingClip;      // 지연 재생 대기 중인 클립
         float _pendingAt;         // 재생할 시각 (unscaled)
         string _performingClip;   // 지금 재생 중인 연주 클립 (없으면 null)
+        int _flusterFrame = -1;
 
         public string PerformingClip => _performingClip;
 
@@ -90,12 +94,14 @@ namespace ContextStage
         void OnEnable()
         {
             EventBus.Subscribe<CardResolved>(OnCardResolved);
+            EventBus.Subscribe<ComboChanged>(OnComboChanged);
             EventBus.Subscribe<GameStateChanged>(OnGameStateChanged);
         }
 
         void OnDisable()
         {
             EventBus.Unsubscribe<CardResolved>(OnCardResolved);
+            EventBus.Unsubscribe<ComboChanged>(OnComboChanged);
             EventBus.Unsubscribe<GameStateChanged>(OnGameStateChanged);
             _pendingClip = null;
             _performingClip = null;
@@ -114,6 +120,9 @@ namespace ContextStage
 
         void OnCardResolved(CardResolved e)
         {
+            if (e.Role != CardRole.Utility && e.GainedScore < 0 && TryPlayFluster()) return;
+            if (_flusterFrame == Time.frameCount) return;
+
             string clip = ResolveClip(e);
             if (string.IsNullOrEmpty(clip)) return;   // Utility 등 — Idle 유지
 
@@ -128,6 +137,24 @@ namespace ContextStage
                 _pendingClip = clip;
                 _pendingAt = Time.unscaledTime + startDelay;
             }
+        }
+
+        void OnComboChanged(ComboChanged e)
+        {
+            if (e.WasLost && e.PreviousCombo > 0) TryPlayFluster();
+        }
+
+        bool TryPlayFluster()
+        {
+            if (!GameManager.HasInstance || !GameManager.Instance.IsPlaying ||
+                (FeverSystem.HasInstance && FeverSystem.Instance.IsActive) ||
+                _animator.GetClip(flusteredClip) == null)
+                return false;
+
+            _pendingClip = null;
+            _flusterFrame = Time.frameCount;
+            if (_performingClip != flusteredClip) Perform(flusteredClip);
+            return true;
         }
 
         void OnGameStateChanged(GameStateChanged e)
@@ -223,6 +250,7 @@ namespace ContextStage
 
             WarnIfLooping(animator, strokeClip);
             WarnIfLooping(animator, soloClip);
+            WarnIfLooping(animator, flusteredClip);
         }
 
         void WarnIfLooping(SpriteSheetAnimator animator, string clipName)
