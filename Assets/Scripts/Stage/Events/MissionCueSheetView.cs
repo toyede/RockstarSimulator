@@ -11,6 +11,9 @@ namespace ContextStage
     public sealed class MissionCueSheetView : MonoBehaviour
     {
         internal const string StageMissionIntroSoundId = "mic_feedback";
+        const float EntranceHoldSeconds = .38f;
+        const float EntranceMoveSeconds = .32f;
+        const float EntranceMaxScale = 2f;
 
         public static readonly Color Ink = new Color32(0xF1, 0xF3, 0xEF, 0xFF);
         public TMP_Text Title { get; private set; }
@@ -25,6 +28,7 @@ namespace ContextStage
         readonly Image[] _bits = new Image[12];
         Coroutine _entrance;
         Vector2 _home;
+        Vector3 _homeScale;
         bool _presenting;
         CanvasGroup _group;
 
@@ -64,17 +68,56 @@ namespace ContextStage
             if (!isActiveAndEnabled) return;
             if (_entrance != null) StopCoroutine(_entrance);
             var root = (RectTransform)transform;
-            if (!_presenting) _home = root.anchoredPosition;
+            if (!_presenting)
+            {
+                _home = root.anchoredPosition;
+                _homeScale = root.localScale;
+            }
+            // A result can arrive before the intro docks. Always animate from the authored pose.
+            root.anchoredPosition = _home;
+            root.localScale = _homeScale;
             _presenting = true;
             if (_group == null) _group = gameObject.GetComponent<CanvasGroup>();
             if (_group == null) _group = gameObject.AddComponent<CanvasGroup>();
-            _entrance = StartCoroutine(Present(result, success));
+            _entrance = StartCoroutine(result ? PresentResult(success) : PresentEntrance());
         }
 
-        IEnumerator Present(bool result, bool success)
+        IEnumerator PresentEntrance()
         {
             var root = (RectTransform)transform;
-            Color accent = result ? success ? new Color32(80,225,185,255) : new Color32(255,135,78,255) : new Color32(255,215,125,255);
+            var parent = (RectTransform)root.parent;
+            foreach (var bit in _bits) if (bit != null) bit.gameObject.SetActive(false);
+            _group.alpha = 1f;
+            Canvas.ForceUpdateCanvases();
+
+            // Fit the large cue on narrow screens as well. Layout uses a left-edge pivot,
+            // so center the visible rect, not the pivot.
+            float width = Mathf.Max(1f, root.rect.width * Mathf.Abs(_homeScale.x));
+            float height = Mathf.Max(1f, root.rect.height * Mathf.Abs(_homeScale.y));
+            float fitScale = Mathf.Min(.86f * parent.rect.width / width, .86f * parent.rect.height / height);
+            Vector3 startScale = _homeScale * Mathf.Clamp(fitScale, 1f, EntranceMaxScale);
+            Vector2 centerFromPivot = Vector2.Scale(root.rect.center, new Vector2(startScale.x, startScale.y));
+            Vector2 start = _home + parent.rect.center - (Vector2)root.localPosition - centerFromPivot;
+            root.anchoredPosition = start;
+            root.localScale = startScale;
+
+            float elapsed = 0f;
+            while (elapsed < EntranceHoldSeconds + EntranceMoveSeconds)
+            {
+                yield return null;
+                if (PresentationPaused()) continue;
+                elapsed += Time.deltaTime;
+                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((elapsed - EntranceHoldSeconds) / EntranceMoveSeconds));
+                root.anchoredPosition = Vector2.Lerp(start, _home, t);
+                root.localScale = Vector3.Lerp(startScale, _homeScale, t);
+            }
+            ResetPresentation();
+        }
+
+        IEnumerator PresentResult(bool success)
+        {
+            var root = (RectTransform)transform;
+            Color accent = success ? new Color32(80,225,185,255) : new Color32(255,135,78,255);
             for (int i = 0; i < _bits.Length; i++)
             {
                 if (_bits[i] == null)
@@ -89,7 +132,7 @@ namespace ContextStage
             float age = 0f;
             while (age < .48f)
             {
-                if (GameJamKit.GameManager.HasInstance && GameJamKit.GameManager.Instance.State == GameJamKit.GameState.Paused) { yield return null; continue; }
+                if (PresentationPaused()) { yield return null; continue; }
                 age += Time.deltaTime;
                 float entry = Mathf.Clamp01(age / .2f);
                 root.anchoredPosition = _home + Vector2.left * (18f * (1f-entry) * (1f-entry));
@@ -100,7 +143,7 @@ namespace ContextStage
                     var rect = _bits[i].rectTransform;
                     rect.anchorMin = rect.anchorMax = new Vector2(left ? 0f : 1f, .66f);
                     rect.anchoredPosition = new Vector2((left ? -1 : 1) * (12f + age*(80f+i*7)),
-                        (i%3)*12f + age*(result && !success ? -100f : 90f) - 80f*age*age);
+                        (i%3)*12f + age*(!success ? -100f : 90f) - 80f*age*age);
                     rect.localRotation = Quaternion.Euler(0,0,i*25+age*160);
                     _bits[i].color = new Color(accent.r,accent.g,accent.b,1f-age/.48f);
                 }
@@ -108,6 +151,8 @@ namespace ContextStage
             }
             ResetPresentation();
         }
+
+        static bool PresentationPaused() => GameManager.HasInstance && GameManager.Instance.State == GameState.Paused;
 
         void OnDisable()
         {
@@ -117,7 +162,12 @@ namespace ContextStage
 
         void ResetPresentation()
         {
-            if (_presenting) ((RectTransform)transform).anchoredPosition = _home;
+            if (_presenting)
+            {
+                var root = (RectTransform)transform;
+                root.anchoredPosition = _home;
+                root.localScale = _homeScale;
+            }
             _presenting = false; _entrance = null;
             if (_group != null) _group.alpha = 1f;
             foreach (var bit in _bits) if (bit != null) bit.gameObject.SetActive(false);

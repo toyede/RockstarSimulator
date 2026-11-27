@@ -90,7 +90,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 50
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -116,7 +116,7 @@ TextureImporter:
     textureFormat: -1
     textureCompression: 1
     compressionQuality: 50
-    crunchedCompression: 1
+    crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
     ignorePlatformSupport: 0
@@ -140,7 +140,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -155,12 +155,12 @@ TextureImporter:
       name: Chill_high_0008_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 360
-        width: 213
-        height: 360
+        x: 19
+        y: 677
+        width: 18
+        height: 20
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -177,12 +177,12 @@ TextureImporter:
       name: Chill_high_0008_1
       rect:
         serializedVersion: 2
-        x: 213
-        y: 360
-        width: 213
-        height: 360
+        x: 35
+        y: 676
+        width: 10
+        height: 28
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -199,12 +199,12 @@ TextureImporter:
       name: Chill_high_0008_2
       rect:
         serializedVersion: 2
-        x: 426
-        y: 360
-        width: 213
-        height: 360
+        x: 53
+        y: 370
+        width: 135
+        height: 144
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -221,12 +221,12 @@ TextureImporter:
       name: Chill_high_0008_3
       rect:
         serializedVersion: 2
-        x: 639
-        y: 360
-        width: 213
-        height: 360
+        x: 266
+        y: 370
+        width: 124
+        height: 117
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -243,12 +243,12 @@ TextureImporter:
       name: Chill_high_0008_4
       rect:
         serializedVersion: 2
-        x: 852
-        y: 360
-        width: 213
-        height: 360
+        x: 477
+        y: 371
+        width: 127
+        height: 142
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -265,12 +265,12 @@ TextureImporter:
       name: Chill_high_0008_5
       rect:
         serializedVersion: 2
-        x: 1065
-        y: 360
-        width: 213
-        height: 360
+        x: 674
+        y: 370
+        width: 131
+        height: 141
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -287,12 +287,12 @@ TextureImporter:
       name: Chill_high_0008_6
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 213
-        height: 360
+        x: 886
+        y: 371
+        width: 108
+        height: 140
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -309,12 +309,12 @@ TextureImporter:
       name: Chill_high_0008_7
       rect:
         serializedVersion: 2
-        x: 213
-        y: 0
-        width: 213
-        height: 360
+        x: 1071
+        y: 371
+        width: 145
+        height: 124
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -331,12 +331,12 @@ TextureImporter:
       name: Chill_high_0008_8
       rect:
         serializedVersion: 2
-        x: 426
-        y: 0
-        width: 213
-        height: 360
+        x: 61
+        y: 116
+        width: 126
+        height: 143
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -353,12 +353,12 @@ TextureImporter:
       name: Chill_high_0008_9
       rect:
         serializedVersion: 2
-        x: 639
-        y: 0
-        width: 213
-        height: 360
+        x: 257
+        y: 117
+        width: 134
+        height: 141
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -375,12 +375,12 @@ TextureImporter:
       name: Chill_high_0008_10
       rect:
         serializedVersion: 2
-        x: 852
-        y: 0
-        width: 213
-        height: 360
+        x: 491
+        y: 116
+        width: 103
+        height: 145
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -397,12 +397,12 @@ TextureImporter:
       name: Chill_high_0008_11
       rect:
         serializedVersion: 2
-        x: 1065
-        y: 0
-        width: 213
-        height: 360
+        x: 666
+        y: 114
+        width: 155
+        height: 141
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -415,11 +415,55 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Chill_high_0008_12
+      rect:
+        serializedVersion: 2
+        x: 882
+        y: 116
+        width: 128
+        height: 144
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f2b09a633243be90800000000000000
+      internalID: -7011187406287097104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chill_high_0008_13
+      rect:
+        serializedVersion: 2
+        x: 1100
+        y: 115
+        width: 90
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad75d85edd10b29d0800000000000000
+      internalID: -2798140690929985574
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 55b781c83175c0c45930e424f17a96ba
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -427,14 +471,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries:
-      - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":6.0,"y":2.0},"gridSpriteSize":{"x":213.0,"y":360.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+      entries: []
     nameFileIdTable:
       Chill_high_0008_0: 2585241307572618425
       Chill_high_0008_1: -1544953762621544245
       Chill_high_0008_10: -6168182369971330921
       Chill_high_0008_11: -220279770363800437
+      Chill_high_0008_12: -7011187406287097104
+      Chill_high_0008_13: -2798140690929985574
       Chill_high_0008_2: -4051160187569291523
       Chill_high_0008_3: 1321539906634702560
       Chill_high_0008_4: -3320443697749988365

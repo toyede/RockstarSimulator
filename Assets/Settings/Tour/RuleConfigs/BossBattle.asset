@@ -13,15 +13,26 @@ MonoBehaviour:
   m_Name: BossBattle
   m_EditorClassIdentifier: Assembly-CSharp::ContextStage.BossBattleConfig
   rivalName: LUX//FAUNA
+  rivalFanPool: 14
+  drainStartDelay: 8
+  drainInterval: 4
+  drainPerFan: 12
   firstPatternDelay: 10
-  patternInterval: 10
+  patternInterval: 15
+  revengePatternInterval: 11
   patternWindow: 8
   guestListEnhancedWindow: 6
   retryDelay: 2
-  rivalFanPool: 14
+  stealOnSuccess: 2
+  stealOnSuccessEnhanced: 3
+  stealOnDrop: 3
   recruitEngagement: 55
+  patternBonusRatio: 0.06
+  dropBonusRatio: 0.1
   loseFanOnFail: 1
   minimumSurvivors: 3
+  revengeThreshold: 6
+  revengeReleaseThreshold: 9
   b2bCards: 1
   b2bCardsEnhanced: 2
   beatmatchCards: 2
@@ -30,3 +41,11 @@ MonoBehaviour:
   killSwitchBannedPreferencesEnhanced: 2
   killSwitchPositives: 2
   killSwitchPositivesEnhanced: 3
+  pauseTimerDuringCinematic: 1
+  cinematicTintAlpha: 0.35
+  cinematicFadeDuration: 0.3
+  cinematicPanOutDuration: 1.65
+  cinematicHoldDuration: 1
+  cinematicPanBackDuration: 1.4
+  peekPanDuration: 1.4
+  handStowDistance: 420

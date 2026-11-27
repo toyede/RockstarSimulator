@@ -11,6 +11,7 @@ namespace ContextStage
         bool _isActive;
         bool _startAfterCurrentCard;
         bool _automaticTriggerEnabled = true;
+        bool _bossPresentationPaused;
         float _remaining;
         float _activeDuration;
         int _triggerCombo;
@@ -49,7 +50,7 @@ namespace ContextStage
 
         void Update()
         {
-            if (!_isActive ||
+            if (!_isActive || _bossPresentationPaused ||
                 !GameManager.HasInstance ||
                 !GameManager.Instance.IsPlaying)
                 return;
@@ -58,6 +59,9 @@ namespace ContextStage
             if (_remaining <= 0f)
                 EndFever();
         }
+
+        // 보스 카메라 연출로 카드 입력이 잠긴 동안에는 피버 잔여 시간을 보존한다.
+        public void SetBossPresentationPaused(bool paused) => _bossPresentationPaused = paused;
 
         public int CalculateCardBonus(int audienceCount)
         {

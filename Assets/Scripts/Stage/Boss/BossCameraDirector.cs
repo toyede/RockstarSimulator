@@ -4,7 +4,7 @@ using UnityEngine;
 namespace ContextStage
 {
     /// <summary>
-    /// 보스전 카메라. Main Camera 를 구역 중심(라이벌 무대는 위쪽) 사이로 옮긴다 (z·크기 고정, SmoothStep).
+    /// 보스전 카메라. 구역 사이를 이동하고 라이벌 드랍에만 짧게 줌을 준다.
     /// 자유 스크롤은 없다. 연출 담당(BossStagePresentation)만 호출하고, 해제·게임 종료 때는 즉시 제자리로 돌아온다.
     /// </summary>
     [DisallowMultipleComponent]
@@ -14,6 +14,8 @@ namespace ContextStage
 
         BossArenaLayout _arena;
         Coroutine _routine;
+        Camera _dropZoomCamera;
+        float _sizeBeforeDrop;
 
         public BossZone CurrentZone { get; private set; } = BossZone.OurStage;
         public bool IsMoving => _routine != null;
@@ -27,12 +29,32 @@ namespace ContextStage
         /// <summary>즉시 우리 무대로. 룰 해제·공연 종료 때 호출된다.</summary>
         public void SnapHome()
         {
+            ResetDropZoom();
             if (_routine != null)
             {
                 StopCoroutine(_routine);
                 _routine = null;
             }
             MoveTo(BossZone.OurStage);
+        }
+
+        public void SetDropZoom(float amount)
+        {
+            Camera cam = Cam;
+            if (cam == null || !cam.orthographic) return;
+            if (_dropZoomCamera != cam)
+            {
+                ResetDropZoom();
+                _dropZoomCamera = cam;
+                _sizeBeforeDrop = cam.orthographicSize;
+            }
+            cam.orthographicSize = _sizeBeforeDrop * (1f - Mathf.Clamp01(amount));
+        }
+
+        public void ResetDropZoom()
+        {
+            if (_dropZoomCamera != null) _dropZoomCamera.orthographicSize = _sizeBeforeDrop;
+            _dropZoomCamera = null;
         }
 
         /// <summary>구역으로 팬. 이미 이동 중이면 그 이동을 끊고 현재 위치에서 이어간다.</summary>

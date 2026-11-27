@@ -24,6 +24,11 @@ namespace ContextStage
     [RequireComponent(typeof(BossCameraDirector))]
     public sealed class BossStagePresentation : MonoBehaviour
     {
+        const int DropZoomPulses = 3;
+        const float DropZoomAmount = 0.085f;
+        const float DropZoomAttackFraction = 0.2f;
+        const float PeekArmOverhang = 28f;
+
         [SerializeField, Tooltip("비우면 룰이 Begin 에서 넘겨준다")] BossBattleConfig config;
         [SerializeField, Tooltip("보스전 동안 랭크·점수·시간 HUD 를 숨긴다 (관객 쟁탈전에서는 보여준다)")] bool hideScoreHud = false;
         [SerializeField, Tooltip("보스전 동안 공연 시계를 숨긴다. 기본은 표시") ] bool hideTimerHud = false;
@@ -62,6 +67,9 @@ namespace ContextStage
         bool _timerPausedByUs;
         bool _decaySuppressedByUs;
         bool _peeking;
+        FeverSystem _pausedFever;
+
+        double DropBeatSeconds => 60d / Mathf.Max(1f, dropKickBpm);
 
         public bool IsPlaying => _sequence != null;
         public bool IsReady => _began && config != null;
@@ -167,24 +175,29 @@ namespace ContextStage
             yield return Wait(fade);
 
             yield return _camera.PanRoutine(BossZone.RivalStage, config.CinematicPanOutDuration);
-            float holdElapsed=0;
-            bool dropEmitted = false;
-            EventBus.Raise(new BossLightingHoldProgress(0,true));
-            while(holdElapsed<hold)
+            float holdElapsed = 0f;
+            bool hasDrop = kind == BossCinematicKind.PatternAnnounce;
+            double dropStartedAt = -1d;
+            double beatSeconds = DropBeatSeconds;
+            double zoomDuration = DropZoomPulses * beatSeconds;
+            EventBus.Raise(new BossLightingHoldProgress(0f, true));
+            // 마지막 줌이 원래 배율로 돌아와야 복귀 이동을 시작한다.
+            while (holdElapsed < hold || (hasDrop &&
+                (dropStartedAt < 0d || Time.timeAsDouble - dropStartedAt < zoomDuration)))
             {
-                holdElapsed+=Time.deltaTime;
-                EventBus.Raise(new BossLightingHoldProgress(hold<=0?1:Mathf.Clamp01(holdElapsed/hold),true));
-                if (kind == BossCinematicKind.PatternAnnounce && !dropEmitted &&
-                    holdElapsed >= hold * dropImpactAtHoldFraction)
+                holdElapsed += Time.deltaTime;
+                EventBus.Raise(new BossLightingHoldProgress(hold <= 0f ? 1f : Mathf.Clamp01(holdElapsed / hold), true));
+                if (hasDrop && dropStartedAt < 0d && holdElapsed >= hold * dropImpactAtHoldFraction)
                 {
-                    dropEmitted = true;
-                    PlayDropImpact();
+                    dropStartedAt = Time.timeAsDouble;
+                    PlayDropImpact(dropStartedAt, beatSeconds);
                 }
+                if (dropStartedAt >= 0d)
+                    UpdateDropZoom(Time.timeAsDouble - dropStartedAt, beatSeconds);
                 yield return null;
             }
-            if (kind == BossCinematicKind.PatternAnnounce && !dropEmitted)
-                PlayDropImpact();
-            EventBus.Raise(new BossLightingHoldProgress(1,false));
+            _camera.ResetDropZoom();
+            EventBus.Raise(new BossLightingHoldProgress(1f, false));
             yield return _camera.PanRoutine(BossZone.OurStage, config.CinematicPanBackDuration);
 
             StartCoroutine(FadeTint(0f, fade));
@@ -197,19 +210,33 @@ namespace ContextStage
             onComplete?.Invoke();
         }
 
-        void PlayDropImpact()
+        void UpdateDropZoom(double elapsed, double beatSeconds)
+        {
+            double beat = elapsed / beatSeconds;
+            if (beat >= DropZoomPulses)
+            {
+                _camera.ResetDropZoom();
+                return;
+            }
+
+            float phase = (float)(beat - Math.Floor(beat));
+            float pulse = phase < DropZoomAttackFraction
+                ? Mathf.SmoothStep(0f, 1f, phase / DropZoomAttackFraction)
+                : Mathf.SmoothStep(1f, 0f, (phase - DropZoomAttackFraction) / (1f - DropZoomAttackFraction));
+            _camera.SetDropZoom(DropZoomAmount * pulse);
+        }
+
+        void PlayDropImpact(double startedAt, double beatSeconds)
         {
             EventBus.Raise(new BossDropImpact());
             if (!_began || !isActiveAndEnabled) return;
             StopDropAudio();
-            _dropAudioRoutine = StartCoroutine(PlayDropAudio());
+            _dropAudioRoutine = StartCoroutine(PlayDropAudio(startedAt, beatSeconds));
         }
 
-        IEnumerator PlayDropAudio()
+        IEnumerator PlayDropAudio(double startedAt, double beatSeconds)
         {
             // scaled clock: Pause에서는 남은 박자도 멈춘다. 매 박은 드랍 시점 기준으로 계산한다.
-            double startedAt = Time.timeAsDouble;
-            double beatSeconds = 60d / Mathf.Max(1f, dropKickBpm);
             Sound.Play("boss_specialdrop", 0.5f);
             for (int beat = 0; beat < 4; beat++)
             {
@@ -286,7 +313,7 @@ namespace ContextStage
             {
                 _peekRect.anchorMin = _peekRect.anchorMax = new Vector2(1f, 0f);
                 _peekRect.pivot = new Vector2(1f, 0f);
-                _peekRect.anchoredPosition = peekButtonPosition;
+                _peekRect.anchoredPosition = peekButtonPosition + Vector2.right * PeekArmOverhang;
             }
         }
 
@@ -321,9 +348,16 @@ namespace ContextStage
 
         void Lock(bool pauseTimer)
         {
-            if (_locked) return;
-            _locked = true;
-            CardInput.Locked = true;
+            if (!_locked)
+            {
+                _locked = true;
+                CardInput.Locked = true;
+                if (FeverSystem.HasInstance)
+                {
+                    _pausedFever = FeverSystem.Instance;
+                    _pausedFever.SetBossPresentationPaused(true);
+                }
+            }
             if (pauseTimer && !PerformanceTimer.IsPaused)
             {
                 PerformanceTimer.SetPaused(true);
@@ -345,6 +379,8 @@ namespace ContextStage
             if (!_locked) return;
             _locked = false;
             CardInput.Locked = false;
+            if (_pausedFever != null) _pausedFever.SetBossPresentationPaused(false);
+            _pausedFever = null;
             if (_timerPausedByUs)
             {
                 PerformanceTimer.SetPaused(false);
@@ -361,6 +397,7 @@ namespace ContextStage
         void StopSequence()
         {
             StopDropAudio();
+            _camera.ResetDropZoom();
             if (_sequence == null) return;
             StopCoroutine(_sequence);
             _sequence = null;
