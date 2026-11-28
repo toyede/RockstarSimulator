@@ -12,6 +12,7 @@ namespace ContextStage
     public sealed class CardSystem : MonoSingleton<CardSystem>
     {
         const int MaximumBaseHandSize = 4;
+        const int MaxDrawAttempts = 32; // 중복 앙코르를 버리며 다시 뽑을 때의 안전 상한
 
         [SerializeField] CardDeckConfig config;
         [SerializeField] AudienceRosterSystem audienceRoster;
@@ -540,6 +541,13 @@ namespace ContextStage
             return drawn;
         }
 
+        bool HandHasEncore()
+        {
+            for (int i = 0; i < _hand.Count; i++)
+                if (_hand[i] != null && _hand[i].IsEncoreFever) return true;
+            return false;
+        }
+
         int CountHandSlotCards()
         {
             int count = 0;
@@ -573,7 +581,16 @@ namespace ContextStage
                 return false;
             }
 
-            var card = _deck.Draw();
+            CardDefinition card = null;
+            bool holdsEncore = HandHasEncore();
+            // 손패에 앙코르가 있으면 덱에서 나온 앙코르는 손에 넣지 않고 버린다 (손패의 앙코르는 최대 1장).
+            // 묶음마다 앙코르가 섞여 있으므로 무한 반복을 막는 상한을 둔다.
+            for (int attempt = 0; attempt < MaxDrawAttempts; attempt++)
+            {
+                card = _deck.Draw();
+                if (card == null || !holdsEncore || !card.IsEncoreFever) break;
+                card = null;
+            }
             if (card == null)
             {
                 if (!_warnedInvalidPool)
