@@ -6,7 +6,8 @@ namespace ContextStage
     /// <summary>
     /// 증강 선택창 후보 카드의 등급 연출. 골드는 대각선 빛줄기 + 금색 별 반짝임,
     /// 실버는 가장자리 픽셀 별 반짝임, 브론즈는 아무것도 그리지 않는다.
-    /// 카드 앞면 스프라이트 모양의 마스크 안에서만 그려 찢어진 카드 외곽을 따른다.
+    /// 빛줄기·안쪽 별은 카드 앞면 스프라이트 모양의 마스크 안에서 그려 찢어진 카드 외곽을 따르고,
+    /// 바깥 별은 마스크 밖의 짝 레이어(TierShineOuter)가 카드 둘레 바깥에 그린다.
     /// 그림 1픽셀 단위 사각형만 쓰고, 매 프레임 메시만 다시 채운다(할당 없음).
     /// </summary>
     [DisallowMultipleComponent]
@@ -30,8 +31,15 @@ namespace ContextStage
         [SerializeField, Min(0.2f)] float silverSparklePeriod = 1.6f;
         [SerializeField, Range(2, 20), Tooltip("가장자리에서 별이 나타나는 깊이(그림 픽셀)")] int silverEdgeInset = 7;
 
+        [Header("카드 바깥 반짝임 (실버·골드 공통)")]
+        [SerializeField, Range(0, 8), Tooltip("카드 바깥 둘레에 띄우는 별 개수")] int outsideSparkleCount = 3;
+        [SerializeField, Range(1, 20), Tooltip("카드 외곽에서 바깥으로 최소 거리(그림 픽셀)")] int outsideMinDistance = 2;
+        [SerializeField, Range(1, 20), Tooltip("카드 외곽에서 바깥으로 최대 거리(그림 픽셀). 리롤 버튼·옆 카드에 닿지 않게 둔다")] int outsideMaxDistance = 8;
+
         Image _frame;
         Image _mask;
+        AugmentTierShineVFX _outer; // 마스크 밖에서 카드 바깥 별만 그리는 짝
+        AugmentTierShineVFX _owner; // 바깥 레이어가 설정값을 읽어 오는 본체
         AugmentTier _tier;
         bool _visible;
         float _startTime;
@@ -55,6 +63,14 @@ namespace ContextStage
             mask.raycastTarget = false;
             maskGo.GetComponent<Mask>().showMaskGraphic = false;
 
+            // 바깥 별은 마스크에 잘리지 않도록 카드 앞면의 직접 자식으로 둔다.
+            var outerGo = new GameObject("TierShineOuter", typeof(RectTransform), typeof(CanvasRenderer));
+            outerGo.transform.SetParent(frame.transform, false);
+            Stretch((RectTransform)outerGo.transform);
+            var outer = outerGo.AddComponent<AugmentTierShineVFX>();
+            outer.raycastTarget = false;
+            outer._frame = frame;
+
             var go = new GameObject("TierShine", typeof(RectTransform), typeof(CanvasRenderer));
             go.transform.SetParent(maskGo.transform, false);
             Stretch((RectTransform)go.transform);
@@ -62,7 +78,10 @@ namespace ContextStage
             effect.raycastTarget = false;
             effect._frame = frame;
             effect._mask = mask;
+            effect._outer = outer;
+            outer._owner = effect;
             effect.SetVisibleInternal(false);
+            outer.SetVisibleInternal(false);
             return effect;
         }
 
@@ -80,14 +99,26 @@ namespace ContextStage
                 _mask.preserveAspect = _frame.preserveAspect;
             }
             SetVisibleInternal(hasArt && tier != AugmentTier.Bronze);
+            if (_outer != null)
+            {
+                _outer._tier = tier;
+                _outer._seed = seed;
+                _outer._startTime = _startTime;
+                _outer.SetVisibleInternal(hasArt && tier != AugmentTier.Bronze && outsideSparkleCount > 0);
+            }
         }
 
-        public void Hide() => SetVisibleInternal(false);
+        public void Hide()
+        {
+            SetVisibleInternal(false);
+            if (_outer != null) _outer.SetVisibleInternal(false);
+        }
 
         void SetVisibleInternal(bool visible)
         {
             _visible = visible;
             if (_mask != null) _mask.gameObject.SetActive(visible);
+            if (_owner != null) gameObject.SetActive(visible);
             color = Color.white;
             SetVerticesDirty();
         }
@@ -110,14 +141,23 @@ namespace ContextStage
             int rows = Mathf.Max(1, Mathf.RoundToInt(r.height / px));
             float t = Time.unscaledTime - _startTime;
 
+            if (_owner != null)
+            {
+                // 바깥 레이어: 본체의 색·주기 설정으로 카드 둘레 바깥에만 별을 그린다.
+                Color outsideColor = _tier == AugmentTier.Gold ? _owner.goldSparkleColor : _owner.silverSparkleColor;
+                if (_tier != AugmentTier.Bronze)
+                    _owner.DrawSparkles(vh, r, px, cols, rows, t, outsideColor, _owner.outsideSparkleCount, 57, true, _seed);
+                return;
+            }
+
             if (_tier == AugmentTier.Gold)
             {
                 DrawGold(vh, r, px, cols, rows, t);
-                DrawSparkles(vh, r, px, cols, rows, t, goldSparkleColor, goldSparkleCount, 31);
+                DrawSparkles(vh, r, px, cols, rows, t, goldSparkleColor, goldSparkleCount, 31, false, _seed);
             }
             else if (_tier == AugmentTier.Silver)
             {
-                DrawSparkles(vh, r, px, cols, rows, t, silverSparkleColor, silverSparkleCount, 0);
+                DrawSparkles(vh, r, px, cols, rows, t, silverSparkleColor, silverSparkleCount, 0, false, _seed);
             }
         }
 
@@ -148,8 +188,10 @@ namespace ContextStage
         }
 
         void DrawSparkles(VertexHelper vh, Rect r, float px, int cols, int rows, float t,
-            Color color, int count, int salt)
+            Color color, int count, int salt, bool outside, int seed)
         {
+            if (count <= 0) return;
+            bool clamp = !outside;
             for (int i = 0; i < count; i++)
             {
                 // 별마다 시작 시점을 엇갈리고, 주기가 돌 때마다 가장자리 근처 새 위치로 옮긴다.
@@ -159,21 +201,23 @@ namespace ContextStage
                 float age = local - cycleIndex * silverSparklePeriod;
                 if (age > silverSparkleLifetime) continue;
 
-                uint h = Hash((uint)(_seed * 7919 + salt * 2654435 + i * 104729 + cycleIndex * 15485863));
-                EdgePoint(h, cols, rows, out int cx, out int cy);
+                uint h = Hash((uint)(seed * 7919 + salt * 2654435 + i * 104729 + cycleIndex * 15485863));
+                int cx, cy;
+                if (outside) OutsidePoint(h, cols, rows, out cx, out cy);
+                else EdgePoint(h, cols, rows, out cx, out cy);
 
                 float life = age / silverSparkleLifetime;
                 float bright = Mathf.Sin(life * Mathf.PI);
                 // 가장 밝을 때 팔이 3칸까지 늘어나는 픽셀 십자 별.
                 int armLength = bright > 0.8f ? 3 : bright > 0.5f ? 2 : bright > 0.2f ? 1 : 0;
-                AddCell(vh, r, px, cx, cy, 1, 1, WithAlpha(color, bright));
+                AddCell(vh, r, px, cx, cy, 1, 1, WithAlpha(color, bright), clamp);
                 for (int d = 1; d <= armLength; d++)
                 {
                     Color32 c = WithAlpha(color, bright * (d == 1 ? 0.8f : d == 2 ? 0.5f : 0.25f));
-                    AddCell(vh, r, px, cx - d, cy, 1, 1, c);
-                    AddCell(vh, r, px, cx + d, cy, 1, 1, c);
-                    AddCell(vh, r, px, cx, cy - d, 1, 1, c);
-                    AddCell(vh, r, px, cx, cy + d, 1, 1, c);
+                    AddCell(vh, r, px, cx - d, cy, 1, 1, c, clamp);
+                    AddCell(vh, r, px, cx + d, cy, 1, 1, c, clamp);
+                    AddCell(vh, r, px, cx, cy - d, 1, 1, c, clamp);
+                    AddCell(vh, r, px, cx, cy + d, 1, 1, c, clamp);
                 }
             }
         }
@@ -195,6 +239,20 @@ namespace ContextStage
             }
         }
 
+        // 카드 둘레(변 길이에 비례)에서 한 곳을 골라 외곽 바깥으로 최소~최대 거리만큼 떨어진 점.
+        void OutsidePoint(uint h, int cols, int rows, out int x, out int y)
+        {
+            int min = Mathf.Max(1, outsideMinDistance);
+            int max = Mathf.Max(min, outsideMaxDistance);
+            int dist = min + (int)((h >> 20) % (uint)(max - min + 1));
+            int perimeter = 2 * (cols + rows);
+            int s = (int)(h % (uint)Mathf.Max(1, perimeter));
+            if (s < cols) { x = s; y = rows - 1 + dist; }
+            else if (s < 2 * cols) { x = s - cols; y = -dist; }
+            else if (s < 2 * cols + rows) { x = -dist; y = s - 2 * cols; }
+            else { x = cols - 1 + dist; y = s - 2 * cols - rows; }
+        }
+
         static uint Hash(uint v)
         {
             v ^= v >> 16; v *= 0x7feb352d;
@@ -204,13 +262,19 @@ namespace ContextStage
         }
 
         // 그림 픽셀 격자 기준 (x, y)에서 w×h 칸 사각형. y=0 은 아래쪽.
-        static void AddCell(VertexHelper vh, Rect r, float px, int x, int y, int w, int h, Color32 c)
+        static void AddCell(VertexHelper vh, Rect r, float px, int x, int y, int w, int h, Color32 c,
+            bool clampToRect = true)
         {
             if (w <= 0 || h <= 0 || c.a == 0) return;
-            float x0 = Mathf.Max(r.xMin, r.xMin + x * px);
-            float y0 = Mathf.Max(r.yMin, r.yMin + y * px);
-            float x1 = Mathf.Min(r.xMax, r.xMin + (x + w) * px);
-            float y1 = Mathf.Min(r.yMax, r.yMin + (y + h) * px);
+            float x0 = r.xMin + x * px;
+            float y0 = r.yMin + y * px;
+            float x1 = r.xMin + (x + w) * px;
+            float y1 = r.yMin + (y + h) * px;
+            if (clampToRect)
+            {
+                x0 = Mathf.Max(r.xMin, x0); y0 = Mathf.Max(r.yMin, y0);
+                x1 = Mathf.Min(r.xMax, x1); y1 = Mathf.Min(r.yMax, y1);
+            }
             if (x1 <= x0 || y1 <= y0) return;
             int i = vh.currentVertCount;
             vh.AddVert(new Vector3(x0, y0), c, Vector2.zero);
