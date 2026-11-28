@@ -38,3 +38,4 @@ MonoBehaviour:
   - 0.5
   - -0.25
   - -1
+  nonNegativeAudiencePreferences: 01000000

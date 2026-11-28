@@ -420,6 +420,9 @@ namespace ContextStage
                         card.TargetPreference,
                         config != null ? config.AudienceDistanceMultipliers : null);
                 int reactionValue = reaction.Value + audienceReactionBonus;
+                // 특정 성향 관객(현재 Singalong)은 어떤 카드에도 감점·몰입도 하락을 주지 않는다.
+                if (config != null)
+                    reactionValue = config.ApplyAudienceReactionFloor(members[i].Preference, reactionValue);
                 _audienceReactions.Add(new AudienceReactionResult(
                     reaction.AudienceId,
                     reactionValue));

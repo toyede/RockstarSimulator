@@ -30,8 +30,17 @@ namespace ContextStage
         [Header("관객 반응 표 거리 배율 (GridDistance 카드)")]
         [SerializeField, Tooltip("정답 칸에서 0칸, 1칸, 2칸, 3칸 떨어졌을 때 (성향 점수 + 몰입도 점수)에 곱하는 값")]
         float[] audienceDistanceMultipliers = { 1f, 0.5f, -0.25f, -1f };
+        [SerializeField, Tooltip("이 성향의 관객은 어떤 카드를 받아도 반응이 0 미만으로 내려가지 않는다 (감점·몰입도 하락 없음)")]
+        List<CrowdPreference> nonNegativeAudiencePreferences = new List<CrowdPreference>();
 
         public IReadOnlyList<CardPoolEntry> CardPool => cardPool;
+
+        /// <summary>관객 성향이 0 하한 목록에 있으면 음수 반응을 0으로 올린다.</summary>
+        public int ApplyAudienceReactionFloor(CrowdPreference audiencePreference, int reactionValue)
+        {
+            if (reactionValue >= 0 || nonNegativeAudiencePreferences == null) return reactionValue;
+            return nonNegativeAudiencePreferences.Contains(audiencePreference) ? 0 : reactionValue;
+        }
         public IReadOnlyList<float> AudienceDistanceMultipliers => audienceDistanceMultipliers;
         public int GeneratedDeckSize => Mathf.Max(1, generatedDeckSize);
         public int PreparedDeckCount => Mathf.Clamp(preparedDeckCount, 2, 4);
